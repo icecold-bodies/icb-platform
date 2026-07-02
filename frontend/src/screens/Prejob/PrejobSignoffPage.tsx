@@ -42,6 +42,9 @@ export function PrejobSignoffPage() {
   const toast = useToast()
   const { hasPermission, isAdmin, apiMode, profile } = useAppData()
   const meta = role === 'sales' || role === 'planner' ? ROLE_META[role] : null
+  // v1.39.11 — /prejob/:id (no role segment) is the CC email's view-only page: any logged-in
+  // user can look (backend read is require_user); sign-off/reject actions stay role-page-only.
+  const viewOnly = role === undefined
   const allowed = !!meta && (isAdmin || hasPermission(meta.perm))
 
   const [card, setCard] = useState<PrejobCard | null>(null)
@@ -105,11 +108,11 @@ export function PrejobSignoffPage() {
     } catch (e) { handleApiError(e, toast.push) } finally { setBusy(false) }
   }
 
-  if (!meta) {
+  if (!meta && !viewOnly) {
     return <div className="p-4"><EmptyState title="Unknown sign-off role"
       hint="Valid pages are /prejob/{id}/signoff/sales and /prejob/{id}/signoff/planner." /></div>
   }
-  if (apiMode !== 'loading' && !allowed) {
+  if (meta && !viewOnly && apiMode !== 'loading' && !allowed) {
     return <div className="p-4"><EmptyState title={`${meta.label} sign-off is role-gated`}
       hint={`This page needs ${meta.perm} (or admin — §0.3).`} /></div>
   }
@@ -126,11 +129,12 @@ export function PrejobSignoffPage() {
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-lg font-bold text-body">
-                Pre-Job Card — {meta.label} check
+                Pre-Job Card{meta ? ` — ${meta.label} check` : ''}
               </h1>
               <p className="text-xs text-muted">
                 <span className="font-mono font-semibold">{card.quote_number ?? '—'}</span>
-                {' · '}{card.customer_name ?? '—'} · {card.template_name ?? '—'} · {meta.blurb}
+                {' · '}{card.customer_name ?? '—'} · {card.template_name ?? '—'}
+                {meta ? ` · ${meta.blurb}` : ' · view-only copy (for visibility)'}
               </p>
             </div>
             <StatusPill
@@ -222,8 +226,8 @@ export function PrejobSignoffPage() {
             </div>
           </Card>
 
-          {/* Actions */}
-          {card.status === 'sent_for_check' && !mySignoffAt && (
+          {/* Actions — sign-off/reject live on the role pages only; the view-only page shows none */}
+          {meta && card.status === 'sent_for_check' && !mySignoffAt && (
             <div className="flex justify-end gap-2">
               <button onClick={() => { setReason(''); setRejectOpen(true) }} data-testid="prejob-reject-btn"
                 className="flex items-center gap-1 rounded-md border border-status-red px-4 py-2 text-sm font-semibold text-status-red hover:bg-status-red/10">
@@ -235,7 +239,7 @@ export function PrejobSignoffPage() {
               </button>
             </div>
           )}
-          {card.status === 'sent_for_check' && mySignoffAt && (
+          {meta && card.status === 'sent_for_check' && mySignoffAt && (
             <p className="text-right text-sm text-status-green">✓ Your {meta.label} sign-off is in — awaiting the other check.</p>
           )}
           {card.status === 'pre_job_confirmed' && (
@@ -245,7 +249,8 @@ export function PrejobSignoffPage() {
             </div>
           )}
 
-          {/* Attestation modal (§0.12) */}
+          {/* Attestation + Reject modals (§0.12/§0.14) — role pages only */}
+          {meta && <>
           <Modal open={attestOpen} onClose={() => setAttestOpen(false)} className="max-w-md">
             <h3 className="mb-2 text-base font-bold text-body">{meta.label} sign-off attestation</h3>
             {/* §3.2 — fixed legal boilerplate + REQUIRED confirmation checkbox (legacy
@@ -290,6 +295,7 @@ export function PrejobSignoffPage() {
               </button>
             </div>
           </Modal>
+          </>}
         </>
       )}
     </div>

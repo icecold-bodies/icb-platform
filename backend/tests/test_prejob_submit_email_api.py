@@ -1,10 +1,13 @@
-"""v1.39.3 backport — Submit-for-Check server-side email auto-send.
+"""v1.39.11 — Submit-for-Check personalized per-recipient email auto-send.
 
-On submit-for-check the service resolves the Sales Rep + Planner user emails (To) and the card's
-cc_recipients (Cc) and hands them to notifications.send_email_multi — AFTER the commit, best-effort
-so a mail failure never fails the submit. These tests monkeypatch send_email_multi to capture the
-call (no real SMTP), asserting: resolved To recipients, cleaned CC, the log-and-continue contract
-(a raising sender still yields 200 + sent_for_check), and the no-recipient no-op. P393E markers.
+On submit-for-check the service now sends ONE EMAIL PER RECIPIENT (v1.39.11, superseding the
+single send_email_multi call of v1.39.3): the Sales Rep and Planner signers each get a
+personalized message carrying only THEIR role-scoped sign-off deep-link; every CC recipient gets
+the lighter observer variant linking the view-only card page. All AFTER the commit, best-effort
+so a mail failure never fails the submit. These tests monkeypatch notifications.send_email to
+capture the calls (no real SMTP), asserting: per-recipient fan-out, personalization, role-scoped
+links, the CC variant, the log-and-continue contract (a raising sender still yields 200 +
+sent_for_check), and the no-recipient no-op. P393E markers.
 """
 import pytest
 
@@ -55,7 +58,8 @@ def signers():
         db.add_all([s, p])
         db.commit()
         return {"sales_id": s.id, "planner_id": p.id,
-                "sales_email": s.email, "planner_email": p.email}
+                "sales_email": s.email, "planner_email": p.email,
+                "sales_name": s.username, "planner_name": p.username}
 
 
 @pytest.fixture
@@ -86,36 +90,49 @@ def draft(api, signers):
                        "sales_rep_user_id": signers["sales_id"],
                        "planner_user_id": signers["planner_id"],
                        "body_gap_mm": 120,
-                       "cc_recipients": "planner@icecoldgrp.co.za, not-an-email, extra@icecoldgrp.co.za"})
+                       "cc_recipients": "simeon@icecoldgrp.co.za, not-an-email, extra@icecoldgrp.co.za"})
     return card, signers
 
 
 def _capture_send(app_mod, monkeypatch):
     calls = []
     from app.services import notifications
-    monkeypatch.setattr(notifications, "send_email_multi",
-                        lambda subject, body, to, cc=None: calls.append(
-                            {"subject": subject, "body": body, "to": to, "cc": cc}) or True)
+    monkeypatch.setattr(notifications, "send_email",
+                        lambda subject, body, to=None: calls.append(
+                            {"subject": subject, "body": body, "to": to}) or True)
     return calls
 
 
-def test_submit_sends_to_signers_and_cc(api, draft, monkeypatch, app_mod):
+def test_submit_sends_individual_emails(api, draft, monkeypatch, app_mod):
+    """2 personalized signer emails + 1 per valid CC ('not-an-email' dropped) = 4 sends."""
     client, _ = api
     card, s = draft
     calls = _capture_send(app_mod, monkeypatch)
     r = client.post(f"/api/prejob-cards/{card['id']}/submit-for-check", json={})
     assert r.status_code == 200, r.text
     assert r.json()["status"] == "sent_for_check"
-    assert len(calls) == 1, "submit must trigger exactly one auto-send"
-    sent = calls[0]
-    assert sent["to"] == [s["sales_email"], s["planner_email"]]
-    # CC: only email-shaped entries survive build_email's cleaner ('not-an-email' dropped)
-    assert "planner@icecoldgrp.co.za" in sent["cc"]
-    assert "extra@icecoldgrp.co.za" in sent["cc"]
-    assert "not-an-email" not in sent["cc"]
-    # Body reuses the mailto builder — the sign-off deep links are present
-    assert f"/mes-app/prejob/{card['id']}/signoff/sales" in sent["body"]
-    assert f"/mes-app/prejob/{card['id']}/signoff/planner" in sent["body"]
+    assert [c["to"] for c in calls] == [
+        s["sales_email"], s["planner_email"],
+        "simeon@icecoldgrp.co.za", "extra@icecoldgrp.co.za"]
+
+    sales, planner, cc1, cc2 = calls
+    # Sales signer: personalized greeting, Sales subject, ONLY the sales deep-link
+    assert "Sales sign-off" in sales["subject"]
+    assert f"Hi {s['sales_name']}," in sales["body"]
+    assert f"/mes-app/prejob/{card['id']}/signoff/sales" in sales["body"]
+    assert "/signoff/planner" not in sales["body"]
+    assert "The PDF copy is on the URL page" in sales["body"]
+    # Planner signer: same shape, planner-scoped
+    assert "Planner sign-off" in planner["subject"]
+    assert f"Hi {s['planner_name']}," in planner["body"]
+    assert f"/mes-app/prejob/{card['id']}/signoff/planner" in planner["body"]
+    assert "/signoff/sales" not in planner["body"]
+    # CC observers: lighter variant — visibility subject, view link, NO sign-off links
+    for cc in (cc1, cc2):
+        assert "for your visibility" in cc["subject"]
+        assert f"/mes-app/prejob/{card['id']}" in cc["body"]
+        assert "/signoff/" not in cc["body"]
+        assert "no action is needed" in cc["body"]
 
 
 def test_submit_succeeds_when_send_raises(api, draft, monkeypatch, app_mod):
@@ -126,7 +143,7 @@ def test_submit_succeeds_when_send_raises(api, draft, monkeypatch, app_mod):
 
     def boom(*a, **k):
         raise RuntimeError("smtp exploded")
-    monkeypatch.setattr(notifications, "send_email_multi", boom)
+    monkeypatch.setattr(notifications, "send_email", boom)
     r = client.post(f"/api/prejob-cards/{card['id']}/submit-for-check", json={})
     assert r.status_code == 200, r.text
     assert r.json()["status"] == "sent_for_check"
@@ -163,4 +180,4 @@ def test_submit_noop_when_no_addresses(api, signers, monkeypatch, app_mod):
     calls = _capture_send(app_mod, monkeypatch)
     r = client.post(f"/api/prejob-cards/{card['id']}/submit-for-check", json={})
     assert r.status_code == 200, r.text
-    assert calls == [], "no resolvable addresses → send_email_multi must not be called"
+    assert calls == [], "no resolvable addresses → send_email must not be called"

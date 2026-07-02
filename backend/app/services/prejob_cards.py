@@ -487,7 +487,8 @@ def submit_for_check(db: Session, card_id: int, user, waive_body_gap: bool = Fal
     _auto_create_chassis(db, card, user)
     db.commit()
     db.refresh(card)
-    # v1.39.3 — auto-send the check email to the Sales + Planner signers (+ CC). AFTER commit so a
+    # v1.39.3 — auto-send the check email; v1.39.11 — one PERSONALIZED email per recipient
+    # (signers get role-scoped deep-links, CCs get the lighter observer variant). AFTER commit so a
     # rolled-back submit sends nothing; best-effort so a mail failure never fails the submit (the
     # mailto: helper below still exists as the manual fallback — §0.11). No-op when SMTP is unset.
     if base_url:
@@ -495,26 +496,38 @@ def submit_for_check(db: Session, card_id: int, user, waive_body_gap: bool = Fal
     return card
 
 
+def _resolve_user_email(db: Session, uid) -> str | None:
+    u = db.get(User, uid) if uid else None
+    e = (getattr(u, "email", "") or "").strip() if u else ""
+    return e if ("@" in e and "." in e.split("@")[-1]) else None
+
+
 def _send_check_emails(db: Session, card: PrejobCard, base_url: str) -> bool:
-    """v1.39.3 — server-side auto-send of the Pre-Job check notification. Resolves the Sales Rep +
-    Planner user emails (To), parses the card's cc_recipients (Cc), and sends the SAME subject/body
-    build_email() produces for the mailto: fallback. Best-effort and never raises — logged and
-    swallowed so a delivery failure cannot break the (already-committed) submit."""
+    """v1.39.11 — server-side auto-send, one email per recipient: the Sales Rep and Planner each
+    get a personalized message with THEIR role-scoped sign-off deep-link; every CC recipient gets
+    the lighter observer variant (view link only, no sign-off ask). A CC who is also a signer still
+    gets both — the contents differ. Best-effort and never raises — logged and swallowed so a
+    delivery failure cannot break the (already-committed) submit. Returns True if ANY send landed."""
     try:
         from app.services import notifications
-        content = build_email(db, card, base_url)
-
-        def _email(uid) -> str | None:
-            u = db.get(User, uid) if uid else None
-            e = (getattr(u, "email", "") or "").strip() if u else ""
-            return e if ("@" in e and "." in e.split("@")[-1]) else None
-
-        to = [e for e in (_email(card.sales_rep_user_id), _email(card.planner_user_id)) if e]
-        cc = content["cc"].split(",") if content.get("cc") else []
-        if not to and not cc:
-            logger.info("prejob %s check email skipped — no resolvable recipient addresses", card.id)
-            return False
-        return notifications.send_email_multi(content["subject"], content["body"], to, cc)
+        sent_any = False
+        for role, uid in (("sales", card.sales_rep_user_id), ("planner", card.planner_user_id)):
+            addr = _resolve_user_email(db, uid)
+            if not addr:
+                logger.info("prejob %s %s signer email skipped — no resolvable address", card.id, role)
+                continue
+            content = build_signer_email(db, card, base_url, role)
+            sent_any = notifications.send_email(content["subject"], content["body"], to=addr) or sent_any
+        cc_list = list(dict.fromkeys(
+            a.strip() for a in (card.cc_recipients or "").split(",")
+            if "@" in a and "." in a.split("@")[-1]))
+        if cc_list:
+            content = build_cc_email(db, card, base_url)
+            for addr in cc_list:
+                sent_any = notifications.send_email(content["subject"], content["body"], to=addr) or sent_any
+        if not sent_any:
+            logger.info("prejob %s check emails — nothing sent (no recipients or SMTP unset)", card.id)
+        return sent_any
     except Exception as e:  # noqa: BLE001 — best-effort; the submit is already committed
         logger.warning("prejob %s check email send failed: %s", card.id, str(e)[:200])
         return False
@@ -595,6 +608,67 @@ def build_email(db: Session, card: PrejobCard, base_url: str) -> dict:
             "sales_link": sales_link, "planner_link": planner_link,
             "cc": cc_clean or None,
             "mailto": f"mailto:?{cc_part}subject={q(subject)}&body={q(body)}"}
+
+
+def _job_ref(db: Session, card: PrejobCard, bits: dict) -> str:
+    """The reference the recipient recognises: the production job number when a job exists,
+    else the quote number, else the card id (never blank)."""
+    job = _job_for_calc(db, card.calculation_id)
+    return (getattr(job, "job_number", None) or bits["quote"] or f"card {card.id}")
+
+
+def _card_summary_lines(card: PrejobCard, bits: dict, job_ref: str) -> str:
+    """The shared plain-text pre-job summary block (customer / job / chassis / notes)."""
+    return (
+        f"  Customer:  {bits['customer'] or '—'}\r\n"
+        f"  Job:       {job_ref}\r\n"
+        f"  Body:      {card.body_description or '—'}\r\n"
+        f"  Chassis:   {card.chassis_make_model or '—'} (VIN {card.vin_number or 'TBD'})\r\n"
+        f"  Notes:     {card.customer_notes or '—'}\r\n"
+    )
+
+
+def build_signer_email(db: Session, card: PrejobCard, base_url: str, role: str) -> dict:
+    """v1.39.11 — the personalized per-SIGNER email: greeting by name, pre-job summary, and ONLY
+    that signer's role-scoped sign-off deep-link (/signoff/sales or /signoff/planner)."""
+    base = base_url.rstrip("/")
+    bits = _display_bits(db, card)
+    job_ref = _job_ref(db, card, bits)
+    role_label = "Sales" if role == "sales" else "Planner"
+    name = bits["sales_rep"] if role == "sales" else bits["planner"]
+    link = f"{base}/mes-app/prejob/{card.id}/signoff/{role}"
+    subject = f"Pre-job check requires your {role_label} sign-off — Job {job_ref}"
+    body = (
+        f"Hi {name or 'there'},\r\n\r\n"
+        f"The Pre-Job Card for job {job_ref} is ready for your {role_label} check:\r\n\r\n"
+        f"{_card_summary_lines(card, bits, job_ref)}\r\n"
+        f"Review and sign off as {role_label} here:\r\n"
+        f"{link}\r\n\r\n"
+        f"The PDF copy is on the URL page for records (download it from the MES system).\r\n\r\n"
+        f"Sent from ICB MES (internal document — not for the customer).\r\n"
+    )
+    return {"subject": subject, "body": body, "link": link}
+
+
+def build_cc_email(db: Session, card: PrejobCard, base_url: str) -> dict:
+    """v1.39.11 — the lighter CC/observer variant: brief summary + a view link to the pre-job card
+    page (no sign-off ask — CCs are observers; the PDF is viewable there)."""
+    base = base_url.rstrip("/")
+    bits = _display_bits(db, card)
+    job_ref = _job_ref(db, card, bits)
+    link = f"{base}/mes-app/prejob/{card.id}"
+    subject = f"Pre-job check submitted — Job {job_ref} (for your visibility)"
+    body = (
+        f"Hi,\r\n\r\n"
+        f"The Pre-Job Card for job {job_ref} ({bits['customer'] or '—'}) has been submitted for "
+        f"check. You are receiving this copy for visibility — no action is needed from you.\r\n\r\n"
+        f"Sign-offs requested from: {bits['sales_rep'] or 'unassigned'} (Sales) and "
+        f"{bits['planner'] or 'unassigned'} (Planner).\r\n\r\n"
+        f"View the pre-job card (the PDF is viewable in the MES there):\r\n"
+        f"{link}\r\n\r\n"
+        f"Sent from ICB MES (internal document — not for the customer).\r\n"
+    )
+    return {"subject": subject, "body": body, "link": link}
 
 
 # ── §3.5 — check sign-offs + reject (Stages B/C/D) ───────────────────────────

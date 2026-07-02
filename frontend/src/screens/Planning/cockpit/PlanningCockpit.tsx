@@ -78,12 +78,14 @@ function useMiddleButtonPan<T extends HTMLElement>() {
 // WO A09 Combined Cockpit — `embedded` mounts the SAME live cockpit inside the Plan module's
 // combined page (grid + Unscheduled rail + Inspector + filters + summary), hiding only the
 // bottom Bay-model dock (the A06 Production Flow floor replaces those zones on that page).
-// Standalone /planning/cockpit behaviour is unchanged.
-export function PlanningCockpit({ embedded = false }: { embedded?: boolean } = {}) {
+// `lockedJobIds` (business rules 2 Jul): jobs whose body is MERGED WITH CHASSIS — the permanent
+// point of no return. Backward planner moves (unschedule / revert-to-unscheduled) are rejected
+// for them. Standalone /planning/cockpit behaviour is unchanged (both props default off).
+export function PlanningCockpit({ embedded = false, lockedJobIds }: { embedded?: boolean; lockedJobIds?: Set<number> } = {}) {
   const { mode } = usePlanning()
   if (mode === 'loading') return <CockpitSkeleton />
   if (mode !== 'live') return <CockpitMockNotice />
-  return <LiveCockpit embedded={embedded} />
+  return <LiveCockpit embedded={embedded} lockedJobIds={lockedJobIds} />
 }
 
 function CockpitSkeleton() {
@@ -121,7 +123,7 @@ function CockpitMockNotice() {
   )
 }
 
-function LiveCockpit({ embedded = false }: { embedded?: boolean }) {
+function LiveCockpit({ embedded = false, lockedJobIds }: { embedded?: boolean; lockedJobIds?: Set<number> }) {
   const nav = useNavigate()
   const { board, schedule, move, unschedule, revertToUnscheduled, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
   useRefetchOnFocus(refresh)
@@ -256,6 +258,11 @@ function LiveCockpit({ embedded = false }: { embedded?: boolean }) {
     setDragSlot(null)
     if (!canUnschedule) {
       toast.push({ kind: 'warn', message: "You don't have permission to unschedule jobs." })
+      return
+    }
+    // Business rules 2 Jul — MERGED WITH CHASSIS is the point of no return: no backward moves.
+    if (lockedJobIds && src.job && lockedJobIds.has(src.job.id)) {
+      toast.push({ kind: 'warn', message: `Job ${src.job.job_number} is merged with its chassis — it can't move back to an earlier state.` })
       return
     }
     try {
@@ -558,11 +565,17 @@ function LiveCockpit({ embedded = false }: { embedded?: boolean }) {
                 <CockpitSlotDetail
                   slot={selectedLiveSlot}
                   canTick={canTickChassis}
-                  canRevert={canUnschedule && selectedLiveSlot.job?.status === 'planning'}
+                  canRevert={canUnschedule && selectedLiveSlot.job?.status === 'planning'
+                    && !(lockedJobIds && selectedLiveSlot.job && lockedJobIds.has(selectedLiveSlot.job.id))}
                   onMarkReceived={() => markSlotChassisReceived(selectedLiveSlot)}
                   onRevert={async (reason) => {
                     const jid = selectedLiveSlot.job?.id
                     if (jid == null) return
+                    // Business rules 2 Jul — merged jobs never move backwards.
+                    if (lockedJobIds && lockedJobIds.has(jid)) {
+                      toast.push({ kind: 'warn', message: `Job ${selectedLiveSlot.job?.job_number} is merged with its chassis — it can't move back to an earlier state.` })
+                      return
+                    }
                     try {
                       await revertToUnscheduled(jid, reason)
                       setSelectedSlotId(null)

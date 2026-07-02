@@ -125,12 +125,23 @@ function S0() {
   };
 }
 
-export function initProductionFlow(root) {
+export function initProductionFlow(root, opts) {
+  opts = opts || {};
   root.innerHTML = SHELL;
   const $ = (sel) => root.querySelector(sel);
   const $$ = (sel) => root.querySelectorAll(sel);
 
   let D = S0();
+
+  // ── Business rules (2 Jul): the official production-job lifecycle ─────────
+  // UNSCHEDULED → ACKNOWLEDGED → VACUUM/PRESS → PANELS READY → ASSEMBLY BAY →
+  // MERGE → MERGED WITH CHASSIS. Everything up to MERGE is reversible; MERGED
+  // WITH CHASSIS is the permanent point of no return (reverse drags blocked,
+  // planner backward moves rejected — the merged set is pushed up via
+  // opts.onChange so the embedded planner can lock those jobs too).
+  // mergedJobs is PERMANENT for the session: dispatch (→ QA) frees the bay but
+  // never re-opens a job's earlier states. Reset (demo) clears it with the seed.
+  let mergedJobs = new Set();
 
   // ── A09 wiring — live "Panels ready" (handover §4) ─────────────────────────
   // livePanels = the last list pushed from the live planner (null = seed mode).
@@ -151,7 +162,8 @@ export function initProductionFlow(root) {
   function applyLivePanels() {
     if (!livePanels) return;
     const onFloor = jobsOnFloor();
-    D.PANELS = livePanels.filter(p => !consumedJobs.has(String(p.job)) && !onFloor.has(String(p.job)));
+    D.PANELS = livePanels.filter(p => !consumedJobs.has(String(p.job)) && !onFloor.has(String(p.job))
+      && !mergedJobs.has(String(p.job)));   // locked: a merged job never re-enters Panels ready
   }
 
   function occPos(bodies) { const o = [false, false, false, false]; bodies.forEach(x => { const a = x.pos, b = x.pos + x.len; for (let p = 0; p < NPOS; p++) { if (a < (p + 1) * 10 && b > p * 10) o[p] = true; } }); return o; }
@@ -263,7 +275,12 @@ export function initProductionFlow(root) {
      <div class="ctruck">${c.kind === 'trailer' ? trailerSvg(124) : truckSvg(112)}</div>
      <div class="cinfo"><div class="cid">${c.id}</div><div class="crow2"><span class="cmodel">${c.model}</span><span class="wpill">WAITING</span></div><div class="ckind">${c.kind === 'trailer' ? 'Trailer chassis' : 'Truck chassis'}</div></div></div>`).join('');
   }
-  function renderAll() { renderKPIs(); renderPanels(); renderPre(); renderPark(); }
+  function renderAll() {
+    renderKPIs(); renderPanels(); renderPre(); renderPark();
+    // Lifecycle notification (business rules 2 Jul): the merged-lock set rides up so the
+    // embedded planner can reject backward moves for MERGED WITH CHASSIS jobs.
+    try { if (opts.onChange) opts.onChange({ mergedJobs: [...mergedJobs] }); } catch (e) { /* non-fatal */ }
+  }
 
   /* ===== transitions (no auto-merge — planner brings both halves in) ===== */
   function startBody(panelId, li) {
@@ -271,7 +288,31 @@ export function initProductionFlow(root) {
     const pos = findFreePos(D.PRE[li].bodies, p.len, 0); if (pos == null) return false;
     D.PANELS.splice(pi, 1);
     consumedJobs.add(String(p.job));   // A09 §4.3 — a started job's panel never reappears on refresh
-    D.PRE[li].bodies.push({ id: p.job, job: p.job, cust: p.cust, len: p.len, type: p.type, status: 'green', prog: 0, pos, days: 0, chassisVin: '—' });
+    // method/origin carried on the body so the REVERSE transition (Assembly bay → Panels ready)
+    // can rebuild the exact panel-set in seed mode.
+    D.PRE[li].bodies.push({ id: p.job, job: p.job, cust: p.cust, len: p.len, type: p.type, status: 'green', prog: 0, pos, days: 0, chassisVin: '—', method: p.method, origin: p.origin });
+    return true;
+  }
+  // Reverse transition (business rules 2 Jul): ASSEMBLY BAY → PANELS READY.
+  // Allowed only for a body still ON THE TRACK (a merge body must first go back
+  // to the track — states are adjacent) and never for a merged job. In live mode
+  // the panel re-derives from the planner push, so the job must still be in the
+  // scheduled set (a job the planner no longer knows can't re-enter the queue).
+  function bodyBackToPanels(id) {
+    const loc = findBodyLoc(id); if (!loc) return false;
+    const job = String(loc.body.job);
+    if (mergedJobs.has(job)) return false;
+    if (livePanels) {
+      if (!livePanels.some(p => String(p.job) === job)) return false;
+      D.PRE[loc.ci].bodies.splice(loc.bi, 1);
+      consumedJobs.delete(job);
+      applyLivePanels();
+      return true;
+    }
+    const b = loc.body;
+    D.PRE[loc.ci].bodies.splice(loc.bi, 1);
+    consumedJobs.delete(job);
+    D.PANELS.push({ id: 'PS-' + b.job, job: b.job, cust: b.cust, len: b.len, type: b.type, method: b.method || 'Vacuum', origin: b.origin, ready: true });
     return true;
   }
   function moveBody(id, li, desired) {
@@ -295,7 +336,7 @@ export function initProductionFlow(root) {
     D.PRE[li].bodies.splice(loc.bi, 1); m.assembly = body; return true; /* if chassis already here → Busy with merge (no auto-attach) */
   }
   function dispatch(li) { D.PRE[li].merge.attached = null; renderAll(); }
-  function confirmMerge(li) { const m = D.PRE[li].merge; if (m.assembly && m.chassis) { m.attached = { body: m.assembly, chassis: m.chassis, matched: m.chassis.job === m.assembly.job }; m.assembly = null; m.chassis = null; renderAll(); requestAnimationFrame(() => mergeCrescendo(li)); } }
+  function confirmMerge(li) { const m = D.PRE[li].merge; if (m.assembly && m.chassis) { m.attached = { body: m.assembly, chassis: m.chassis, matched: m.chassis.job === m.assembly.job }; mergedJobs.add(String(m.attached.body.job)); m.assembly = null; m.chassis = null; renderAll(); requestAnimationFrame(() => mergeCrescendo(li)); } }
   /* The Merge Crescendo: plays once, only when the planner confirms (classes are added here, not in render). */
   function mergeCrescendo(li) {
     const bay = root.querySelector('.m-block[data-merge="' + li + '"]'); if (!bay) return;
@@ -337,6 +378,18 @@ export function initProductionFlow(root) {
         const li = +mb.dataset.merge; const loc = findBodyLoc(id);
         if (loc && loc.ci === li && !D.PRE[li].merge.attached && !D.PRE[li].merge.assembly) return { t: 'merge', el: mb, li }; return null;
       }
+      // Reverse transition: a track body dragged UP into the Panels-ready strip
+      // (business rules 2 Jul — ASSEMBLY BAY ⇅ PANELS READY). Guards in
+      // bodyBackToPanels; highlight only when the drop would be accepted.
+      const pk = el.closest('#panels');
+      if (pk) {
+        const loc = findBodyLoc(id);
+        if (!loc) return null;
+        const job = String(loc.body.job);
+        if (mergedJobs.has(job)) return null;
+        if (livePanels && !livePanels.some(p => String(p.job) === job)) return null;
+        return { t: 'panels', el: pk };
+      }
       const l = el.closest('.pa-lane'); return l ? { t: 'pa', el: l, li: +l.dataset.bi } : null;
     }
     if (kind === 'chassis') { const mb = el.closest('.m-block'); if (mb) { const li = +mb.dataset.merge; if (!D.PRE[li].merge.attached && !D.PRE[li].merge.chassis) return { t: 'merge', el: mb, li }; return null; } const pk = el.closest('#parking'); if (pk) return { t: 'park', el: pk }; return null; }
@@ -364,6 +417,7 @@ export function initProductionFlow(root) {
     if (tgt) {
       if (d.kind === 'panel' && tgt.t === 'pa') startBody(d.id, tgt.li);
       else if (d.kind === 'body' && tgt.t === 'pa') { const lr = tgt.el.getBoundingClientRect(); const desired = ((e.clientX - d.gdx) - lr.left - 12 + TPAD) / PX; const a = findAssembly(d.id); if (a && a.loc === 'merge') assemblyBackToTrack(d.id, tgt.li, desired); else moveBody(d.id, tgt.li, desired); }
+      else if (d.kind === 'body' && tgt.t === 'panels') bodyBackToPanels(d.id);
       else if (d.kind === 'body' && tgt.t === 'merge') dropAssembly(d.id, tgt.li);
       else if (d.kind === 'chassis' && tgt.t === 'merge') dropChassis(tgt.li, d.id);
       else if (d.kind === 'chassis' && tgt.t === 'park') chassisBackToParking(d.id);
@@ -379,7 +433,8 @@ export function initProductionFlow(root) {
   root.addEventListener('click', onClick);
   // Reset restores the floor seed; in live mode the Panels-ready zone re-derives
   // from the last planner push (the planner is the source of truth, not the seed).
-  $('#resetBtn').addEventListener('click', () => { D = S0(); consumedJobs.clear(); applyLivePanels(); renderAll(); });
+  // Demo semantics: reset also clears the session's merged-lock set.
+  $('#resetBtn').addEventListener('click', () => { D = S0(); consumedJobs.clear(); mergedJobs = new Set(); applyLivePanels(); renderAll(); });
 
   /* ===== JOB DETAIL MODAL ===== */
   function findAny(kind, id) {
@@ -397,9 +452,23 @@ export function initProductionFlow(root) {
     let ch;
     if (isCh) { ch = { vin: it.id, model: it.model, cust: it.cust, make: (it.model || '').split(' ')[0] }; }
     else { const m = D.PARK.find(c => c.job === job) || { id: '(awaiting assignment)', model: '—', make: '—' }; ch = { vin: m.id, model: m.model, cust, make: m.make || (m.model || '—').split(' ')[0] }; }
+    // Lifecycle status (business rules 2 Jul) — the official state names, derived from
+    // where the item actually is: PANELS READY / VACUUM-PRESS for panel-sets; ASSEMBLY
+    // BAY / MERGE / MERGED WITH CHASSIS for bodies. Chassis keep their own status line.
+    let lifecycle = null;
+    if (kind === 'panel') lifecycle = it.ready ? 'Panels ready' : 'Vacuum / Press';
+    else if (kind !== 'chassis') {
+      if (findBodyLoc(it.id)) lifecycle = 'Assembly bay';
+      else {
+        for (const b of D.PRE) {
+          if (b.merge.assembly && b.merge.assembly.id === it.id) { lifecycle = 'Merge'; break; }
+          if (b.merge.attached && b.merge.attached.body.id === it.id) { lifecycle = 'Merged with chassis'; break; }
+        }
+      }
+    }
     return {
       kind, id: it.id, job, cust, spec: `${len.toFixed(1)} m ${type} body`,
-      chassis: { vin: ch.vin, cust, dealer: '—', contact: '—', tel: '—', make: ch.make, model: ch.model, desc: '—', origin: 'Auto · Planning', cycles: 1, status: isCh ? 'in assembly' : 'awaiting attachment', vcl: '2026-06-18' },
+      chassis: { vin: ch.vin, cust, dealer: '—', contact: '—', tel: '—', make: ch.make, model: ch.model, desc: '—', origin: 'Auto · Planning', cycles: 1, status: lifecycle || (isCh ? 'in assembly' : 'awaiting attachment'), vcl: '2026-06-18' },
       prejob: {
         template: `${type} body · ${len.toFixed(1)} m`, dims: `${Math.round(len * 1000)} × 2480 × 2600 mm`, costingRef: `EST-${job}`,
         checklist: [['Body template confirmed', 1], ['Dimensions vs customer spec', 1], ['Costing accepted', 1], ['Materials reserved', 1], ['Drawings released', 0]]
@@ -498,6 +567,8 @@ export function initProductionFlow(root) {
       renderKPIs();
       renderPanels();
     },
+    // The session's MERGED WITH CHASSIS jobs (permanent lock set, business rules 2 Jul).
+    getMergedJobs() { return [...mergedJobs]; },
     plannerSlot: $('#plannerSlot'),
   };
 }

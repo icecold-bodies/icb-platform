@@ -15,7 +15,7 @@
 // as the single hook for the future panels_cut signal (documented deviation
 // from §4.4 until that event exists). §4.3 guards live in the engine: a
 // started job's body is never yanked and its panel never resurrects.
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './productionFlow.css'
 import { initProductionFlow } from './productionFlowEngine'
@@ -26,6 +26,7 @@ import type { PlanningBoardView } from '../../lib/types'
 interface FlowApi {
   cleanup: () => void
   setPanels: (list: unknown[]) => void
+  getMergedJobs: () => string[]
   plannerSlot: HTMLElement | null
 }
 
@@ -64,14 +65,30 @@ function boardToPanels(board: PlanningBoardView) {
 export function PlanCombined() {
   const ref = useRef<HTMLDivElement>(null)
   const [api, setApi] = useState<FlowApi | null>(null)
+  // Business rules (2 Jul): MERGED WITH CHASSIS = the permanent point of no
+  // return. The engine pushes its merged set up; the embedded planner locks
+  // those jobs against backward moves (unschedule / revert-to-unscheduled).
+  const [mergedJobNos, setMergedJobNos] = useState<string[]>([])
   const { board, mode } = usePlanning()
 
   useEffect(() => {
     if (!ref.current) return
-    const inst = initProductionFlow(ref.current) as FlowApi
+    const inst = initProductionFlow(ref.current, {
+      onChange: (s: { mergedJobs: string[] }) => setMergedJobNos(s.mergedJobs),
+    }) as FlowApi
     setApi(inst)
     return () => { inst.cleanup(); setApi(null) }
   }, [])
+
+  // Merged job numbers → planner job ids (the planner keys on production_job.id).
+  const lockedJobIds = useMemo(() => {
+    if (!mergedJobNos.length) return undefined
+    const set = new Set<number>()
+    const want = new Set(mergedJobNos.map(String))
+    for (const s of board.slots) if (s.job && want.has(String(s.job.job_number))) set.add(s.job.id)
+    for (const j of board.pool) if (want.has(String(j.job_number))) set.add(j.id)
+    return set.size ? set : undefined
+  }, [mergedJobNos, board])
 
   // Live link: every board change (schedule / move / unschedule / window nav /
   // focus refetch) re-derives the Panels-ready set. In mock/offline mode the
@@ -88,7 +105,7 @@ export function PlanCombined() {
         createPortal(
           <div className="zone" style={{ overflow: 'hidden' }} data-testid="plan-embedded-cockpit">
             <div style={{ height: '76vh' }}>
-              <PlanningCockpit embedded />
+              <PlanningCockpit embedded lockedJobIds={lockedJobIds} />
             </div>
           </div>,
           api.plannerSlot,

@@ -150,6 +150,26 @@ export function initProductionFlow(root, opts) {
   // and must never yank the in-progress body — bodies live in D.PRE untouched).
   let livePanels = null;
   const consumedJobs = new Set();
+  // Live Parking (job-spine completion): liveParking = the last chassis list pushed from the
+  // MES chassis records (status in_workshop = booked-in, awaiting their body — the same pool
+  // definition the bay model uses). Parking membership is fully derivable: a chassis leaves the
+  // zone while it sits in a Merge block and PERMANENTLY once merged (mergedChassis — dispatch
+  // sends the unit to QA, it never returns to parking).
+  let liveParking = null;
+  let mergedChassis = new Set();
+  function chassisInUse() {
+    const s = new Set();
+    D.PRE.forEach(b => {
+      if (b.merge.chassis) s.add(String(b.merge.chassis.id));
+      if (b.merge.attached && b.merge.attached.chassis) s.add(String(b.merge.attached.chassis.id));
+    });
+    return s;
+  }
+  function applyLiveParking() {
+    if (!liveParking) return;
+    const inUse = chassisInUse();
+    D.PARK = liveParking.filter(c => !inUse.has(String(c.id)) && !mergedChassis.has(String(c.id)));
+  }
   function jobsOnFloor() {
     const s = new Set();
     D.PRE.forEach(b => {
@@ -271,7 +291,7 @@ export function initProductionFlow(root, opts) {
   function renderPark() {
     const el = $('#parking');
     if (!D.PARK.length) { el.innerHTML = '<span class="empty">No chassis waiting.</span>'; return; }
-    el.innerHTML = D.PARK.map(c => `<div class="ccard" data-id="${c.id}" data-kind="chassis">
+    el.innerHTML = D.PARK.map(c => `<div class="ccard" data-id="${c.id}" data-kind="chassis" data-job="${c.job || ''}">
      <div class="ctruck">${c.kind === 'trailer' ? trailerSvg(124) : truckSvg(112)}</div>
      <div class="cinfo"><div class="cid">${c.id}</div><div class="crow2"><span class="cmodel">${c.model}</span><span class="wpill">WAITING</span></div><div class="ckind">${c.kind === 'trailer' ? 'Trailer chassis' : 'Truck chassis'}</div></div></div>`).join('');
   }
@@ -290,7 +310,9 @@ export function initProductionFlow(root, opts) {
     consumedJobs.add(String(p.job));   // A09 §4.3 — a started job's panel never reappears on refresh
     // method/origin carried on the body so the REVERSE transition (Assembly bay → Panels ready)
     // can rebuild the exact panel-set in seed mode.
-    D.PRE[li].bodies.push({ id: p.job, job: p.job, cust: p.cust, len: p.len, type: p.type, status: 'green', prog: 0, pos, days: 0, chassisVin: '—', method: p.method, origin: p.origin });
+    // chassisVin: the job's linked chassis VIN rides the panel-set from the planner (live spine),
+    // so the body tag + merge hints show the real chassis from the moment the body starts.
+    D.PRE[li].bodies.push({ id: p.job, job: p.job, cust: p.cust, len: p.len, type: p.type, status: 'green', prog: 0, pos, days: 0, chassisVin: p.vin || '—', method: p.method, origin: p.origin });
     return true;
   }
   // Reverse transition (business rules 2 Jul): ASSEMBLY BAY → PANELS READY.
@@ -336,7 +358,7 @@ export function initProductionFlow(root, opts) {
     D.PRE[li].bodies.splice(loc.bi, 1); m.assembly = body; return true; /* if chassis already here → Busy with merge (no auto-attach) */
   }
   function dispatch(li) { D.PRE[li].merge.attached = null; renderAll(); }
-  function confirmMerge(li) { const m = D.PRE[li].merge; if (m.assembly && m.chassis) { m.attached = { body: m.assembly, chassis: m.chassis, matched: m.chassis.job === m.assembly.job }; mergedJobs.add(String(m.attached.body.job)); m.assembly = null; m.chassis = null; renderAll(); requestAnimationFrame(() => mergeCrescendo(li)); } }
+  function confirmMerge(li) { const m = D.PRE[li].merge; if (m.assembly && m.chassis) { m.attached = { body: m.assembly, chassis: m.chassis, matched: m.chassis.job === m.assembly.job }; mergedJobs.add(String(m.attached.body.job)); mergedChassis.add(String(m.attached.chassis.id)); m.assembly = null; m.chassis = null; renderAll(); requestAnimationFrame(() => mergeCrescendo(li)); } }
   /* The Merge Crescendo: plays once, only when the planner confirms (classes are added here, not in render). */
   function mergeCrescendo(li) {
     const bay = root.querySelector('.m-block[data-merge="' + li + '"]'); if (!bay) return;
@@ -434,7 +456,7 @@ export function initProductionFlow(root, opts) {
   // Reset restores the floor seed; in live mode the Panels-ready zone re-derives
   // from the last planner push (the planner is the source of truth, not the seed).
   // Demo semantics: reset also clears the session's merged-lock set.
-  $('#resetBtn').addEventListener('click', () => { D = S0(); consumedJobs.clear(); mergedJobs = new Set(); applyLivePanels(); renderAll(); });
+  $('#resetBtn').addEventListener('click', () => { D = S0(); consumedJobs.clear(); mergedJobs = new Set(); mergedChassis = new Set(); applyLivePanels(); applyLiveParking(); renderAll(); });
 
   /* ===== JOB DETAIL MODAL ===== */
   function findAny(kind, id) {
@@ -566,6 +588,14 @@ export function initProductionFlow(root, opts) {
       applyLivePanels();
       renderKPIs();
       renderPanels();
+    },
+    // Live Parking (job-spine): bind the chassis zone to the MES in_workshop pool.
+    // In-merge + merged chassis are excluded by derivation, mirroring setPanels.
+    setParking(list) {
+      liveParking = Array.isArray(list) ? list : [];
+      applyLiveParking();
+      renderKPIs();
+      renderPark();
     },
     // The session's MERGED WITH CHASSIS jobs (permanent lock set, business rules 2 Jul).
     getMergedJobs() { return [...mergedJobs]; },

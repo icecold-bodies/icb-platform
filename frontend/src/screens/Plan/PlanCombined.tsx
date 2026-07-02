@@ -15,17 +15,21 @@
 // as the single hook for the future panels_cut signal (documented deviation
 // from §4.4 until that event exists). §4.3 guards live in the engine: a
 // started job's body is never yanked and its panel never resurrects.
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './productionFlow.css'
 import { initProductionFlow } from './productionFlowEngine'
 import { usePlanning } from '../../store/PlanningContext'
 import { PlanningCockpit } from '../Planning/cockpit/PlanningCockpit'
+import { apiGet } from '../../lib/api'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { PlanningBoardView } from '../../lib/types'
+import type { ChassisRecord } from '../Chassis/types'
 
 interface FlowApi {
   cleanup: () => void
   setPanels: (list: unknown[]) => void
+  setParking: (list: unknown[]) => void
   getMergedJobs: () => string[]
   plannerSlot: HTMLElement | null
 }
@@ -56,10 +60,29 @@ function boardToPanels(board: PlanningBoardView) {
       type,
       method: isV ? 'Vacuum' : 'Press',
       origin: bay,
+      vin: j.vin,    // the job's linked chassis VIN — rides onto the started body's tag + merge hints
       ready: true,   // D2 readiness proxy (scheduled) — future: the real panels_cut signal
     })
   }
   return panels
+}
+
+// Chassis records → Parking cards (job-spine): the MES parking pool = chassis with
+// status 'in_workshop' (booked in, awaiting their body — the bay model's own
+// definition). The card's `job` links via the board (job.vin === chassis.vin), which
+// is what the merge-matching rule and the drag guides key on. `kind` picks the
+// side-view image only (trailer keywords → trailer, else truck).
+function chassisToParking(rows: ChassisRecord[], board: PlanningBoardView) {
+  const vinToJob = new Map<string, string>()
+  for (const s of board.slots) if (s.job?.vin) vinToJob.set(String(s.job.vin), s.job.job_number)
+  for (const j of board.pool) if (j.vin) vinToJob.set(String(j.vin), j.job_number)
+  return rows
+    .filter((r) => r.status === 'in_workshop' && r.vin)
+    .map((r) => {
+      const model = [r.make, r.model].filter(Boolean).join(' ') || '—'
+      const kind = /trailer|tri[- ]?axle|drawbar|semi/i.test(model) ? 'trailer' : 'truck'
+      return { id: r.vin, cust: r.customer_name || '—', model, job: vinToJob.get(String(r.vin)) ?? null, kind }
+    })
 }
 
 export function PlanCombined() {
@@ -97,6 +120,20 @@ export function PlanCombined() {
     if (!api || mode !== 'live') return
     api.setPanels(boardToPanels(board))
   }, [api, board, mode])
+
+  // Live Parking: the MES chassis records (in_workshop pool), refreshed on tab
+  // focus like every other floor surface, re-pushed whenever the board changes
+  // (the chassis→job link derives from the board's VINs).
+  const [chassisRows, setChassisRows] = useState<ChassisRecord[]>([])
+  const refetchChassis = useCallback(async () => {
+    try { setChassisRows(await apiGet<ChassisRecord[]>('/api/chassis-records?limit=200')) } catch { /* keep last */ }
+  }, [])
+  useEffect(() => { void refetchChassis() }, [refetchChassis])
+  useRefetchOnFocus(refetchChassis)
+  useEffect(() => {
+    if (!api || mode !== 'live') return
+    api.setParking(chassisToParking(chassisRows, board))
+  }, [api, board, chassisRows, mode])
 
   return (
     <>

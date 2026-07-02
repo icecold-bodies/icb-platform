@@ -75,11 +75,15 @@ function useMiddleButtonPan<T extends HTMLElement>() {
   return ref
 }
 
-export function PlanningCockpit() {
+// WO A09 Combined Cockpit — `embedded` mounts the SAME live cockpit inside the Plan module's
+// combined page (grid + Unscheduled rail + Inspector + filters + summary), hiding only the
+// bottom Bay-model dock (the A06 Production Flow floor replaces those zones on that page).
+// Standalone /planning/cockpit behaviour is unchanged.
+export function PlanningCockpit({ embedded = false }: { embedded?: boolean } = {}) {
   const { mode } = usePlanning()
   if (mode === 'loading') return <CockpitSkeleton />
   if (mode !== 'live') return <CockpitMockNotice />
-  return <LiveCockpit />
+  return <LiveCockpit embedded={embedded} />
 }
 
 function CockpitSkeleton() {
@@ -117,7 +121,7 @@ function CockpitMockNotice() {
   )
 }
 
-function LiveCockpit() {
+function LiveCockpit({ embedded = false }: { embedded?: boolean }) {
   const nav = useNavigate()
   const { board, schedule, move, unschedule, revertToUnscheduled, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
   useRefetchOnFocus(refresh)
@@ -583,7 +587,9 @@ function LiveCockpit() {
         )}
       </div>
 
-      {/* ── Bottom dock — bay-model flow zones (collapsed by default) ─────────── */}
+      {/* ── Bottom dock — bay-model flow zones (collapsed by default). Hidden when embedded in
+          the Combined Cockpit: the A06 Production Flow floor below replaces these zones. ─────── */}
+      {!embedded && (
       <div className="shrink-0 overflow-hidden rounded-lg border border-line bg-white">
         <button onClick={layout.toggleDock}
           aria-expanded={dockOpen}
@@ -601,6 +607,7 @@ function LiveCockpit() {
           </div>
         )}
       </div>
+      )}
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 items-center justify-between">

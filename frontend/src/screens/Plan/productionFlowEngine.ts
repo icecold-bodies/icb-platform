@@ -23,6 +23,10 @@ const SHELL = `
 
   <div class="kpis" id="kpiRow"></div>
 
+  <!-- A09 Combined Cockpit: the live MES Planning Cockpit mounts here (React portal), directly
+       above "Panels ready" so nothing separates the planner from its output (handover §2). -->
+  <div id="plannerSlot"></div>
+
   <div class="zone">
     <div class="zhead"><span class="zt">Panels ready</span><span class="zc">from Vacuum / Press</span><span class="zr">drag a panel-set down into a bay ↓ · click for detail</span></div>
     <div class="strip" id="panels"></div>
@@ -127,6 +131,28 @@ export function initProductionFlow(root) {
   const $$ = (sel) => root.querySelectorAll(sel);
 
   let D = S0();
+
+  // ── A09 wiring — live "Panels ready" (handover §4) ─────────────────────────
+  // livePanels = the last list pushed from the live planner (null = seed mode).
+  // consumedJobs = jobs whose panel already became a body this session (§4.3:
+  // un-scheduling / a board refresh must NEVER resurrect a started job's panel,
+  // and must never yank the in-progress body — bodies live in D.PRE untouched).
+  let livePanels = null;
+  const consumedJobs = new Set();
+  function jobsOnFloor() {
+    const s = new Set();
+    D.PRE.forEach(b => {
+      b.bodies.forEach(x => s.add(String(x.job)));
+      if (b.merge.assembly) s.add(String(b.merge.assembly.job));
+      if (b.merge.attached) s.add(String(b.merge.attached.body.job));
+    });
+    return s;
+  }
+  function applyLivePanels() {
+    if (!livePanels) return;
+    const onFloor = jobsOnFloor();
+    D.PANELS = livePanels.filter(p => !consumedJobs.has(String(p.job)) && !onFloor.has(String(p.job)));
+  }
 
   function occPos(bodies) { const o = [false, false, false, false]; bodies.forEach(x => { const a = x.pos, b = x.pos + x.len; for (let p = 0; p < NPOS; p++) { if (a < (p + 1) * 10 && b > p * 10) o[p] = true; } }); return o; }
   function bayState(b) {
@@ -244,6 +270,7 @@ export function initProductionFlow(root) {
     const pi = D.PANELS.findIndex(p => p.id === panelId); if (pi < 0) return false; const p = D.PANELS[pi]; if (!p.ready) return false;
     const pos = findFreePos(D.PRE[li].bodies, p.len, 0); if (pos == null) return false;
     D.PANELS.splice(pi, 1);
+    consumedJobs.add(String(p.job));   // A09 §4.3 — a started job's panel never reappears on refresh
     D.PRE[li].bodies.push({ id: p.job, job: p.job, cust: p.cust, len: p.len, type: p.type, status: 'green', prog: 0, pos, days: 0, chassisVin: '—' });
     return true;
   }
@@ -350,7 +377,9 @@ export function initProductionFlow(root) {
   }
   root.addEventListener('pointerdown', onPointerDown);
   root.addEventListener('click', onClick);
-  $('#resetBtn').addEventListener('click', () => { D = S0(); renderAll(); });
+  // Reset restores the floor seed; in live mode the Panels-ready zone re-derives
+  // from the last planner push (the planner is the source of truth, not the seed).
+  $('#resetBtn').addEventListener('click', () => { D = S0(); consumedJobs.clear(); applyLivePanels(); renderAll(); });
 
   /* ===== JOB DETAIL MODAL ===== */
   function findAny(kind, id) {
@@ -448,14 +477,27 @@ export function initProductionFlow(root) {
 
   renderAll();
 
-  /* cleanup for React unmount — remove root + any transient window listeners and DOM leftovers */
-  return function cleanup() {
-    root.removeEventListener('pointerdown', onPointerDown);
-    root.removeEventListener('click', onClick);
-    window.removeEventListener('pointermove', onMove);
-    window.removeEventListener('pointerup', onUp);
-    if (drag && drag.ghost) drag.ghost.remove();
-    drag = null;
-    root.innerHTML = '';
+  /* Instance API (A09 Combined Cockpit):
+     - cleanup: for React unmount — removes listeners + transient DOM
+     - setPanels: bind "Panels ready" to the LIVE scheduled Vacuum/Press set
+       (§4 — filtered against consumed + on-floor jobs, never a static list)
+     - plannerSlot: the mount point for the live Planning Cockpit portal (§2) */
+  return {
+    cleanup() {
+      root.removeEventListener('pointerdown', onPointerDown);
+      root.removeEventListener('click', onClick);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      if (drag && drag.ghost) drag.ghost.remove();
+      drag = null;
+      root.innerHTML = '';
+    },
+    setPanels(list) {
+      livePanels = Array.isArray(list) ? list : [];
+      applyLivePanels();
+      renderKPIs();
+      renderPanels();
+    },
+    plannerSlot: $('#plannerSlot'),
   };
 }

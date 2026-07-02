@@ -18,6 +18,8 @@
 }
 .a06-flow, .a06-flow *{box-sizing:border-box}
 .a06-flow .app{max-width:1460px;margin:0 auto;padding:16px 20px 30px}
+/* A09 — the live Planning Cockpit portal slot sits in the same 12px card rhythm (empty = no gap). */
+.a06-flow #plannerSlot:not(:empty){margin-bottom:0}
 
 .a06-flow .hdr{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--hair);border-radius:14px;box-shadow:var(--shadow-sm);padding:10px 16px;margin-bottom:12px}
 .a06-flow .mark{width:36px;height:36px;border-radius:10px;background:#fff;border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;overflow:hidden}

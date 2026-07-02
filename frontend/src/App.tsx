@@ -18,7 +18,7 @@ import { ChassisDetail } from './screens/Chassis/ChassisDetail'
 import { AdminModule } from './screens/Admin/AdminModule'
 import { FeedbackInbox } from './screens/Admin/FeedbackInbox'
 import { PrejobSignoffPage } from './screens/Prejob/PrejobSignoffPage'
-import { PlanProductionFlow } from './screens/Plan/PlanProductionFlow'
+import { PlanCombined } from './screens/Plan/PlanCombined'
 
 export default function App() {
   return (
@@ -34,8 +34,8 @@ export default function App() {
       {/* Legacy redirect — old /configurator path */}
       <Route path="/configurator" element={<Navigate to="/costings/new" replace />} />
       <Route path="/planning" element={<Layout><PlanningBoard /></Layout>} />
-      {/* WO A06 (Rapid Prototype Phase) — the new isolated Plan module (Production Flow prototype). */}
-      <Route path="/plan" element={<Layout><PlanProductionFlow /></Layout>} />
+      {/* WO A06/A09 (Rapid Prototype Phase) — the Plan module: Combined Cockpit (live planner + floor). */}
+      <Route path="/plan" element={<Layout><PlanCombined /></Layout>} />
       {/* Cockpit (Concept 6) — additive alternate Planning layout; the board above is unchanged. */}
       <Route path="/planning/cockpit" element={<Layout><PlanningCockpit /></Layout>} />
       {/* Work Order v4.11 — Materials, Buying & Stores. Weekly Forecast is a tab

@@ -197,3 +197,21 @@
 .a06-flow .draw{margin-top:10px;border:1px solid var(--hair);border-radius:10px;background:#FBFCFD;padding:14px;text-align:center}
 .a06-flow .vcl-photos{display:flex;gap:8px;margin-top:10px}
 .a06-flow .vcl-photos .ph{flex:1;height:64px;border:1px dashed var(--hair-strong);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-3);background:#FBFCFD}
+
+/* ===== A09 planner skin (Michael, 2 Jul: "apply that style to the panels planning section")
+   Source: "A09 - Combined Cockpit v0.1.html" (.grid / .jc / .cc / rail). Scoped to the EMBEDDED
+   cockpit only - the standalone /planning/cockpit keeps its own MES styling. Colours that carry
+   data-meaning on the live board (green scheduled edge, primary selected) are preserved; the A09
+   chrome (dark sticky head, card gradients, 4px left bars, radii, weights) is applied around them. */
+.a06-flow{--a09-head:#2f5088;--a09-head-2:#274470}
+.a06-flow [data-testid="plan-embedded-cockpit"] thead th{background:var(--a09-head) !important;font-size:11px;padding:9px 10px}
+.a06-flow [data-testid="plan-embedded-cockpit"] thead th:first-child{background:var(--a09-head-2) !important;min-width:70px}
+.a06-flow [data-testid="plan-embedded-cockpit"] thead th > div{color:#c8d6ea !important;font-size:9.5px;font-weight:600}
+.a06-flow [data-testid="plan-embedded-cockpit"] tbody td.sticky{background:#F7F9FC !important;font-weight:800 !important;color:var(--ink) !important}
+.a06-flow [data-testid="plan-embedded-cockpit"] tbody td[colspan]{background:#EEF2F7 !important;font-size:9.5px !important;font-weight:800 !important;letter-spacing:.09em !important;color:var(--ink-2) !important}
+.a06-flow [data-testid="plan-embedded-cockpit"] tbody button.border-l-4{border-radius:8px;border-top:1px solid #cbd5e1;border-right:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;background:linear-gradient(#fff,#f8fafc);transition:box-shadow .15s}
+.a06-flow [data-testid="plan-embedded-cockpit"] tbody button.border-l-4:hover{box-shadow:var(--shadow-sm)}
+.a06-flow [data-testid="plan-embedded-cockpit"] tbody button.border-l-4 .font-mono.text-xs{font-weight:800;font-size:11.5px;line-height:1.1}
+.a06-flow [data-testid="plan-embedded-cockpit"] .space-y-2 > div{border-left:4px solid #94a3b8 !important;border-radius:10px !important;transition:box-shadow .15s,transform .1s}
+.a06-flow [data-testid="plan-embedded-cockpit"] .space-y-2 > div:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.a06-flow [data-testid="plan-embedded-cockpit"] .space-y-2 .font-mono.text-sm.font-semibold{font-weight:800;font-size:12.5px}

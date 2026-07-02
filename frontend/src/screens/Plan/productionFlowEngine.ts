@@ -42,6 +42,12 @@ const SHELL = `
     <div class="strip" id="parking"></div>
   </div>
 
+  <!-- End of the line (end-goal): merged units dispatched off the floor queue here for QC. -->
+  <div class="zone">
+    <div class="zhead"><span class="zt">Quality Control</span><span class="zc" id="qcCount">dispatched units awaiting QC sign-off</span><span class="zr"><span class="mdisp" data-qc-open style="margin-right:8px">Open QC module &#8599;</span>&#183; click a unit for detail</span></div>
+    <div class="strip" id="qcrow"></div>
+  </div>
+
   <div class="hint"><span>✋</span><span>Drag a <b>panel-set</b> into a bay to start a body, build it down the track, then — when <b>you</b> deem it ready — drag the <b>assembly</b> into its Merge block and bring its <b>chassis</b> up to meet it (they attach on matching job; no auto-merge). <b>Click any card</b> for the full job detail. <b>↺ Reset</b> restores the start.</span></div>
   <div class="foot" id="foot"></div>
 </div>
@@ -101,6 +107,7 @@ const BOM = [
 ];
 function S0() {
   return {
+    QC: [],
     PANELS: [
       { id: 'PS-41030', job: '41030', cust: 'AFRIT (Pty) Ltd', len: 5.4, type: 'Chiller', method: 'Vacuum', ready: true },
       { id: 'PS-41040', job: '41040', cust: 'AGRING Consultants CC', len: 5.4, type: 'Chiller', method: 'Vacuum', ready: true },
@@ -153,6 +160,7 @@ export function initProductionFlow(root, opts) {
     return JSON.stringify({
       v: 1,
       pre: D.PRE,
+      qc: D.QC || [],
       consumed: [...consumedJobs],
       mergedJobs: [...mergedJobs],
       mergedChassis: [...mergedChassis],
@@ -314,8 +322,22 @@ export function initProductionFlow(root, opts) {
      <div class="ctruck">${c.kind === 'trailer' ? trailerSvg(124) : truckSvg(112)}</div>
      <div class="cinfo"><div class="cid">${c.id}</div><div class="crow2"><span class="cmodel">${c.model}</span><span class="wpill">WAITING</span></div><div class="ckind">${c.kind === 'trailer' ? 'Trailer chassis' : 'Truck chassis'}</div></div></div>`).join('');
   }
+  function renderQc() {
+    const el = $('#qcrow'); if (!el) return;
+    const q = D.QC || [];
+    const cnt = $('#qcCount');
+    if (cnt) cnt.textContent = q.length
+      ? q.length + ' unit' + (q.length !== 1 ? 's' : '') + ' awaiting QC sign-off'
+      : 'dispatched units awaiting QC sign-off';
+    if (!q.length) { el.innerHTML = '<span class="empty">No units awaiting QC \u2014 \u201cDone \u2192 QA\u201d on a merged bay sends the unit here.</span>'; return; }
+    el.innerHTML = q.map(u => `<div class="pcard" data-detail-kind="body" data-detail-id="${u.id}" data-ready="0" style="width:236px;cursor:pointer">
+      <span class="accent" style="background:var(--green)"></span>
+      <div class="pt">J${u.job}<span class="meth" style="background:#0F9D7A">MERGED</span></div>
+      <div class="ps">${u.vin}</div>
+      <div class="pf"><span class="dot" style="background:var(--green)"></span>Awaiting QC sign-off${u.cust && u.cust !== '\u2014' ? ' \u00b7 ' + u.cust : ''}</div></div>`).join('');
+  }
   function renderAll() {
-    renderKPIs(); renderPanels(); renderPre(); renderPark();
+    renderKPIs(); renderPanels(); renderPre(); renderPark(); renderQc();
     // Lifecycle notification (business rules 2 Jul): the merged-lock set rides up so the
     // embedded planner can reject backward moves for MERGED WITH CHASSIS jobs.
     try { if (opts.onChange) opts.onChange({ mergedJobs: [...mergedJobs] }); } catch (e) { /* non-fatal */ }
@@ -387,7 +409,16 @@ export function initProductionFlow(root, opts) {
     dirty = true;
     D.PRE[li].bodies.splice(loc.bi, 1); m.assembly = body; return true; /* if chassis already here → Busy with merge (no auto-attach) */
   }
-  function dispatch(li) { D.PRE[li].merge.attached = null; dirty = true; renderAll(); }
+  function dispatch(li) {
+    const a = D.PRE[li].merge.attached;
+    if (a) {
+      // End of the line (end-goal): the merged unit leaves the floor into the QC queue.
+      (D.QC = D.QC || []).unshift({ id: a.body.id, job: a.body.job, cust: a.body.cust,
+        len: a.body.len, type: a.body.type, vin: (a.chassis && a.chassis.id) || '\u2014',
+        matched: !!a.matched });
+    }
+    D.PRE[li].merge.attached = null; dirty = true; renderAll();
+  }
   function confirmMerge(li) { const m = D.PRE[li].merge; if (m.assembly && m.chassis) { m.attached = { body: m.assembly, chassis: m.chassis, matched: m.chassis.job === m.assembly.job }; mergedJobs.add(String(m.attached.body.job)); mergedChassis.add(String(m.attached.chassis.id)); m.assembly = null; m.chassis = null; dirty = true; renderAll(); requestAnimationFrame(() => mergeCrescendo(li)); } }
   /* The Merge Crescendo: plays once, only when the planner confirms (classes are added here, not in render). */
   function mergeCrescendo(li) {
@@ -477,6 +508,8 @@ export function initProductionFlow(root, opts) {
     renderAll();
   }
   function onClick(e) {
+    const qo = e.target.closest('[data-qc-open]');
+    if (qo) { window.location.assign('/mes-app/admin/qc'); return; }
     const cf = e.target.closest('[data-confirm]'); if (cf) { confirmMerge(+cf.dataset.confirm); return; }
     const dsp = e.target.closest('[data-dispatch]'); if (dsp) { dispatch(+dsp.dataset.dispatch); return; }
     const det = e.target.closest('[data-detail-kind]'); if (det) { openModal(det.dataset.detailKind, det.dataset.detailId); }
@@ -491,7 +524,7 @@ export function initProductionFlow(root, opts) {
     // bays — the planner/chassis zones re-derive from live data. The A06 demo seed only
     // applies in offline/seed mode.
     const live = !!(livePanels || liveParking);
-    D = live ? { PANELS: [], PRE: emptyBays(), PARK: [] } : S0();
+    D = live ? { PANELS: [], PRE: emptyBays(), PARK: [], QC: [] } : S0();
     consumedJobs.clear(); mergedJobs = new Set(); mergedChassis = new Set();
     applyLivePanels(); applyLiveParking();
     dirty = true;
@@ -505,6 +538,7 @@ export function initProductionFlow(root, opts) {
     // body
     const l = findBodyLoc(id); if (l) return l.body;
     for (const b of D.PRE) { if (b.merge.assembly && b.merge.assembly.id === id) return b.merge.assembly; if (b.merge.attached && b.merge.attached.body.id === id) return b.merge.attached.body; }
+    const qcu = (D.QC || []).find(u => u.id === id); if (qcu) return qcu;
     return null;
   }
   function getDetail(kind, it) {
@@ -521,6 +555,7 @@ export function initProductionFlow(root, opts) {
     if (kind === 'panel') lifecycle = it.ready ? 'Panels ready' : 'Vacuum / Press';
     else if (kind !== 'chassis') {
       if (findBodyLoc(it.id)) lifecycle = 'Assembly bay';
+      else if ((D.QC || []).some(u => u.id === it.id)) lifecycle = 'Dispatched to QC';
       else {
         for (const b of D.PRE) {
           if (b.merge.assembly && b.merge.assembly.id === it.id) { lifecycle = 'Merge'; break; }
@@ -644,6 +679,7 @@ export function initProductionFlow(root, opts) {
       let s = null;
       try { s = json ? JSON.parse(json) : null; } catch (e) { s = null; }
       D.PRE = (s && Array.isArray(s.pre) && s.pre.length === 5) ? s.pre : emptyBays();
+      D.QC = (s && Array.isArray(s.qc)) ? s.qc : [];
       consumedJobs.clear(); (s && s.consumed || []).forEach(j => consumedJobs.add(String(j)));
       mergedJobs = new Set((s && s.mergedJobs || []).map(String));
       mergedChassis = new Set((s && s.mergedChassis || []).map(String));

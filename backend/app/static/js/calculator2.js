@@ -774,6 +774,18 @@ function clearOverrideSession() {
 // trailer DEFAULTS — dims, insulation/body selections and configurator draft
 // state silently reset; only the price overrides survived.
 const RETURN_STATE_KEY = 'calc_return_state';
+// A permanent-edit detour is minutes, not hours — a stale payload must not
+// resurrect old state on a later same-tab visit (see calculator.js).
+const RETURN_STATE_TTL_MS = 30 * 60 * 1000;
+
+// Arm the round-trip at the ACTUAL navigation points (plain jump + the four
+// warn-modal proceed handlers) — never before a cancellable modal.
+function _armReturnTrip() {
+  const tid = document.getElementById('trailer-select')?.value;
+  saveOverridesToSession();
+  sessionStorage.setItem('_calc_return', '1');
+  _saveReturnState(tid);
+}
 
 function _saveReturnState(tid) {
   saveLastSession();   // dims/margin/ratio/customer/chassis/discount → LAST_SESSION_KEY
@@ -781,6 +793,7 @@ function _saveReturnState(tid) {
     sessionStorage.setItem(RETURN_STATE_KEY, JSON.stringify({
       trailer_id: String(tid),
       user_id: (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : undefined,
+      ts: Date.now(),
       body_option_selections: { ...bodyOptionSelections },
       drd_srd:                { ...drdSrdEnabled },
       draft_flag_state:       (typeof draftFlagState          !== 'undefined') ? { ...draftFlagState }          : null,
@@ -788,11 +801,13 @@ function _saveReturnState(tid) {
       draft_masterless_cat:   (typeof draftMasterlessCatState !== 'undefined') ? { ...draftMasterlessCatState } : null,
       draft_folder:           (typeof draftFolderState        !== 'undefined') ? { ...draftFolderState }        : null,
       optional_sections_enabled: window.OptionalSections ? [...window.OptionalSections.loadEnabled(+tid)]       : [],
-      optional_row_excl:         window.OptionalSections ? [...window.OptionalSections.loadRowExcl(+tid, 'c1')] : [],
+      optional_row_excl:         window.OptionalSections ? [...window.OptionalSections.loadRowExcl(+tid, 'c2')] : [],
       editing: (typeof editingRecordId !== 'undefined' && editingRecordId) ? {
         record_id: editingRecordId,
         version:   (typeof editingVersion     !== 'undefined' && editingVersion)     ? editingVersion     : 1,
         quote:     (typeof editingQuoteNumber !== 'undefined' && editingQuoteNumber) ? editingQuoteNumber : null,
+        replay:             (typeof editReplay           !== 'undefined' && editReplay)           ? editReplay           : null,
+        body_var_overrides: (typeof editBodyVarOverrides !== 'undefined' && editBodyVarOverrides) ? editBodyVarOverrides : null,
       } : null,
     }));
   } catch(_) {}
@@ -808,6 +823,7 @@ async function _restoreReturnState(tid) {
   if (!st || String(st.trailer_id) !== String(tid)) return false;
   if (st.user_id !== undefined && typeof CURRENT_USER_ID !== 'undefined'
       && st.user_id !== CURRENT_USER_ID) return false;
+  if (!st.ts || (Date.now() - st.ts) > RETURN_STATE_TTL_MS) return false;   // stale detour — fresh load
 
   try {
     localStorage.setItem(`body_opt_sel_${tid}`, JSON.stringify(st.body_option_selections || {}));
@@ -816,14 +832,22 @@ async function _restoreReturnState(tid) {
   if (window.OptionalSections) {
     window.OptionalSections.saveEnabled(+tid,
       new Set((st.optional_sections_enabled || []).map(Number).filter(Number.isFinite)));
-    window.OptionalSections.saveRowExcl(+tid, 'c1',
+    window.OptionalSections.saveRowExcl(+tid, 'c2',
       new Set((st.optional_row_excl || []).map(Number).filter(Number.isFinite)));
   }
   bodyOptionSelections = { ...(st.body_option_selections || {}) };
   drdSrdEnabled        = { ...(st.drd_srd || {}) };
 
-  const ok = await restoreLastSession();
-  if (!ok) await loadBOM({ preserveInputs: true });
+  // GUARD: LAST_SESSION_KEY is one SHARED localStorage key — another tab may
+  // hold a different trailer; restoreLastSession restores whatever IT holds.
+  // Only trust it when it still matches this trailer (see calculator.js).
+  let sessTrailerOk = false;
+  try {
+    const _sess = JSON.parse(localStorage.getItem(LAST_SESSION_KEY) || 'null');
+    sessTrailerOk = !!_sess && String(_sess.trailer_type_id) === String(tid);
+  } catch(_) {}
+  const ok = sessTrailerOk ? await restoreLastSession() : false;
+  if (!ok) await loadBOM();
 
   if (typeof _draftFlagStateTrailer !== 'undefined') _draftFlagStateTrailer = +tid;
   if (st.draft_flag_state     && typeof draftFlagState          !== 'undefined') draftFlagState          = { ...st.draft_flag_state };
@@ -837,7 +861,13 @@ async function _restoreReturnState(tid) {
     editingRecordId    = st.editing.record_id;
     editingVersion     = st.editing.version || 1;
     editingQuoteNumber = st.editing.quote || null;
-    try { if (typeof showEditBanner === 'function') showEditBanner({}); } catch(_) {}
+    if (typeof editReplay !== 'undefined' && st.editing.replay) editReplay = st.editing.replay;
+    if (typeof editBodyVarOverrides !== 'undefined' && st.editing.body_var_overrides)
+      editBodyVarOverrides = st.editing.body_var_overrides;
+    try {
+      if (typeof showEditBanner === 'function')
+        showEditBanner({ customer_id: document.getElementById('cust-select')?.value || null });
+    } catch(_) {}
   }
 
   try { renderBodyOptions(bomData); } catch(_) {}
@@ -1044,15 +1074,10 @@ function ctxEditPermanent() {
   const isFloor  = !!(row?.floor_plate_id);
   const isCleat  = !!(row?.mounting_cleat_id);
 
-  saveOverridesToSession();
-  sessionStorage.setItem('_calc_return', '1');
   const tid = document.getElementById('trailer-select').value;
-  // WO v1.39.9 — snapshot the full in-progress costing BEFORE the modal branch
-  // so every navigation path out of this menu round-trips the user's work.
-  // NOTE (pre-existing): this return URL points at /calculator (Costings 1),
-  // not /calculator2 — the snapshot shape is shared, so the restore still
-  // applies there; left as-is to avoid a behaviour change in this fix.
-  _saveReturnState(tid);
+  // WO v1.39.9 NOTE (pre-existing): this return URL points at /calculator
+  // (Costings 1), not /calculator2 — the snapshot shape is shared, so the
+  // restore still applies there; left as-is to avoid a behaviour change.
   const returnUrl = encodeURIComponent(`/calculator${tid ? '?trailer=' + tid : ''}`);
   const destUrl = `/admin/materials?edit=${materialId}&return=${returnUrl}`;
 
@@ -1095,6 +1120,7 @@ function ctxEditPermanent() {
     return;
   }
 
+  _armReturnTrip();   // WO v1.39.9 — arm at the navigation point, never before a cancellable modal
   window.location.href = destUrl;
 }
 
@@ -1102,6 +1128,7 @@ function proceedToMaterialEdit() {
   const warn = document.getElementById('modal-skin-perm-warning');
   const destUrl = warn.dataset.destUrl;
   closeModal('modal-skin-perm-warning');
+  _armReturnTrip();   // WO v1.39.9
   window.location.href = destUrl;
 }
 
@@ -1129,6 +1156,7 @@ function proceedToMaterialEditFromFloor() {
   const warn = document.getElementById('modal-floor-perm-warning');
   const destUrl = warn.dataset.destUrl;
   closeModal('modal-floor-perm-warning');
+  _armReturnTrip();   // WO v1.39.9
   window.location.href = destUrl;
 }
 
@@ -1144,6 +1172,7 @@ function proceedToMaterialEditFromCleat() {
   const warn = document.getElementById('modal-cleat-perm-warning');
   const destUrl = warn.dataset.destUrl;
   closeModal('modal-cleat-perm-warning');
+  _armReturnTrip();   // WO v1.39.9
   window.location.href = destUrl;
 }
 
@@ -1159,6 +1188,7 @@ function proceedToMaterialEditFromTaping() {
   const warn = document.getElementById('modal-taping-perm-warning');
   const destUrl = warn.dataset.destUrl;
   closeModal('modal-taping-perm-warning');
+  _armReturnTrip();   // WO v1.39.9
   window.location.href = destUrl;
 }
 

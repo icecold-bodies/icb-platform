@@ -22,6 +22,7 @@ import {
   Building2,
   Truck,
   AlertTriangle,
+  Workflow,
   type LucideIcon,
 } from 'lucide-react'
 import { useAppData, type BranchRef } from '../../store/AppDataContext'
@@ -44,6 +45,10 @@ const NAV_LINKS: NavEntry[] = [
   { to: '/costings/new',     label: 'New Costing',  icon: Plus,          k: 'nav.new_costing',          perm: 'costings.create' },
   { to: '/costings',         label: 'Costings',     icon: FileText,      k: 'nav.costings',             perm: ['costings.view_own', 'costings.view_all'] },
   { to: '/planning',         label: 'Planning',     icon: CalendarRange, k: 'nav.planning',             perm: 'planning.view' },
+  // WO A06 (Rapid Prototype Phase) — new top-level "Plan" module = the Production Flow prototype
+  // (Panels ready → Pre-Assembly → Merge → Parking → Dispatch). Ungated so stakeholders see it in any
+  // demo profile; isolated (its own /plan route + static mockup), existing nav unchanged.
+  { to: '/plan',             label: 'Plan',         icon: Workflow,      k: 'nav.plan' },
   // Work Order v4.11 — Materials, Buying & Stores (flat entries; the repo nav has
   // no dropdown groups). DEMO: like the Management tab (v4.8), these four are left
   // un-gated so any presenter sees them without switching demo profiles. The

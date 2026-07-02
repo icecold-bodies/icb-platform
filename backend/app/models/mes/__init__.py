@@ -925,6 +925,17 @@ class AssemblyBay(Base):
     updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
 
+class PlanFloorState(Base):
+    """A09 Plan module (Phase 2, migration 0032) — the Production Flow floor as a single JSON
+    document (one physical factory → one row, id=1). Coarse by design: the prototype's floor
+    shape evolves freely; event-level integration with the chassis/bay chokepoints is later."""
+    __tablename__ = "plan_floor_state"
+    __table_args__ = ({"schema": "icb_mes"},)
+    id = Column(Integer, primary_key=True)
+    state = Column(Text, nullable=False, default="{}", server_default="{}")
+    updated_at = Column(DateTime(timezone=True))
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 30. prejob_templates — Nadie's Pre-Job Card template library (WO v4.33 §0.5/§0.15, ADR 0020).
 #     One row per template (23 migrated from the Word originals via review-and-normalize: imported
@@ -1190,7 +1201,7 @@ __all__ = [
     "BomRule", "BomRuleLookup", "MaterialPriceOverride", "BomSpecOption",
     "GeneratedBom", "BomLine",
     "ChassisRecord", "ChassisRecordAudit", "ChassisLifecycleEvent", "ChassisPhoto",
-    "ParkingBay", "AssemblyBay",
+    "ParkingBay", "AssemblyBay", "PlanFloorState",
     "PrejobTemplate", "PrejobCard", "FridgeUnit", "ChassisModel",
     "FeedbackSubmission",
     "DefectCategory", "QcInspection", "QcSignoff",

@@ -21,7 +21,7 @@ import './productionFlow.css'
 import { initProductionFlow } from './productionFlowEngine'
 import { usePlanning } from '../../store/PlanningContext'
 import { PlanningCockpit } from '../Planning/cockpit/PlanningCockpit'
-import { apiGet } from '../../lib/api'
+import { apiGet, apiPut } from '../../lib/api'
 import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { PlanningBoardView } from '../../lib/types'
 import type { ChassisRecord } from '../Chassis/types'
@@ -31,6 +31,8 @@ interface FlowApi {
   setPanels: (list: unknown[]) => void
   setParking: (list: unknown[]) => void
   getMergedJobs: () => string[]
+  loadState: (json: string | null) => boolean
+  getState: () => string
   plannerSlot: HTMLElement | null
 }
 
@@ -94,14 +96,45 @@ export function PlanCombined() {
   const [mergedJobNos, setMergedJobNos] = useState<string[]>([])
   const { board, mode } = usePlanning()
 
+  // Phase 2 — persisted floor state: the engine hands us a snapshot on every floor
+  // mutation (onPersist) -> PUT /api/plan/floor-state; on mount we load the saved
+  // floor; a poll picks up other users' changes (stamp-based echo avoidance,
+  // last-write-wins). The floor survives reloads and is shared between planners.
+  const stampRef = useRef<string | null>(null)
+  const loadedRef = useRef(false)
   useEffect(() => {
     if (!ref.current) return
     const inst = initProductionFlow(ref.current, {
       onChange: (s: { mergedJobs: string[] }) => setMergedJobNos(s.mergedJobs),
+      onPersist: (json: string) => {
+        void apiPut<{ updated_at: string }>('/api/plan/floor-state', { state: json })
+          .then((r) => { stampRef.current = r.updated_at })
+          .catch(() => { /* non-fatal — next mutation retries */ })
+      },
     }) as FlowApi
     setApi(inst)
     return () => { inst.cleanup(); setApi(null) }
   }, [])
+
+  // Initial floor load + the change poll (floor 8s; board + chassis 30s).
+  const { refresh } = usePlanning()
+  useEffect(() => {
+    if (!api || mode !== 'live') return
+    let dead = false
+    const pull = async (initial: boolean) => {
+      try {
+        const r = await apiGet<{ state: string | null; updated_at: string | null }>('/api/plan/floor-state')
+        if (dead) return
+        if (initial || (r.updated_at && r.updated_at !== stampRef.current)) {
+          if (api.loadState(r.state)) stampRef.current = r.updated_at
+        }
+      } catch { /* offline — keep the current floor */ }
+    }
+    if (!loadedRef.current) { loadedRef.current = true; void pull(true) }
+    const floorPoll = window.setInterval(() => { void pull(false) }, 8000)
+    const dataPoll = window.setInterval(() => { void refresh(); void refetchChassis() }, 30000)
+    return () => { dead = true; window.clearInterval(floorPoll); window.clearInterval(dataPoll) }
+  }, [api, mode, refresh])
 
   // Merged job numbers → planner job ids (the planner keys on production_job.id).
   const lockedJobIds = useMemo(() => {

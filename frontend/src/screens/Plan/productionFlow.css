@@ -17,7 +17,9 @@
   min-height:100%;
 }
 .a06-flow, .a06-flow *{box-sizing:border-box}
-.a06-flow .app{max-width:1460px;margin:0 auto;padding:16px 20px 30px}
+/* Phase 2 (Michael, 2 Jul): use the full width of the screen — max-width lifted from the
+   mockup's 1460px; everything inside is fluid (the pre-assembly zone keeps its own h-scroll). */
+.a06-flow .app{max-width:none;margin:0 auto;padding:16px 20px 30px}
 /* A09 — the live Planning Cockpit portal slot sits in the same 12px card rhythm (empty = no gap). */
 .a06-flow #plannerSlot:not(:empty){margin-bottom:0}
 

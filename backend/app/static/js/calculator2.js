@@ -768,6 +768,84 @@ function clearOverrideSession() {
   priceOverrides = {};
 }
 
+// ── WO v1.39.9 — preserve the in-progress costing across the permanent-price
+// round-trip (same machinery as calculator.js; see the block comment there).
+// ctxEditPermanent navigates the page away and the return trip reloaded the
+// trailer DEFAULTS — dims, insulation/body selections and configurator draft
+// state silently reset; only the price overrides survived.
+const RETURN_STATE_KEY = 'calc_return_state';
+
+function _saveReturnState(tid) {
+  saveLastSession();   // dims/margin/ratio/customer/chassis/discount → LAST_SESSION_KEY
+  try {
+    sessionStorage.setItem(RETURN_STATE_KEY, JSON.stringify({
+      trailer_id: String(tid),
+      user_id: (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : undefined,
+      body_option_selections: { ...bodyOptionSelections },
+      drd_srd:                { ...drdSrdEnabled },
+      draft_flag_state:       (typeof draftFlagState          !== 'undefined') ? { ...draftFlagState }          : null,
+      draft_category_radio:   (typeof draftCategoryRadioState !== 'undefined') ? { ...draftCategoryRadioState } : null,
+      draft_masterless_cat:   (typeof draftMasterlessCatState !== 'undefined') ? { ...draftMasterlessCatState } : null,
+      draft_folder:           (typeof draftFolderState        !== 'undefined') ? { ...draftFolderState }        : null,
+      optional_sections_enabled: window.OptionalSections ? [...window.OptionalSections.loadEnabled(+tid)]       : [],
+      optional_row_excl:         window.OptionalSections ? [...window.OptionalSections.loadRowExcl(+tid, 'c1')] : [],
+      editing: (typeof editingRecordId !== 'undefined' && editingRecordId) ? {
+        record_id: editingRecordId,
+        version:   (typeof editingVersion     !== 'undefined' && editingVersion)     ? editingVersion     : 1,
+        quote:     (typeof editingQuoteNumber !== 'undefined' && editingQuoteNumber) ? editingQuoteNumber : null,
+      } : null,
+    }));
+  } catch(_) {}
+}
+
+async function _restoreReturnState(tid) {
+  // Peek the flag — do NOT consume it: restoreOverridesFromSession (inside
+  // loadBOM) consumes it for the price-override leg of the same round-trip.
+  if (!sessionStorage.getItem('_calc_return')) return false;
+  let st = null;
+  try { st = JSON.parse(sessionStorage.getItem(RETURN_STATE_KEY) || 'null'); } catch(_) {}
+  sessionStorage.removeItem(RETURN_STATE_KEY);   // one-shot, even on mismatch
+  if (!st || String(st.trailer_id) !== String(tid)) return false;
+  if (st.user_id !== undefined && typeof CURRENT_USER_ID !== 'undefined'
+      && st.user_id !== CURRENT_USER_ID) return false;
+
+  try {
+    localStorage.setItem(`body_opt_sel_${tid}`, JSON.stringify(st.body_option_selections || {}));
+    localStorage.setItem(`drd_srd_${tid}`,      JSON.stringify(st.drd_srd || {}));
+  } catch(_) {}
+  if (window.OptionalSections) {
+    window.OptionalSections.saveEnabled(+tid,
+      new Set((st.optional_sections_enabled || []).map(Number).filter(Number.isFinite)));
+    window.OptionalSections.saveRowExcl(+tid, 'c1',
+      new Set((st.optional_row_excl || []).map(Number).filter(Number.isFinite)));
+  }
+  bodyOptionSelections = { ...(st.body_option_selections || {}) };
+  drdSrdEnabled        = { ...(st.drd_srd || {}) };
+
+  const ok = await restoreLastSession();
+  if (!ok) await loadBOM({ preserveInputs: true });
+
+  if (typeof _draftFlagStateTrailer !== 'undefined') _draftFlagStateTrailer = +tid;
+  if (st.draft_flag_state     && typeof draftFlagState          !== 'undefined') draftFlagState          = { ...st.draft_flag_state };
+  if (st.draft_category_radio && typeof draftCategoryRadioState !== 'undefined') draftCategoryRadioState = { ...st.draft_category_radio };
+  if (st.draft_masterless_cat && typeof draftMasterlessCatState !== 'undefined') draftMasterlessCatState = { ...st.draft_masterless_cat };
+  if (st.draft_folder         && typeof draftFolderState        !== 'undefined') draftFolderState        = { ...st.draft_folder };
+  bodyOptionSelections = { ...(st.body_option_selections || {}) };
+  drdSrdEnabled        = { ...(st.drd_srd || {}) };
+
+  if (st.editing && st.editing.record_id && typeof editingRecordId !== 'undefined') {
+    editingRecordId    = st.editing.record_id;
+    editingVersion     = st.editing.version || 1;
+    editingQuoteNumber = st.editing.quote || null;
+    try { if (typeof showEditBanner === 'function') showEditBanner({}); } catch(_) {}
+  }
+
+  try { renderBodyOptions(bomData); } catch(_) {}
+  if (typeof refreshBomDisplay === 'function') refreshBomDisplay();
+  scheduleCalc();
+  return true;
+}
+
 // ── Context menu ──────────────────────────────────────
 function showCtxMenu(e, materialId, materialName, originalPrice, bomId, formula) {
   e.preventDefault();
@@ -969,6 +1047,12 @@ function ctxEditPermanent() {
   saveOverridesToSession();
   sessionStorage.setItem('_calc_return', '1');
   const tid = document.getElementById('trailer-select').value;
+  // WO v1.39.9 — snapshot the full in-progress costing BEFORE the modal branch
+  // so every navigation path out of this menu round-trips the user's work.
+  // NOTE (pre-existing): this return URL points at /calculator (Costings 1),
+  // not /calculator2 — the snapshot shape is shared, so the restore still
+  // applies there; left as-is to avoid a behaviour change in this fix.
+  _saveReturnState(tid);
   const returnUrl = encodeURIComponent(`/calculator${tid ? '?trailer=' + tid : ''}`);
   const destUrl = `/admin/materials?edit=${materialId}&return=${returnUrl}`;
 
@@ -1710,7 +1794,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     await prefillCalculation(fromId);
   } else if (tid) {
     document.getElementById('trailer-select').value = tid;
-    loadBOM();
+    // WO v1.39.9 — flagged return trip from a permanent-price edit restores
+    // the full in-progress costing instead of reloading trailer defaults.
+    if (!(await _restoreReturnState(tid))) {
+      loadBOM();
+    }
   } else {
     await restoreLastSession();
   }

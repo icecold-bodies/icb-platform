@@ -51,6 +51,8 @@ export default function App() {
       <Route path="/management" element={<Layout><ManagementDashboard /></Layout>} />
       {/* WO v4.33 §3.5 — Pre-Job Card check sign-off pages (deep-linkable from the email) */}
       <Route path="/prejob/:id/signoff/:role" element={<Layout><PrejobSignoffPage /></Layout>} />
+      {/* v1.39.11 — view-only pre-job card page (the CC email's link target: observers, no sign-off) */}
+      <Route path="/prejob/:id" element={<Layout><PrejobSignoffPage /></Layout>} />
       {/* WO v4.25 read-only inspector → WO v4.26 full admin CRUD module (admin-gated) */}
       <Route path="/admin" element={<Navigate to="/admin/spec-options" replace />} />
       {/* WO v4.38 — Feedback Inbox (admin-only). Static path outranks /admin/:resource in v6. */}

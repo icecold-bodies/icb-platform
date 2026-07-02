@@ -452,6 +452,21 @@ function _boSubgroupKey(it) {
   return it.body_option_group + '|' + (it.body_option_subgroup || '');
 }
 
+// WO v1.39.10 — the EPS/PU insulation pair a body-option row belongs to, or
+// null when its subgroup isn't a two-row EPS-vs-PU radio set (port of the
+// calculator.js helper; needed by _enforceInsulationInvariant below).
+function _insulationPairFor(masterId) {
+  const row = bomData.find(r => String(r.id) === String(masterId));
+  if (!row || !row.is_body_option) return null;
+  const key = _boSubgroupKey(row);
+  const sibs = bomData.filter(r => r.is_body_option && _boSubgroupKey(r) === key);
+  if (sibs.length !== 2) return null;
+  const eps = sibs.find(r => (r.material_name || '').toUpperCase().includes('EPS'));
+  const pu  = sibs.find(r => (r.material_name || '').toUpperCase().includes('PU'));
+  if (!eps || !pu || eps.id === pu.id) return null;
+  return { eps, pu };
+}
+
 // Called when a radio-style sub-group item is clicked
 function onBodyOptRadioChange(bid, groupKey) {
   // Deselect all siblings in the same sub-group, select the clicked one
@@ -3493,14 +3508,74 @@ function _bindTreeHandlers(tree, tid, collapsed) {
   });
 }
 
-// Public entry point — renders the panel (any of the three paths) and
-// self-heals a quoted rear door whose insulation pair was left both-zero
-// (invalid manufacturing state). Costings 2 has no both-zero warning UI, so
-// without the heal the invalid state would sit here silently and feed wrong
-// {SRD EPS}/{SRD PU} deductions into the skin formulas.
+// Public entry point — renders the panel (any of the three paths), enforces
+// the insulation invariants (the general radio-owns-thickness rule, then the
+// rear-door both-zero heal). Costings 2 has no both-zero warning UI and no
+// click-time carry, so without these heals the invalid states sit here
+// silently and feed wrong {…EPS}/{…PU} deductions into the skin formulas.
 function renderBodyOptions(bomItems) {
   _renderBodyOptionsInner(bomItems);
+  _enforceInsulationInvariant();
   _enforceRearDoorInvariant();
+}
+
+// ── WO v1.39.10 — the GENERAL insulation invariant (same as calculator.js) ──
+// A checked EPS/PU radio OWNS its pair's thickness: selected side = T,
+// sibling = 0 — for EVERY insulation pair, not only the rear doors. Heal at
+// the render chokepoint: carry a stranded sibling value onto the selected
+// side (a both-nonzero pair keeps the SELECTED side's own value), zero the
+// sibling, persist via PUT /api/bom. Idempotence stops the repaint recursion;
+// the busy flag only suppresses re-entry during the async PUT window.
+let _insInvariantBusy = false;
+function _enforceInsulationInvariant() {
+  if (_insInvariantBusy) return;
+  const seen = new Set();
+  const fixes = [];
+  for (const r of (bomData || [])) {
+    if (!r || !r.is_body_option) continue;
+    const key = _boSubgroupKey(r);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const pair = _insulationPairFor(r.id);
+    if (!pair) continue;
+    if (pair.eps.variable_value == null && pair.pu.variable_value == null) continue;  // never-seeded
+    const epsSel = !!bodyOptionSelections[String(pair.eps.id)];
+    const puSel  = !!bodyOptionSelections[String(pair.pu.id)];
+    if (epsSel === puSel) continue;    // no (or ambiguous) radio choice
+    const grp = pair.eps.body_option_group;
+    if (_DRDSR_TOGGLE_GROUPS.includes(grp) && _selectedRearDoor() !== grp) continue;  // non-quoted door
+    const selected = epsSel ? pair.eps : pair.pu;
+    const other    = epsSel ? pair.pu  : pair.eps;
+    const sv = Number(selected.variable_value) || 0;
+    const ov = Number(other.variable_value) || 0;
+    if (sv > 0 && ov <= 0) continue;   // invariant holds
+    let T = sv > 0 ? sv : ov;
+    if (T <= 0) {
+      if (_DRDSR_TOGGLE_GROUPS.includes(grp)) T = DEFAULT_REAR_DOOR_THICKNESS_M;
+      else continue;                   // both-zero non-door: nothing to invent
+    }
+    fixes.push({ selected, other, T });
+  }
+  if (!fixes.length) return;
+  const writes = [];
+  for (const f of fixes) {
+    if ((Number(f.selected.variable_value) || 0) !== f.T) { f.selected.variable_value = f.T; writes.push([f.selected.id, f.T]); }
+    if ((Number(f.other.variable_value) || 0) !== 0)      { f.other.variable_value = 0;      writes.push([f.other.id, 0]); }
+  }
+  _insInvariantBusy = true;
+  (async () => {
+    for (const [id, v] of writes) {
+      try { await api('PUT', `/api/bom/${id}`, { variable_value: v }); } catch (e) { /* non-fatal; in-memory is healed */ }
+    }
+    try {
+      toast(`Insulation thickness moved to the selected side on ${fixes.length} pair${fixes.length !== 1 ? 's' : ''}  ·  Body Template updated`, 'success');
+    } catch (e) {}
+  })().then(() => {
+    _insInvariantBusy = false;
+    renderBodyOptions(bomData);   // repaint (healed pairs yield no fix → no re-heal)
+    refreshBomDisplay();
+    scheduleCalc();
+  });
 }
 
 // Same invariant as calculator.js (BA briefing 2026-06-30 §2): one of the four

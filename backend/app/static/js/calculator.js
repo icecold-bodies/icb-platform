@@ -4084,15 +4084,93 @@ function _bindTreeHandlers(tree, tid, collapsed) {
   });
 }
 
-// Public entry point — renders the panel (any of the three paths), self-heals
-// a quoted rear door whose insulation pair was left both-zero (invalid
-// manufacturing state), then re-applies the insulation both-zero guard so red
-// highlight + warning persist across every re-render (radio switches, folder
-// toggles, recalcs).
+// Public entry point — renders the panel (any of the three paths), enforces
+// the insulation invariants (the general radio-owns-thickness rule, then the
+// rear-door both-zero heal for folder bodies without pair radios), then
+// re-applies the insulation both-zero guard so red highlight + warning persist
+// across every re-render (radio switches, folder toggles, recalcs).
 function renderBodyOptions(bomItems) {
   _renderBodyOptionsInner(bomItems);
+  _enforceInsulationInvariant();
   _enforceRearDoorInvariant();
   validateInsulationPairs();
+}
+
+// ── WO v1.39.10 — the GENERAL insulation invariant (Michael, 2 Jul) ─────────
+// A checked EPS/PU radio OWNS its pair's thickness: selected side = T,
+// sibling = 0 — for EVERY insulation pair (FRONT / SIDES / ROOF / FLOOR and
+// the rear doors), not only the rear-door both-zero case below. Template data
+// can disagree with the seeded selection (e.g. the configurator draft selects
+// EPS while the imported thickness sits on the PU cell) — the click-time
+// carry (_applyInsulationCopyZero) never ran for those, so a fresh load
+// showed "FRONT EPS (0.000) selected · FRONT PU (0.060)". Heal at the render
+// chokepoint, exactly like the rear-door heal: carry the stranded sibling
+// value onto the selected side (a both-nonzero pair keeps the SELECTED side's
+// own value), zero the sibling, persist through the same PUT /api/bom the
+// click flow uses. In-memory mutation is synchronous, so the warning pass in
+// this same render already sees the healed pairs; idempotence (a valid pair
+// yields no fix) is what stops the repaint recursion, the busy flag only
+// suppresses re-entry during the async PUT window.
+let _insInvariantBusy = false;
+function _enforceInsulationInvariant() {
+  if (_insInvariantBusy) return;
+  const seen = new Set();
+  const fixes = [];
+  for (const r of (bomData || [])) {
+    if (!r || !r.is_body_option) continue;
+    const key = _boSubgroupKey(r);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const pair = _insulationPairFor(r.id);
+    if (!pair) continue;
+    // Never-seeded pairs don't participate (mirror the rear-door NULL guard):
+    // don't invent template data on mere page load.
+    if (pair.eps.variable_value == null && pair.pu.variable_value == null) continue;
+    // The RADIO is the source of truth. No (or an ambiguous double) selection
+    // → nothing is quoted for this pair; the both-zero warning owns that case.
+    const epsSel = !!bodyOptionSelections[String(pair.eps.id)];
+    const puSel  = !!bodyOptionSelections[String(pair.pu.id)];
+    if (epsSel === puSel) continue;
+    // Rear-door pairs: only the QUOTED door participates here — the
+    // non-quoted door is the door machinery's business (it must end 0/0,
+    // never gain thickness from a stale radio).
+    const grp = pair.eps.body_option_group;
+    if (_DRDSR_TOGGLE_GROUPS.includes(grp) && _selectedRearDoor() !== grp) continue;
+    const selected = epsSel ? pair.eps : pair.pu;
+    const other    = epsSel ? pair.pu  : pair.eps;
+    const sv = Number(selected.variable_value) || 0;
+    const ov = Number(other.variable_value) || 0;
+    if (sv > 0 && ov <= 0) continue;   // invariant holds
+    // T: the selected side's own value wins when present; else carry the
+    // sibling's stranded value; else (both zero) only the quoted rear door
+    // gets the invented default — other pairs stay for the both-zero warning.
+    let T = sv > 0 ? sv : ov;
+    if (T <= 0) {
+      if (_DRDSR_TOGGLE_GROUPS.includes(grp)) T = DEFAULT_REAR_DOOR_THICKNESS_M;
+      else continue;
+    }
+    fixes.push({ selected, other, T });
+  }
+  if (!fixes.length) return;
+  const writes = [];
+  for (const f of fixes) {
+    if ((Number(f.selected.variable_value) || 0) !== f.T) { f.selected.variable_value = f.T; writes.push([f.selected.id, f.T]); }
+    if ((Number(f.other.variable_value) || 0) !== 0)      { f.other.variable_value = 0;      writes.push([f.other.id, 0]); }
+  }
+  _insInvariantBusy = true;
+  (async () => {
+    for (const [id, v] of writes) {
+      try { await api('PUT', `/api/bom/${id}`, { variable_value: v }); } catch (e) { /* non-fatal; in-memory is healed */ }
+    }
+    try {
+      toast(`Insulation thickness moved to the selected side on ${fixes.length} pair${fixes.length !== 1 ? 's' : ''}  ·  Body Template updated`, 'success');
+    } catch (e) {}
+  })().then(() => {
+    _insInvariantBusy = false;
+    renderBodyOptions(bomData);   // repaint labels (healed pairs yield no fix → no re-heal)
+    refreshBomDisplay();
+    scheduleCalc();
+  });
 }
 
 // The quoted rear door must always carry a non-zero insulation thickness on

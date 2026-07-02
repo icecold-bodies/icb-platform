@@ -954,6 +954,152 @@ function clearOverrideSession() {
   priceOverrides = {};
 }
 
+// ── WO v1.39.9 — preserve the in-progress costing across the permanent-price
+// round-trip. ctxEditPermanent navigates the whole page to /admin/materials and
+// back; the return URL (?trailer=N) reloaded the calculator from trailer
+// DEFAULTS, so everything the user had in flight — dimensions, insulation and
+// body-option selections (incl. the v2 configurator draft state), ratio,
+// customer, chassis, discount, and an open edit binding — silently reset. Only
+// the price overrides survived (the _calc_return machinery above).
+// _saveReturnState snapshots the full working state at navigation time;
+// _restoreReturnState replays it on the flagged return trip. One-shot and
+// scoped (trailer + user), exactly like the override session restore.
+const RETURN_STATE_KEY = 'calc_return_state';
+// A permanent-edit detour is minutes, not hours: a stale payload (e.g. the user
+// abandoned the admin page and opened a NEW costing for the same trailer next
+// day, same tab) must NOT resurrect old state or an old edit binding.
+const RETURN_STATE_TTL_MS = 30 * 60 * 1000;
+
+// Arm the round-trip at the ACTUAL navigation points (the plain destUrl jump +
+// the four warn-modal proceed handlers) — NOT before the modal branch: a modal
+// CANCEL must leave nothing armed, or a later same-tab ?trailer= load would
+// silently replay a stale snapshot (and clobber the durable selection stores).
+function _armReturnTrip() {
+  const tid = document.getElementById('trailer-select')?.value;
+  saveOverridesToSession();
+  sessionStorage.setItem('_calc_return', '1');
+  _saveReturnState(tid);
+}
+
+function _saveReturnState(tid) {
+  saveLastSession();   // dims/margin/ratio/customer/chassis/discount → LAST_SESSION_KEY
+  try {
+    sessionStorage.setItem(RETURN_STATE_KEY, JSON.stringify({
+      trailer_id: String(tid),
+      user_id: (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : undefined,
+      ts: Date.now(),
+      // The body-options panel state. For v2 configurator bodies this lives in
+      // the draft stores, which LAST_SESSION does not carry — and whose restore
+      // is deliberately skipped for v2 on plain loads (the Excel-audit rule),
+      // so it must ride this payload to survive the round-trip.
+      body_option_selections: { ...bodyOptionSelections },
+      drd_srd:                { ...drdSrdEnabled },
+      draft_flag_state:       (typeof draftFlagState          !== 'undefined') ? { ...draftFlagState }          : null,
+      draft_category_radio:   (typeof draftCategoryRadioState !== 'undefined') ? { ...draftCategoryRadioState } : null,
+      draft_masterless_cat:   (typeof draftMasterlessCatState !== 'undefined') ? { ...draftMasterlessCatState } : null,
+      draft_folder:           (typeof draftFolderState        !== 'undefined') ? { ...draftFolderState }        : null,
+      optional_sections_enabled: window.OptionalSections ? [...window.OptionalSections.loadEnabled(+tid)]       : [],
+      optional_row_excl:         window.OptionalSections ? [...window.OptionalSections.loadRowExcl(+tid, 'c1')] : [],
+      editing: (typeof editingRecordId !== 'undefined' && editingRecordId) ? {
+        record_id: editingRecordId,
+        version:   (typeof editingVersion     !== 'undefined' && editingVersion)     ? editingVersion     : 1,
+        quote:     (typeof editingQuoteNumber !== 'undefined' && editingQuoteNumber) ? editingQuoteNumber : null,
+        // Replay-mode edits (legacy records, no ui_snapshot) recompute from the
+        // PINNED saved result, not the live stores — the pins must ride along,
+        // or the rebind would recompute from defaults and an Overwrite would
+        // silently corrupt the quote (and stamp a wrong snapshot onto it).
+        replay:             (typeof editReplay           !== 'undefined' && editReplay)           ? editReplay           : null,
+        body_var_overrides: (typeof editBodyVarOverrides !== 'undefined' && editBodyVarOverrides) ? editBodyVarOverrides : null,
+      } : null,
+    }));
+  } catch(_) {}
+}
+
+async function _restoreReturnState(tid) {
+  // Peek the flag — do NOT consume it: restoreOverridesFromSession (inside
+  // loadBOM) consumes it for the price-override leg of the same round-trip.
+  if (!sessionStorage.getItem('_calc_return')) return false;
+  let st = null;
+  try { st = JSON.parse(sessionStorage.getItem(RETURN_STATE_KEY) || 'null'); } catch(_) {}
+  sessionStorage.removeItem(RETURN_STATE_KEY);   // one-shot, even on mismatch
+  if (!st || String(st.trailer_id) !== String(tid)) return false;
+  if (st.user_id !== undefined && typeof CURRENT_USER_ID !== 'undefined'
+      && st.user_id !== CURRENT_USER_ID) return false;
+  if (!st.ts || (Date.now() - st.ts) > RETURN_STATE_TTL_MS) return false;   // stale detour — fresh load
+
+  // Pre-seed the selection stores BEFORE loadBOM so preserveInputs:true keeps
+  // the user's in-flight state instead of the trailer defaults — the same
+  // pre-seed the ?edit= reopen path performs.
+  try {
+    localStorage.setItem(`body_opt_sel_${tid}`, JSON.stringify(st.body_option_selections || {}));
+    localStorage.setItem(`drd_srd_${tid}`,      JSON.stringify(st.drd_srd || {}));
+  } catch(_) {}
+  if (window.OptionalSections) {
+    window.OptionalSections.saveEnabled(+tid,
+      new Set((st.optional_sections_enabled || []).map(Number).filter(Number.isFinite)));
+    window.OptionalSections.saveRowExcl(+tid, 'c1',
+      new Set((st.optional_row_excl || []).map(Number).filter(Number.isFinite)));
+  }
+  bodyOptionSelections = { ...(st.body_option_selections || {}) };
+  drdSrdEnabled        = { ...(st.drd_srd || {}) };
+
+  // Dims / margin / ratio / customer / chassis / discount — the existing
+  // last-session restore (saved by _saveReturnState at navigation time). It
+  // also runs loadBOM({preserveInputs:true}), which restores the price
+  // overrides via the _calc_return flag. Its v2 skip of body selections is
+  // fine: they were seeded above and are hard-restored below.
+  // GUARD: LAST_SESSION_KEY is one SHARED localStorage key — another calculator
+  // tab (or Costings 2) may have overwritten it with a DIFFERENT trailer during
+  // the admin detour, and restoreLastSession restores whatever trailer IT
+  // holds (it would flip the select away from the URL's tid — a chimera
+  // costing). Only trust it when it still holds THIS trailer; otherwise fall
+  // back to a plain trailer-defaults load — the localStorage pre-seed above
+  // still feeds loadBodyOptSel, and the draft stores are hard-restored below,
+  // so the body/insulation state survives even on the degraded path.
+  let sessTrailerOk = false;
+  try {
+    const _sess = JSON.parse(localStorage.getItem(LAST_SESSION_KEY) || 'null');
+    sessTrailerOk = !!_sess && String(_sess.trailer_type_id) === String(tid);
+  } catch(_) {}
+  const ok = sessTrailerOk ? await restoreLastSession() : false;
+  if (!ok) await loadBOM();
+
+  // Hard-restore the configurator draft stores AFTER loadBOM's one-time seed
+  // and pin the trailer — mirrors the ?edit= reopen path. Without the pin the
+  // next renderBodyOptionsFromDraft re-seeds from the server draft and the
+  // body panel snaps back to defaults.
+  if (typeof _draftFlagStateTrailer !== 'undefined') _draftFlagStateTrailer = +tid;
+  if (st.draft_flag_state     && typeof draftFlagState          !== 'undefined') draftFlagState          = { ...st.draft_flag_state };
+  if (st.draft_category_radio && typeof draftCategoryRadioState !== 'undefined') draftCategoryRadioState = { ...st.draft_category_radio };
+  if (st.draft_masterless_cat && typeof draftMasterlessCatState !== 'undefined') draftMasterlessCatState = { ...st.draft_masterless_cat };
+  if (st.draft_folder         && typeof draftFolderState        !== 'undefined') draftFolderState        = { ...st.draft_folder };
+  bodyOptionSelections = { ...(st.body_option_selections || {}) };
+  drdSrdEnabled        = { ...(st.drd_srd || {}) };
+
+  // Re-bind an in-flight EDIT so saving still offers overwrite-or-revision on
+  // the original record instead of silently forking a new costing. The replay
+  // pins (legacy records) and the saved body-variable pins ride the payload —
+  // without them the recompute would run from defaults and an Overwrite would
+  // corrupt the quote.
+  if (st.editing && st.editing.record_id && typeof editingRecordId !== 'undefined') {
+    editingRecordId    = st.editing.record_id;
+    editingVersion     = st.editing.version || 1;
+    editingQuoteNumber = st.editing.quote || null;
+    if (typeof editReplay !== 'undefined' && st.editing.replay) editReplay = st.editing.replay;
+    if (typeof editBodyVarOverrides !== 'undefined' && st.editing.body_var_overrides)
+      editBodyVarOverrides = st.editing.body_var_overrides;
+    try {
+      if (typeof showEditBanner === 'function')
+        showEditBanner({ customer_id: document.getElementById('cust-select')?.value || null });
+    } catch(_) {}
+  }
+
+  try { renderBodyOptions(bomData); } catch(_) {}
+  if (typeof refreshBomDisplay === 'function') refreshBomDisplay();
+  scheduleCalc();
+  return true;
+}
+
 // ── Context menu ──────────────────────────────────────
 function showCtxMenu(e, materialId, materialName, originalPrice, bomId, formula) {
   e.preventDefault();
@@ -1152,8 +1298,6 @@ function ctxEditPermanent() {
   const isFloor  = !!(row?.floor_plate_id);
   const isCleat  = !!(row?.mounting_cleat_id);
 
-  saveOverridesToSession();
-  sessionStorage.setItem('_calc_return', '1');
   const tid = document.getElementById('trailer-select').value;
   const returnUrl = encodeURIComponent(`/calculator${tid ? '?trailer=' + tid : ''}`);
   const destUrl = `/admin/materials?edit=${materialId}&return=${returnUrl}`;
@@ -1197,6 +1341,7 @@ function ctxEditPermanent() {
     return;
   }
 
+  _armReturnTrip();   // WO v1.39.9 — arm at the navigation point, never before a cancellable modal
   window.location.href = destUrl;
 }
 
@@ -1204,6 +1349,7 @@ function proceedToMaterialEdit() {
   const warn = document.getElementById('modal-skin-perm-warning');
   const destUrl = warn.dataset.destUrl;
   closeModal('modal-skin-perm-warning');
+  _armReturnTrip();   // WO v1.39.9
   window.location.href = destUrl;
 }
 
@@ -1231,6 +1377,7 @@ function proceedToMaterialEditFromFloor() {
   const warn = document.getElementById('modal-floor-perm-warning');
   const destUrl = warn.dataset.destUrl;
   closeModal('modal-floor-perm-warning');
+  _armReturnTrip();   // WO v1.39.9
   window.location.href = destUrl;
 }
 
@@ -1246,6 +1393,7 @@ function proceedToMaterialEditFromCleat() {
   const warn = document.getElementById('modal-cleat-perm-warning');
   const destUrl = warn.dataset.destUrl;
   closeModal('modal-cleat-perm-warning');
+  _armReturnTrip();   // WO v1.39.9
   window.location.href = destUrl;
 }
 
@@ -1261,6 +1409,7 @@ function proceedToMaterialEditFromTaping() {
   const warn = document.getElementById('modal-taping-perm-warning');
   const destUrl = warn.dataset.destUrl;
   closeModal('modal-taping-perm-warning');
+  _armReturnTrip();   // WO v1.39.9
   window.location.href = destUrl;
 }
 
@@ -2251,8 +2400,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     await prefillCalculation(fromId);
   } else if (tid) {
     document.getElementById('trailer-select').value = tid;
-    loadBOM();
-    defaultNewRatio();              // WO v4.30 — new costing for a trailer: default ratio 55%
+    // WO v1.39.9 — the return trip from a permanent-price edit restores the
+    // full in-progress costing (dims, selections, ratio, edit binding …)
+    // instead of reloading the trailer defaults. Falls through to the normal
+    // fresh load when there is no flagged return state for this trailer/user.
+    if (!(await _restoreReturnState(tid))) {
+      loadBOM();
+      defaultNewRatio();            // WO v4.30 — new costing for a trailer: default ratio 55%
+    }
   } else {
     await restoreLastSession();
     defaultNewRatio();              // WO v4.30 — new costing: default ratio 55% (kept only if none restored)

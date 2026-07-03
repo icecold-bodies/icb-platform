@@ -1,13 +1,14 @@
 /** WO v4.26 §3.6 — generic admin CRUD table (list + create/edit modal + delete-confirm).
  * Driven by a ResourceConfig. Formula fields get a live parse-check; SAP-code fields get an
  * OITM typeahead. All writes go through lib/api (CSRF + error toast). */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { Skeleton } from '../../components/ui/feedback'
 import { Card } from '../../components/ui/primitives'
 import { useToast } from '../../components/ui/toast'
 import { apiDelete, apiGet, apiPatch, apiPost, handleApiError } from '../../lib/api'
-import type { FieldDef, ResourceConfig } from './adminResources'
+import type { FieldDef, ResourceConfig, SelectOption } from './adminResources'
 
 type Row = Record<string, unknown>
 
@@ -25,8 +26,26 @@ function FieldInput({ field, value, onChange }: {
   field: FieldDef; value: unknown; onChange: (v: unknown) => void
 }) {
   const [opts, setOpts] = useState<string[]>([])
+  // type 'select' — static options render as-is; an async loader (e.g. the picture library) fills on mount
+  const [selOpts, setSelOpts] = useState<SelectOption[]>(Array.isArray(field.options) ? field.options : [])
+  useEffect(() => {
+    if (field.type === 'select' && typeof field.options === 'function') {
+      let live = true
+      field.options().then((o) => { if (live) setSelOpts(o) }).catch(() => { /* empty dropdown */ })
+      return () => { live = false }
+    }
+  }, [field])
   const base = 'w-full rounded border border-line px-2 py-1 text-sm'
   const testId = `field-${field.name}`
+  if (field.type === 'select') {
+    return (
+      <select className={base} data-testid={testId} value={String(value ?? '')}
+              onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}>
+        <option value="">—</option>
+        {selOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    )
+  }
   if (field.type === 'bool') {
     return <input type="checkbox" data-testid={testId} checked={!!value} onChange={(e) => onChange(e.target.checked)} />
   }
@@ -81,6 +100,17 @@ export function AdminCrudTable({ config }: { config: ResourceConfig }) {
 
   const openNew = () => { setForm(defaults(config)); setEditing({}); setFormulaCheck('') }
   const openEdit = (r: Row) => { setForm({ ...r }); setEditing(r); setFormulaCheck('') }
+
+  // ?new=1 — deep-link straight into the create modal (the dropdowns' right-click "Add…" lands here).
+  const [params] = useSearchParams()
+  const autoNewDone = useRef(false)
+  useEffect(() => {
+    if (!loading && params.get('new') === '1' && !autoNewDone.current) {
+      autoNewDone.current = true
+      openNew()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading])
 
   const save = async () => {
     try {

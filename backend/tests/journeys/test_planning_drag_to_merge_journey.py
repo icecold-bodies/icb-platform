@@ -3,7 +3,8 @@
 The drag itself is an HTML5 DataTransfer drop (unreliable to drive headlessly); this exercises the SAME
 chokepoint the drop calls — POST /api/production-jobs/{id}/panels-arrived-in-bay — via page.request, plus
 the resulting 6-state derivation, the auto-merge completion (body_attached), the guards (idempotency /
-busy-bay), role gating (Q5), and ONE UI assertion that the Planning bay tile renders 'ready_to_merge'.
+busy-bay), role gating (Q5), and ONE UI assertion that the Production bay tile renders 'ready_to_merge'.
+(3 Jul: the Planning board + its bay-model lanes are unrouted — /production owns the routed bay tiles.)
 """
 from __future__ import annotations
 
@@ -182,16 +183,15 @@ def test_production_no_job_hint_for_unlinked_chassis(page: Page, live_server: st
     expect(page.get_by_test_id("mark-body-attached")).to_have_count(0)
 
 
-# ── UI: the Planning bay tile renders the new 'ready_to_merge' state + merge affordance ──
-def test_planning_bay_tile_renders_ready_to_merge(page: Page, live_server: str) -> None:
+# ── UI: the Production bay tile renders the new 'ready_to_merge' state + merge badge ──
+# (3 Jul repoint: nav-planning/bay-model/assembly-bay/merge-button live only in the unrouted Planning
+# board — /production's production-bay-tile carries the same data-bay-state contract + a bay-badge.)
+def test_production_bay_tile_renders_ready_to_merge(page: Page, live_server: str) -> None:
     s = h.make_assembly_job()
     admin_session(page)
     assert _panels(page, live_server, s["job_id"], s["bay_id"]).status == 201
-    nav = page.get_by_test_id("nav-planning")
-    expect(nav).to_be_visible(timeout=T)
-    nav.click()
-    expect(page.get_by_test_id("bay-model")).to_be_visible(timeout=T)
-    tile = page.locator(f'[data-testid="assembly-bay"][data-bay-id="{s["bay_id"]}"]')
+    h.open_production(page)
+    tile = page.locator(f'[data-testid="production-bay-tile"][data-bay-code="{s["bay_code"]}"]')
     expect(tile).to_have_attribute("data-bay-state", "ready_to_merge", timeout=T)
-    expect(tile.get_by_test_id("merge-button")).to_be_visible(timeout=T)
-    shot(page, "01-planning-ready-to-merge", journey=JOURNEY)
+    expect(tile.get_by_test_id("bay-badge")).to_be_visible(timeout=T)
+    shot(page, "01-production-ready-to-merge", journey=JOURNEY)

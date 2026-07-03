@@ -1,11 +1,13 @@
 """WO v4.35 §3.3b (STRETCH) — cross-page sync via refetch-on-focus (Q6; websockets are v4.36+).
 
 An action taken on one page should be reflected on the others when the operator switches back. The hook
-(useRefetchOnFocus) is wired on three surfaces; this proves the mechanism on two of them:
+(useRefetchOnFocus) is wired on several surfaces; this proves the mechanism on the routed Production
+dashboard with two independent out-of-band flips:
 
-  * the Planning bay lanes — which have NO polling, so a focus-driven flip is UNAMBIGUOUS (nothing else
-    could have refetched); and
-  * the Production dashboard bay tiles — flipping within a window far shorter than the 30s poll.
+  * the panels-arrived flip (awaiting_attachment → ready_to_merge); and
+  * the body-attached flip (→ attached_today) — each within a window far shorter than the 30s poll.
+  (3 Jul: the Planning bay-lanes leg was repointed here when /planning retired — BayModelLanes is
+  unrouted, and every routed surface now polls, so no poll-free anchor remains URL-reachable.)
 
 The change is made out-of-band via the API (as if another user did it on another page); the open page is
 never reloaded — only a focus event is dispatched.
@@ -29,15 +31,12 @@ def _clean():
     h.purge()
 
 
-# ── Planning bay lanes — no poll, so the flip can ONLY be the focus-refetch ───────
-def test_planning_bay_lanes_refetch_on_focus(page: Page, live_server: str) -> None:
+# ── Production tiles — panels-arrived flip on focus (well inside the 30s poll) ────
+def test_production_panels_arrived_refetch_on_focus(page: Page, live_server: str) -> None:
     s = h.make_assembly_job()                                  # chassis on a bay → awaiting_attachment
     admin_session(page)
-    nav = page.get_by_test_id("nav-planning")
-    expect(nav).to_be_visible(timeout=T)
-    nav.click()
-    expect(page.get_by_test_id("bay-model")).to_be_visible(timeout=T)
-    tile = page.locator(f'[data-testid="assembly-bay"][data-bay-id="{s["bay_id"]}"]')
+    h.open_production(page)
+    tile = page.locator(f'[data-bay-code="{s["bay_code"]}"]')
     expect(tile).to_have_attribute("data-bay-state", "awaiting_attachment", timeout=T)
 
     # Out-of-band change (as if a planner dropped the panels on another page): bay → ready_to_merge in the DB.
@@ -45,8 +44,10 @@ def test_planning_bay_lanes_refetch_on_focus(page: Page, live_server: str) -> No
                    {"bay_id": s["bay_id"]})
     assert r.status == 201, r.text()
 
-    page.evaluate(FOCUS)                                       # NO page.reload(); Planning has no poll
+    page.evaluate(FOCUS)                                       # NO page.reload(); 15s < the 30s poll
     expect(tile).to_have_attribute("data-bay-state", "ready_to_merge", timeout=T)
+    # 15s is well under the 30s poll, so the flip is the focus-refetch, not the interval tick
+    # (suite convention — same argument as the attached_today flip below).
 
 
 # ── Production dashboard tiles — flips on focus well inside the 30s poll window ───

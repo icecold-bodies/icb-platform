@@ -4,6 +4,10 @@ A planner (and admin) opens an ack candidate and sees the structured dealer drop
 old free-text field), populated from the is_dealer customers, and picks one. Dealer→chassis
 propagation itself is covered by the backend (record_planning_ack + test_production_jobs_api); this
 journey proves the §3.3 UI surface is wired and selectable. J341D markers; purge at setup + teardown.
+
+3 Jul (81ddfee) repoint: the Planning Board page is retired — the SAME ack rail + PlanningAckPanel
+now render in the Planning Cockpit embedded on /plan (nav-plan → plan-embedded-cockpit), with an
+identical ack-candidate filter, card text and testids, so the journey enters through /plan instead.
 """
 from __future__ import annotations
 
@@ -67,10 +71,10 @@ def staged():
 
 
 def _open_ack(page: Page, job_number: str) -> None:
-    nav = page.get_by_test_id("nav-planning")
+    nav = page.get_by_test_id("nav-plan")
     expect(nav).to_be_visible(timeout=T)
     nav.click()
-    expect(page.get_by_role("heading", name="Planning Board")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("plan-embedded-cockpit")).to_be_visible(timeout=T)
     card = page.locator("button", has_text=f"#{job_number}").first
     expect(card).to_be_visible(timeout=T)
     card.click()

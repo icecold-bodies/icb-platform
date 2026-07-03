@@ -4,7 +4,8 @@ When the linked Pre-Job Card is CONFIRMED with a chassis supplied, the Planning-
 VIN lock read-only — the attested spec is the source of truth, so a planner can't silently rewrite
 what Sales + Production already signed off (ADR 0020 footnote 9, applied to a new surface). With no
 such card the fields stay editable. Two staged ack candidates cover both paths. J434D* markers;
-purge at setup AND teardown.
+purge at setup AND teardown. 3 Jul — repointed to the /plan embedded cockpit (the standalone
+Planning board is retired; the ack rail + PlanningAckPanel render unchanged inside it).
 """
 from __future__ import annotations
 
@@ -81,11 +82,14 @@ def staged():
 
 
 def _open_ack(page: Page, job_number: str) -> None:
-    nav = page.get_by_test_id("nav-planning")
+    # 3 Jul — the standalone Planning board is retired (/planning redirects to /plan); the ack rail
+    # + PlanningAckPanel now render inside the /plan embedded cockpit (same components, same testids).
+    nav = page.get_by_test_id("nav-plan")
     expect(nav).to_be_visible(timeout=T)
     nav.click()
-    expect(page.get_by_role("heading", name="Planning Board")).to_be_visible(timeout=T)
-    card = page.locator("button", has_text=f"#{job_number}").first
+    cockpit = page.get_by_test_id("plan-embedded-cockpit")
+    expect(cockpit).to_be_visible(timeout=T)
+    card = cockpit.locator("button", has_text=f"#{job_number}").first
     expect(card).to_be_visible(timeout=T)
     card.click()
 

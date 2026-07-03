@@ -84,7 +84,10 @@ function chassisToParking(rows: ChassisRecord[], board: PlanningBoardView) {
     .map((r) => {
       const model = [r.make, r.model].filter(Boolean).join(' ') || '—'
       const kind = /trailer|tri[- ]?axle|drawbar|semi/i.test(model) ? 'trailer' : 'truck'
-      return { id: r.vin, cust: r.customer_name || '—', model, job: vinToJob.get(String(r.vin)) ?? null, kind }
+      // 0033 — the user-picked (or catalog-default) chassis-type picture rides the card through
+      // Parking AND into the merge bay (the engine falls back to the mockup art when null).
+      return { id: r.vin, cust: r.customer_name || '—', model, job: vinToJob.get(String(r.vin)) ?? null, kind,
+               img: r.type_image_url ?? null }
     })
 }
 

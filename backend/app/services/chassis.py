@@ -119,6 +119,7 @@ def list_chassis(db: Session, *, q=None, status=None, limit=50, offset=0) -> lis
         ).all():
             bay_by_rec.setdefault(rec_id, bay_id)        # first per record = latest (id desc)
     dealer_names = _dealer_names(db, (r.dealer_id for r in recs))   # §3.4 — batch cross-schema resolve
+    img_defaults = _catalog_image_defaults(db)   # 0033 — one query; manual pick overrides per row
     out = []
     for r in recs:
         n, latest = agg.get(r.id, (0, None))
@@ -126,6 +127,9 @@ def list_chassis(db: Session, *, q=None, status=None, limit=50, offset=0) -> lis
         o.event_count, o.latest_event_date = n, latest
         o.current_assembly_bay_id = bay_by_rec.get(r.id)
         o.dealer_name = dealer_names.get(r.dealer_id)
+        # 0033 — the picture follows the chassis onto list-fed surfaces (/plan Parking cards).
+        img = r.type_image or img_defaults.get((r.make or "").strip())
+        o.type_image_url = f"/static/chassis-types/{quote(img)}" if img else None
         out.append(o)
     return out
 
@@ -164,19 +168,21 @@ def list_type_images() -> list:
     ) for f in files]
 
 
+def _catalog_image_defaults(db: Session) -> dict:
+    """DDM display string ("Make Model") → chassis_models.image_file, for the stage-2 auto-link.
+    One query; empty until the catalog images are populated."""
+    from app.models.mes import ChassisModel
+    return {f"{m.make} {m.model}".strip(): m.image_file
+            for m in db.execute(select(ChassisModel).where(ChassisModel.image_file.isnot(None))).scalars()}
+
+
 def _resolve_type_image(db: Session, rec: ChassisRecord):
     """(filename, source) — the record's manual pick wins; else the chassis-type catalog default
-    (chassis_models.image_file, matched on the DDM display string stored in rec.make). Returns
-    (None, None) when neither is set — the frontend shows no picture panel."""
+    (matched on the DDM display string stored in rec.make). (None, None) when neither is set."""
     if rec.type_image:
         return rec.type_image, "manual"
-    want = (rec.make or "").strip()
-    if want:
-        from app.models.mes import ChassisModel
-        for m in db.execute(select(ChassisModel).where(ChassisModel.image_file.isnot(None))).scalars():
-            if f"{m.make} {m.model}".strip() == want:
-                return m.image_file, "chassis_type"
-    return None, None
+    img = _catalog_image_defaults(db).get((rec.make or "").strip())
+    return (img, "chassis_type") if img else (None, None)
 
 
 def get_detail(db: Session, record_id: int) -> ChassisRecordDetail:

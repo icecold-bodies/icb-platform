@@ -38,6 +38,9 @@ export interface ChassisRecord {
   vin_source?: string | null                // WO v4.34.1 §0.17 — VIN provenance (chassis_page_manual = Gap A)
   event_count: number
   latest_event_date?: string | null
+  // 0033 — the RESOLVED chassis-type picture (manual pick, else catalog default). On the list so the
+  // picture follows the chassis onto downstream surfaces (/plan Parking + merge bays).
+  type_image_url?: string | null
 }
 
 // WO v4.36a.1 §0.7 — one chassis in the Awaiting-QA Planning Board zone (mirrors backend

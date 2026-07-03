@@ -51,6 +51,9 @@ class ChassisRecordOut(BaseModel):                # list item
     vin_source: Optional[str] = None              # WO v4.34.1 §0.17 — VIN provenance (vcl | chassis_page_manual | …)
     event_count: int = 0
     latest_event_date: Optional[date] = None
+    # 0033 — the RESOLVED chassis-type picture (manual pick, else catalog default; service fills).
+    # On the list so the picture follows the chassis onto downstream surfaces (/plan Parking cards).
+    type_image_url: Optional[str] = None
 
 
 class ChassisRecordDetail(ChassisRecordOut):

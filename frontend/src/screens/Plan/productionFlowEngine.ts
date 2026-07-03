@@ -89,6 +89,13 @@ function renderTrailer(o) {
 function chassisSvg(w) { w = w || 120; return `<img src="${A('Chassis%203.png')}" style="display:block;height:auto;max-width:100%;width:${w}px" alt="chassis top view">`; }
 function truckSvg(w) { w = w || 140; return `<img src="${A('Truck.png')}" style="display:block;height:auto;max-width:100%;width:${w}px" alt="truck chassis">`; }
 function trailerSvg(w) { w = w || 140; return `<img src="${A('Chassis%202.png')}" style="display:block;height:auto;max-width:100%;width:${w}px" alt="trailer chassis">`; }
+/* 0033 — the chassis-type picture picked on the Chassis page (card.img, resolved server-side)
+   follows the chassis: Parking card + both merge-bay states use it; mockup art is the fallback.
+   max-height keeps Michael's 3:2 renders from stretching the card rows the flat side-views set. */
+function chassisArt(c, w, fallback) {
+  if (c && c.img) return `<img src="${c.img}" style="display:block;width:${w}px;max-height:${Math.round(w * .62)}px;object-fit:contain" alt="chassis type" draggable="false">`;
+  return fallback(w);
+}
 
 const CHUTE = 40, NPOS = 4, PX = 26, BODYH = 42, LANEH = 80;
 const POS = ['Entry', 'Pre-Assembly', 'Stage 2', 'Stage 3'];
@@ -202,6 +209,16 @@ export function initProductionFlow(root, opts) {
     if (!liveParking) return;
     const inUse = chassisInUse();
     D.PARK = liveParking.filter(c => !inUse.has(String(c.id)) && !mergedChassis.has(String(c.id)));
+    // 0033 — an in-merge chassis is a floor-doc snapshot; refresh its picture from the live push so
+    // a pick made on the Chassis page (or a future catalog auto-link) flows in without a re-drag.
+    const byId = new Map(liveParking.map(c => [String(c.id), c]));
+    let imgChanged = false;
+    D.PRE.forEach(b => {
+      const mc = b.merge && b.merge.chassis;
+      const live = mc && byId.get(String(mc.id));
+      if (live && live.img !== mc.img) { mc.img = live.img; imgChanged = true; }
+    });
+    return imgChanged;
   }
   function jobsOnFloor() {
     const s = new Set();
@@ -326,10 +343,10 @@ export function initProductionFlow(root, opts) {
         <div class="mdone">Done <span class="mdisp" data-dispatch="${ci}">→ QA</span></div>`;
     } else if (m.assembly && m.chassis) {
       cls = 'busy';
-      mc = `<div class="mt" style="color:#2563EB">● Busy with merge</div><div class="busyrow"><div class="mbody mbodypic" data-id="${m.assembly.id}" data-kind="body"><img src="${A('Body%20only.png')}" style="width:100px" alt="assembled body" draggable="false"><span class="mbtag">J${m.assembly.job}</span></div><span class="plus">+</span><div class="cmerge clk" data-detail-kind="chassis" data-detail-id="${m.chassis.id}">${chassisSvg(118)}</div></div><button class="confirmbtn" data-confirm="${ci}">✓ Confirm merge complete</button>`;
+      mc = `<div class="mt" style="color:#2563EB">● Busy with merge</div><div class="busyrow"><div class="mbody mbodypic" data-id="${m.assembly.id}" data-kind="body"><img src="${A('Body%20only.png')}" style="width:100px" alt="assembled body" draggable="false"><span class="mbtag">J${m.assembly.job}</span></div><span class="plus">+</span><div class="cmerge clk" data-detail-kind="chassis" data-detail-id="${m.chassis.id}">${chassisArt(m.chassis, 118, chassisSvg)}</div></div><button class="confirmbtn" data-confirm="${ci}">✓ Confirm merge complete</button>`;
     } else if (m.chassis) {
       cls = 'active';
-      mc = `<div class="mt">Merge</div><div class="cabove"><span class="cvins">${m.chassis.id}</span> <span class="cbadge">AWAITING BODY</span></div><div class="cmerge cpull" data-kind="chassis" data-id="${m.chassis.id}">${chassisSvg(150)}</div><div class="msub">${m.chassis.model} · waiting — bring a body, or drag back to parking ↓</div>`;
+      mc = `<div class="mt">Merge</div><div class="cabove"><span class="cvins">${m.chassis.id}</span> <span class="cbadge">AWAITING BODY</span></div><div class="cmerge cpull" data-kind="chassis" data-id="${m.chassis.id}">${chassisArt(m.chassis, 150, chassisSvg)}</div><div class="msub">${m.chassis.model} · waiting — bring a body, or drag back to parking ↓</div>`;
     } else if (m.assembly) {
       cls = 'busy';
       mc = `<div class="mt" style="color:#2563EB">● Busy with merge</div><div class="mbody mbodypic" data-id="${m.assembly.id}" data-kind="body"><img src="${A('Body%20only.png')}" style="width:100px" alt="assembled body" draggable="false"><span class="mbtag">J${m.assembly.job} · ${m.assembly.len.toFixed(1)}m</span></div><div class="msub">bring chassis <b>${vinTag(m.assembly.chassisVin)}</b> ⤓, or drag back ↑</div>`;
@@ -351,7 +368,7 @@ export function initProductionFlow(root, opts) {
     const el = $('#parking');
     if (!D.PARK.length) { el.innerHTML = '<span class="empty">No chassis waiting.</span>'; return; }
     el.innerHTML = D.PARK.map(c => `<div class="ccard" data-id="${c.id}" data-kind="chassis" data-job="${c.job || ''}">
-     <div class="ctruck">${c.kind === 'trailer' ? trailerSvg(124) : truckSvg(112)}</div>
+     <div class="ctruck">${chassisArt(c, c.kind === 'trailer' ? 124 : 112, c.kind === 'trailer' ? trailerSvg : truckSvg)}</div>
      <div class="cinfo"><div class="cid">${c.id}</div><div class="crow2"><span class="cmodel">${c.model}</span><span class="wpill">WAITING</span></div><div class="ckind">${c.kind === 'trailer' ? 'Trailer chassis' : 'Truck chassis'}</div></div></div>`).join('');
   }
   function renderQc() {
@@ -724,9 +741,10 @@ export function initProductionFlow(root, opts) {
     // In-merge + merged chassis are excluded by derivation, mirroring setPanels.
     setParking(list) {
       liveParking = Array.isArray(list) ? list : [];
-      applyLiveParking();
+      const mergeImgChanged = applyLiveParking();
       renderKPIs();
       renderPark();
+      if (mergeImgChanged && !drag) renderPre();   // 0033 — repaint the bay showing the refreshed picture
     },
     // Phase 2 — replay a persisted (or another user's) floor snapshot. Refused mid-drag
     // (the next poll retries); never re-persists what it just loaded.

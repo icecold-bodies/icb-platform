@@ -12,6 +12,7 @@ import {
   RadioTower,
   Database,
   ThumbsUp,
+  ThumbsDown,
   RotateCw,
 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
@@ -26,6 +27,7 @@ import { FlagBadges } from '../../components/Flag/FlagBadge'   // WO v4.36b §3.
 import { useFlaggedJobs } from '../../hooks/useFlags'
 import { RepairPhasePanel } from './RepairPhasePanel'
 import { AcceptModal } from './AcceptModal'
+import { DeclineModal } from './DeclineModal'
 import { BottleneckIndicator } from './BottleneckIndicator'
 import { zarShort, dmy } from '../../lib/format'
 import { Spinner } from '../../components/ui/feedback'
@@ -36,7 +38,7 @@ import { Spinner } from '../../components/ui/feedback'
 // chrome-only: smaller title, no New-Costing self-link, distinct root testid.
 export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) {
   const nav = useNavigate()
-  const { mode, costings, statusCounts, acceptStage, refresh, scheduleRepairPhases, acceptCosting } = useCostings()
+  const { mode, costings, statusCounts, acceptStage, refresh, scheduleRepairPhases, acceptCosting, declineCosting } = useCostings()
   const { profile, hasPermission } = useAppData()
   const [filter, setFilter] = useState<Set<StatusName>>(new Set())
   const [q, setQ] = useState('')
@@ -60,6 +62,7 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
   const [preJobTarget, setPreJobTarget] = useState<Costing | null>(null)
   const [repairTarget, setRepairTarget] = useState<Costing | null>(null)
   const [acceptTarget, setAcceptTarget] = useState<Costing | null>(null)
+  const [declineTarget, setDeclineTarget] = useState<Costing | null>(null)   // legacy ✗ parity (3 Jul)
 
   const canViewAll = hasPermission('costings.view_all')
   const canCreate = hasPermission('costings.create')
@@ -350,6 +353,19 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
                           </button>
                         </Tooltip>
                       )}
+                      {/* Legacy-dashboard parity (Michael, 3 Jul) — the ✗ "Decline this calculation"
+                          restored on the MES surface. Reason required; the row moves to the Rejected pill. */}
+                      {canAccept && c.status === 'Pending' && (
+                        <Tooltip text="Decline this calculation — asks for a reason, then marks it Rejected.">
+                          <button
+                            data-testid="costing-decline"
+                            onClick={() => setDeclineTarget(c)}
+                            className="flex items-center gap-1 rounded-md bg-status-red px-2 py-1 text-xs font-semibold text-white hover:opacity-90"
+                          >
+                            <ThumbsDown size={12} /> Decline
+                          </button>
+                        </Tooltip>
+                      )}
                       {mode === 'live' && c.status === 'Accepted' && !c.production_job_id ? (
                         <Tooltip text="The costing was accepted but its production job wasn't created — retry (safe, idempotent).">
                           <button
@@ -436,6 +452,14 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
         onConfirm={async (c) => {
           await acceptCosting(c.quote_number)
           setAcceptTarget(null)
+        }}
+      />
+      <DeclineModal
+        costing={declineTarget}
+        onClose={() => setDeclineTarget(null)}
+        onConfirm={async (c, reason) => {
+          await declineCosting(c.quote_number, reason)
+          setDeclineTarget(null)
         }}
       />
     </div>

@@ -20,7 +20,8 @@ import { createPortal } from 'react-dom'
 import './productionFlow.css'
 import { initProductionFlow } from './productionFlowEngine'
 import { usePlanning } from '../../store/PlanningContext'
-import { PlanningCockpit } from '../Planning/cockpit/PlanningCockpit'
+import { PlanningCockpit, type RenderSlotDrawer } from '../Planning/cockpit/PlanningCockpit'
+import { PlanJobDrawerShell, PlanJobTabs } from './PlanJobDrawer'
 import { apiGet, apiPut } from '../../lib/api'
 import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { PlanningBoardView } from '../../lib/types'
@@ -103,12 +104,72 @@ export function PlanCombined() {
   const [downstreamJobNos, setDownstreamJobNos] = useState<string[]>([])
   const { board, mode } = usePlanning()
 
+  // 3 Jul — the standardized job drawer (every /plan card opens it; kicker names the stage).
+  const [drawer, setDrawer] = useState<{
+    kicker: string; jobNumber?: string; chassisId?: number
+    subtitle?: string; initialTab?: 'chassis' | 'bom'
+  } | null>(null)
+  // The engine's onOpenCard callback is captured once at init — read live data through refs.
+  const boardRef = useRef(board)
+  useEffect(() => { boardRef.current = board }, [board])
+  const chassisRowsRef = useRef<ChassisRecord[]>([])
+  const apiRef = useRef<FlowApi | null>(null)
+
   // Phase 2 — persisted floor state: the engine hands us a snapshot on every floor
   // mutation (onPersist) -> PUT /api/plan/floor-state; on mount we load the saved
   // floor; a poll picks up other users' changes (stamp-based echo avoidance,
   // last-write-wins). The floor survives reloads and is shared between planners.
   const stampRef = useRef<string | null>(null)
   const loadedRef = useRef(false)
+  // 3 Jul — resolve an engine card click to the standardized drawer. Returns false (engine modal
+  // fallback) when the card can't be matched to live data (e.g. mock mode / the A06 seed).
+  const openCardDrawer = useCallback((kind: string, id: string): boolean => {
+    if (mode !== 'live') return false
+    const b = boardRef.current
+    const jobMeta = (jobNo: string) => {
+      for (const s of b.slots) if (s.job && String(s.job.job_number) === jobNo) return s.job
+      for (const j of b.pool) if (String(j.job_number) === jobNo) return j
+      return null
+    }
+    const open = (kicker: string, jobNo: string | null, chassisId?: number, initialTab?: 'chassis' | 'bom') => {
+      const j = jobNo ? jobMeta(jobNo) : null
+      const ch = chassisId != null ? chassisRowsRef.current.find((r) => r.id === chassisId) : undefined
+      setDrawer({
+        kicker,
+        jobNumber: jobNo ?? undefined,
+        chassisId,
+        subtitle: j ? [j.customer, j.body_type].filter(Boolean).join(' · ')
+          : ch ? [ch.customer_name, [ch.make, ch.model].filter(Boolean).join(' ')].filter(Boolean).join(' · ')
+          : undefined,
+        initialTab,
+      })
+      return true
+    }
+    if (kind === 'panel' && id.startsWith('PS-')) return open('PANELS READY', id.slice(3))
+    if (kind === 'chassis') {
+      const row = chassisRowsRef.current.find((r) => String(r.vin) === id)
+      if (!row) return false
+      let jobNo: string | null = null
+      for (const s of b.slots) if (s.job?.vin && String(s.job.vin) === id) jobNo = s.job.job_number
+      if (!jobNo) for (const j of b.pool) if (j.vin && String(j.vin) === id) jobNo = j.job_number
+      return open('CHASSIS', jobNo, row.id, 'chassis')
+    }
+    if (kind === 'body') {
+      try {
+        const st = JSON.parse(apiRef.current?.getState() ?? '{}')
+        for (const bay of st.pre ?? []) {
+          for (const x of bay.bodies ?? []) if (String(x.id) === id) return open('ASSEMBLY', String(x.job))
+          if (bay.merge?.assembly && String(bay.merge.assembly.id) === id) return open('MERGE', String(bay.merge.assembly.job))
+          if (bay.merge?.attached?.body && String(bay.merge.attached.body.id) === id) return open('MERGED UNIT', String(bay.merge.attached.body.job))
+        }
+        for (const u of st.qc ?? []) if (String(u.id) === id) return open('QUALITY CONTROL', String(u.job))
+      } catch { /* fall through to the engine modal */ }
+    }
+    return false
+  }, [mode])
+  const openCardRef = useRef(openCardDrawer)
+  useEffect(() => { openCardRef.current = openCardDrawer }, [openCardDrawer])
+
   useEffect(() => {
     if (!ref.current) return
     const inst = initProductionFlow(ref.current, {
@@ -121,9 +182,12 @@ export function PlanCombined() {
           .then((r) => { stampRef.current = r.updated_at })
           .catch(() => { /* non-fatal — next mutation retries */ })
       },
+      // 3 Jul — card clicks route to the standardized React drawer (stable ref: live data inside).
+      onOpenCard: (kind: string, id: string) => openCardRef.current(kind, id),
     }) as FlowApi
     setApi(inst)
-    return () => { inst.cleanup(); setApi(null) }
+    apiRef.current = inst
+    return () => { inst.cleanup(); setApi(null); apiRef.current = null }
   }, [])
 
   // Initial floor load + the change poll (floor 8s; board + chassis 30s).
@@ -176,6 +240,7 @@ export function PlanCombined() {
   // focus like every other floor surface, re-pushed whenever the board changes
   // (the chassis→job link derives from the board's VINs).
   const [chassisRows, setChassisRows] = useState<ChassisRecord[]>([])
+  useEffect(() => { chassisRowsRef.current = chassisRows }, [chassisRows])
   const refetchChassis = useCallback(async () => {
     try { setChassisRows(await apiGet<ChassisRecord[]>('/api/chassis-records?limit=200')) } catch { /* keep last */ }
   }, [])
@@ -186,6 +251,21 @@ export function PlanCombined() {
     api.setParking(chassisToParking(chassisRows, board))
   }, [api, board, chassisRows, mode])
 
+  // 3 Jul — the cockpit's slot drawer now renders the SAME standardized tabbed layout as every
+  // other /plan card; the cockpit supplies its stage-actions node (CockpitSlotDetail) as Overview.
+  const renderSlotDrawer: RenderSlotDrawer = useCallback(({ slot, overview, close }) => (
+    <PlanJobDrawerShell label={`Job ${slot.job?.job_number ?? ''}`} onClose={close}>
+      <PlanJobTabs
+        kicker="SCHEDULED JOB"
+        jobNumber={slot.job?.job_number}
+        subtitle={[slot.job?.customer, slot.job?.body_type].filter(Boolean).join(' · ') || undefined}
+        slotLabel={`${slot.bay} · ${slot.week_key}`}
+        overview={overview}
+        onClose={close}
+      />
+    </PlanJobDrawerShell>
+  ), [])
+
   return (
     <>
       <div ref={ref} className="a06-flow" data-testid="plan-combined" />
@@ -193,11 +273,29 @@ export function PlanCombined() {
         createPortal(
           <div className="zone" style={{ overflow: 'hidden' }} data-testid="plan-embedded-cockpit">
             <div style={{ height: '76vh' }}>
-              <PlanningCockpit embedded lockedJobIds={lockedJobIds} downstreamJobIds={downstreamJobIds} />
+              <PlanningCockpit embedded lockedJobIds={lockedJobIds} downstreamJobIds={downstreamJobIds}
+                               renderSlotDrawer={renderSlotDrawer} />
             </div>
           </div>,
           api.plannerSlot,
         )}
+      {/* 3 Jul — the standardized drawer for floor-card clicks (panels / bodies / chassis / QC).
+          Wrapped in its own .a06-flow scope so the shared modal tokens apply outside the engine root. */}
+      {drawer && (
+        <div className="a06-flow">
+          <PlanJobDrawerShell label={drawer.jobNumber ? `Job ${drawer.jobNumber}` : 'Chassis'}
+                              onClose={() => setDrawer(null)}>
+            <PlanJobTabs
+              kicker={drawer.kicker}
+              jobNumber={drawer.jobNumber}
+              chassisId={drawer.chassisId}
+              subtitle={drawer.subtitle}
+              initialTab={drawer.initialTab}
+              onClose={() => setDrawer(null)}
+            />
+          </PlanJobDrawerShell>
+        </div>
+      )}
     </>
   )
 }

@@ -699,6 +699,9 @@ export function initProductionFlow(root, opts) {
     $('#mBody').innerHTML = renderTab(modalState.tab, d);
   }
   function openModal(kind, id) {
+    // 3 Jul — standardized drawer: the host takes card clicks when it can resolve them to a live
+    // job/chassis (returns true); the engine's internal modal stays as the mock/offline fallback.
+    if (opts.onOpenCard && opts.onOpenCard(String(kind), String(id))) return;
     const it = findAny(kind, id); if (!it) return;
     modalState = { d: getDetail(kind, it), tab: 'chassis' };
     paintModal();

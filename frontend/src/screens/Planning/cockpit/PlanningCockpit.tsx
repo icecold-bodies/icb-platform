@@ -81,11 +81,20 @@ function useMiddleButtonPan<T extends HTMLElement>() {
 // `lockedJobIds` (business rules 2 Jul): jobs whose body is MERGED WITH CHASSIS — the permanent
 // point of no return. Backward planner moves (unschedule / revert-to-unscheduled) are rejected
 // for them. Standalone /planning/cockpit behaviour is unchanged (both props default off).
-export function PlanningCockpit({ embedded = false, lockedJobIds, downstreamJobIds }: { embedded?: boolean; lockedJobIds?: Set<number>; downstreamJobIds?: Set<number> } = {}) {
+// 3 Jul — standardized Plan drawer: the host (PlanCombined) may take over the embedded slot
+// drawer's PRESENTATION (tabbed corporate layout) while this component keeps supplying the
+// stage-action node (CockpitSlotDetail with all its handlers) as `overview`.
+export type RenderSlotDrawer = (args: { slot: PlanningSlot; overview: ReactNode; close: () => void }) => ReactNode
+
+export function PlanningCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderSlotDrawer }: {
+  embedded?: boolean; lockedJobIds?: Set<number>; downstreamJobIds?: Set<number>
+  renderSlotDrawer?: RenderSlotDrawer
+} = {}) {
   const { mode } = usePlanning()
   if (mode === 'loading') return <CockpitSkeleton />
   if (mode !== 'live') return <CockpitMockNotice />
-  return <LiveCockpit embedded={embedded} lockedJobIds={lockedJobIds} downstreamJobIds={downstreamJobIds} />
+  return <LiveCockpit embedded={embedded} lockedJobIds={lockedJobIds} downstreamJobIds={downstreamJobIds}
+                      renderSlotDrawer={renderSlotDrawer} />
 }
 
 function CockpitSkeleton() {
@@ -123,7 +132,10 @@ function CockpitMockNotice() {
   )
 }
 
-function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds }: { embedded?: boolean; lockedJobIds?: Set<number>; downstreamJobIds?: Set<number> }) {
+function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderSlotDrawer }: {
+  embedded?: boolean; lockedJobIds?: Set<number>; downstreamJobIds?: Set<number>
+  renderSlotDrawer?: RenderSlotDrawer
+}) {
   const nav = useNavigate()
   const { board, schedule, move, unschedule, revertToUnscheduled, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
   useRefetchOnFocus(refresh)
@@ -614,14 +626,9 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds }: { emb
       {/* A09 embedded — slot detail as a right-side slide-in (same presentation + tokens as the
           floor's job-detail drawer; the a06 .modal/.scrim classes apply because the embedded
           cockpit renders inside the .a06-flow scope). */}
-      {embedded && selectedLiveSlot?.job && (
-        <EmbeddedSlotDrawer
-          key={selectedLiveSlot.id}
-          jobNumber={selectedLiveSlot.job.job_number}
-          customer={selectedLiveSlot.job.customer}
-          slotLabel={`${selectedLiveSlot.bay} · ${selectedLiveSlot.week_key}`}
-          onClose={() => setSelectedSlotId(null)}
-        >
+      {embedded && selectedLiveSlot?.job && (() => {
+        const close = () => setSelectedSlotId(null)
+        const overview = (
           <CockpitSlotDetail
             slot={selectedLiveSlot}
             canTick={canTickChassis}
@@ -645,8 +652,23 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds }: { emb
               nav(jn ? `/production?jobId=${encodeURIComponent(jn)}` : '/production')
             }}
           />
-        </EmbeddedSlotDrawer>
-      )}
+        )
+        // 3 Jul — the host may render the standardized tabbed drawer around the same actions node.
+        if (renderSlotDrawer) {
+          return <Fragment key={selectedLiveSlot.id}>{renderSlotDrawer({ slot: selectedLiveSlot, overview, close })}</Fragment>
+        }
+        return (
+          <EmbeddedSlotDrawer
+            key={selectedLiveSlot.id}
+            jobNumber={selectedLiveSlot.job.job_number}
+            customer={selectedLiveSlot.job.customer}
+            slotLabel={`${selectedLiveSlot.bay} · ${selectedLiveSlot.week_key}`}
+            onClose={close}
+          >
+            {overview}
+          </EmbeddedSlotDrawer>
+        )
+      })()}
 
       {/* ── Bottom dock — bay-model flow zones (collapsed by default). Hidden when embedded in
           the Combined Cockpit: the A06 Production Flow floor below replaces these zones. ─────── */}

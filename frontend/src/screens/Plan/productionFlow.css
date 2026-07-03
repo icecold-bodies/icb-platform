@@ -219,3 +219,20 @@
 /* Single-location rule: the planner slot lights up when a Panels-ready card is dragged back up
    (PANELS READY -> V/P reverse), mirroring the strip's own drop cue. */
 .a06-flow #plannerSlot.drop-ok{outline:2px dashed rgba(226,35,26,.5);outline-offset:-4px;border-radius:14px}
+
+/* Standardized job drawer (3 Jul). `.mbody` is ALSO the merge-body chip class (inline-flex,
+   centered) — inside a .modal that leaked into the drawer body and floated the content into the
+   middle. Scope the modal body back to a plain block. */
+.a06-flow .modal .mbody{display:block;cursor:auto;background:transparent;border:none;font-weight:400;font-size:13px}
+
+/* Standardized job drawer (3 Jul) — BOM per-category accordion, a06 tokens. Collapsed by default;
+   the chevron rotates on expand; totals right-aligned in the category header. */
+.a06-flow .bomcat{display:flex;align-items:center;gap:9px;width:100%;background:#F7FAFD;border:1px solid var(--hair);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:12.5px;font-weight:750;color:var(--ink);margin-top:8px;text-align:left}
+.a06-flow .bomcat:hover{background:#EFF5FC}
+.a06-flow .bomcat .chev{display:inline-block;transition:transform .18s;color:var(--ink-3);font-size:11px}
+.a06-flow .bomcat.on{border-radius:10px 10px 0 0}
+.a06-flow .bomcat.on .chev{transform:rotate(90deg)}
+.a06-flow .bomcat .n{color:var(--ink-3);font-weight:600;font-size:11px}
+.a06-flow .bomcat .amt{margin-left:auto;font-weight:780;font-variant-numeric:tabular-nums}
+.a06-flow .bomwrap{border:1px solid var(--hair);border-top:none;border-radius:0 0 10px 10px;padding:2px 10px 10px;background:#fff;overflow-x:auto}
+.a06-flow .bomtotal{display:flex;justify-content:space-between;gap:12px;margin-top:16px;padding:12px 4px 0;border-top:2px solid var(--ink);font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}

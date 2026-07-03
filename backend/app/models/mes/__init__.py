@@ -768,6 +768,9 @@ class ChassisRecord(Base):
     make = Column(String(64))
     model = Column(String(64))
     description = Column(String(255))
+    # Chassis-type picture (0033): filename under static/chassis-types, picked manually on the detail
+    # page. Later = the per-chassis OVERRIDE of chassis_models.image_file (the DDM auto-link default).
+    type_image = Column(String(128))
     status = Column(String(24), nullable=False, default="received", server_default="received")
     # received | in_workshop | in_assembly | dispatched | returned | expected | expected_orphaned
     # (denormalised from the latest event; 'in_assembly' WO v4.31 §0.12; 'expected' +
@@ -1078,6 +1081,9 @@ class ChassisModel(Base):
     model = Column(String(128), nullable=False)            # 128 — full model strings are long
     category = Column(String(32))                          # truck | bakkie | trailer
     max_payload_kg = Column(Integer)
+    # Chassis-type picture default (0033): filename under static/chassis-types. The planned stage-2
+    # auto-link — picking this chassis type in the DDM attaches its picture (record type_image overrides).
+    image_file = Column(String(128))
     is_active = Column(Boolean, nullable=False, default=True, server_default=sa_text("true"))
     sort_order = Column(Integer, nullable=False, default=0, server_default="0")
     created_at = Column(DateTime(timezone=True), default=_utcnow)

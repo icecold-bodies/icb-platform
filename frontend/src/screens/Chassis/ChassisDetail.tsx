@@ -10,7 +10,7 @@ import { useToast } from '../../components/ui/toast'
 import { useAppData } from '../../store/AppDataContext'
 import { Card } from '../../components/ui/primitives'
 import { Skeleton, EmptyState, Spinner } from '../../components/ui/feedback'
-import { CHASSIS_STATUS_STYLE, CHASSIS_PROVENANCE, type ChassisEvent, type ChassisRecordDetail } from './types'
+import { CHASSIS_STATUS_STYLE, CHASSIS_PROVENANCE, type ChassisEvent, type ChassisRecordDetail, type ChassisTypeImage } from './types'
 import { VclDclForm, type ChecklistItem } from './VclDclForm'
 import { ChassisFieldsForm, type ChassisFieldValues } from './ChassisFieldsForm'
 import { data as mockData } from '../../data/mockData'
@@ -98,6 +98,7 @@ export function ChassisDetail() {
   const [editing, setEditing] = useState(false)
   const [capturingVin, setCapturingVin] = useState(false)
   const [restoring, setRestoring] = useState(false)
+  const [pickingImage, setPickingImage] = useState(false)   // 0033 — chassis-type picture picker
 
   const load = useCallback(() => {
     setLoading(true)
@@ -190,17 +191,31 @@ export function ChassisDetail() {
             <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusCls}`}>{rec.status.replace(/_/g, ' ')}</span>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Field label="Customer" value={rec.customer_name} />
-          <Field label="Dealer" value={rec.dealer_name} />
-          <Field label="Contact" value={rec.contact_person} />
-          <Field label="Telephone" value={rec.telephone} />
-          <Field label="Job number" value={rec.job_number} />
-          <Field label="Make" value={rec.make} />
-          <Field label="Model" value={rec.model} />
-          <Field label="Description" value={rec.description} />
-          <Field label="Cycles" value={String(cycles.length)} />
-          <Field label="Origin ref" value={rec.created_source_ref} />
+        <div className="flex flex-wrap gap-4">
+          <div className="grid min-w-[280px] flex-1 grid-cols-2 gap-3 sm:grid-cols-4">
+            <Field label="Customer" value={rec.customer_name} />
+            <Field label="Dealer" value={rec.dealer_name} />
+            <Field label="Contact" value={rec.contact_person} />
+            <Field label="Telephone" value={rec.telephone} />
+            <Field label="Job number" value={rec.job_number} />
+            <Field label="Make" value={rec.make} />
+            <Field label="Model" value={rec.model} />
+            <Field label="Description" value={rec.description} />
+            <Field label="Cycles" value={String(cycles.length)} />
+            <Field label="Origin ref" value={rec.created_source_ref} />
+          </div>
+          {/* 0033 — the resolved chassis-type picture (manual pick, or the catalog default once the
+              chassis-type auto-link is populated). Click-through to the picker for editors. */}
+          {rec.type_image_url && (
+            <figure data-testid="chassis-type-image-thumb" className="w-56 shrink-0">
+              <img src={rec.type_image_url} alt="Chassis type"
+                   onClick={() => { if (canEdit && !rec.deleted_at) setPickingImage(true) }}
+                   className={`w-full rounded-lg border border-line bg-white object-contain ${canEdit && !rec.deleted_at ? 'cursor-pointer hover:border-primary' : ''}`} />
+              <figcaption className="mt-1 text-center text-[10px] text-muted">
+                {rec.type_image_source === 'chassis_type' ? 'Linked from the chassis type' : 'Chassis-type picture'}
+              </figcaption>
+            </figure>
+          )}
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {/* §3.6 STEP 7 — no mutating actions on a tombstone (restore via the banner first) */}
@@ -239,6 +254,14 @@ export function ChassisDetail() {
               <LogOut size={16} /> Capture DCL (dispatch)
             </button>
           )}
+          {/* 0033 — pick the picture that shows what this chassis type looks like (manual for now;
+              the chassis-type dropdown auto-link is the planned stage 2). */}
+          {!rec.deleted_at && canEdit && (
+            <button data-testid="chassis-type-image" onClick={() => setPickingImage(true)}
+                    className="flex items-center gap-1.5 rounded-md border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary-light">
+              <Image size={16} /> {rec.type_image_url ? 'Change chassis picture' : 'Add chassis picture'}
+            </button>
+          )}
         </div>
       </Card>
 
@@ -261,6 +284,10 @@ export function ChassisDetail() {
       {editing && (
         <EditChassisModal rec={rec} onClose={() => setEditing(false)}
                           onSaved={() => { setEditing(false); load() }} />
+      )}
+      {pickingImage && (
+        <ChassisTypeImageModal rec={rec} onClose={() => setPickingImage(false)}
+                               onSaved={() => { setPickingImage(false); load() }} />
       )}
       {capturingVin && (
         <CaptureVinModal recordId={rec.id} onClose={() => setCapturingVin(false)}
@@ -434,6 +461,90 @@ function EditChassisModal({ rec, onClose, onSaved }: {
                   className="flex flex-1 items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-semibold text-white disabled:opacity-50">
             {saving ? <Spinner size={16} /> : null} Save changes
           </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** 0033 — chassis-type picture picker. The library = PNGs under static/chassis-types (served by
+ * GET /type-images); clicking a tile PATCHes type_image (audited like every chassis attribute).
+ * Stage 2 (planned): chassis_models.image_file auto-links a picture to the chassis-type dropdown,
+ * and this manual pick becomes the per-chassis override. */
+function ChassisTypeImageModal({ rec, onClose, onSaved }: {
+  rec: ChassisRecordDetail
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const toast = useToast()
+  const [images, setImages] = useState<ChassisTypeImage[] | null>(null)
+  const [saving, setSaving] = useState<string | null>(null)   // the file being saved ('' = clearing)
+
+  useEffect(() => {
+    apiGet<ChassisTypeImage[]>('/api/chassis-records/type-images')
+      .then(setImages)
+      .catch((e) => { handleApiError(e, toast.push); setImages([]) })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function pick(file: string | null) {
+    setSaving(file ?? '')
+    try {
+      await apiPatch(`/api/chassis-records/${rec.id}`, { type_image: file })
+      toast.push({ kind: 'ok', message: file ? 'Chassis picture set.' : 'Chassis picture removed.' })
+      onSaved()
+    } catch (e) {
+      handleApiError(e, toast.push)
+      setSaving(null)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4" onClick={onClose}>
+      <div data-testid="chassis-type-image-modal" onClick={(e) => e.stopPropagation()}
+           className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl">
+        <div className="mb-1 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-body">Chassis picture</h3>
+          <button onClick={onClose} className="rounded p-2 hover:bg-surface-alt"><X size={20} /></button>
+        </div>
+        <p className="mb-3 text-xs text-muted">
+          Pick the picture that best shows what this chassis type will look like.
+          Coming next: pictures link to the <b>Chassis type</b> dropdown, so choosing the type attaches
+          its picture automatically — a pick made here stays as this chassis&rsquo;s own override.
+        </p>
+        {images === null ? (
+          <Skeleton rows={4} />
+        ) : images.length === 0 ? (
+          <EmptyState title="No pictures in the library yet"
+                      hint="Drop PNGs into backend/app/static/chassis-types and they appear here." />
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {images.map((img) => {
+              const current = rec.type_image === img.file
+              return (
+                <button key={img.file} data-testid="chassis-type-image-tile" data-file={img.file}
+                        disabled={saving !== null} onClick={() => pick(img.file)}
+                        className={`rounded-lg border-2 p-2 text-left transition hover:border-primary disabled:opacity-60 ${current ? 'border-primary bg-primary-light/30' : 'border-line bg-white'}`}>
+                  <img src={img.url} alt={img.label} loading="lazy"
+                       className="h-28 w-full rounded object-contain" />
+                  <div className="mt-1 flex items-center justify-between gap-1">
+                    <span className="truncate text-xs font-semibold text-body">{img.label}</span>
+                    {current && <span className="shrink-0 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">current</span>}
+                    {saving === img.file && <Spinner size={12} />}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
+        <div className="mt-4 flex gap-2">
+          {rec.type_image && (
+            <button data-testid="chassis-type-image-clear" disabled={saving !== null} onClick={() => pick(null)}
+                    className="flex items-center justify-center gap-2 rounded-md border border-status-red px-4 py-2.5 text-sm font-semibold text-status-red hover:bg-status-red/5 disabled:opacity-50">
+              {saving === '' ? <Spinner size={14} /> : null} Remove picture
+            </button>
+          )}
+          <button onClick={onClose} className="flex-1 rounded-md border border-line py-2.5 text-sm font-semibold">Close</button>
         </div>
       </div>
     </div>

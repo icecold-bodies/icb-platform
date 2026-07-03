@@ -7,7 +7,9 @@ The checklist templates below are a **Workshop-refine placeholder** (WO v4.28 �
 forms weren't available at build time). They're served as DATA (not hard-coded into the UI) so a
 future micro-WO can move them to an admin-owned table without touching code.
 """
+import os
 from datetime import date, datetime, timezone
+from urllib.parse import quote
 
 from fastapi import HTTPException
 from sqlalchemy import func, or_, select
@@ -20,6 +22,7 @@ from app.models.mes import (
 )
 from app.schemas.chassis import (
     ChassisEventOut, ChassisPhotoOut, ChassisRecordDetail, ChassisRecordOut, ChassisRecordUpdate,
+    ChassisTypeImageOut,
 )
 from app.services import file_store
 
@@ -138,6 +141,44 @@ def list_chassis_models(db: Session):
     ).scalars().all()
 
 
+# ── Chassis-type picture library (0033) ──────────────────────────────────────────────────────────
+# The library IS the directory: PNGs dropped into static/chassis-types appear in the picker (no DB
+# rows to maintain during the prototype). Stage 1 = the manual per-record pick (type_image); stage 2
+# (planned) = chassis_models.image_file auto-links a picture to the DDM chassis type, with the manual
+# pick as the override — _resolve_type_image already implements that resolution order.
+_TYPE_IMAGE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                               "static", "chassis-types")
+
+
+def list_type_images() -> list:
+    """The chassis-type picture library, alphabetical. Label derives from the filename
+    (trailer-double-axle.png → 'Trailer double axle')."""
+    try:
+        files = sorted(f for f in os.listdir(_TYPE_IMAGE_DIR)
+                       if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp")))
+    except OSError:
+        files = []
+    return [ChassisTypeImageOut(
+        file=f, url=f"/static/chassis-types/{quote(f)}",
+        label=os.path.splitext(f)[0].replace("-", " ").replace("_", " ").strip().capitalize(),
+    ) for f in files]
+
+
+def _resolve_type_image(db: Session, rec: ChassisRecord):
+    """(filename, source) — the record's manual pick wins; else the chassis-type catalog default
+    (chassis_models.image_file, matched on the DDM display string stored in rec.make). Returns
+    (None, None) when neither is set — the frontend shows no picture panel."""
+    if rec.type_image:
+        return rec.type_image, "manual"
+    want = (rec.make or "").strip()
+    if want:
+        from app.models.mes import ChassisModel
+        for m in db.execute(select(ChassisModel).where(ChassisModel.image_file.isnot(None))).scalars():
+            if f"{m.make} {m.model}".strip() == want:
+                return m.image_file, "chassis_type"
+    return None, None
+
+
 def get_detail(db: Session, record_id: int) -> ChassisRecordDetail:
     rec = db.get(ChassisRecord, record_id)
     if rec is None:
@@ -172,6 +213,11 @@ def get_detail(db: Session, record_id: int) -> ChassisRecordDetail:
     if rec.status == "in_assembly":                  # current bay derived from the latest event (§0.12)
         aa = [e for e in events if e.event_type == "assembly_assigned"]
         detail.current_assembly_bay_id = max(aa, key=lambda e: e.id).assembly_bay_id if aa else None
+    # 0033 — resolved chassis-type picture (manual pick, else the catalog default when populated).
+    img, img_src = _resolve_type_image(db, rec)
+    if img:
+        detail.type_image_url = f"/static/chassis-types/{quote(img)}"
+        detail.type_image_source = img_src
     out_events = []
     for e in events:
         eo = ChassisEventOut.model_validate(e)
@@ -330,7 +376,7 @@ _CHASSIS_EDIT_ROLES = {"admin", "planner"}
 # created_*/updated_*/version meta + link internals not user-edited).
 _AUDITED_FIELDS = {
     "vin", "vin_source", "job_number", "customer_name", "contact_person", "telephone", "make", "model",
-    "description", "status", "notes", "dealer_id", "tail_lift_code", "body_gap_mm",
+    "description", "status", "notes", "dealer_id", "tail_lift_code", "body_gap_mm", "type_image",
 }
 
 
@@ -410,6 +456,11 @@ def update_chassis(db: Session, record_id: int, payload, who: str,
         _stamp_job_eta(eta_job, eta_val, who)
     if data.get("dealer_id") is not None:                # WO v4.36b — validate is_dealer=true (mirror create + ack)
         data["dealer_id"] = ci.validate_dealer(db, data["dealer_id"])
+    # 0033 — a picked picture must be a real library file (bare filename; also blocks path tricks).
+    # Explicit null passes through: it clears the manual pick (a catalog default then shows through).
+    if data.get("type_image") is not None:
+        if data["type_image"] not in {i.file for i in list_type_images()}:
+            raise HTTPException(status_code=422, detail="Unknown chassis-type picture.")
     # §3.1 — apply + audit each changed field through the single chokepoint (chassis_page source).
     changed = _apply_chassis_fields(db, rec, data, who, source="chassis_page", actor_id=actor_id)
     rec.updated_by = who

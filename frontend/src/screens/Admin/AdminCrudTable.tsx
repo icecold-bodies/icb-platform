@@ -13,7 +13,11 @@ type Row = Record<string, unknown>
 
 function defaults(cfg: ResourceConfig): Row {
   const o: Row = {}
-  cfg.fields.forEach((f) => { o[f.name] = f.default ?? (f.type === 'bool' ? false : '') })
+  // number/date fields start as null, NOT '' — an untouched optional number used to submit ""
+  // and 422 against Optional[int] (fridge-units cutout fields: create-with-blanks went boom).
+  cfg.fields.forEach((f) => {
+    o[f.name] = f.default ?? (f.type === 'bool' ? false : f.type === 'number' || f.type === 'date' ? null : '')
+  })
   return o
 }
 

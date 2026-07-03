@@ -124,8 +124,8 @@ function CockpitMockNotice() {
           The Cockpit runs on live planning data and the API isn’t reachable right now (offline / demo
           fallback mode). Use the classic board instead — it renders the bundled demo data.
         </div>
-        <Link to="/planning" className="mt-3 inline-flex rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-dark">
-          Open the Planning Board
+        <Link to="/plan" className="mt-3 inline-flex rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-dark">
+          Open the Plan page
         </Link>
       </Card>
     </div>

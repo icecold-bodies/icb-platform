@@ -40,10 +40,11 @@ function drillItem(domain: string, flag: string, r: FlaggedRow): { label: string
   if (domain === 'jobs') {
     return {
       label: `Job ${r.job_number || r.job_id} · ${r.customer_name || '—'}${r.chassis_eta ? ` · ETA ${r.chassis_eta}` : ''}`,
-      href: SIGNOFF_FLAGS.has(flag) ? '/admin/prejob-signoffs' : '/planning',
+      // 3 Jul — /planning retired; the Plan page is the planning surface for job/bay flags.
+      href: SIGNOFF_FLAGS.has(flag) ? '/admin/prejob-signoffs' : '/plan',
     }
   }
-  return { label: `Bay ${r.code || r.bay_id}`, href: '/planning' }
+  return { label: `Bay ${r.code || r.bay_id}`, href: '/plan' }
 }
 
 export function HealthCheckAdmin() {

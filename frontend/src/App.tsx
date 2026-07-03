@@ -1,8 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { Configurator } from './screens/Configurator/Configurator'
-import { PlanningBoard } from './screens/Planning/PlanningBoard'
-import { PlanningCockpit } from './screens/Planning/cockpit/PlanningCockpit'
 import { VacuumTablet } from './screens/ShopFloorTablet/VacuumTablet'
 import { KanbanTV } from './screens/KanbanTV/KanbanTV'
 import { ProductionDashboard } from './screens/Production/ProductionDashboard'
@@ -37,11 +35,14 @@ export default function App() {
       <Route path="/costings/:quote" element={<Layout><CostingDetail /></Layout>} />
       {/* Legacy redirect — old /configurator path */}
       <Route path="/configurator" element={<Navigate to="/costings/new" replace />} />
-      <Route path="/planning" element={<Layout><PlanningBoard /></Layout>} />
+      {/* 3 Jul (Michael) — the "Planning" menu is RETIRED: /plan is the planning surface. The old
+          routes redirect so bookmarks + in-app deep links keep working; the PlanningBoard and
+          standalone-cockpit components stay in the tree (the cockpit lives on EMBEDDED inside
+          /plan; the board is demo-frozen history — restore = re-add these routes). */}
+      <Route path="/planning" element={<Navigate to="/plan" replace />} />
+      <Route path="/planning/cockpit" element={<Navigate to="/plan" replace />} />
       {/* WO A06/A09 (Rapid Prototype Phase) — the Plan module: Combined Cockpit (live planner + floor). */}
       <Route path="/plan" element={<Layout><PlanCombined /></Layout>} />
-      {/* Cockpit (Concept 6) — additive alternate Planning layout; the board above is unchanged. */}
-      <Route path="/planning/cockpit" element={<Layout><PlanningCockpit /></Layout>} />
       {/* Work Order v4.11 — Materials, Buying & Stores. Weekly Forecast is a tab
           inside the dashboard at /materials?tab=forecast (not a separate route). */}
       <Route path="/materials" element={<Layout><MaterialsDashboard /></Layout>} />

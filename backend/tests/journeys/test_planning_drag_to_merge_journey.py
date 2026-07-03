@@ -190,7 +190,13 @@ def test_production_bay_tile_renders_ready_to_merge(page: Page, live_server: str
     s = h.make_assembly_job()
     admin_session(page)
     assert _panels(page, live_server, s["job_id"], s["bay_id"]).status == 201
+    assert h.bay_merge_state(s["bay_id"]) == "ready_to_merge"      # DB ground truth before any UI wait
     h.open_production(page)
+    # admin_session lands the SPA on /production (the root redirect), so the dashboard mounted — and
+    # fetched — BEFORE the panels POST above; clicking the active nav entry does not remount. Reload
+    # to force a fresh /bays/assembly fetch (the 30s auto-refresh outlives the assertion timeout).
+    page.reload()
+    page.wait_for_selector("[data-testid='production-kpis']", timeout=20_000)
     tile = page.locator(f'[data-testid="production-bay-tile"][data-bay-code="{s["bay_code"]}"]')
     expect(tile).to_have_attribute("data-bay-state", "ready_to_merge", timeout=T)
     expect(tile.get_by_test_id("bay-badge")).to_be_visible(timeout=T)

@@ -631,6 +631,9 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
         const overview = (
           <CockpitSlotDetail
             slot={selectedLiveSlot}
+            // 3 Jul (Michael) — inside the standardized drawer the planning-BOM section is
+            // redundant: the drawer's Bill of Materials tab shows the live costing sheet.
+            hideSections={renderSlotDrawer ? ['bom'] : undefined}
             canTick={canTickChassis}
             canRevert={canUnschedule && selectedLiveSlot.job?.status === 'planning'
               && !(lockedJobIds && selectedLiveSlot.job && lockedJobIds.has(selectedLiveSlot.job.id))}

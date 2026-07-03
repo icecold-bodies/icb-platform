@@ -1,8 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { Configurator } from './screens/Configurator/Configurator'
-import { PlanningBoard } from './screens/Planning/PlanningBoard'
-import { PlanningCockpit } from './screens/Planning/cockpit/PlanningCockpit'
 import { VacuumTablet } from './screens/ShopFloorTablet/VacuumTablet'
 import { KanbanTV } from './screens/KanbanTV/KanbanTV'
 import { ProductionDashboard } from './screens/Production/ProductionDashboard'
@@ -10,6 +8,7 @@ import { ManagementDashboard } from './screens/Management/ManagementDashboard'
 import { CostingsDashboard } from './screens/Costings/CostingsDashboard'
 import { CostingDetail } from './screens/Costings/CostingDetail'
 import { LiveCalculator } from './screens/Costings/LiveCalculator'
+import { CostingResultsView } from './screens/Costings/CostingResultsView'
 import { MaterialsDashboard } from './screens/Materials/MaterialsDashboard'
 import { POSuggestionQueue } from './screens/Materials/POSuggestionQueue'
 import { StoresReconciliation } from './screens/Materials/StoresReconciliation'
@@ -18,6 +17,7 @@ import { ChassisDetail } from './screens/Chassis/ChassisDetail'
 import { AdminModule } from './screens/Admin/AdminModule'
 import { FeedbackInbox } from './screens/Admin/FeedbackInbox'
 import { PrejobSignoffPage } from './screens/Prejob/PrejobSignoffPage'
+import { PlanCombined } from './screens/Plan/PlanCombined'
 
 export default function App() {
   return (
@@ -29,12 +29,20 @@ export default function App() {
       <Route path="/costings/new" element={<Layout><LiveCalculator /></Layout>} />
       {/* Original mocked wizard preserved for offline demos (rep-grouped customer page, fan-out modal) */}
       <Route path="/costings/new-mock" element={<Layout><Configurator /></Layout>} />
+      {/* In-shell costing summary (3 Jul) — embeds the legacy /results report under the MES chrome
+          so View never strands the user outside the menu. */}
+      <Route path="/costings/results/:id" element={<Layout><CostingResultsView /></Layout>} />
       <Route path="/costings/:quote" element={<Layout><CostingDetail /></Layout>} />
       {/* Legacy redirect — old /configurator path */}
       <Route path="/configurator" element={<Navigate to="/costings/new" replace />} />
-      <Route path="/planning" element={<Layout><PlanningBoard /></Layout>} />
-      {/* Cockpit (Concept 6) — additive alternate Planning layout; the board above is unchanged. */}
-      <Route path="/planning/cockpit" element={<Layout><PlanningCockpit /></Layout>} />
+      {/* 3 Jul (Michael) — the "Planning" menu is RETIRED: /plan is the planning surface. The old
+          routes redirect so bookmarks + in-app deep links keep working; the PlanningBoard and
+          standalone-cockpit components stay in the tree (the cockpit lives on EMBEDDED inside
+          /plan; the board is demo-frozen history — restore = re-add these routes). */}
+      <Route path="/planning" element={<Navigate to="/plan" replace />} />
+      <Route path="/planning/cockpit" element={<Navigate to="/plan" replace />} />
+      {/* WO A06/A09 (Rapid Prototype Phase) — the Plan module: Combined Cockpit (live planner + floor). */}
+      <Route path="/plan" element={<Layout><PlanCombined /></Layout>} />
       {/* Work Order v4.11 — Materials, Buying & Stores. Weekly Forecast is a tab
           inside the dashboard at /materials?tab=forecast (not a separate route). */}
       <Route path="/materials" element={<Layout><MaterialsDashboard /></Layout>} />

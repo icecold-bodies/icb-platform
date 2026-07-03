@@ -51,6 +51,9 @@ class ChassisRecordOut(BaseModel):                # list item
     vin_source: Optional[str] = None              # WO v4.34.1 §0.17 — VIN provenance (vcl | chassis_page_manual | …)
     event_count: int = 0
     latest_event_date: Optional[date] = None
+    # 0033 — the RESOLVED chassis-type picture (manual pick, else catalog default; service fills).
+    # On the list so the picture follows the chassis onto downstream surfaces (/plan Parking cards).
+    type_image_url: Optional[str] = None
 
 
 class ChassisRecordDetail(ChassisRecordOut):
@@ -75,6 +78,12 @@ class ChassisRecordDetail(ChassisRecordOut):
     merged_into_id: Optional[int] = None
     merged_into_vin: Optional[str] = None
     chassis_eta: Optional[date] = None              # WO v4.36a §3.5e — the LINKED job's ETA (get_detail fills it)
+    # Chassis-type picture (0033). type_image = the record's own manual pick (raw column);
+    # type_image_url/_source = the RESOLVED picture get_detail fills: manual pick first, else the
+    # chassis-type catalog default (chassis_models.image_file — the stage-2 DDM auto-link).
+    type_image: Optional[str] = None
+    type_image_url: Optional[str] = None
+    type_image_source: Optional[str] = None         # manual | chassis_type
     events: List[ChassisEventOut] = []
 
 
@@ -119,6 +128,9 @@ class ChassisRecordUpdate(BaseModel):
     # onto chassis_records (single source of truth). dealer_id validated is_dealer=true; tail_lift_code plain col.
     dealer_id: Optional[int] = None
     tail_lift_code: Optional[str] = None
+    # Chassis-type picture (0033): a filename from GET /type-images (validated server-side), or
+    # explicit null to clear the manual pick (the catalog default, when set, then shows through).
+    type_image: Optional[str] = None
     # WO v4.36.5 — optimistic lock: the Chassis-page Edit modal echoes the version it loaded; a stale value
     # (someone else saved in between) → 409 "reload". Optional/back-compat: omitted → no concurrency check.
     version: Optional[int] = None
@@ -151,6 +163,15 @@ class ChassisModelOut(BaseModel):
     model: str
     category: Optional[str] = None
     max_payload_kg: Optional[int] = None
+    image_file: Optional[str] = None    # 0033 — the type's default picture (stage-2 DDM auto-link)
+
+
+class ChassisTypeImageOut(BaseModel):
+    """One picture in the chassis-type library (a PNG under static/chassis-types). Feeds the
+    detail-page picker now; the same library backs the chassis_models.image_file auto-link later."""
+    file: str
+    url: str
+    label: str
 
 
 class ChassisEventCapture(BaseModel):

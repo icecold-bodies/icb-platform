@@ -38,6 +38,9 @@ export interface ChassisRecord {
   vin_source?: string | null                // WO v4.34.1 §0.17 — VIN provenance (chassis_page_manual = Gap A)
   event_count: number
   latest_event_date?: string | null
+  // 0033 — the RESOLVED chassis-type picture (manual pick, else catalog default). On the list so the
+  // picture follows the chassis onto downstream surfaces (/plan Parking + merge bays).
+  type_image_url?: string | null
 }
 
 // WO v4.36a.1 §0.7 — one chassis in the Awaiting-QA Planning Board zone (mirrors backend
@@ -59,6 +62,14 @@ export interface ChassisModel {
   model: string
   category?: string | null
   max_payload_kg?: number | null
+  image_file?: string | null   // 0033 — the type's default picture (stage-2 DDM auto-link)
+}
+
+// 0033 — one picture in the chassis-type library (GET /api/chassis-records/type-images).
+export interface ChassisTypeImage {
+  file: string
+  url: string
+  label: string
 }
 
 export interface ChassisRecordDetail extends ChassisRecord {
@@ -80,6 +91,11 @@ export interface ChassisRecordDetail extends ChassisRecord {
   merged_into_id?: number | null
   merged_into_vin?: string | null
   chassis_eta?: string | null   // §3.5e — the linked job's Delivery ETA (YYYY-MM-DD)
+  // 0033 — chassis-type picture: type_image = this record's manual pick; url/source = the RESOLVED
+  // picture (manual pick first, else the chassis-type catalog default once those are populated).
+  type_image?: string | null
+  type_image_url?: string | null
+  type_image_source?: 'manual' | 'chassis_type' | null
   events: ChassisEvent[]
 }
 

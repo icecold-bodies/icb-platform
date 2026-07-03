@@ -7,7 +7,7 @@
 // The week-grid + Unscheduled pool logic below is DUPLICATED from PlanningBoard's LivePlanningBoard
 // (those parts are module-private there). KEEP IN SYNC with PlanningBoard.tsx; never edit the original
 // — the existing /planning board is frozen for the demo.
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
   GripVertical, CalendarDays, Maximize, Layers, X,
@@ -75,11 +75,26 @@ function useMiddleButtonPan<T extends HTMLElement>() {
   return ref
 }
 
-export function PlanningCockpit() {
+// WO A09 Combined Cockpit — `embedded` mounts the SAME live cockpit inside the Plan module's
+// combined page (grid + Unscheduled rail + Inspector + filters + summary), hiding only the
+// bottom Bay-model dock (the A06 Production Flow floor replaces those zones on that page).
+// `lockedJobIds` (business rules 2 Jul): jobs whose body is MERGED WITH CHASSIS — the permanent
+// point of no return. Backward planner moves (unschedule / revert-to-unscheduled) are rejected
+// for them. Standalone /planning/cockpit behaviour is unchanged (both props default off).
+// 3 Jul — standardized Plan drawer: the host (PlanCombined) may take over the embedded slot
+// drawer's PRESENTATION (tabbed corporate layout) while this component keeps supplying the
+// stage-action node (CockpitSlotDetail with all its handlers) as `overview`.
+export type RenderSlotDrawer = (args: { slot: PlanningSlot; overview: ReactNode; close: () => void }) => ReactNode
+
+export function PlanningCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderSlotDrawer }: {
+  embedded?: boolean; lockedJobIds?: Set<number>; downstreamJobIds?: Set<number>
+  renderSlotDrawer?: RenderSlotDrawer
+} = {}) {
   const { mode } = usePlanning()
   if (mode === 'loading') return <CockpitSkeleton />
   if (mode !== 'live') return <CockpitMockNotice />
-  return <LiveCockpit />
+  return <LiveCockpit embedded={embedded} lockedJobIds={lockedJobIds} downstreamJobIds={downstreamJobIds}
+                      renderSlotDrawer={renderSlotDrawer} />
 }
 
 function CockpitSkeleton() {
@@ -109,15 +124,18 @@ function CockpitMockNotice() {
           The Cockpit runs on live planning data and the API isn’t reachable right now (offline / demo
           fallback mode). Use the classic board instead — it renders the bundled demo data.
         </div>
-        <Link to="/planning" className="mt-3 inline-flex rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-dark">
-          Open the Planning Board
+        <Link to="/plan" className="mt-3 inline-flex rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-dark">
+          Open the Plan page
         </Link>
       </Card>
     </div>
   )
 }
 
-function LiveCockpit() {
+function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderSlotDrawer }: {
+  embedded?: boolean; lockedJobIds?: Set<number>; downstreamJobIds?: Set<number>
+  renderSlotDrawer?: RenderSlotDrawer
+}) {
   const nav = useNavigate()
   const { board, schedule, move, unschedule, revertToUnscheduled, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
   useRefetchOnFocus(refresh)
@@ -195,6 +213,13 @@ function LiveCockpit() {
   const cellFor = (weekKey: string, bay: string): PlanningSlot | undefined =>
     board.slots.find((s) => s.week_key === weekKey && s.bay === bay)
   const capFor = (weekKey: string) => board.capacity.find((c) => c.week_key === weekKey)
+  // A09 single-location rule (embedded): FILLED / EMPTY / VALUE / GAP derive from the cards
+  // VISIBLE on the grid — a job that moved downstream (Panels ready / bays / merge / QC)
+  // leaves the counts the moment its card moves, exactly like the A09 mockup's summary.
+  const visibleWeekSlots = (weekKey: string) =>
+    board.slots.filter((s) => s.week_key === weekKey && s.job && !(downstreamJobIds && downstreamJobIds.has(s.job.id)))
+  const embFilled = (weekKey: string) => visibleWeekSlots(weekKey).length
+  const embValue = (weekKey: string) => visibleWeekSlots(weekKey).reduce((a, s) => a + (s.job?.selling_zar ?? 0), 0)
   const laneForBay = (bay: string): string => (bay.startsWith('P') ? 'panelshop' : 'vacuum')
   function flashReject(key: string) {
     setRejectKey(key)
@@ -254,6 +279,11 @@ function LiveCockpit() {
       toast.push({ kind: 'warn', message: "You don't have permission to unschedule jobs." })
       return
     }
+    // Business rules 2 Jul — MERGED WITH CHASSIS is the point of no return: no backward moves.
+    if (lockedJobIds && src.job && lockedJobIds.has(src.job.id)) {
+      toast.push({ kind: 'warn', message: `Job ${src.job.job_number} is merged with its chassis — it can't move back to an earlier state.` })
+      return
+    }
     try {
       await unschedule(src.id)
     } catch {
@@ -265,7 +295,11 @@ function LiveCockpit() {
   const poolCount = poolJobs.length + ackCandidates.length
   const { leftCollapsed, rightCollapsed, dockOpen, isFullscreen } = layout
   const rightExpanded = !rightCollapsed || !!selectedLiveSlot || pinned
-  const gridTemplateColumns = `${leftCollapsed ? '40px' : '232px'} minmax(0,1fr) ${rightExpanded ? '340px' : '40px'}`
+  // A09 embedded: the inspector column is replaced by a right-side slide-in drawer
+  // (same presentation as the floor's job-detail modal), so the grid drops to two columns.
+  const gridTemplateColumns = embedded
+    ? `${leftCollapsed ? '40px' : '232px'} minmax(0,1fr)`
+    : `${leftCollapsed ? '40px' : '232px'} minmax(0,1fr) ${rightExpanded ? '340px' : '40px'}`
 
   return (
     <div ref={rootRef} className="flex h-full flex-col gap-2 bg-surface-alt/30 p-3">
@@ -466,7 +500,7 @@ function LiveCockpit() {
                                 <Spinner size={16} className="text-primary" />
                               </div>
                             )}
-                            {cell && cell.job ? (
+                            {cell && cell.job && !(embedded && downstreamJobIds && downstreamJobIds.has(cell.job.id)) ? (
                               <button
                                 onClick={() => setSelectedSlotId(cell.id)}
                                 data-testid="cockpit-slot-cell"
@@ -513,15 +547,15 @@ function LiveCockpit() {
                   })}
                   <FooterRow
                     label="Filled"
-                    cells={board.weeks.map((w) => `${capFor(w.key)?.filled ?? 0}`)}
+                    cells={board.weeks.map((w) => `${embedded ? embFilled(w.key) : capFor(w.key)?.filled ?? 0}`)}
                     tooltipKey="planning_board.weekly_capacity_footer"
                   />
-                  <FooterRow label="Empty" cells={board.weeks.map((w) => `${capFor(w.key)?.empty ?? 0}`)} />
-                  <FooterRow label="Value" cells={board.weeks.map((w) => zarShort(capFor(w.key)?.value_zar ?? 0))} strong />
+                  <FooterRow label="Empty" cells={board.weeks.map((w) => `${embedded ? SLOTS.length - embFilled(w.key) : capFor(w.key)?.empty ?? 0}`)} />
+                  <FooterRow label="Value" cells={board.weeks.map((w) => zarShort(embedded ? embValue(w.key) : capFor(w.key)?.value_zar ?? 0))} strong />
                   <FooterRow
                     label="Gap vs target"
-                    cells={board.weeks.map((w) => zarShort((capFor(w.key)?.value_zar ?? 0) - target))}
-                    tone={board.weeks.map((w) => ((capFor(w.key)?.value_zar ?? 0) >= target ? 'green' : 'red'))}
+                    cells={board.weeks.map((w) => zarShort((embedded ? embValue(w.key) : capFor(w.key)?.value_zar ?? 0) - target))}
+                    tone={board.weeks.map((w) => ((embedded ? embValue(w.key) : capFor(w.key)?.value_zar ?? 0) >= target ? 'green' : 'red'))}
                   />
                 </tbody>
               </table>
@@ -529,8 +563,8 @@ function LiveCockpit() {
           </div>
         </Card>
 
-        {/* RIGHT — persistent inspector (replaces the slot pop-up) */}
-        {rightExpanded ? (
+        {/* RIGHT — persistent inspector (standalone only; embedded uses the slide-in drawer below) */}
+        {!embedded && (rightExpanded ? (
           <Card className="flex min-h-0 flex-col overflow-hidden p-0">
             <div className="flex shrink-0 items-center justify-between border-b border-line px-3 py-2">
               <span className="text-sm font-semibold text-body">
@@ -554,11 +588,17 @@ function LiveCockpit() {
                 <CockpitSlotDetail
                   slot={selectedLiveSlot}
                   canTick={canTickChassis}
-                  canRevert={canUnschedule && selectedLiveSlot.job?.status === 'planning'}
+                  canRevert={canUnschedule && selectedLiveSlot.job?.status === 'planning'
+                    && !(lockedJobIds && selectedLiveSlot.job && lockedJobIds.has(selectedLiveSlot.job.id))}
                   onMarkReceived={() => markSlotChassisReceived(selectedLiveSlot)}
                   onRevert={async (reason) => {
                     const jid = selectedLiveSlot.job?.id
                     if (jid == null) return
+                    // Business rules 2 Jul — merged jobs never move backwards.
+                    if (lockedJobIds && lockedJobIds.has(jid)) {
+                      toast.push({ kind: 'warn', message: `Job ${selectedLiveSlot.job?.job_number} is merged with its chassis — it can't move back to an earlier state.` })
+                      return
+                    }
                     try {
                       await revertToUnscheduled(jid, reason)
                       setSelectedSlotId(null)
@@ -580,10 +620,62 @@ function LiveCockpit() {
             <ChevronsLeft size={15} />
             <span style={{ writingMode: 'vertical-rl' }} className="text-[11px] font-semibold uppercase tracking-wide">Inspector</span>
           </button>
-        )}
+        ))}
       </div>
 
-      {/* ── Bottom dock — bay-model flow zones (collapsed by default) ─────────── */}
+      {/* A09 embedded — slot detail as a right-side slide-in (same presentation + tokens as the
+          floor's job-detail drawer; the a06 .modal/.scrim classes apply because the embedded
+          cockpit renders inside the .a06-flow scope). */}
+      {embedded && selectedLiveSlot?.job && (() => {
+        const close = () => setSelectedSlotId(null)
+        const overview = (
+          <CockpitSlotDetail
+            slot={selectedLiveSlot}
+            // 3 Jul (Michael) — inside the standardized drawer the planning-BOM section is
+            // redundant: the drawer's Bill of Materials tab shows the live costing sheet.
+            hideSections={renderSlotDrawer ? ['bom'] : undefined}
+            canTick={canTickChassis}
+            canRevert={canUnschedule && selectedLiveSlot.job?.status === 'planning'
+              && !(lockedJobIds && selectedLiveSlot.job && lockedJobIds.has(selectedLiveSlot.job.id))}
+            onMarkReceived={() => markSlotChassisReceived(selectedLiveSlot)}
+            onRevert={async (reason) => {
+              const jid = selectedLiveSlot.job?.id
+              if (jid == null) return
+              if (lockedJobIds && lockedJobIds.has(jid)) {
+                toast.push({ kind: 'warn', message: `Job ${selectedLiveSlot.job?.job_number} is merged with its chassis — it can't move back to an earlier state.` })
+                return
+              }
+              try {
+                await revertToUnscheduled(jid, reason)
+                setSelectedSlotId(null)
+              } catch { /* surfaced by the context toast */ }
+            }}
+            onViewProduction={() => {
+              const jn = selectedLiveSlot.job?.job_number
+              nav(jn ? `/production?jobId=${encodeURIComponent(jn)}` : '/production')
+            }}
+          />
+        )
+        // 3 Jul — the host may render the standardized tabbed drawer around the same actions node.
+        if (renderSlotDrawer) {
+          return <Fragment key={selectedLiveSlot.id}>{renderSlotDrawer({ slot: selectedLiveSlot, overview, close })}</Fragment>
+        }
+        return (
+          <EmbeddedSlotDrawer
+            key={selectedLiveSlot.id}
+            jobNumber={selectedLiveSlot.job.job_number}
+            customer={selectedLiveSlot.job.customer}
+            slotLabel={`${selectedLiveSlot.bay} · ${selectedLiveSlot.week_key}`}
+            onClose={close}
+          >
+            {overview}
+          </EmbeddedSlotDrawer>
+        )
+      })()}
+
+      {/* ── Bottom dock — bay-model flow zones (collapsed by default). Hidden when embedded in
+          the Combined Cockpit: the A06 Production Flow floor below replaces these zones. ─────── */}
+      {!embedded && (
       <div className="shrink-0 overflow-hidden rounded-lg border border-line bg-white">
         <button onClick={layout.toggleDock}
           aria-expanded={dockOpen}
@@ -601,6 +693,7 @@ function LiveCockpit() {
           </div>
         )}
       </div>
+      )}
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 items-center justify-between">
@@ -621,6 +714,37 @@ function LiveCockpit() {
         }}
       />
     </div>
+  )
+}
+
+// A09 — slot detail presented like the floor's job-detail drawer (slide-in from the right).
+// Styled by the a06 .scrim/.modal/.mh classes (the embedded cockpit lives inside .a06-flow).
+function EmbeddedSlotDrawer({ jobNumber, customer, slotLabel, onClose, children }: {
+  jobNumber: string; customer: string; slotLabel: string; onClose: () => void; children: ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setOpen(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
+  return (
+    <>
+      <div className={`scrim ${open ? 'show' : ''}`} onClick={onClose} />
+      <aside className={`modal ${open ? 'open' : ''}`} role="dialog" aria-label={`Job ${jobNumber}`}>
+        <div className="mh">
+          <div className="top">
+            <div>
+              <div className="kind">Scheduled job</div>
+              <div className="num">#{jobNumber}</div>
+              <div className="meta">{customer}</div>
+              <div className="job">{slotLabel}</div>
+            </div>
+            <button className="x" onClick={onClose}>✕</button>
+          </div>
+        </div>
+        <div className="mbody">{children}</div>
+      </aside>
+    </>
   )
 }
 

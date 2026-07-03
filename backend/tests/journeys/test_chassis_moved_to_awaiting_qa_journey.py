@@ -4,8 +4,9 @@ The drag itself is an HTML5 DataTransfer drop (unreliable to drive headlessly); 
 chokepoint the drop calls — POST /api/chassis-records/{id}/move-to-awaiting-qa — via page.request, plus the
 status-promoting outcome (status='awaiting_qa' atomically with the event), the bay-clearing derivation (the
 bay falls to 'empty' for free — current_occupants gates on in_assembly), the guards (body-attached
-precondition / idempotency), role gating (Q5 workshop = RO), and the UI: the Planning bay tile carries the
-'drag to QA' affordance, then clears, and the chassis lands in the AWAITING QA zone. Runs on icb_test (CI).
+precondition / idempotency), role gating (Q5 workshop = RO), and the UI on ROUTED surfaces (3 Jul Planning
+retirement, 81ddfee): the /production bay tile shows 'attached_today', clears to 'empty' after the move, and
+the chassis lands in the /admin/qc QC inbox. Runs on icb_test (CI).
 
 WO v4.36a.3 extension: when the bay also held the job's PANELS, body_attached CONSUMES them, so the
 move-to-QA must clear the bay on the PANEL side too (state 'empty', not a stray 'pre_assembly'). The
@@ -74,29 +75,23 @@ def test_workshop_cannot_move(page: Page, live_server: str, role_users) -> None:
     assert h.chassis_status(s["chassis_id"]) == "in_assembly"  # untouched
 
 
-# ── UI: the bay tile is draggable, then clears; the chassis appears in the zone ───
-def test_planning_zone_drag_affordance_and_bay_clear(page: Page, live_server: str) -> None:
+# ── UI (routed surfaces): the attached /production tile clears; the chassis lands in the QC inbox ───
+def test_production_tile_clears_and_chassis_lands_in_qc_inbox(page: Page, live_server: str) -> None:
     s = h.make_assembly_job(attached=True)
     admin_session(page)
-    nav = page.get_by_test_id("nav-planning")
-    expect(nav).to_be_visible(timeout=T)
-    nav.click()
-    expect(page.get_by_test_id("bay-model")).to_be_visible(timeout=T)
-    expect(page.get_by_test_id("awaiting-qa-zone")).to_be_visible(timeout=T)
-    tile = page.locator(f'[data-testid="assembly-bay"][data-bay-id="{s["bay_id"]}"]')
+    h.open_production(page)
+    tile = page.locator(f'[data-testid="production-bay-tile"][data-bay-code="{s["bay_code"]}"]')
     expect(tile).to_have_attribute("data-bay-state", "attached_today", timeout=T)
-    expect(tile).to_have_attribute("draggable", "true", timeout=T)
-    expect(tile.get_by_test_id("qa-drag-hint")).to_be_visible(timeout=T)     # the 'drag to QA →' affordance
-    shot(page, "01-attached-tile-draggable", journey=JOURNEY)
-    # the drop's chokepoint, then reload to see the post-move board (the bay clears, the chassis lands in QA)
+    shot(page, "01-attached-tile", journey=JOURNEY)
+    # the drop's chokepoint, then reload to see the post-move dashboard (the bay clears), then the QC inbox
     assert _move(page, live_server, s["chassis_id"], notes="QC ready").status == 201
     page.reload()
-    expect(page.get_by_test_id("bay-model")).to_be_visible(timeout=T)
-    expect(page.locator(f'[data-testid="pre-assembly-empty"][data-bay-id="{s["bay_id"]}"]')).to_have_attribute(
-        "data-bay-state", "empty", timeout=T)                                # bay flipped to empty → Pre-Assembly lane
-    card = page.locator('[data-testid="awaiting-qa-chassis"]', has_text=s["vin"])
-    expect(card).to_be_visible(timeout=T)                                    # chassis now in the AWAITING QA zone
-    shot(page, "02-moved-to-qa-zone", journey=JOURNEY)
+    page.wait_for_selector("[data-testid='production-kpis']", timeout=20_000)
+    expect(tile).to_have_attribute("data-bay-state", "empty", timeout=T)     # bay flipped to empty
+    page.goto("/mes-app/admin/qc")                                           # session already minted — deep-link safe
+    page.wait_for_selector("[data-testid='qc-inbox']", timeout=T)
+    expect(page.get_by_test_id(f"qc-row-{s['chassis_id']}")).to_be_visible(timeout=T)  # chassis awaiting QA
+    shot(page, "02-qc-inbox-row", journey=JOURNEY)
 
 
 # ── WO v4.36a.3 — panel-side bay state clears with the body (the BA click-around catch) ───────────

@@ -1,8 +1,9 @@
-"""WO v4.34 §3.8 — job-number assignment journey (§3.5): the Planning Board shows the quote-derived
-NUMERIC job number, and the Planning-ack override field is gated by role.
+"""WO v4.34 §3.8 — job-number assignment journey (§3.5): the /plan embedded cockpit (Planning Board
+retired 3 Jul — /planning redirects to /plan) shows the quote-derived NUMERIC job number, and the
+Planning-ack override field is gated by role.
 
-A staged pre_job_confirmed job (numeric job_number) appears as an 'Awaiting Planning ack' card on
-the board, shown as "#<digits>" (proves the §3.5 numeric — no letter prefix / /MM/YYYY). admin +
+A staged pre_job_confirmed job (numeric job_number) appears as an 'Awaiting Planning ack' card in
+the cockpit's Unscheduled rail, shown as "#<digits>" (proves the §3.5 numeric — no letter prefix / /MM/YYYY). admin +
 planner (planning.acknowledge) open the ack panel and see the job-number override field pre-filled
 with the numeric; sales (no permission) reaches the same card but the override field is gated off.
 The extraction + override logic is unit-tested in test_job_number_strategy.py. Distinct numeric
@@ -56,10 +57,13 @@ def staged():
 
 
 def _open_board(page: Page) -> None:
-    nav = page.get_by_test_id("nav-planning")
+    # 3 Jul — Planning Board retired: /plan's embedded cockpit hosts the SAME ack cards +
+    # PlanningAckPanel (identical ackCandidates filter + '#<number>' card markup — see
+    # PlanningCockpit.tsx vs the frozen PlanningBoard.tsx).
+    nav = page.get_by_test_id("nav-plan")
     expect(nav).to_be_visible(timeout=T)
     nav.click()
-    expect(page.get_by_role("heading", name="Planning Board")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("plan-embedded-cockpit")).to_be_visible(timeout=T)
 
 
 def _ack_card(page: Page, job_number: str):

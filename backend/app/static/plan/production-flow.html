@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICB Production Flow v0.3 — job detail</title>
+<style>
+  :root{
+    --bg:#EEF1F5; --panel:#FFFFFF; --ink:#0F172A; --ink-2:#475569; --ink-3:#94A3B8;
+    --hair:#E6E9EE; --hair-strong:#D6DBE3;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+    --shadow-md:0 1px 2px rgba(15,23,42,.05), 0 10px 28px rgba(15,23,42,.07);
+    --shadow-lg:0 1px 2px rgba(15,23,42,.06), 0 24px 56px rgba(15,23,42,.16);
+    --green:#0F9D7A; --amber:#D97706; --red:#DC4A3D; --blue:#2563EB; --grey:#64748B; --purple:#7C3AED;
+    --brand-red:#E2231A; --brand-red-dk:#A8160F;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Inter",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:1.4}
+  .app{max-width:1460px;margin:0 auto;padding:16px 20px 30px}
+
+  .hdr{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--hair);border-radius:14px;box-shadow:var(--shadow-sm);padding:10px 16px;margin-bottom:12px}
+  .mark{width:36px;height:36px;border-radius:10px;background:#fff;border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .mark svg{width:26px;height:auto}
+  .brand h1{font-size:17px;letter-spacing:-.01em;margin:0;font-weight:660}
+  .brand .sub{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+  .spacer{flex:1}
+  .flat-btn{font-family:var(--font);font-size:12px;font-weight:600;color:var(--ink-2);background:var(--panel);border:1px solid var(--hair-strong);border-radius:9px;padding:7px 12px;cursor:pointer}
+  .flat-btn:hover{border-color:#C2C9D4;color:var(--ink)}
+
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
+  @media(max-width:1080px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  .kpi{background:var(--panel);border:1px solid var(--hair);border-radius:12px;box-shadow:var(--shadow-sm);padding:11px 14px;position:relative;overflow:hidden}
+  .kpi .v{font-size:23px;font-weight:680;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+  .kpi .v small{font-size:13px;color:var(--ink-3);font-weight:600}
+  .kpi .k{font-size:11px;color:var(--ink-2);margin-top:5px;font-weight:550}
+  .kpi .accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+
+  .zone{background:var(--panel);border:1px solid var(--hair);border-radius:14px;box-shadow:var(--shadow-md);margin-bottom:12px;overflow:auto}
+  .zhead{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--hair);background:#FBFCFD}
+  .zhead .zt{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+  .zhead .zc{font-size:11px;color:var(--ink-3)}
+  .zhead .zr{margin-left:auto;font-size:10.5px;color:var(--ink-3)}
+
+  .strip{display:flex;gap:10px;padding:12px 16px;flex-wrap:wrap;min-height:78px}
+  .pcard{width:206px;background:#fff;border:1px solid var(--hair);border-radius:11px;box-shadow:var(--shadow-sm);padding:9px 11px;cursor:grab;position:relative;overflow:hidden;touch-action:none;transition:box-shadow .15s,transform .15s}
+  .pcard:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)} .pcard:active{cursor:grabbing}
+  .pcard.dragging{opacity:.2}
+  .pcard .accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+  .pcard .pt{font-size:12.5px;font-weight:680;display:flex;align-items:center;gap:7px}
+  .pcard .meth{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;border-radius:5px;padding:2px 6px}
+  .pcard .ps{font-size:11px;color:var(--ink-2);margin-top:3px}
+  .pcard .pf{font-size:10.5px;color:var(--ink-3);margin-top:5px;display:flex;align-items:center;gap:6px}
+  .pcard .dot{width:7px;height:7px;border-radius:50%}
+  .strip .empty{font-size:12px;color:var(--ink-3);font-style:italic;align-self:center}
+
+  .pa-row{display:flex;align-items:stretch;border-bottom:1px solid var(--hair);min-width:1380px}
+  .pa-row:last-child{border-bottom:none}
+  .pa-rail{width:124px;flex:none;padding:8px 12px;border-right:1px solid var(--hair);display:flex;flex-direction:column;justify-content:center;gap:5px}
+  .pa-rail .bid{font-size:13px;font-weight:700}
+  .pa-rail .st{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600}
+  .pa-rail .st .d{width:7px;height:7px;border-radius:50%}
+  .pa-rail .dots{display:flex;gap:4px} .pdot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--hair-strong)} .pdot.on{background:#475569;border-color:#475569}
+  .pa-lane{position:relative;flex:none;width:1040px;overflow:hidden;background:linear-gradient(180deg,#FBFCFD,#F0F3F7);border-left:4px solid transparent;transition:box-shadow .15s,background .15s}
+  .pa-lane.drop-ok{background:linear-gradient(180deg,#EFF8F2,#E2F1E9);box-shadow:inset 0 0 0 2px rgba(16,157,122,.4)}
+  .guide{position:absolute;top:8px;bottom:8px;width:1px;background:rgba(100,116,139,.13)}
+  .glab{position:absolute;top:5px;font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);font-weight:600;transform:translateX(4px);opacity:0;transition:opacity .2s}
+  .pa-lane:hover .glab{opacity:1}
+  .body-wrap{position:absolute;top:50%;transform:translateY(-50%);cursor:grab;touch-action:none;transition:filter .15s}
+  .body-wrap:hover{filter:drop-shadow(0 5px 12px rgba(15,23,42,.14))} .body-wrap:active{cursor:grabbing}
+  .body-wrap.dragging{opacity:.2;pointer-events:none}
+  .bodyimg{position:relative;display:block;border-radius:6px;filter:drop-shadow(0 2px 3px rgba(15,23,42,.16))}
+  .bodyimg .bi-empty{display:block}
+  .bodyimg img{display:block;pointer-events:none}
+  .bodyimg .bi-fill{position:absolute;top:0;left:0;height:100%;overflow:hidden;pointer-events:none;transition:width .35s ease}
+  .bodyimg.b-attn{box-shadow:0 0 0 2px #E0922B}
+  .bodyimg.b-late{box-shadow:0 0 0 2px #D64550}
+  .btag{position:absolute;font-size:9px;font-weight:600;color:var(--ink-2);white-space:nowrap;pointer-events:none;z-index:2}
+  .btag .bj{color:var(--ink);font-weight:800}
+  .btag .bch{color:#2563EB;font-weight:700;margin-left:5px}
+  .ready-ring{position:absolute;border-radius:10px;box-shadow:0 0 0 2px rgba(16,157,122,.5);pointer-events:none}
+  .empty-note{position:absolute;top:50%;left:40%;transform:translate(-50%,-50%);font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:8px;pointer-events:none}
+  .empty-note .o{width:11px;height:11px;border-radius:50%;border:1.5px dashed var(--ink-3)}
+
+  .m-block{flex:1;min-width:210px;border-left:2px dashed var(--hair-strong);background:linear-gradient(180deg,#FBFCFE,#F3F6FB);
+           display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 12px;position:relative;transition:box-shadow .15s,background .15s;text-align:center}
+  .m-block.active{background:linear-gradient(180deg,#F6FBFF,#EEF5FD)}
+  .m-block.done{background:linear-gradient(180deg,#F1FAF6,#E7F5EF);border-left-color:#BFE6DA}
+  .m-block.drop-ok{box-shadow:inset 0 0 0 2px rgba(16,157,122,.5)}
+  /* guide: when a chassis is dragged from Parking, its matching bay pulses so the planner sees where to drop */
+  .m-block.merge-guide{animation:mguide 1.25s ease-in-out infinite}
+  .m-block.merge-guide::after{content:'▾ drop chassis';position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#E2231A;color:#fff;font-size:8.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:999px;white-space:nowrap;z-index:6;box-shadow:0 2px 6px rgba(226,35,26,.4);pointer-events:none}
+  .m-block.merge-guide.drop-ok{animation:none;box-shadow:inset 0 0 0 2px rgba(16,157,122,.75),0 0 16px 3px rgba(16,157,122,.3)}
+  .m-block.merge-guide.drop-ok::after{content:'▾ drop here';background:#0F9D7A;box-shadow:0 2px 6px rgba(16,157,122,.4)}
+  @keyframes mguide{0%,100%{box-shadow:inset 0 0 0 2px rgba(226,35,26,.5)}50%{box-shadow:inset 0 0 0 2px rgba(226,35,26,.9),0 0 16px 3px rgba(226,35,26,.28)}}
+  .m-block .mt{font-size:10px;font-weight:700;letter-spacing:.1em;color:#9aa7bb;text-transform:uppercase}
+  .m-block .msub{font-size:10px;color:var(--ink-3)}
+  .m-block .mline{font-size:12px;font-weight:680;cursor:pointer} .m-block .mline .ln{color:var(--ink-3);font-weight:600}
+  .m-block .mready{font-size:12px;font-weight:680;color:var(--green)}
+  .m-block .mdone{font-size:10.5px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:8px}
+  .m-block .mdisp{font-size:10px;font-weight:700;color:#2563EB;cursor:pointer;border:1px solid #bcd0f5;border-radius:6px;padding:2px 7px;background:#fff}
+  .m-block .mdisp:hover{background:#eef4ff}
+  .m-block .clk{cursor:pointer}
+
+  .ccard{width:350px;background:#fff;border:1px solid var(--hair);border-radius:14px;box-shadow:var(--shadow-md);padding:10px 14px;cursor:grab;position:relative;overflow:hidden;touch-action:none;transition:box-shadow .15s,transform .15s;display:flex;align-items:center;gap:12px}
+  .ccard .cid{font-size:12.5px;font-weight:780;color:var(--ink);white-space:nowrap}
+  .ccard .ckind{font-size:9.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;font-weight:600}
+  .ccard:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)} .ccard:active{cursor:grabbing}
+  .ccard.dragging{opacity:.2}
+  .ccard .ctruck{flex:none}
+  .ccard .cinfo{min-width:0;flex:1}
+  .ccard .cid{font-size:13px;font-weight:780;letter-spacing:.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ccard .crow2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px}
+  .ccard .cmodel{font-size:11px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wpill{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.05em;color:#fff;background:#2EA24E;padding:3px 9px;border-radius:99px}
+  .cacc{position:absolute;left:0;top:0;bottom:0;width:4px;background:#94A3B8;border-radius:11px 0 0 11px}
+  .cbadge{display:inline-block;margin-top:4px;font-size:9px;font-weight:800;letter-spacing:.04em;color:#fff;background:#2563EB;padding:2px 7px;border-radius:5px}
+  .cmerge{border-radius:10px;padding:2px;display:inline-flex;align-items:center;justify-content:center;background:transparent;margin:1px auto;animation:mergepulse 2.6s ease-in-out infinite}
+  .cmerge img{border-radius:8px}
+  @keyframes mergepulse{0%,100%{box-shadow:0 0 0 0 rgba(127,168,232,0)}50%{box-shadow:0 0 0 4px rgba(127,168,232,.15)}}
+  @media(prefers-reduced-motion:reduce){.cmerge{animation:none}}
+  .mbody{cursor:grab;touch-action:none;font-size:12px;font-weight:680;color:var(--ink);background:#F1F5FB;border:1px solid #D6E0F0;border-radius:8px;padding:5px 11px;display:inline-flex;align-items:center;gap:5px;transition:box-shadow .15s}
+  .mbody:hover{box-shadow:var(--shadow-sm)} .mbody:active{cursor:grabbing}
+  .mbody.dragging{opacity:.2} .mbody .ln{color:var(--ink-3);font-weight:600}
+  /* body shown as the supplied 3/4 image (Body only.png) inside the busy-merge state */
+  .mbody.mbodypic{flex:0 0 auto;flex-direction:column;gap:3px;padding:0;background:transparent;border:none;overflow:visible;border-radius:8px}
+  .mbody.mbodypic img{display:block;height:auto;border-radius:6px;filter:drop-shadow(0 3px 7px rgba(15,23,42,.2))}
+  .mbody.mbodypic .mbtag{font-size:10px;font-weight:780;color:var(--ink);letter-spacing:.01em}
+  .mbody.mbodypic:hover{box-shadow:none;transform:translateY(-1px)}
+  .busyrow{display:flex;align-items:center;gap:6px;justify-content:center} .busyrow .plus{font-size:14px;font-weight:700;color:var(--ink-3)}
+  .confirmbtn{margin-top:7px;font-family:var(--font);font-size:10.5px;font-weight:800;letter-spacing:.03em;color:#fff;background:#2563EB;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;box-shadow:0 2px 6px rgba(37,99,235,.3)}
+  .confirmbtn:hover{background:#1d4fd0}
+  .m-block.busy{background:linear-gradient(180deg,#F3F7FF,#E9F1FE)}
+  /* ===== Merge crescendo (fires on Confirm merge complete) ===== */
+  .mergedwrap{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;margin:3px 0 2px}
+  .mergedwrap .mglow{position:absolute;inset:-34% -14%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(226,35,26,.5),rgba(226,35,26,.14) 45%,transparent 70%);opacity:0;pointer-events:none;z-index:0}
+  .mergedwrap.lit .mglow{animation:mglow 1.2s ease forwards}
+  @keyframes mglow{0%{opacity:0}35%{opacity:1}100%{opacity:0}}
+  .mergedimg{position:relative;z-index:1;width:150px;height:auto;display:block;border-radius:7px;filter:drop-shadow(0 5px 12px rgba(15,23,42,.24));transform-origin:center center}
+  .mergedimg.reveal{animation:mergePop 1.2s cubic-bezier(.34,1.42,.5,1) forwards}
+  @keyframes mergePop{0%{opacity:0;transform:scale(.12)}22%{opacity:1}55%{transform:scale(1.16)}74%{transform:scale(.97)}100%{opacity:1;transform:scale(1)}}
+  .mbadge{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);z-index:3;background:rgba(16,157,122,.96);color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 9px;border-radius:999px;box-shadow:0 2px 7px rgba(0,0,0,.2);opacity:1;white-space:nowrap}
+  .mbadge.pop{animation:badgeIn .5s ease .64s both}
+  @keyframes badgeIn{0%{opacity:0;transform:translateX(-50%) scale(.55)}60%{transform:translateX(-50%) scale(1.1)}100%{opacity:1;transform:translateX(-50%) scale(1)}}
+  .mmeta{font-size:10px;font-weight:680;color:var(--ink-2);cursor:pointer;margin-top:1px}
+  .shockwave{position:fixed;width:44px;height:44px;border-radius:50%;border:3px solid rgba(226,35,26,.5);transform:translate(-50%,-50%) scale(.2);pointer-events:none;z-index:1200;animation:shock 1.2s cubic-bezier(.2,.6,.35,1) forwards}
+  @keyframes shock{0%{opacity:.75;transform:translate(-50%,-50%) scale(.2)}70%{opacity:.3}100%{opacity:0;transform:translate(-50%,-50%) scale(24)}}
+  .cpull{cursor:grab;touch-action:none} .cpull:active{cursor:grabbing} .cpull.dragging{opacity:.2}
+  .strip.drop-ok{box-shadow:inset 0 0 0 2px rgba(127,168,232,.45);border-radius:12px}
+  .cabove{display:flex;align-items:center;gap:6px;justify-content:center;flex-wrap:wrap;font-size:9.5px;color:var(--ink-2);margin-bottom:3px}
+  .cabove .cvins{font-weight:700;color:var(--ink)}
+  .cabove .cbadge{margin-top:0}
+
+  .drag-ghost{z-index:300;pointer-events:none;filter:drop-shadow(0 16px 28px rgba(15,23,42,.3));margin:0!important}
+
+  .hint{margin-top:6px;font-size:12px;color:var(--ink-2);background:#F6F8FB;border:1px solid var(--hair);border-radius:10px;padding:10px 14px;display:flex;gap:9px}
+  .hint b{color:var(--ink)}
+  .foot{font-size:11px;color:var(--ink-3);margin-top:12px;line-height:1.7}
+  .foot b{color:var(--ink-2);font-weight:600}.foot .br b{color:var(--brand-red);font-weight:800}
+
+  /* ===== JOB DETAIL MODAL ===== */
+  .scrim{position:fixed;inset:0;background:rgba(15,23,42,.28);opacity:0;pointer-events:none;transition:opacity .3s;z-index:60}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .modal{position:fixed;top:0;right:0;height:100vh;width:560px;max-width:96vw;background:var(--panel);box-shadow:var(--shadow-lg);
+         border-left:1px solid var(--hair);transform:translateX(106%);transition:transform .34s cubic-bezier(.4,0,.2,1);z-index:70;display:flex;flex-direction:column}
+  .modal.open{transform:translateX(0)}
+  .mh{padding:18px 22px 12px;border-bottom:1px solid var(--hair)}
+  .mh .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .mh .kind{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-red)}
+  .mh .num{font-size:21px;font-weight:680;letter-spacing:-.02em;margin-top:2px}
+  .mh .meta{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+  .mh .job{font-size:11px;color:var(--ink-3);margin-top:4px}
+  .mh .x{cursor:pointer;border:none;background:#F3F5F8;border-radius:9px;width:32px;height:32px;font-size:16px;color:var(--ink-2);flex:none}
+  .tabs{display:flex;gap:2px;margin-top:14px;flex-wrap:wrap}
+  .tab{font-size:12px;font-weight:600;color:var(--ink-2);background:transparent;border:none;border-radius:8px 8px 0 0;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--brand-red);border-bottom-color:var(--brand-red);background:#fff}
+  .mbody{padding:18px 22px 28px;overflow:auto;flex:1}
+  .frow{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid var(--hair);font-size:13px}
+  .frow:last-child{border-bottom:none}
+  .frow .k{color:var(--ink-2)} .frow .v{font-weight:600;text-align:right}
+  .sec-t{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin:18px 0 6px}
+  table.bom{width:100%;border-collapse:collapse;font-size:12px}
+  table.bom th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--hair)}
+  table.bom td{padding:7px 8px;border-bottom:1px solid var(--hair);vertical-align:top}
+  table.bom .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--ink)}
+  table.bom .sup{color:var(--ink-3);font-size:11px}
+  .chk{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:13px;border-bottom:1px solid var(--hair)}
+  .chk .b{width:16px;height:16px;border-radius:5px;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:800}
+  .chk .ok{background:var(--green)} .chk .no{background:#fff;border:1.5px solid var(--hair-strong)}
+  .pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:99px}
+  .pill.s{background:#E7F6F1;color:#0B7C60} .pill.p{background:#FEF3E2;color:#9A5B12}
+  .draw{margin-top:10px;border:1px solid var(--hair);border-radius:10px;background:#FBFCFD;padding:14px;text-align:center}
+  .vcl-photos{display:flex;gap:8px;margin-top:10px}
+  .vcl-photos .ph{flex:1;height:64px;border:1px dashed var(--hair-strong);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-3);background:#FBFCFD}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hdr">
+    <div class="mark" title="Icecold Bodies — Range Rhino 2.0"><svg viewBox="0 0 104 84"><polygon points="6,16 34,42 22,50" fill="#141414"/><polygon points="6,16 34,42 27,38" fill="#E2231A"/><polygon points="40,40 50,18 57,40" fill="#141414"/><polygon points="62,40 68,26 74,42" fill="#141414"/><polygon points="22,50 34,42 60,40 78,52 66,70 36,70 24,62" fill="#E2231A"/><polygon points="24,62 36,70 66,70 60,60 38,58" fill="#B81B16"/><polygon points="34,42 60,40 58,52 40,52" fill="#F2F2F2" opacity=".9"/><circle cx="46" cy="52" r="3.4" fill="#141414"/></svg></div>
+    <div class="brand"><h1>Production Flow</h1><div class="sub"><b style="color:var(--brand-red);font-weight:800">ICECOLD</b> BODIES · Kempton Park · click any card for full job detail</div></div>
+    <div class="spacer"></div>
+    <button class="flat-btn" id="resetBtn" title="Restore the starting layout">↺ Reset</button>
+  </div>
+
+  <div class="kpis" id="kpiRow"></div>
+
+  <div class="zone">
+    <div class="zhead"><span class="zt">Panels ready</span><span class="zc">from Vacuum / Press</span><span class="zr">drag a panel-set down into a bay ↓ · click for detail</span></div>
+    <div class="strip" id="panels"></div>
+  </div>
+
+  <div class="zone">
+    <div class="zhead"><span class="zt">Pre-Assembly → Merge</span><span class="zc">body builds along the track; the planner brings it &amp; its chassis into the Merge block</span><span class="zr">drag the ready assembly into Merge, then its chassis ↓</span></div>
+    <div id="preRows"></div>
+  </div>
+
+  <div class="zone">
+    <div class="zhead"><span class="zt">Parking</span><span class="zc">chassis booked-in, awaiting their body</span><span class="zr">drag a chassis up ↑ into its line's Merge block · click for detail</span></div>
+    <div class="strip" id="parking"></div>
+  </div>
+
+  <div class="hint"><span>✋</span><span>Drag a <b>panel-set</b> into a bay to start a body, build it down the track, then — when <b>you</b> deem it ready — drag the <b>assembly</b> into its Merge block and bring its <b>chassis</b> up to meet it (they attach on matching job; no auto-merge). <b>Click any card</b> for the full job detail. <b>↺ Reset</b> restores the start.</span></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<!-- JOB DETAIL MODAL -->
+<div class="scrim" id="scrim"></div>
+<aside class="modal" id="modal">
+  <div class="mh">
+    <div class="top">
+      <div><div class="kind" id="mKind"></div><div class="num" id="mNum"></div><div class="meta" id="mMeta"></div><div class="job" id="mJob"></div></div>
+      <button class="x" id="mClose">✕</button>
+    </div>
+    <div class="tabs" id="mTabs"></div>
+  </div>
+  <div class="mbody" id="mBody"></div>
+</aside>
+
+<script>
+const STATUS={
+  green:{label:'On schedule',edge:'#0F9D7A',fill:'rgba(16,157,122,.22)'},
+  amber:{label:'Attention',edge:'#D97706',fill:'rgba(217,119,6,.22)'},
+  red:{label:'Delayed',edge:'#DC4A3D',fill:'rgba(220,74,61,.20)'},
+  grey:{label:'Waiting',edge:'#64748B',fill:'rgba(100,116,139,.18)'}
+};
+const TPAD=0;  /* body image has no internal coupling margin -> body left = padL + pos*PX */
+/* Trailer TOP VIEW (component spec): drawbar (left) + body of 4 stage-segments filled L→R + rear lights. */
+let _tid=0;
+/* Body on the assembly track = the supplied top-view image. It starts all-white (empty) and
+   fills GREEN left->right by build progress: prog 0 = white, prog 1 (front edge at Merge) = full green.
+   Done with two cropped assets (Body top view - empty/full.png); the green layer is revealed by width. */
+function renderTrailer(o){
+  const len=o.lengthM, prog=Math.max(0,Math.min(1,o.progress||0));
+  const px=o.pxPerM||26, bh=o.bodyH||42;
+  const bodyW=Math.round(len*px), pct=(prog*100).toFixed(1);
+  const sc = o.status==='amber' ? ' b-attn' : (o.status==='red' ? ' b-late' : '');
+  return `<div class="bodyimg${sc}" style="width:${bodyW}px;height:${bh}px">
+    <img class="bi-empty" src="Body%20top%20view%20-%20empty.png" width="${bodyW}" height="${bh}" draggable="false">
+    <div class="bi-fill" style="width:${pct}%"><img src="Body%20top%20view%20-%20full.png" width="${bodyW}" height="${bh}" draggable="false"></div>
+  </div>`;
+}
+/* Chassis: the supplied blueprint image (Chassis 1.png in the folder), scaled to the call width. */
+function chassisSvg(w){w=w||120;return `<img src="Chassis%203.png" width="${w}" style="display:block;height:auto;max-width:100%" alt="chassis top view">`;}
+/* Truck chassis: supplied side-view image (Truck.png). Trailer chassis: Chassis 2.png. Scaled to call width. */
+function truckSvg(w){w=w||140;return `<img src="Truck.png" width="${w}" style="display:block;height:auto;max-width:100%" alt="truck chassis">`;}
+function trailerSvg(w){w=w||140;return `<img src="Chassis%202.png" width="${w}" style="display:block;height:auto;max-width:100%" alt="trailer chassis">`;}
+
+const CHUTE=40, NPOS=4, PX=26, BODYH=42, LANEH=80;
+const POS=['Entry','Pre-Assembly','Stage 2','Stage 3'];
+/* BOM line items — real SAP codes read from the MES Materials module */
+const BOM=[
+  ['GRP-MPS-A-0077','GRP panel skin 90mm white gel','6 sheet','SA Composites'],
+  ['PNL-FLR-100-BG','Floor panel 100mm bottom-grade','1','SA Composites'],
+  ['INS-PUR-50','PUR insulation 50mm sheet','8 sheet','Lambda Insul.'],
+  ['DOR-RR-2000','Rear roller door 2000mm','1','Whiting SA'],
+  ['EDG-ALU-3M','Aluminium edge profile 3m','8','Wispeco'],
+  ['GLU-2K-5L','2K polyurethane glue 5L','4','Sika SA'],
+  ['RIV-A4-200','Aluminium rivet A4 200-pack','3','Fastenal SA'],
+  ['SUB-FRM-3200','Subframe 3200mm I-beam','1','Macsteel'],
+  ['FRZ-CT-380','Carrier Transicold 380 unit','1','Carrier SA'],
+  ['PNT-WHT-PRO','White automotive paint 20L','1','Plascon SA']
+];
+function S0(){return {
+ PANELS:[
+  {id:'PS-41030',job:'41030',cust:'AFRIT (Pty) Ltd',len:5.4,type:'Chiller',method:'Vacuum',ready:true},
+  {id:'PS-41040',job:'41040',cust:'AGRING Consultants CC',len:5.4,type:'Chiller',method:'Vacuum',ready:true},
+  {id:'PS-41070',job:'41070',cust:'Chilleweni Cold Storage',len:6.0,type:'Freezer',method:'Press',ready:true},
+  {id:'PS-41051',job:'41051',cust:'Amcotts Trading (VAT)',len:5.4,type:'Chiller',method:'Vacuum',ready:false}
+ ],
+ PRE:[
+  {id:'Bay 1',bodies:[{id:'40401',job:'40401',cust:'Chilleweni Cold Storage',len:5.4,type:'Chiller',status:'green',prog:.55,pos:18,days:2,chassisVin:'DEMV436A000000401'}],merge:{chassis:null,assembly:null,attached:null}},
+  {id:'Bay 2',bodies:[{id:'40402',job:'40402',cust:'DIE GROENE OASE',len:6.0,type:'Freezer',status:'amber',prog:.40,pos:12,days:4,issue:'Awaiting roof panel',chassisVin:'DEMV436A000000402'}],merge:{chassis:null,assembly:null,attached:null}},
+  {id:'Bay 3',bodies:[],merge:{chassis:null,assembly:null,attached:null}},
+  {id:'Bay 4',bodies:[{id:'40500',job:'40500',cust:'DJW Boerdery Vervoer',len:5.4,type:'Chiller',status:'green',prog:.97,pos:33.5,days:3,chassisVin:'DEMV436A000000500'}],merge:{chassis:null,assembly:null,attached:null}},
+  {id:'Bay 5',bodies:[],merge:{chassis:null,assembly:null,attached:null}}
+ ],
+ PARK:[
+  {id:'DEMV436A000000401',cust:'Chilleweni Cold Storage',model:'Hino FVR 900',job:'40401',kind:'truck'},
+  {id:'DEMV436A000000402',cust:'DIE GROENE OASE',model:'Isuzu FVR 900',job:'40402',kind:'truck'},
+  {id:'DEMV436A000000500',cust:'DJW Boerdery Vervoer',model:'Hino FVR 900',job:'40500',kind:'truck'},
+  {id:'DEMV436T000000071',cust:'Unitrans',model:'Afrit drawbar trailer',job:'41095',kind:'trailer'},
+  {id:'DEMV436T000000072',cust:'Vector Logistics',model:'Henred tri-axle',job:'41096',kind:'trailer'},
+  {id:'DEMV436A000000940',cust:'—',model:'FAW 28.380 FVR 900',job:null,kind:'truck'}
+ ]
+};}
+let D=S0();
+
+function occPos(bodies){const o=[false,false,false,false];bodies.forEach(x=>{const a=x.pos,b=x.pos+x.len;for(let p=0;p<NPOS;p++){if(a<(p+1)*10&&b>p*10)o[p]=true;}});return o;}
+function bayState(b){const occ=occPos(b.bodies);const delay=b.bodies.some(x=>x.status==='amber'||x.status==='red');
+  let key,lbl,col;
+  if(b.merge.attached){key='done';lbl='Merge complete';col='#0F9D7A';}
+  else if(b.merge.assembly){key='busy';lbl='Busy with merge';col='#2563EB';}
+  else if(!b.bodies.length){key='avail';lbl='Available';col='#94A3B8';}
+  else if(delay){key='attn';lbl='Attention';col=STATUS.amber.edge;}
+  else{key='flow';lbl='Building';col=STATUS.green.edge;}
+  return {occ,key,lbl,col};}
+function findFreePos(others,len,desired){const max=CHUTE-len;desired=Math.max(0,Math.min(max,desired));
+  const occ=others.map(o=>[o.pos,o.pos+o.len]).sort((a,b)=>a[0]-b[0]);const gaps=[];let cur=0;
+  for(const iv of occ){if(iv[0]-cur>=len)gaps.push([cur,iv[0]-len]);cur=Math.max(cur,iv[1]);}
+  if(CHUTE-cur>=len)gaps.push([cur,CHUTE-len]);if(!gaps.length)return null;
+  let best=null,bd=1e9;for(const g of gaps){const p=Math.max(g[0],Math.min(g[1],desired));const d=Math.abs(p-desired);if(d<bd){bd=d;best=p;}}return best;}
+function applyStageFill(b){if(b.status==='green'){b.prog=Math.max(0,Math.min(1,b.pos/(CHUTE-b.len)));}}
+function readyBody(b){return b.bodies.find(x=>x.prog>=.95);}
+function vinTag(v){return v&&v!=='—'?'DEMV…'+String(v).slice(-3):'awaiting';}
+function findBodyLoc(id){for(let ci=0;ci<D.PRE.length;ci++){const bi=D.PRE[ci].bodies.findIndex(b=>b.id===id);if(bi>=0)return{ci,bi,body:D.PRE[ci].bodies[bi]};}return null;}
+function findAssembly(id){const l=findBodyLoc(id);if(l)return{loc:'track',ci:l.ci,body:l.body};for(let li=0;li<D.PRE.length;li++){const a=D.PRE[li].merge.assembly;if(a&&a.id===id)return{loc:'merge',li,body:a};}return null;}
+function assemblyBackToTrack(id,targetLi,desired){for(let li=0;li<D.PRE.length;li++){const m=D.PRE[li].merge;if(m.assembly&&m.assembly.id===id){const body=m.assembly;const pos=findFreePos(D.PRE[targetLi].bodies,body.len,desired!=null?desired:(body.pos||0));if(pos==null)return false;m.assembly=null;body.pos=pos;D.PRE[targetLi].bodies.push(body);return true;}}return false;}
+
+function computeKPIs(){
+  const inPre=D.PRE.reduce((s,b)=>s+b.bodies.length,0);
+  const ready=D.PRE.flatMap(b=>b.bodies).filter(x=>x.prog>=.95).length;
+  const done=D.PRE.filter(b=>b.merge.attached).length;
+  const panelsReady=D.PANELS.filter(p=>p.ready).length;
+  const avail=D.PRE.filter(b=>!b.bodies.length&&!b.merge.attached&&!b.merge.assembly).length;
+  return [
+    {v:panelsReady,suf:'/ '+D.PANELS.length,k:'Panel sets ready'},
+    {v:inPre,k:'Bodies in pre-assembly'},
+    {v:ready,k:'Ready to merge',accent:ready>0?STATUS.green.edge:null},
+    {v:D.PARK.length,k:'Chassis in parking'},
+    {v:done,k:'Body + chassis (done)',accent:done>0?STATUS.green.edge:null},
+    {v:avail,k:'Available bays'}
+  ];
+}
+function renderKPIs(){document.getElementById('kpiRow').innerHTML=computeKPIs().map(c=>`
+  <div class="kpi">${c.accent?`<span class="accent" style="background:${c.accent}"></span>`:''}
+   <div class="v">${c.v}${c.suf?` <small>${c.suf}</small>`:''}</div><div class="k">${c.k}</div></div>`).join('');}
+
+function renderPanels(){
+  const el=document.getElementById('panels');
+  if(!D.PANELS.length){el.innerHTML='<span class="empty">No panel-sets waiting — all started.</span>';return;}
+  el.innerHTML=D.PANELS.map(p=>{
+    const col=p.ready?STATUS.green.edge:STATUS.amber.edge,methCol=p.method==='Vacuum'?'#475569':'#7C3AED';
+    return `<div class="pcard" data-id="${p.id}" data-kind="panel" data-ready="${p.ready?1:0}" ${p.ready?'':'style="opacity:.6"'}>
+      <span class="accent" style="background:${col}"></span>
+      <div class="pt">${p.id}<span class="meth" style="background:${methCol}">${p.method}</span></div>
+      <div class="ps">${p.len.toFixed(1)} m ${p.type} body</div>
+      <div class="pf"><span class="dot" style="background:${col}"></span>${p.ready?'Panels cut · ready':'On '+p.method+' · not ready'} · ${p.cust}</div></div>`;}).join('');
+}
+
+function paLane(b,ci){
+  const st=bayState(b),padL=12;
+  let guides='';for(let i=0;i<NPOS;i++){const mx=padL+(CHUTE*(i/NPOS))*PX;guides+=`<div class="guide" style="left:${mx}px"></div><div class="glab" style="left:${mx}px">${POS[i]}</div>`;}
+  let els='';
+  b.bodies.forEach(x=>{
+    const left=padL+x.pos*PX-TPAD;
+    els+=`<div class="btag" style="left:${padL+x.pos*PX}px;top:5px"><span class="bj">J${x.job}</span> <span class="bch">⛓ ${x.chassisVin&&x.chassisVin!=='—'?x.chassisVin:'awaiting'}</span></div>`;
+    els+=`<div class="body-wrap" data-id="${x.id}" data-kind="body" style="left:${left}px">${renderTrailer({lengthM:x.len,status:x.status,progress:x.prog,pxPerM:PX,bodyH:BODYH})}</div>`;
+    if(x.prog>=.95){const t=(LANEH-(BODYH+6))/2;els+=`<div class="ready-ring" style="left:${padL+x.pos*PX-3}px;top:${t}px;width:${x.len*PX+6}px;height:${BODYH+6}px"></div>`;}
+  });
+  const empty=b.bodies.length||b.merge.attached||b.merge.assembly?'':`<div class="empty-note"><span class="o"></span>Available — drop a panel-set to start</div>`;
+  const dotStyle=st.key==='avail'?`background:transparent;border:1.5px dashed ${st.col}`:`background:${st.col}`;
+  const dots=st.occ.map(o=>`<span class="pdot ${o?'on':''}"></span>`).join('');
+  const m=b.merge; let cls='',mc;
+  if(m.attached){cls='done';const a=m.attached;const vin=(a.chassis&&a.chassis.id)?a.chassis.id:'—';
+    mc=`<div class="mt" style="color:var(--green)">✓ Merge complete</div>
+        <div class="mergedwrap"><div class="mglow"></div><img class="mergedimg" src="Merged.png" alt="merged unit — body on chassis" draggable="false"><div class="mbadge">✓ MERGED</div></div>
+        <div class="mmeta clk" data-detail-kind="body" data-detail-id="${a.body.id}">J${a.body.job} · ${vin} · ${a.matched?'✓ same job':'attached'}</div>
+        <div class="mdone">Done <span class="mdisp" data-dispatch="${ci}">→ QA</span></div>`;
+  }else if(m.assembly&&m.chassis){cls='busy';
+    mc=`<div class="mt" style="color:#2563EB">● Busy with merge</div><div class="busyrow"><div class="mbody mbodypic" data-id="${m.assembly.id}" data-kind="body"><img src="Body%20only.png" width="100" alt="assembled body" draggable="false"><span class="mbtag">J${m.assembly.job}</span></div><span class="plus">+</span><div class="cmerge clk" data-detail-kind="chassis" data-detail-id="${m.chassis.id}">${chassisSvg(118)}</div></div><button class="confirmbtn" data-confirm="${ci}">✓ Confirm merge complete</button>`;
+  }else if(m.chassis){cls='active';
+    mc=`<div class="mt">Merge</div><div class="cabove"><span class="cvins">${m.chassis.id}</span> <span class="cbadge">AWAITING BODY</span></div><div class="cmerge cpull" data-kind="chassis" data-id="${m.chassis.id}">${chassisSvg(150)}</div><div class="msub">${m.chassis.model} · waiting — bring a body, or drag back to parking ↓</div>`;
+  }else if(m.assembly){cls='busy';
+    mc=`<div class="mt" style="color:#2563EB">● Busy with merge</div><div class="mbody mbodypic" data-id="${m.assembly.id}" data-kind="body"><img src="Body%20only.png" width="100" alt="assembled body" draggable="false"><span class="mbtag">J${m.assembly.job} · ${m.assembly.len.toFixed(1)}m</span></div><div class="msub">bring chassis <b>${vinTag(m.assembly.chassisVin)}</b> ⤓, or drag back ↑</div>`;
+  }else if(readyBody(b)){cls='active';const rb=readyBody(b);
+    mc=`<div class="mt">Merge</div><div class="mready">J${rb.job} ready ✓</div><div class="msub">drag it in, then chassis <b>${vinTag(rb.chassisVin)}</b></div>`;
+  }else{
+    mc=`<div class="mt">Merge</div><div class="msub">body meets<br>chassis here</div>`;
+  }
+  return `<div class="pa-rail"><div class="bid">${b.id}</div>
+      <div class="st" style="color:${st.col}"><span class="d" style="${dotStyle}"></span>${st.lbl}</div>
+      <div class="dots">${dots}</div></div>
+    <div class="pa-lane" data-bi="${ci}" style="height:${LANEH}px;border-left-color:${st.key==='attn'?STATUS.amber.edge:'transparent'}">${guides}${empty}${els}</div>
+    <div class="m-block ${cls}" data-merge="${ci}">${mc}</div>`;
+}
+function renderPre(){document.getElementById('preRows').innerHTML=D.PRE.map((b,i)=>`<div class="pa-row">${paLane(b,i)}</div>`).join('');}
+
+function renderPark(){
+  const el=document.getElementById('parking');
+  if(!D.PARK.length){el.innerHTML='<span class="empty">No chassis waiting.</span>';return;}
+  el.innerHTML=D.PARK.map(c=>`<div class="ccard" data-id="${c.id}" data-kind="chassis">
+     <div class="ctruck">${c.kind==='trailer'?trailerSvg(124):truckSvg(112)}</div>
+     <div class="cinfo"><div class="cid">${c.id}</div><div class="crow2"><span class="cmodel">${c.model}</span><span class="wpill">WAITING</span></div><div class="ckind">${c.kind==='trailer'?'Trailer chassis':'Truck chassis'}</div></div></div>`).join('');
+}
+function renderAll(){renderKPIs();renderPanels();renderPre();renderPark();}
+
+/* ===== transitions (no auto-merge — planner brings both halves in) ===== */
+function startBody(panelId,li){
+  const pi=D.PANELS.findIndex(p=>p.id===panelId);if(pi<0)return false;const p=D.PANELS[pi];if(!p.ready)return false;
+  const pos=findFreePos(D.PRE[li].bodies,p.len,0);if(pos==null)return false;
+  D.PANELS.splice(pi,1);
+  D.PRE[li].bodies.push({id:p.job,job:p.job,cust:p.cust,len:p.len,type:p.type,status:'green',prog:0,pos,days:0,chassisVin:'—'});
+  return true;
+}
+function moveBody(id,li,desired){
+  const loc=findBodyLoc(id);if(!loc)return false;
+  const others=D.PRE[li].bodies.filter(b=>b.id!==id);
+  const p=findFreePos(others,loc.body.len,desired);if(p==null)return false;
+  D.PRE[loc.ci].bodies.splice(loc.bi,1);loc.body.pos=p;applyStageFill(loc.body);D.PRE[li].bodies.push(loc.body);
+  return true; /* NO auto-merge */
+}
+function dropChassis(li,id){
+  const m=D.PRE[li].merge;if(m.attached||m.chassis)return false;
+  const ci=D.PARK.findIndex(c=>c.id===id);if(ci<0)return false;const chassis=D.PARK[ci];
+  if(m.assembly && m.assembly.job!==chassis.job) return false;  /* same job only */
+  D.PARK.splice(ci,1); m.chassis=chassis; return true; /* if assembly already here → Busy with merge (no auto-attach) */
+}
+function dropAssembly(id,li){
+  const m=D.PRE[li].merge;if(m.attached||m.assembly)return false;
+  const loc=findBodyLoc(id);if(!loc||loc.ci!==li)return false; /* only its own line's merge */
+  const body=loc.body;
+  if(m.chassis && m.chassis.job!==body.job) return false;
+  D.PRE[li].bodies.splice(loc.bi,1); m.assembly=body; return true; /* if chassis already here → Busy with merge (no auto-attach) */
+}
+function dispatch(li){D.PRE[li].merge.attached=null;renderAll();}
+function confirmMerge(li){const m=D.PRE[li].merge;if(m.assembly&&m.chassis){m.attached={body:m.assembly,chassis:m.chassis,matched:m.chassis.job===m.assembly.job};m.assembly=null;m.chassis=null;renderAll();requestAnimationFrame(()=>mergeCrescendo(li));}}
+/* The Merge Crescendo: plays once, only when the planner confirms (classes are added here, not in render). */
+function mergeCrescendo(li){
+  const bay=document.querySelector('.m-block[data-merge="'+li+'"]');if(!bay)return;
+  const img=bay.querySelector('.mergedimg'),wrap=bay.querySelector('.mergedwrap'),badge=bay.querySelector('.mbadge');
+  if(wrap)wrap.classList.add('lit');if(img)img.classList.add('reveal');if(badge)badge.classList.add('pop');
+  const r=bay.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  [0,170].forEach(d=>{const ring=document.createElement('div');ring.className='shockwave';ring.style.left=cx+'px';ring.style.top=cy+'px';ring.style.animationDelay=d+'ms';document.body.appendChild(ring);setTimeout(()=>ring.remove(),1500+d);});
+}
+function chassisInMerge(id){for(let li=0;li<D.PRE.length;li++){const m=D.PRE[li].merge;if(m.chassis&&m.chassis.id===id&&!m.assembly)return li;}return -1;}
+function chassisBackToParking(id){const li=chassisInMerge(id);if(li<0)return false;D.PARK.push(D.PRE[li].merge.chassis);D.PRE[li].merge.chassis=null;return true;}
+
+/* ===== drag ===== */
+let drag=null;
+document.addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.pcard,.body-wrap,.ccard,.mbody,.cpull');if(!el)return;
+  if(el.classList.contains('pcard')&&el.dataset.ready==='0')return;
+  drag={id:el.dataset.id,kind:el.dataset.kind,el,fromPark:el.classList.contains('ccard'),sx:e.clientX,sy:e.clientY,moved:false,ghost:null};
+  window.addEventListener('pointermove',onMove);window.addEventListener('pointerup',onUp);e.preventDefault();
+});
+function clearHi(){document.querySelectorAll('.drop-ok').forEach(x=>x.classList.remove('drop-ok'));}
+/* Show a guide highlight on the merge bay whose assembly (in merge or still on the track) matches this chassis's job. */
+function showMergeGuides(chassisId){
+  let c=D.PARK.find(x=>x.id===chassisId);
+  if(!c){for(const b of D.PRE){if(b.merge.chassis&&b.merge.chassis.id===chassisId){c=b.merge.chassis;break;}}}
+  if(!c||!c.job)return;
+  D.PRE.forEach((b,i)=>{const m=b.merge;if(m.attached||m.chassis)return;
+    const match=(m.assembly&&m.assembly.job===c.job)||b.bodies.some(x=>x.job===c.job);
+    if(match){const mb=document.querySelector('.m-block[data-merge="'+i+'"]');if(mb)mb.classList.add('merge-guide');}
+  });
+}
+function clearMergeGuides(){document.querySelectorAll('.merge-guide').forEach(x=>x.classList.remove('merge-guide'));}
+function validTarget(kind,id,el){
+  if(!el)return null;
+  if(kind==='panel'){const l=el.closest('.pa-lane');return l?{t:'pa',el:l,li:+l.dataset.bi}:null;}
+  if(kind==='body'){
+    const mb=el.closest('.m-block');
+    if(mb){const li=+mb.dataset.merge;const loc=findBodyLoc(id);
+      if(loc&&loc.ci===li&&!D.PRE[li].merge.attached&&!D.PRE[li].merge.assembly)return{t:'merge',el:mb,li};return null;}
+    const l=el.closest('.pa-lane');return l?{t:'pa',el:l,li:+l.dataset.bi}:null;}
+  if(kind==='chassis'){const mb=el.closest('.m-block');if(mb){const li=+mb.dataset.merge;if(!D.PRE[li].merge.attached&&!D.PRE[li].merge.chassis)return{t:'merge',el:mb,li};return null;}const pk=el.closest('#parking');if(pk)return{t:'park',el:pk};return null;}
+  return null;
+}
+function onMove(e){
+  if(!drag)return;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;
+  if(!drag.moved&&Math.hypot(dx,dy)>4){
+    drag.moved=true;const r=drag.el.getBoundingClientRect();drag.gdx=drag.sx-r.left;drag.gdy=drag.sy-r.top;
+    const g=drag.el.cloneNode(true);g.classList.add('drag-ghost');g.style.position='fixed';g.style.left=r.left+'px';g.style.top=r.top+'px';g.style.width=r.width+'px';g.style.height=r.height+'px';
+    document.body.appendChild(g);drag.ghost=g;drag.el.classList.add('dragging');
+    if(drag.kind==='chassis'&&drag.fromPark)showMergeGuides(drag.id);
+  }
+  if(drag.moved){
+    drag.ghost.style.left=(e.clientX-drag.gdx)+'px';drag.ghost.style.top=(e.clientY-drag.gdy)+'px';
+    clearHi();const tgt=validTarget(drag.kind,drag.id,document.elementFromPoint(e.clientX,e.clientY));if(tgt)tgt.el.classList.add('drop-ok');
+  }
+}
+function onUp(e){
+  window.removeEventListener('pointermove',onMove);window.removeEventListener('pointerup',onUp);
+  const d=drag;drag=null;if(!d)return;clearHi();clearMergeGuides();
+  if(!d.moved){ openModal(d.kind,d.id); return; }   /* a click → detail modal */
+  if(d.ghost)d.ghost.remove();
+  const tgt=validTarget(d.kind,d.id,document.elementFromPoint(e.clientX,e.clientY));
+  if(tgt){
+    if(d.kind==='panel'&&tgt.t==='pa') startBody(d.id,tgt.li);
+    else if(d.kind==='body'&&tgt.t==='pa'){const lr=tgt.el.getBoundingClientRect();const desired=((e.clientX-d.gdx)-lr.left-12+TPAD)/PX;const a=findAssembly(d.id);if(a&&a.loc==='merge')assemblyBackToTrack(d.id,tgt.li,desired);else moveBody(d.id,tgt.li,desired);}
+    else if(d.kind==='body'&&tgt.t==='merge') dropAssembly(d.id,tgt.li);
+    else if(d.kind==='chassis'&&tgt.t==='merge') dropChassis(tgt.li,d.id);
+    else if(d.kind==='chassis'&&tgt.t==='park') chassisBackToParking(d.id);
+  }
+  renderAll();
+}
+document.addEventListener('click',e=>{
+  const cf=e.target.closest('[data-confirm]');if(cf){confirmMerge(+cf.dataset.confirm);return;}
+  const dsp=e.target.closest('[data-dispatch]');if(dsp){dispatch(+dsp.dataset.dispatch);return;}
+  const det=e.target.closest('[data-detail-kind]');if(det){openModal(det.dataset.detailKind,det.dataset.detailId);}
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{D=S0();renderAll();});
+
+/* ===== JOB DETAIL MODAL ===== */
+function findAny(kind,id){
+  if(kind==='panel')return D.PANELS.find(p=>p.id===id);
+  if(kind==='chassis'){let c=D.PARK.find(x=>x.id===id);if(c)return c;for(const b of D.PRE){if(b.merge.chassis&&b.merge.chassis.id===id)return b.merge.chassis;if(b.merge.attached&&b.merge.attached.chassis.id===id)return b.merge.attached.chassis;}return null;}
+  // body
+  const l=findBodyLoc(id);if(l)return l.body;
+  for(const b of D.PRE){if(b.merge.assembly&&b.merge.assembly.id===id)return b.merge.assembly;if(b.merge.attached&&b.merge.attached.body.id===id)return b.merge.attached.body;}
+  return null;
+}
+function getDetail(kind,it){
+  const isCh=kind==='chassis';
+  const job=it.job||'—', cust=it.cust||'—';
+  const len=it.len||5.4, type=it.type||'Chiller';
+  let ch;
+  if(isCh){ch={vin:it.id,model:it.model,cust:it.cust,make:(it.model||'').split(' ')[0]};}
+  else{const m=D.PARK.find(c=>c.job===job)||{id:'(awaiting assignment)',model:'—',make:'—'};ch={vin:m.id,model:m.model,cust,make:m.make||(m.model||'—').split(' ')[0]};}
+  return {
+    kind,id:it.id,job,cust,spec:`${len.toFixed(1)} m ${type} body`,
+    chassis:{vin:ch.vin,cust,dealer:'—',contact:'—',tel:'—',make:ch.make,model:ch.model,desc:'—',origin:'Auto · Planning',cycles:1,status:isCh?'in assembly':'awaiting attachment',vcl:'2026-06-18'},
+    prejob:{template:`${type} body · ${len.toFixed(1)} m`,dims:`${Math.round(len*1000)} × 2480 × 2600 mm`,costingRef:`EST-${job}`,
+      checklist:[['Body template confirmed',1],['Dimensions vs customer spec',1],['Costing accepted',1],['Materials reserved',1],['Drawings released',0]]},
+    drawings:{ref:`GA-${type.slice(0,3).toUpperCase()}-${Math.round(len*1000)}-R3`,ver:'Rev 3 · released 2026-06-15',sheets:['General arrangement','Floor &amp; subframe','Door &amp; seal detail','Fridge unit mount']},
+    signoff:[['Costing / Estimating','Nadie','2026-06-12','signed'],['Planning','Simeon','2026-06-14','signed'],['Production / QC','Kenny','—','pending']],
+    vcl:{date:'2026-06-18',inspector:'Simeon',odo:'12 480 km',fuel:'½ tank',
+      checks:[['Cab &amp; windscreen','OK'],['Lights &amp; indicators','OK'],['Tyres &amp; rims','RH front worn'],['Mirrors','OK'],['Body / paintwork','2 scratches LH door'],['Battery &amp; electrics','OK']],
+      dcl:'Pending — captured at dispatch'}
+  };
+}
+const TABS=[['chassis','Chassis'],['bom','BOM'],['prejob','Pre-Job'],['drawings','Drawings'],['signoff','Sign-off'],['vcl','VCL']];
+let modalState={d:null,tab:'chassis'};
+function row(k,v){return `<div class="frow"><span class="k">${k}</span><span class="v">${v}</span></div>`;}
+function renderTab(tab,d){
+  if(tab==='chassis'){const c=d.chassis;
+    return row('VIN',c.vin)+row('Customer',c.cust)+row('Dealer',c.dealer)+row('Contact',c.contact)+row('Telephone',c.tel)+row('Make',c.make)+row('Model',c.model)+row('Description',c.desc)+row('Origin',c.origin)+row('Cycles',c.cycles)+row('Status',c.status)
+      +`<div class="sec-t">Lifecycle history</div>`+row('VCL captured',c.vcl)+row('Assembly assigned','2026-06-27')+row('Current','Cycle 1 · in assembly');}
+  if(tab==='bom'){
+    return `<div class="sec-t">Bill of materials · job ${d.job}</div><table class="bom"><tr><th>SAP code</th><th>Description</th><th>Qty</th></tr>`+
+      BOM.map(r=>`<tr><td class="code">${r[0]}</td><td>${r[1]}<div class="sup">${r[3]}</div></td><td>${r[2]}</td></tr>`).join('')+
+      `</table><div class="msub" style="margin-top:10px;color:var(--ink-3);font-size:11px">Computed from the job BOM × planned start (MES Materials module). Stock &amp; PO status live in Materials.</div>`;}
+  if(tab==='prejob'){const p=d.prejob;
+    return row('Body template',p.template)+row('Dimensions (L×W×H)',p.dims)+row('Costing ref',p.costingRef)+
+      `<div class="sec-t">Pre-job checklist</div>`+p.checklist.map(c=>`<div class="chk"><span class="b ${c[1]?'ok':'no'}">${c[1]?'✓':''}</span>${c[0]}</div>`).join('');}
+  if(tab==='drawings'){const g=d.drawings;
+    return row('Drawing ref',g.ref)+row('Version',g.ver)+
+      `<div class="draw"><svg width="220" height="96" viewBox="0 0 220 96" fill="none"><rect x="14" y="20" width="150" height="56" rx="4" stroke="#94A3B8" stroke-width="1.4"/><rect x="18" y="24" width="142" height="48" rx="3" stroke="#CBD5E1" stroke-width="1"/><line x1="160" y1="20" x2="160" y2="76" stroke="#94A3B8" stroke-width="1.4"/><rect x="6" y="40" width="8" height="16" rx="1.5" stroke="#94A3B8" stroke-width="1.4"/><circle cx="50" cy="84" r="6" stroke="#94A3B8" stroke-width="1.4"/><circle cx="120" cy="84" r="6" stroke="#94A3B8" stroke-width="1.4"/><text x="80" y="52" font-size="9" fill="#94A3B8" text-anchor="middle">GA · ${d.spec}</text></svg><div class="msub" style="margin-top:6px">General arrangement (representative)</div></div>`+
+      `<div class="sec-t">Sheets</div>`+g.sheets.map(s=>`<div class="chk"><span class="b ok">▤</span>${s}</div>`).join('');}
+  if(tab==='signoff'){
+    return `<div class="sec-t">Pre-job 3-role sign-off (v4.33)</div>`+d.signoff.map(s=>`<div class="frow"><span class="k">${s[0]}<div style="font-size:11px;color:var(--ink-3)">${s[1]} · ${s[2]}</div></span><span class="v"><span class="pill ${s[3]==='signed'?'s':'p'}">${s[3]}</span></span></div>`).join('')
+      +`<div class="msub" style="margin-top:12px;color:var(--ink-3);font-size:11px">Job starts once all three roles have signed.</div>`;}
+  if(tab==='vcl'){const v=d.vcl;
+    return `<div class="sec-t">Vehicle Check List · book-in</div>`+row('Captured',v.date)+row('Inspector',v.inspector)+row('Odometer',v.odo)+row('Fuel',v.fuel)+
+      `<div class="sec-t">Condition checks</div>`+v.checks.map(c=>`<div class="frow"><span class="k">${c[0]}</span><span class="v" style="color:${/OK/.test(c[1])?'var(--green)':'var(--amber)'}">${c[1]}</span></div>`).join('')+
+      `<div class="vcl-photos"><div class="ph">photo</div><div class="ph">photo</div><div class="ph">photo</div></div>`+
+      `<div class="sec-t">DCL (dispatch)</div><div class="msub" style="color:var(--ink-3)">${v.dcl}</div>`;}
+  return '';
+}
+function paintModal(){
+  const d=modalState.d;if(!d)return;
+  document.getElementById('mKind').textContent=d.kind==='chassis'?'Chassis':(d.kind==='panel'?'Panel-set':'Assembly');
+  document.getElementById('mNum').textContent=d.id;
+  document.getElementById('mMeta').textContent=`${d.cust} · ${d.spec}`;
+  document.getElementById('mJob').textContent=`Job J${d.job}`;
+  document.getElementById('mTabs').innerHTML=TABS.map(t=>`<button class="tab ${modalState.tab===t[0]?'on':''}" data-tab="${t[0]}">${t[1]}</button>`).join('');
+  document.getElementById('mBody').innerHTML=renderTab(modalState.tab,d);
+}
+function openModal(kind,id){
+  const it=findAny(kind,id);if(!it)return;
+  modalState={d:getDetail(kind,it),tab:'chassis'};
+  paintModal();
+  document.getElementById('modal').classList.add('open');document.getElementById('scrim').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');document.getElementById('scrim').classList.remove('show');}
+document.getElementById('mClose').addEventListener('click',closeModal);
+document.getElementById('scrim').addEventListener('click',closeModal);
+document.getElementById('mTabs').addEventListener('click',e=>{const t=e.target.closest('[data-tab]');if(t){modalState.tab=t.dataset.tab;paintModal();}});
+
+document.getElementById('foot').innerHTML=
+ `<b>A06 · Production Flow v0.4.</b> Upgraded visuals (component spec): trailer top-view with <b>4 stage-segments</b> + drawbar, top-view <b>ladder chassis</b>, AWAITING-BODY chassis cards, and the <b>full chassis VIN</b> on every assembly card. Merge per your rules (A07): <b>no auto-merge</b> — the planner drags the ready assembly into its Merge block and brings the chassis up; a block holds only a chassis <em>or</em> an assembly until its same-job partner arrives. <b>Click any card</b> (panel-set, assembly or chassis) for the full job detail — Chassis, BOM, Pre-Job, Drawings, Sign-off and VCL — built from the live MES data (read-only). Mocked locally; VCL = Vehicle Check List (book-in), DCL = dispatch.
+ <div class="br"><b>RANGE RHINO 2.0</b> · Icecold Bodies · all data placeholder for the real records.</div>`;
+
+renderAll();
+</script>
+</body>
+</html>

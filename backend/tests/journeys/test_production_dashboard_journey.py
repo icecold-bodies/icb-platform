@@ -1,8 +1,8 @@
 """WO v4.32 §3.6 — Production Dashboard per-role journey: admin + production + workshop.
 
 Per Testing Strategy v1.1 (§0.8): admin + the primary affected roles. Covers the §0.9 list:
-deep-link from Planning (the re-enabled v4.29 D7 button → ?jobId= → bay highlight + side
-panel), KPI strip render on real values, 5-bay heat-map render, the §0.3 auto-refresh tick
+deep-link from the /plan embedded cockpit (cockpit-view-in-production → ?jobId= → bay highlight
++ side panel; the standalone Planning Board retired 3 Jul, 81ddfee), KPI strip render on real values, 5-bay heat-map render, the §0.3 auto-refresh tick
 (asserted on the data-refreshed attribute — survives screenshot timing noise), stale-jobId
 toast + param clear, and workshop's read-only view. Render-assertion style (v4.29 prevention
 shift) — the aggregation math depth is covered by test_production_kpis_api. Self-cleaning
@@ -36,7 +36,7 @@ def _purge(db) -> None:
 @pytest.fixture(scope="module")
 def bay_job():
     """A chassis on a FREE assembly bay + its in_production job + a current-week planning slot
-    (so the Planning Board slot panel can deep-link it). Yields the bay code."""
+    (so the /plan embedded cockpit's slot drawer can deep-link it). Yields the bay code."""
     from app.database import Branch, SessionLocal
     from app.models.mes import (
         AssemblyBay, ChassisLifecycleEvent, ChassisRecord, PlanningSlot, ProductionJob,
@@ -108,17 +108,19 @@ def test_admin_kpis_heatmap_and_refresh_tick(page: Page, bay_job) -> None:
     assert el.get_attribute("data-refreshed") != t1
 
 
-def test_admin_deep_link_from_planning_board(page: Page, bay_job) -> None:
+def test_admin_deep_link_from_plan_cockpit(page: Page, bay_job) -> None:
     admin_session(page)
-    nav = page.get_by_test_id("nav-planning")
+    nav = page.get_by_test_id("nav-plan")
     expect(nav).to_be_visible(timeout=T)
     nav.click()
-    # Open the slot panel for our job, then the re-enabled D7 button (§3.5).
-    cell = page.get_by_test_id("slot-cell").filter(has_text=JOB_NUM).first
+    # 3 Jul (81ddfee) — the Planning Board is retired (/planning redirects to /plan); the cockpit
+    # renders EMBEDDED on /plan. Open our job's slot drawer there; Overview is the default tab and
+    # carries the same stage-action node, so View in Production is one click away as before.
+    cell = page.get_by_test_id("cockpit-slot-cell").filter(has_text=JOB_NUM).first
     expect(cell).to_be_visible(timeout=T)
     cell.click()
-    btn = page.get_by_test_id("view-in-production")
-    expect(btn).to_be_enabled(timeout=T)                       # the v4.29 D7 button is LIVE again
+    btn = page.get_by_test_id("cockpit-view-in-production")
+    expect(btn).to_be_enabled(timeout=T)          # navigates to /production?jobId=<job_number>
     btn.click()
     # Lands on /production?jobId=… → bay panel opens on the right bay; param then clears.
     expect(page.get_by_test_id("production-bay-panel")).to_be_visible(timeout=T)

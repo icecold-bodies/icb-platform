@@ -150,14 +150,15 @@ def _cleanup():
 
 
 def _open_board(page: Page) -> None:
-    nav = page.get_by_test_id("nav-planning")
+    # 3 Jul — /planning retired; the SAME live cockpit grid is embedded on /plan (nav-plan).
+    nav = page.get_by_test_id("nav-plan")
     expect(nav).to_be_visible(timeout=T)
     nav.click()
-    expect(page.get_by_role("heading", name="Planning Board")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("plan-embedded-cockpit")).to_be_visible(timeout=T)
 
 
 def _open_slot(page: Page, job_id: int):
-    cell = page.locator(f"[data-testid='slot-cell'][data-job-id='{job_id}']")
+    cell = page.locator(f"[data-testid='cockpit-slot-cell'][data-job-id='{job_id}']")
     expect(cell).to_be_visible(timeout=T)
     cell.click()
 
@@ -170,8 +171,8 @@ def test_planner_modal_revert_preserves_invariants_and_audits(page: Page, live_s
     role_session(page, role_users["planner"], base=base)
     _open_board(page)
     _open_slot(page, s["job_id"])
-    expect(page.get_by_test_id("revert-section")).to_be_visible(timeout=T)
-    expect(page.get_by_test_id("revert-to-unscheduled")).to_be_visible()
+    expect(page.get_by_test_id("cockpit-revert-section")).to_be_visible(timeout=T)
+    expect(page.get_by_role("button", name="Move back to Unscheduled")).to_be_visible()
     shot(page, "01-planner-revert-affordance", journey="unschedule_revert")
 
     # Behaviour via the modal's exact endpoint (CSRF + role session).
@@ -289,7 +290,8 @@ def test_workshop_role_no_affordance_and_403(page: Page, live_server: str, role_
     role_session(page, role_users["workshop"], base=live_server)
     _open_board(page)
     _open_slot(page, s["job_id"])
-    expect(page.get_by_test_id("revert-section")).to_have_count(0)   # workshop lacks planning.unschedule
+    expect(page.get_by_test_id("plan-job-drawer")).to_be_visible(timeout=T)          # the drawer DID open
+    expect(page.get_by_test_id("cockpit-revert-section")).to_have_count(0)  # workshop lacks planning.unschedule
     shot(page, "06-workshop-no-affordance", journey="unschedule_revert")
     # direct API call is refused (403) — the server is the source of truth, not the hidden button
     r = _post(page, live_server, f"/api/production-jobs/{s['job_id']}/revert-to-unscheduled", {})

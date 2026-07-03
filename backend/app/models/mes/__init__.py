@@ -768,6 +768,9 @@ class ChassisRecord(Base):
     make = Column(String(64))
     model = Column(String(64))
     description = Column(String(255))
+    # Chassis-type picture (0033): filename under static/chassis-types, picked manually on the detail
+    # page. Later = the per-chassis OVERRIDE of chassis_models.image_file (the DDM auto-link default).
+    type_image = Column(String(128))
     status = Column(String(24), nullable=False, default="received", server_default="received")
     # received | in_workshop | in_assembly | dispatched | returned | expected | expected_orphaned
     # (denormalised from the latest event; 'in_assembly' WO v4.31 §0.12; 'expected' +
@@ -925,6 +928,17 @@ class AssemblyBay(Base):
     updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
 
+class PlanFloorState(Base):
+    """A09 Plan module (Phase 2, migration 0032) — the Production Flow floor as a single JSON
+    document (one physical factory → one row, id=1). Coarse by design: the prototype's floor
+    shape evolves freely; event-level integration with the chassis/bay chokepoints is later."""
+    __tablename__ = "plan_floor_state"
+    __table_args__ = ({"schema": "icb_mes"},)
+    id = Column(Integer, primary_key=True)
+    state = Column(Text, nullable=False, default="{}", server_default="{}")
+    updated_at = Column(DateTime(timezone=True))
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 30. prejob_templates — Nadie's Pre-Job Card template library (WO v4.33 §0.5/§0.15, ADR 0020).
 #     One row per template (23 migrated from the Word originals via review-and-normalize: imported
@@ -1067,6 +1081,9 @@ class ChassisModel(Base):
     model = Column(String(128), nullable=False)            # 128 — full model strings are long
     category = Column(String(32))                          # truck | bakkie | trailer
     max_payload_kg = Column(Integer)
+    # Chassis-type picture default (0033): filename under static/chassis-types. The planned stage-2
+    # auto-link — picking this chassis type in the DDM attaches its picture (record type_image overrides).
+    image_file = Column(String(128))
     is_active = Column(Boolean, nullable=False, default=True, server_default=sa_text("true"))
     sort_order = Column(Integer, nullable=False, default=0, server_default="0")
     created_at = Column(DateTime(timezone=True), default=_utcnow)
@@ -1190,7 +1207,7 @@ __all__ = [
     "BomRule", "BomRuleLookup", "MaterialPriceOverride", "BomSpecOption",
     "GeneratedBom", "BomLine",
     "ChassisRecord", "ChassisRecordAudit", "ChassisLifecycleEvent", "ChassisPhoto",
-    "ParkingBay", "AssemblyBay",
+    "ParkingBay", "AssemblyBay", "PlanFloorState",
     "PrejobTemplate", "PrejobCard", "FridgeUnit", "ChassisModel",
     "FeedbackSubmission",
     "DefectCategory", "QcInspection", "QcSignoff",

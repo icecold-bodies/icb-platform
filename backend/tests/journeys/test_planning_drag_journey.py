@@ -1,4 +1,9 @@
-"""WO v4.29 §3.6 — Planning Board per-role journey (D4/D5/D6), admin + planner (+ sales contrast).
+"""WO v4.29 §3.6 — Planning per-role journey (D4/D5/D6), admin + planner (+ sales contrast).
+
+3 Jul retirement: the standalone Planning Board is unrouted (/planning redirects to /plan); the
+same live scheduling machinery (usePlanning + the planning.schedule gate, identical read-only
+footer string) renders via the EMBEDDED Planning Cockpit on /plan, so this journey now drives
+that routed surface instead.
 
 The board's scheduling affordance is gated on `planning.schedule` (a server permission key): admin and
 planner can drag/schedule; a role without it (sales) gets the read-only board. This journey proves the
@@ -17,10 +22,12 @@ READONLY = "Read-only"   # "Read-only — your role can't schedule on the board.
 
 
 def _open_board(page: Page) -> None:
-    nav = page.get_by_test_id("nav-planning")
+    nav = page.get_by_test_id("nav-plan")
     expect(nav).to_be_visible(timeout=T)
     nav.click()
-    expect(page.get_by_role("heading", name="Planning Board")).to_be_visible(timeout=T)
+    # 3 Jul — /plan mounts the SAME live cockpit (PlanningCockpit embedded) inside the A06 shell.
+    expect(page.get_by_test_id("plan-embedded-cockpit")).to_be_visible(timeout=T)
+    expect(page.get_by_role("heading", name="Planning Cockpit")).to_be_visible(timeout=T)
 
 
 def test_planning_board_admin_can_schedule(page: Page) -> None:
@@ -53,11 +60,11 @@ def test_planning_view_in_production_enabled_d7_closed(page: Page) -> None:
     _open_board(page)
     # the grid fetches + renders its slots after mount — wait for a scheduled cell before asserting
     try:
-        page.wait_for_selector("[data-testid='slot-cell']", timeout=T)
+        page.wait_for_selector("[data-testid='cockpit-slot-cell']", timeout=T)
     except Exception:
         pytest.skip("no scheduled slots in the current rolling window")
-    page.get_by_test_id("slot-cell").first.click()
-    btn = page.get_by_test_id("view-in-production")
+    page.get_by_test_id("cockpit-slot-cell").first.click()
+    btn = page.get_by_test_id("cockpit-view-in-production")
     expect(btn).to_be_visible(timeout=T)
     expect(btn).to_be_enabled()                                         # §3.5: navigates with jobId
     expect(btn).to_have_text("View in Production")

@@ -1,4 +1,8 @@
-"""WO v4.31 §3.5 — Job-card modal per-role journey: admin + planner (+ workshop price-hide).
+"""WO v4.31 §3.5 — Job-card (JobCardSections) per-role journey: admin + planner (+ workshop price-hide).
+
+3 Jul retirement: the Planning Board host is UNROUTED (/planning → /plan redirect), so the journey
+now opens the SAME JobCardSections render in the /production bay side-panel — identical component,
+identical GET /api/production-jobs/{id} enrichment; every assertion carries over verbatim.
 
 Per Testing Strategy v1.1: admin + the primary affected role (planner opens the modal most often).
 A third context covers the §0.5-locked workshop render: BOM lines visible, PRICE columns hidden —
@@ -22,17 +26,24 @@ JOURNEY = "job_card_modal"
 
 @pytest.fixture(scope="module")
 def modal_scenario():
-    """Scheduled job with full §3.2 enrichment. Returns the job_number rendered on the slot cell."""
+    """Job with full §3.2 enrichment; its chassis occupies a FREE assembly bay (occupancy is
+    event-derived, ONE occupant per bay — demo seeds park chassis on bays, so a pinned bay is
+    non-deterministic). Returns (job_number, bay_code)."""
     from app.database import Branch, SessionLocal
     from app.models.mes import (
         AssemblyBay, BomLine, ChassisLifecycleEvent, ChassisRecord, GeneratedBom,
         PlanningSlot, ProductionJob,
     )
+    from app.services.chassis import current_occupants
     tag = uuid.uuid4().hex[:6]
     monday = date.today() - timedelta(days=date.today().weekday())
     with SessionLocal() as db:
         jhb = db.query(Branch).filter_by(code="JHB").first()
-        bay = db.query(AssemblyBay).filter_by(code="AssemblyBay-3").first()
+        occupied = set(current_occupants(db))
+        bay = (db.query(AssemblyBay).filter_by(is_active=True)
+               .filter(~AssemblyBay.id.in_(occupied or {0}))
+               .order_by(AssemblyBay.sort_order).first())
+        assert bay is not None, "no free assembly bay on this DB — clear a bay or reseed first"
         rec = ChassisRecord(vin=f"JRNYMJ{tag.upper()}", source="manual", status="in_assembly",
                             make="ISUZU", model="FTR 850", customer_name="Journey Modal Ltd")
         db.add(rec)
@@ -62,8 +73,8 @@ def modal_scenario():
         db.add(PlanningSlot(production_job_id=job.id, week=monday, bay="QA-MJ", lane="test",
                             slot_position=99, status="scheduled"))
         db.commit()
-        ids = (job.id, rec.id, job.job_number)
-    yield ids[2]
+        ids = (job.id, rec.id, job.job_number, bay.code)
+    yield ids[2], ids[3]
     with SessionLocal() as db:
         for s in db.query(PlanningSlot).filter_by(production_job_id=ids[0]).all():
             db.delete(s)
@@ -79,18 +90,21 @@ def modal_scenario():
 
 
 def _open_modal(page: Page, job_number: str) -> None:
-    nav = page.get_by_test_id("nav-planning")
-    expect(nav).to_be_visible(timeout=T)
-    nav.click()
-    cell = page.get_by_test_id("slot-cell").filter(has_text=job_number).first
-    expect(cell).to_be_visible(timeout=T)
-    cell.click()
+    # 3 Jul: nav-planning / slot-cell are unrouted (Planning Board retired). The SAME
+    # JobCardSections render lives in the /production bay side-panel (ProductionDashboard.tsx).
+    page.goto("/mes-app/production")
+    expect(page.get_by_test_id("production-kpis")).to_be_visible(timeout=T)
+    tile = page.get_by_test_id("production-bay-tile").filter(has_text=job_number).first
+    expect(tile).to_be_visible(timeout=T)
+    tile.click()
+    expect(page.get_by_test_id("production-bay-panel")).to_be_visible(timeout=T)
     expect(page.get_by_test_id("jobcard-bom")).to_be_visible(timeout=T)
 
 
 def test_job_card_modal_admin_full_render(page: Page, modal_scenario) -> None:
+    job_number, bay_code = modal_scenario
     admin_session(page)
-    _open_modal(page, modal_scenario)
+    _open_modal(page, job_number)
     # chassis section: latest-VCL checklist + condition notes
     chassis = page.get_by_test_id("jobcard-chassis")
     expect(chassis.get_by_text("tyres")).to_be_visible(timeout=T)
@@ -102,23 +116,25 @@ def test_job_card_modal_admin_full_render(page: Page, modal_scenario) -> None:
     expect(bom.locator("tr").filter(has_text="UNRESOLVED").get_by_text("—").first).to_be_visible(timeout=T)
     # bay context: derived current bay + since-date
     bay = page.get_by_test_id("jobcard-bay")
-    expect(bay.get_by_text("AssemblyBay-3")).to_be_visible(timeout=T)
+    expect(bay.get_by_text(bay_code)).to_be_visible(timeout=T)
     shot(page, "01-jobcard-admin", journey=JOURNEY)
 
 
 def test_job_card_modal_planner_sees_prices(page: Page, live_server: str, role_users, modal_scenario) -> None:
+    job_number, bay_code = modal_scenario
     role_session(page, role_users["planner"], base=live_server)
-    _open_modal(page, modal_scenario)
+    _open_modal(page, job_number)
     expect(page.get_by_test_id("jobcard-chassis").get_by_text("journey condition note")).to_be_visible(timeout=T)
     expect(page.get_by_test_id("jobcard-bom").get_by_text("Unit price")).to_be_visible(timeout=T)
-    expect(page.get_by_test_id("jobcard-bay").get_by_text("AssemblyBay-3")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("jobcard-bay").get_by_text(bay_code)).to_be_visible(timeout=T)
     shot(page, "02-jobcard-planner", journey=JOURNEY)
 
 
 def test_job_card_modal_workshop_prices_hidden(page: Page, live_server: str, role_users, modal_scenario) -> None:
     # §0.5 lock: workshop sees chassis detail + BOM LINES but NOT pricing (render-time hide).
+    job_number, _ = modal_scenario
     role_session(page, role_users["workshop"], base=live_server)
-    _open_modal(page, modal_scenario)
+    _open_modal(page, job_number)
     bom = page.get_by_test_id("jobcard-bom")
     expect(bom.get_by_text("SAP code")).to_be_visible(timeout=T)                  # lines visible
     expect(bom.get_by_text("INS-PUR-50")).to_be_visible(timeout=T)

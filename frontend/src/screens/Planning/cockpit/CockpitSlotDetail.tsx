@@ -17,6 +17,7 @@ export function CockpitSlotDetail({
   onMarkReceived,
   onRevert,
   onViewProduction,
+  hideSections,
 }: {
   slot: PlanningSlot
   canTick: boolean
@@ -24,6 +25,9 @@ export function CockpitSlotDetail({
   onMarkReceived: () => void | Promise<void>
   onRevert: (reason: string) => void | Promise<void>
   onViewProduction: () => void
+  // 3 Jul — the standardized Plan drawer hides enrichment sections its own tabs already cover
+  // (the planning BOM: the drawer's Bill of Materials tab shows the LIVE costing sheet instead).
+  hideSections?: ReadonlyArray<'chassis' | 'bom' | 'bay'>
 }) {
   const job = slot.job!
   const cs = getChassisState(job)
@@ -109,7 +113,7 @@ export function CockpitSlotDetail({
       )}
 
       {/* WO v4.31 §3.2 — job-card enrichment: chassis (latest VCL) + BOM lines + bay context. Read-only. */}
-      <JobCardSections jobId={job.id} />
+      <JobCardSections jobId={job.id} hide={hideSections} />
 
       <button onClick={onViewProduction}
         title="Open the Production Dashboard focused on this job"

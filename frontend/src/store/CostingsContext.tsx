@@ -46,6 +46,8 @@ interface CostingsValue {
   scheduleRepairPhases: (quote: string, phases: RepairPhaseInsertion[]) => Promise<void>
   // Work Order v4 mutators.
   acceptCosting: (quote: string) => Promise<void>
+  // Legacy-dashboard parity (Michael, 3 Jul): decline a Pending costing with a required reason.
+  declineCosting: (quote: string, reason: string) => Promise<void>
   signoffPreJob: (quote: string, role: 'sales' | 'production', attestation: string, by: string) => Promise<void>
   ackPlanning: (quote: string, by: string, payload?: ChassisEtaPayload | null, notes?: string | null) => Promise<void>
   // Work Order v4.2 — chassis ETA capture.
@@ -295,6 +297,33 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
     [mode, costings, refetch, toast, setStage],
   )
 
+  // Decline (legacy-dashboard parity): one POST to the legacy /decline endpoint — sets
+  // status='declined' (the list endpoint maps it to the 'Rejected' pill) + stores the reason.
+  const declineCosting = useCallback(
+    async (quote: string, reason: string) => {
+      if (mode !== 'live') {
+        setCostings((prev) =>
+          prev.map((c) =>
+            c.quote_number === quote && c.status === 'Pending'
+              ? { ...c, status: 'Rejected' as StatusName, actions_available: ['view'] }
+              : c,
+          ),
+        )
+        return
+      }
+      const cId = liveIdByQuote.current.get(quote)
+      if (cId == null) return
+      try {
+        await apiPost(`/api/calculations/${cId}/decline`, { reason })
+        toast.push({ kind: 'ok', message: `Costing ${quote} declined.` })
+        await refetch()
+      } catch (e) {
+        handleApiError(e, toast.push)
+      }
+    },
+    [mode, refetch, toast],
+  )
+
   const firePreJobCard = useCallback(
     async (quote: string) => {
       if (mode === 'live') {
@@ -534,6 +563,7 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
       confirmPreJobCard,
       scheduleRepairPhases,
       acceptCosting,
+      declineCosting,
       signoffPreJob,
       ackPlanning,
       captureChassisEta,
@@ -542,7 +572,7 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
     }),
     [
       mode, costings, statusCounts, refetch, acceptStage,
-      firePreJobCard, confirmPreJobCard, scheduleRepairPhases, acceptCosting,
+      firePreJobCard, confirmPreJobCard, scheduleRepairPhases, acceptCosting, declineCosting,
       signoffPreJob, ackPlanning, captureChassisEta, loadChassisCatalogue, markChassisReceived,
     ],
   )

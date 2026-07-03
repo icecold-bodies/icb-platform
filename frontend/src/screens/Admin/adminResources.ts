@@ -1,5 +1,9 @@
 /** WO v4.26 §3.6 — config for the 4 admin CRUD sub-screens (driven by AdminCrudTable). */
-export type FieldType = 'text' | 'number' | 'bool' | 'textarea' | 'date'
+import { apiGet } from '../../lib/api'
+
+export type FieldType = 'text' | 'number' | 'bool' | 'textarea' | 'date' | 'select'
+
+export interface SelectOption { value: string; label: string }
 
 export interface FieldDef {
   name: string
@@ -9,6 +13,8 @@ export interface FieldDef {
   default?: string | number | boolean
   validateFormula?: boolean   // formula_expression — live parse-check via the backend
   oitmAutocomplete?: boolean  // sap_code — typeahead from /api/admin/oitm-search
+  // type 'select' — a static list, or an async loader (e.g. the chassis-type picture library).
+  options?: SelectOption[] | (() => Promise<SelectOption[]>)
 }
 
 export interface ResourceConfig {
@@ -164,6 +170,34 @@ export const ADMIN_RESOURCES: Record<string, ResourceConfig> = {
       { name: 'is_active', label: 'Active', type: 'bool', default: true },
     ],
   },
+  // Chassis-type DDM (seeded 0021; the CRUD its docstring promised for v4.35). Same style as
+  // fridge-units. `image_file` = the type's default PICTURE (0033): assigning one here auto-links
+  // it to every chassis of this type (a chassis's own manual pick stays as the override).
+  'chassis-models': {
+    key: 'chassis-models',
+    title: 'Chassis types',
+    basePath: '/api/admin/chassis-models',
+    columns: [
+      { key: 'make', label: 'Make' }, { key: 'model', label: 'Model' },
+      { key: 'category', label: 'Category' }, { key: 'max_payload_kg', label: 'Payload (kg)' },
+      { key: 'image_file', label: 'Picture' }, { key: 'sort_order', label: 'Order' },
+      { key: 'is_active', label: 'Active' },
+    ],
+    fields: [
+      { name: 'make', label: 'Make', required: true },
+      { name: 'model', label: 'Model', required: true },
+      { name: 'category', label: 'Category', type: 'select', options: [
+        { value: 'truck', label: 'Truck' }, { value: 'bakkie', label: 'Bakkie' }, { value: 'trailer', label: 'Trailer' },
+      ] },
+      { name: 'max_payload_kg', label: 'Max payload (kg)', type: 'number' },
+      { name: 'image_file', label: 'Picture (auto-links to every chassis of this type)', type: 'select',
+        options: async () => (await apiGet<{ file: string; label: string }[]>('/api/chassis-records/type-images'))
+          .map((i) => ({ value: i.file, label: i.label })) },
+      { name: 'sort_order', label: 'Sort order', type: 'number', default: 100 },
+      { name: 'is_active', label: 'Active (inactive = hidden from the dropdowns)', type: 'bool', default: true },
+      { name: 'code', label: 'Code (leave blank to auto-generate from make/model)' },
+    ],
+  },
   // WO v4.33.1 §3.1 — admin nav-aid: Pre-Job Cards awaiting sign-off (custom list view, not CRUD).
   'prejob-signoffs': {
     key: 'prejob-signoffs',
@@ -203,4 +237,4 @@ export const ADMIN_RESOURCES: Record<string, ResourceConfig> = {
   },
 }
 
-export const ADMIN_ORDER = ['health-check', 'qc', 'defect-categories', 'spec-options', 'rules', 'lookups', 'price-overrides', 'prejob-templates', 'fridge-units', 'prejob-signoffs', 'customers', 'orphan-chassis', 'merge-chassis']
+export const ADMIN_ORDER = ['health-check', 'qc', 'defect-categories', 'spec-options', 'rules', 'lookups', 'price-overrides', 'prejob-templates', 'fridge-units', 'chassis-models', 'prejob-signoffs', 'customers', 'orphan-chassis', 'merge-chassis']

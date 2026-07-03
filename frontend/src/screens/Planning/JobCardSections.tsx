@@ -60,7 +60,10 @@ function Placeholder({ text }: { text: string }) {
   )
 }
 
-export function JobCardSections({ jobId }: { jobId: number }) {
+// 3 Jul — `hide`: the standardized Plan drawer hosts this inside its Overview tab where some
+// sections are redundant (the drawer has its own live-costing BOM tab). Additive — every existing
+// caller renders all sections as before.
+export function JobCardSections({ jobId, hide }: { jobId: number; hide?: ReadonlyArray<'chassis' | 'bom' | 'bay'> }) {
   const toast = useToast()
   const { sessionRole } = useAppData()
   // Workshop sees the BOM lines but NOT pricing — render-time column omit, not an auth gate (§3.2).
@@ -90,6 +93,7 @@ export function JobCardSections({ jobId }: { jobId: number }) {
   return (
     <>
       {/* 1 — Chassis detail (latest VCL) */}
+      {!hide?.includes('chassis') && (
       <div className="rounded-md border border-line p-3" data-testid="jobcard-chassis">
         <SectionHead icon={<Truck size={13} />} label="Chassis" />
         {chassis ? (
@@ -162,8 +166,10 @@ export function JobCardSections({ jobId }: { jobId: number }) {
           <Placeholder text="Chassis pending — not yet received" />
         )}
       </div>
+      )}
 
       {/* 2 — BOM lines (current generated_bom) */}
+      {!hide?.includes('bom') && (
       <div className="rounded-md border border-line p-3" data-testid="jobcard-bom">
         <SectionHead icon={<Package size={13} />} label="Bill of materials" />
         {bom ? (
@@ -225,9 +231,10 @@ export function JobCardSections({ jobId }: { jobId: number }) {
           <Placeholder text="BOM not yet generated" />
         )}
       </div>
+      )}
 
       {/* 3 — Bay context (renders only when a chassis exists; §3.2 state mapping, BA 10 Jun) */}
-      {chassis && (
+      {!hide?.includes('bay') && chassis && (
         <div className="rounded-md border border-line p-3" data-testid="jobcard-bay">
           <SectionHead icon={<MapPin size={13} />} label="Bay" />
           <BayContext

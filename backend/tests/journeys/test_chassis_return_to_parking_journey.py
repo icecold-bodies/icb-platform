@@ -5,8 +5,9 @@ The drag is an HTML5 DataTransfer drop (unreliable to drive headlessly); this ex
 the drop calls — POST /api/chassis-records/{id}/return-to-parking — via page.request, plus the outcome
 (status 'in_assembly' → 'in_workshop', the assembly_assigned event deleted, the bay cleared), the
 pre-merge guard (409 once a body is attached), the D1 panels-stay case (the bay derives 'pre_assembly',
-the panels remain), role gating (workshop = RO), and the UI (the bay tile carries the '← drag to parking'
-affordance, then clears, and the chassis reappears in the Parking pool). Runs on icb_test (CI).
+the panels remain), role gating (workshop = RO), and the UI (the /production bay tile shows
+awaiting_attachment then clears to empty, and the chassis reappears in the /plan Parking pool; the
+Planning-board drag affordance retired with /planning, 3 Jul 81ddfee). Runs on icb_test (CI).
 """
 from __future__ import annotations
 
@@ -80,27 +81,23 @@ def test_workshop_cannot_return(page: Page, live_server: str, role_users) -> Non
     assert h.chassis_status(s["chassis_id"]) == "in_assembly"   # untouched
 
 
-# ── UI: the bay tile is parking-draggable, then clears; the chassis reappears in Parking ──
-def test_planning_parking_drag_affordance_and_bay_clear(page: Page, live_server: str) -> None:
+# ── UI: the /production bay tile clears after the return; the chassis reappears in /plan Parking ──
+def test_production_bay_clears_and_chassis_returns_to_plan_parking(page: Page, live_server: str) -> None:
     s = h.make_assembly_job(attached=False)
     admin_session(page)
-    nav = page.get_by_test_id("nav-planning")
-    expect(nav).to_be_visible(timeout=T)
-    nav.click()
-    expect(page.get_by_test_id("bay-model")).to_be_visible(timeout=T)
-    expect(page.get_by_test_id("parking-zone")).to_be_visible(timeout=T)
-    tile = page.locator(f'[data-testid="assembly-bay"][data-bay-id="{s["bay_id"]}"]')
+    h.open_production(page)
+    tile = page.locator(f'[data-testid="production-bay-tile"][data-bay-code="{s["bay_code"]}"]')
     expect(tile).to_have_attribute("data-bay-state", "awaiting_attachment", timeout=T)
-    expect(tile).to_have_attribute("draggable", "true", timeout=T)
-    expect(tile.get_by_test_id("parking-drag-hint")).to_be_visible(timeout=T)   # '← drag to parking'
-    # a body-attached tile must NOT be parking-draggable (it's the QA path instead)
-    shot(page, "01-bay-tile-parking-draggable", journey=JOURNEY)
-    # the drop's chokepoint, then reload to see the post-return board (bay clears, chassis back in Parking)
+    shot(page, "01-bay-tile-awaiting-attachment", journey=JOURNEY)
+    # the drop's chokepoint, then reload to see the post-return floor (bay clears, chassis back in Parking)
     assert _return(page, live_server, s["chassis_id"], reason="bumped for a rush order").status == 200
     page.reload()
-    expect(page.get_by_test_id("bay-model")).to_be_visible(timeout=T)
-    expect(page.locator(f'[data-testid="pre-assembly-empty"][data-bay-id="{s["bay_id"]}"]')).to_have_attribute(
-        "data-bay-state", "empty", timeout=T)                                   # bay flipped to empty → Pre-Assembly lane
-    card = page.locator('[data-testid="parking-chassis"]', has_text=s["vin"])
+    page.wait_for_selector("[data-testid='production-kpis']", timeout=T)
+    expect(page.locator(f'[data-testid="production-bay-tile"][data-bay-code="{s["bay_code"]}"]')).to_have_attribute(
+        "data-bay-state", "empty", timeout=T)                                   # the bay tile flipped to empty
+    nav = page.get_by_test_id("nav-plan")
+    expect(nav).to_be_visible(timeout=T)
+    nav.click()
+    card = page.locator(f'#parking .ccard[data-id="{s["vin"]}"]')               # live Parking: in_workshop → ccard
     expect(card).to_be_visible(timeout=T)                                       # chassis back in the Parking pool
     shot(page, "02-returned-to-parking", journey=JOURNEY)

@@ -28,6 +28,24 @@ export class ApiError extends Error {
   }
 }
 
+/** FastAPI's `detail` is a STRING on HTTPException but an ARRAY OF OBJECTS on pydantic 422s.
+ * ApiError.detail feeds toast messages (React children) directly, so a non-string here used to
+ * crash the whole tree (minified React #31 → blank page). Normalize at the single chokepoint:
+ * validation arrays become "field: message" lines; anything else non-string is stringified. */
+function normalizeDetail(d: unknown): string | undefined {
+  if (d === undefined || d === null) return undefined
+  if (typeof d === 'string') return d
+  if (Array.isArray(d)) {
+    return d.map((it) => {
+      const o = it as { loc?: unknown; msg?: unknown }
+      const loc = Array.isArray(o?.loc) ? o.loc.filter((p) => p !== 'body').join('.') : ''
+      const msg = typeof o?.msg === 'string' ? o.msg : JSON.stringify(it)
+      return loc ? `${loc}: ${msg}` : msg
+    }).join('; ')
+  }
+  try { return JSON.stringify(d) } catch { return String(d) }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
@@ -50,7 +68,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     let detail: string | undefined
     try {
-      detail = (await res.json())?.detail
+      detail = normalizeDetail((await res.json())?.detail)
     } catch {
       /* non-JSON error body */
     }

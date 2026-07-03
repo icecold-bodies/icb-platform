@@ -14,8 +14,8 @@ from ..deps import require_permission, require_user
 from ..schemas.chassis import (
     AssemblyAssignRequest, AwaitingQaOut, BayAdvanceStageRequest, BayOut, BodyAttachedRequest,
     ChassisCreateResult, ChassisEventCapture, ChassisEventOut, ChassisModelOut, ChassisPhotoOut,
-    ChassisRecordCreate, ChassisRecordDetail, ChassisRecordOut, ChassisRecordUpdate, ChassisVinCapture,
-    MoveToAwaitingQaRequest, ReturnToParkingRequest,
+    ChassisRecordCreate, ChassisRecordDetail, ChassisRecordOut, ChassisRecordUpdate,
+    ChassisTypeImageOut, ChassisVinCapture, MoveToAwaitingQaRequest, ReturnToParkingRequest,
 )
 from ..services import chassis as svc
 
@@ -41,6 +41,14 @@ def checklists(user: User = Depends(require_user)):
 def chassis_models(db: Session = Depends(get_db), user: User = Depends(require_user)):
     """The chassis-type DDM (active rows) feeding the make/model dropdowns. Read-only (admin CRUD v4.35)."""
     return svc.list_chassis_models(db)
+
+
+# 0033 — literal path, MUST precede /{record_id} (same declaration-order rule as /models above).
+@router.get("/type-images", response_model=List[ChassisTypeImageOut])
+def type_images(user: User = Depends(require_user)):
+    """The chassis-type picture library (PNGs under static/chassis-types) feeding the detail-page
+    picker. The same files back the planned chassis_models.image_file DDM auto-link."""
+    return svc.list_type_images()
 
 
 @router.get("/bays/assembly", response_model=List[BayOut])

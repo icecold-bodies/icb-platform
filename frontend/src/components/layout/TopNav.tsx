@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import {
-  CalendarRange,
   Tablet,
   LayoutGrid,
   Factory,
@@ -22,6 +21,7 @@ import {
   Building2,
   Truck,
   AlertTriangle,
+  Workflow,
   type LucideIcon,
 } from 'lucide-react'
 import { useAppData, type BranchRef } from '../../store/AppDataContext'
@@ -43,7 +43,12 @@ const NAV_LINKS: NavEntry[] = [
   // Chronological order: create the costing first, then it lands in the dashboard.
   { to: '/costings/new',     label: 'New Costing',  icon: Plus,          k: 'nav.new_costing',          perm: 'costings.create' },
   { to: '/costings',         label: 'Costings',     icon: FileText,      k: 'nav.costings',             perm: ['costings.view_own', 'costings.view_all'] },
-  { to: '/planning',         label: 'Planning',     icon: CalendarRange, k: 'nav.planning',             perm: 'planning.view' },
+  // 3 Jul (Michael) — the "Planning" menu (Board + Cockpit dropdown) is RETIRED: the Plan module
+  // below is the planning surface now. /planning and /planning/cockpit redirect to /plan (App.tsx);
+  // the cockpit COMPONENT lives on, embedded inside /plan. Restore point: git history of this file.
+  // WO A06 (Rapid Prototype Phase) — the top-level "Plan" module = the Production Flow prototype
+  // (planner grid → Panels ready → Pre-Assembly → Merge → Parking → QC).
+  { to: '/plan',             label: 'Plan',         icon: Workflow,      k: 'nav.plan' },
   // Work Order v4.11 — Materials, Buying & Stores (flat entries; the repo nav has
   // no dropdown groups). DEMO: like the Management tab (v4.8), these four are left
   // un-gated so any presenter sees them without switching demo profiles. The
@@ -105,10 +110,7 @@ export function TopNav({ dark = false }: { dark?: boolean }) {
       </div>
       <nav className="flex flex-1 items-center gap-0.5 overflow-x-auto">
         {visibleLinks.map((entry) =>
-          // Planning gets a dropdown (Board + Cockpit beta); every other entry is unchanged.
-          entry.to === '/planning' ? (
-            <PlanningNavDropdown key={entry.to} entry={entry} dark={dark} />
-          ) : (
+          (
             <Tooltip key={entry.to} k={entry.k}>
               <NavLink
                 to={entry.to}
@@ -171,136 +173,8 @@ export function TopNav({ dark = false }: { dark?: boolean }) {
   )
 }
 
-// Planning nav dropdown — keeps the existing "Planning" entry but reveals Board (the current board)
-// + Cockpit (the additive Concept-6 layout) on click. Mirrors the UserSwitcher open/outside-click
-// pattern. The trigger highlights for any /planning* route so the section reads as active on both.
-function PlanningNavDropdown({ entry, dark }: { entry: NavEntry; dark: boolean }) {
-  const [open, setOpen] = useState(false)
-  // The parent <nav> uses overflow-x-auto, which clips an absolutely-positioned menu to the nav's
-  // height (the menu would show only a scrollbar). Render the menu position:fixed, anchored to the
-  // trigger's rect, so it escapes the overflow container — same approach as the bay context menu.
-  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
-  const ref = useRef<HTMLDivElement>(null)
-  const btnRef = useRef<HTMLDivElement>(null)   // anchors the menu to the whole split-button slot
-  const { pathname } = useLocation()
-  const sectionActive = pathname === '/planning' || pathname.startsWith('/planning/')
-  const MENU_W = 240 // w-60
-  const place = () => {
-    const r = btnRef.current?.getBoundingClientRect()
-    if (r) setCoords({ top: r.bottom + 4, left: Math.max(8, Math.min(r.left, window.innerWidth - MENU_W - 8)) })
-  }
-  const toggle = () => {
-    if (!open) place()
-    setOpen((o) => !o)
-  }
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    const onReflow = () => place()
-    window.addEventListener('mousedown', onDown)
-    window.addEventListener('resize', onReflow)
-    return () => {
-      window.removeEventListener('mousedown', onDown)
-      window.removeEventListener('resize', onReflow)
-    }
-  }, [open])
-  const Icon = entry.icon
-  return (
-    <div ref={ref} className="relative">
-      {/* WO v4.36d §3.1 — SPLIT-BUTTON: the LABEL half navigates to /planning (preserves the existing
-          nav-planning journey clicks + single-click-to-board); the CHEVRON half opens the Board/Cockpit
-          menu. Hover/active lift both halves coherently via the shared wrapper (which also anchors the
-          fixed-position menu). */}
-      <div
-        ref={btnRef}
-        className={`flex items-center rounded-md transition ${
-          sectionActive ? 'bg-white/20' : 'hover:bg-white/10'
-        }`}
-      >
-        <Tooltip k={entry.k}>
-          <NavLink
-            to={entry.to}
-            data-testid={`nav-${entry.k.replace('nav.', '')}`}
-            className="flex items-center gap-1.5 whitespace-nowrap rounded-l-md py-2 pl-3 pr-2 text-sm font-medium"
-          >
-            <Icon size={16} />
-            {entry.label}
-          </NavLink>
-        </Tooltip>
-        <span className="h-5 w-px bg-white/20" aria-hidden />
-        <button
-          onClick={toggle}
-          data-testid={`nav-${entry.k.replace('nav.', '')}-menu`}
-          aria-haspopup="menu"
-          aria-expanded={open}
-          aria-label={`${entry.label} views`}
-          className="flex items-center rounded-r-md py-2 pl-1.5 pr-2"
-        >
-          <ChevronDown size={14} className="opacity-70" />
-        </button>
-      </div>
-      {open && (
-        <div
-          role="menu"
-          style={{ position: 'fixed', top: coords.top, left: coords.left }}
-          className={`z-50 w-60 overflow-hidden rounded-md border shadow-2xl ${
-            dark ? 'border-slate-700 bg-slate-900 text-slate-100' : 'border-line bg-white text-body'
-          }`}
-        >
-          <PlanningMenuItem to="/planning" exact title="Board" sub="The current planning board" dark={dark} onPick={() => setOpen(false)} />
-          <PlanningMenuItem to="/planning/cockpit" title="Cockpit" badge="beta" sub="New timeline-first layout" dark={dark} onPick={() => setOpen(false)} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-function PlanningMenuItem({
-  to,
-  exact,
-  title,
-  sub,
-  badge,
-  dark,
-  onPick,
-}: {
-  to: string
-  exact?: boolean
-  title: string
-  sub: string
-  badge?: string
-  dark: boolean
-  onPick: () => void
-}) {
-  return (
-    <NavLink
-      to={to}
-      end={exact}
-      onClick={onPick}
-      className={({ isActive }) =>
-        `flex w-full items-start gap-1 px-3 py-2 text-left text-sm ${
-          isActive
-            ? dark
-              ? 'bg-slate-800'
-              : 'bg-primary-light text-primary'
-            : dark
-              ? 'hover:bg-slate-800'
-              : 'hover:bg-surface-alt'
-        }`
-      }
-    >
-      <div className="flex-1">
-        <div className="flex items-center gap-1.5 font-semibold">
-          {title}
-          {badge && <span className="rounded bg-primary/15 px-1 py-0.5 text-[9px] font-bold uppercase text-primary">{badge}</span>}
-        </div>
-        <div className={`text-xs ${dark ? 'text-slate-400' : 'text-muted'}`}>{sub}</div>
-      </div>
-    </NavLink>
-  )
-}
+// (3 Jul — PlanningNavDropdown + PlanningMenuItem removed with the retired "Planning" menu;
+//  see git history. The WO v4.36d split-button pattern lives on in this file's history too.)
 
 function UserSwitcher({
   profile,

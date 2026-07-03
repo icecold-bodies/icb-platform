@@ -215,3 +215,7 @@
 .a06-flow [data-testid="plan-embedded-cockpit"] .space-y-2 > div{border-left:4px solid #94a3b8 !important;border-radius:10px !important;transition:box-shadow .15s,transform .1s}
 .a06-flow [data-testid="plan-embedded-cockpit"] .space-y-2 > div:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
 .a06-flow [data-testid="plan-embedded-cockpit"] .space-y-2 .font-mono.text-sm.font-semibold{font-weight:800;font-size:12.5px}
+
+/* Single-location rule: the planner slot lights up when a Panels-ready card is dragged back up
+   (PANELS READY -> V/P reverse), mirroring the strip's own drop cue. */
+.a06-flow #plannerSlot.drop-ok{outline:2px dashed rgba(226,35,26,.5);outline-offset:-4px;border-radius:14px}

@@ -81,11 +81,11 @@ function useMiddleButtonPan<T extends HTMLElement>() {
 // `lockedJobIds` (business rules 2 Jul): jobs whose body is MERGED WITH CHASSIS — the permanent
 // point of no return. Backward planner moves (unschedule / revert-to-unscheduled) are rejected
 // for them. Standalone /planning/cockpit behaviour is unchanged (both props default off).
-export function PlanningCockpit({ embedded = false, lockedJobIds }: { embedded?: boolean; lockedJobIds?: Set<number> } = {}) {
+export function PlanningCockpit({ embedded = false, lockedJobIds, downstreamJobIds }: { embedded?: boolean; lockedJobIds?: Set<number>; downstreamJobIds?: Set<number> } = {}) {
   const { mode } = usePlanning()
   if (mode === 'loading') return <CockpitSkeleton />
   if (mode !== 'live') return <CockpitMockNotice />
-  return <LiveCockpit embedded={embedded} lockedJobIds={lockedJobIds} />
+  return <LiveCockpit embedded={embedded} lockedJobIds={lockedJobIds} downstreamJobIds={downstreamJobIds} />
 }
 
 function CockpitSkeleton() {
@@ -123,7 +123,7 @@ function CockpitMockNotice() {
   )
 }
 
-function LiveCockpit({ embedded = false, lockedJobIds }: { embedded?: boolean; lockedJobIds?: Set<number> }) {
+function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds }: { embedded?: boolean; lockedJobIds?: Set<number>; downstreamJobIds?: Set<number> }) {
   const nav = useNavigate()
   const { board, schedule, move, unschedule, revertToUnscheduled, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
   useRefetchOnFocus(refresh)
@@ -201,6 +201,13 @@ function LiveCockpit({ embedded = false, lockedJobIds }: { embedded?: boolean; l
   const cellFor = (weekKey: string, bay: string): PlanningSlot | undefined =>
     board.slots.find((s) => s.week_key === weekKey && s.bay === bay)
   const capFor = (weekKey: string) => board.capacity.find((c) => c.week_key === weekKey)
+  // A09 single-location rule (embedded): FILLED / EMPTY / VALUE / GAP derive from the cards
+  // VISIBLE on the grid — a job that moved downstream (Panels ready / bays / merge / QC)
+  // leaves the counts the moment its card moves, exactly like the A09 mockup's summary.
+  const visibleWeekSlots = (weekKey: string) =>
+    board.slots.filter((s) => s.week_key === weekKey && s.job && !(downstreamJobIds && downstreamJobIds.has(s.job.id)))
+  const embFilled = (weekKey: string) => visibleWeekSlots(weekKey).length
+  const embValue = (weekKey: string) => visibleWeekSlots(weekKey).reduce((a, s) => a + (s.job?.selling_zar ?? 0), 0)
   const laneForBay = (bay: string): string => (bay.startsWith('P') ? 'panelshop' : 'vacuum')
   function flashReject(key: string) {
     setRejectKey(key)
@@ -481,7 +488,7 @@ function LiveCockpit({ embedded = false, lockedJobIds }: { embedded?: boolean; l
                                 <Spinner size={16} className="text-primary" />
                               </div>
                             )}
-                            {cell && cell.job ? (
+                            {cell && cell.job && !(embedded && downstreamJobIds && downstreamJobIds.has(cell.job.id)) ? (
                               <button
                                 onClick={() => setSelectedSlotId(cell.id)}
                                 data-testid="cockpit-slot-cell"
@@ -528,15 +535,15 @@ function LiveCockpit({ embedded = false, lockedJobIds }: { embedded?: boolean; l
                   })}
                   <FooterRow
                     label="Filled"
-                    cells={board.weeks.map((w) => `${capFor(w.key)?.filled ?? 0}`)}
+                    cells={board.weeks.map((w) => `${embedded ? embFilled(w.key) : capFor(w.key)?.filled ?? 0}`)}
                     tooltipKey="planning_board.weekly_capacity_footer"
                   />
-                  <FooterRow label="Empty" cells={board.weeks.map((w) => `${capFor(w.key)?.empty ?? 0}`)} />
-                  <FooterRow label="Value" cells={board.weeks.map((w) => zarShort(capFor(w.key)?.value_zar ?? 0))} strong />
+                  <FooterRow label="Empty" cells={board.weeks.map((w) => `${embedded ? SLOTS.length - embFilled(w.key) : capFor(w.key)?.empty ?? 0}`)} />
+                  <FooterRow label="Value" cells={board.weeks.map((w) => zarShort(embedded ? embValue(w.key) : capFor(w.key)?.value_zar ?? 0))} strong />
                   <FooterRow
                     label="Gap vs target"
-                    cells={board.weeks.map((w) => zarShort((capFor(w.key)?.value_zar ?? 0) - target))}
-                    tone={board.weeks.map((w) => ((capFor(w.key)?.value_zar ?? 0) >= target ? 'green' : 'red'))}
+                    cells={board.weeks.map((w) => zarShort((embedded ? embValue(w.key) : capFor(w.key)?.value_zar ?? 0) - target))}
+                    tone={board.weeks.map((w) => ((embedded ? embValue(w.key) : capFor(w.key)?.value_zar ?? 0) >= target ? 'green' : 'red'))}
                   />
                 </tbody>
               </table>

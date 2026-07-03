@@ -62,6 +62,7 @@ function boardToPanels(board: PlanningBoardView) {
       type,
       method: isV ? 'Vacuum' : 'Press',
       origin: bay,
+      jobId: j.id,   // the grid drag carries the production_job id (application/x-panel-job)
       vin: j.vin,    // the job's linked chassis VIN — rides onto the started body's tag + merge hints
       ready: true,   // D2 readiness proxy (scheduled) — future: the real panels_cut signal
     })
@@ -94,6 +95,9 @@ export function PlanCombined() {
   // return. The engine pushes its merged set up; the embedded planner locks
   // those jobs against backward moves (unschedule / revert-to-unscheduled).
   const [mergedJobNos, setMergedJobNos] = useState<string[]>([])
+  // Single-location rule: jobs that left the V/P stage (Panels ready / floor / QC) — the
+  // embedded grid hides their cards and the summary rows re-count without them.
+  const [downstreamJobNos, setDownstreamJobNos] = useState<string[]>([])
   const { board, mode } = usePlanning()
 
   // Phase 2 — persisted floor state: the engine hands us a snapshot on every floor
@@ -105,7 +109,10 @@ export function PlanCombined() {
   useEffect(() => {
     if (!ref.current) return
     const inst = initProductionFlow(ref.current, {
-      onChange: (s: { mergedJobs: string[] }) => setMergedJobNos(s.mergedJobs),
+      onChange: (s: { mergedJobs: string[]; downstreamJobs?: string[] }) => {
+        setMergedJobNos(s.mergedJobs)
+        setDownstreamJobNos(s.downstreamJobs ?? [])
+      },
       onPersist: (json: string) => {
         void apiPut<{ updated_at: string }>('/api/plan/floor-state', { state: json })
           .then((r) => { stampRef.current = r.updated_at })
@@ -146,6 +153,14 @@ export function PlanCombined() {
     return set.size ? set : undefined
   }, [mergedJobNos, board])
 
+  const downstreamJobIds = useMemo(() => {
+    if (!downstreamJobNos.length) return undefined
+    const set = new Set<number>()
+    const want = new Set(downstreamJobNos.map(String))
+    for (const s of board.slots) if (s.job && want.has(String(s.job.job_number))) set.add(s.job.id)
+    return set.size ? set : undefined
+  }, [downstreamJobNos, board])
+
   // Live link: every board change (schedule / move / unschedule / window nav /
   // focus refetch) re-derives the Panels-ready set. In mock/offline mode the
   // floor keeps its seed and the cockpit shows its own offline notice.
@@ -175,7 +190,7 @@ export function PlanCombined() {
         createPortal(
           <div className="zone" style={{ overflow: 'hidden' }} data-testid="plan-embedded-cockpit">
             <div style={{ height: '76vh' }}>
-              <PlanningCockpit embedded lockedJobIds={lockedJobIds} />
+              <PlanningCockpit embedded lockedJobIds={lockedJobIds} downstreamJobIds={downstreamJobIds} />
             </div>
           </div>,
           api.plannerSlot,

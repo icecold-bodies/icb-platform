@@ -149,6 +149,11 @@ export function initProductionFlow(root, opts) {
   // mergedJobs is PERMANENT for the session: dispatch (→ QA) frees the bay but
   // never re-opens a job's earlier states. Reset (demo) clears it with the seed.
   let mergedJobs = new Set();
+  // Single-location rule (Michael, 2 Jul): a job is never in two places. A scheduled job
+  // lives ON the planner grid (V/P state) until the planner declares its cut complete by
+  // dragging the grid card down into Panels ready — cutJobs holds those declarations
+  // (persisted). The real Panels-Cut-Complete event will replace declareCut() only.
+  let cutJobs = new Set();
 
   // ── Phase 2 — persisted floor state ────────────────────────────────────────
   // Every floor MUTATION marks the state dirty; renderAll then hands a JSON
@@ -161,6 +166,7 @@ export function initProductionFlow(root, opts) {
       v: 1,
       pre: D.PRE,
       qc: D.QC || [],
+      cut: [...cutJobs],
       consumed: [...consumedJobs],
       mergedJobs: [...mergedJobs],
       mergedChassis: [...mergedChassis],
@@ -209,8 +215,33 @@ export function initProductionFlow(root, opts) {
   function applyLivePanels() {
     if (!livePanels) return;
     const onFloor = jobsOnFloor();
-    D.PANELS = livePanels.filter(p => !consumedJobs.has(String(p.job)) && !onFloor.has(String(p.job))
+    const inQc = new Set((D.QC || []).map(u => String(u.job)));
+    // prune cut declarations for jobs the planner no longer schedules (and that never started)
+    for (const j of [...cutJobs]) {
+      if (!livePanels.some(p => String(p.job) === j) && !consumedJobs.has(j) && !onFloor.has(j)
+          && !inQc.has(j) && !mergedJobs.has(j)) cutJobs.delete(j);
+    }
+    D.PANELS = livePanels.filter(p => cutJobs.has(String(p.job))
+      && !consumedJobs.has(String(p.job)) && !onFloor.has(String(p.job))
       && !mergedJobs.has(String(p.job)));   // locked: a merged job never re-enters Panels ready
+  }
+  function downstreamJobs() {
+    // every job that has LEFT the V/P grid stage: declared cut (Panels ready), started
+    // (on the floor / consumed), merged, or dispatched to QC — the grid hides these.
+    const s = new Set([...cutJobs, ...consumedJobs, ...mergedJobs]);
+    jobsOnFloor().forEach(j => s.add(j));
+    (D.QC || []).forEach(u => s.add(String(u.job)));
+    return [...s];
+  }
+  function declareCut(jobRef) {
+    const lp = (livePanels || []).find(p => String(p.jobId) === String(jobRef) || String(p.job) === String(jobRef));
+    if (!lp) return false;
+    if (mergedJobs.has(String(lp.job))) return false;
+    cutJobs.add(String(lp.job));
+    dirty = true;
+    applyLivePanels();
+    renderAll();
+    return true;
   }
 
   function occPos(bodies) { const o = [false, false, false, false]; bodies.forEach(x => { const a = x.pos, b = x.pos + x.len; for (let p = 0; p < NPOS; p++) { if (a < (p + 1) * 10 && b > p * 10) o[p] = true; } }); return o; }
@@ -341,7 +372,7 @@ export function initProductionFlow(root, opts) {
     renderKPIs(); renderPanels(); renderPre(); renderPark(); renderQc();
     // Lifecycle notification (business rules 2 Jul): the merged-lock set rides up so the
     // embedded planner can reject backward moves for MERGED WITH CHASSIS jobs.
-    try { if (opts.onChange) opts.onChange({ mergedJobs: [...mergedJobs] }); } catch (e) { /* non-fatal */ }
+    try { if (opts.onChange) opts.onChange({ mergedJobs: [...mergedJobs], downstreamJobs: downstreamJobs() }); } catch (e) { /* non-fatal */ }
     // Phase 2 — persist floor mutations (loads/pushes never set dirty, so no echo loop).
     if (dirty) {
       dirty = false;
@@ -455,7 +486,13 @@ export function initProductionFlow(root, opts) {
   function clearMergeGuides() { $$('.merge-guide').forEach(x => x.classList.remove('merge-guide')); }
   function validTarget(kind, id, el) {
     if (!el) return null;
-    if (kind === 'panel') { const l = el.closest('.pa-lane'); return l ? { t: 'pa', el: l, li: +l.dataset.bi } : null; }
+    if (kind === 'panel') {
+      // Reverse (lifecycle 2 Jul): PANELS READY -> V/P — drag the panel-set back up onto
+      // the planner; the grid card re-appears and the summary rows re-count it.
+      const vp = el.closest('#plannerSlot');
+      if (vp) return { t: 'vp', el: vp };
+      const l = el.closest('.pa-lane'); return l ? { t: 'pa', el: l, li: +l.dataset.bi } : null;
+    }
     if (kind === 'body') {
       const mb = el.closest('.m-block');
       if (mb) {
@@ -499,7 +536,8 @@ export function initProductionFlow(root, opts) {
     if (d.ghost) d.ghost.remove();
     const tgt = validTarget(d.kind, d.id, document.elementFromPoint(e.clientX, e.clientY));
     if (tgt) {
-      if (d.kind === 'panel' && tgt.t === 'pa') startBody(d.id, tgt.li);
+      if (d.kind === 'panel' && tgt.t === 'vp') { const pp = D.PANELS.find(x => x.id === d.id); if (pp) { cutJobs.delete(String(pp.job)); dirty = true; applyLivePanels(); } }
+      else if (d.kind === 'panel' && tgt.t === 'pa') startBody(d.id, tgt.li);
       else if (d.kind === 'body' && tgt.t === 'pa') { const lr = tgt.el.getBoundingClientRect(); const desired = ((e.clientX - d.gdx) - lr.left - 12 + TPAD) / PX; const a = findAssembly(d.id); if (a && a.loc === 'merge') assemblyBackToTrack(d.id, tgt.li, desired); else moveBody(d.id, tgt.li, desired); }
       else if (d.kind === 'body' && tgt.t === 'panels') bodyBackToPanels(d.id);
       else if (d.kind === 'body' && tgt.t === 'merge') dropAssembly(d.id, tgt.li);
@@ -515,6 +553,23 @@ export function initProductionFlow(root, opts) {
     const dsp = e.target.closest('[data-dispatch]'); if (dsp) { dispatch(+dsp.dataset.dispatch); return; }
     const det = e.target.closest('[data-detail-kind]'); if (det) { openModal(det.dataset.detailKind, det.dataset.detailId); }
   }
+  // V/P -> PANELS READY: the planner drags a scheduled grid card down into this strip
+  // (the cockpit slot cells are HTML5 drag sources carrying application/x-panel-job).
+  const panelsStrip = $('#panels');
+  panelsStrip.addEventListener('dragover', e => {
+    if ([...(e.dataTransfer?.types || [])].includes('application/x-panel-job')) {
+      e.preventDefault();
+      panelsStrip.classList.add('drop-ok');
+    }
+  });
+  panelsStrip.addEventListener('dragleave', () => panelsStrip.classList.remove('drop-ok'));
+  panelsStrip.addEventListener('drop', e => {
+    panelsStrip.classList.remove('drop-ok');
+    const jid = e.dataTransfer?.getData('application/x-panel-job');
+    if (!jid) return;
+    e.preventDefault();
+    declareCut(jid);
+  });
   root.addEventListener('pointerdown', onPointerDown);
   root.addEventListener('click', onClick);
   // Reset restores the floor seed; in live mode the Panels-ready zone re-derives
@@ -526,7 +581,7 @@ export function initProductionFlow(root, opts) {
     // applies in offline/seed mode.
     const live = !!(livePanels || liveParking);
     D = live ? { PANELS: [], PRE: emptyBays(), PARK: [], QC: [] } : S0();
-    consumedJobs.clear(); mergedJobs = new Set(); mergedChassis = new Set();
+    consumedJobs.clear(); mergedJobs = new Set(); mergedChassis = new Set(); cutJobs = new Set();
     applyLivePanels(); applyLiveParking();
     dirty = true;
     renderAll();
@@ -682,6 +737,7 @@ export function initProductionFlow(root, opts) {
       D.PRE = (s && Array.isArray(s.pre) && s.pre.length === 5) ? s.pre : emptyBays();
       D.QC = (s && Array.isArray(s.qc)) ? s.qc : [];
       consumedJobs.clear(); (s && s.consumed || []).forEach(j => consumedJobs.add(String(j)));
+      cutJobs = new Set((s && s.cut || []).map(String));
       mergedJobs = new Set((s && s.mergedJobs || []).map(String));
       mergedChassis = new Set((s && s.mergedChassis || []).map(String));
       applyLivePanels(); applyLiveParking();

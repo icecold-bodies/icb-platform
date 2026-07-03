@@ -15,6 +15,7 @@ import copy
 import json
 import logging
 import re
+import threading
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -491,8 +492,18 @@ def submit_for_check(db: Session, card_id: int, user, waive_body_gap: bool = Fal
     # (signers get role-scoped deep-links, CCs get the lighter observer variant). AFTER commit so a
     # rolled-back submit sends nothing; best-effort so a mail failure never fails the submit (the
     # mailto: helper below still exists as the manual fallback — §0.11). No-op when SMTP is unset.
+    # 3 Jul — SMTP moved OFF the request path: each delivery takes seconds and they run one per
+    # recipient, so 2 signers + CC held the response past the frontend's 10s timeout — the UI said
+    # "Couldn't reach the server" for a submit that had ALREADY succeeded (and the retry then 409'd
+    # on the no-longer-draft card). Contents are still built HERE (request thread, live db session);
+    # only the network sends run on a daemon thread after this returns.
     if base_url:
-        _send_check_emails(db, card, base_url)
+        emails = _collect_check_emails(db, card, base_url)
+        if emails:
+            threading.Thread(target=_deliver_check_emails, args=(emails, card.id),
+                             daemon=True, name=f"prejob-{card.id}-check-mail").start()
+        else:
+            logger.info("prejob %s check emails — nothing to send (no recipients)", card.id)
     return card
 
 
@@ -502,35 +513,41 @@ def _resolve_user_email(db: Session, uid) -> str | None:
     return e if ("@" in e and "." in e.split("@")[-1]) else None
 
 
-def _send_check_emails(db: Session, card: PrejobCard, base_url: str) -> bool:
-    """v1.39.11 — server-side auto-send, one email per recipient: the Sales Rep and Planner each
-    get a personalized message with THEIR role-scoped sign-off deep-link; every CC recipient gets
-    the lighter observer variant (view link only, no sign-off ask). A CC who is also a signer still
-    gets both — the contents differ. Best-effort and never raises — logged and swallowed so a
-    delivery failure cannot break the (already-committed) submit. Returns True if ANY send landed."""
+def _collect_check_emails(db: Session, card: PrejobCard, base_url: str) -> list:
+    """v1.39.11 semantics, split for the async send: build the per-recipient messages — the Sales
+    Rep and Planner each get a personalized message with THEIR role-scoped sign-off deep-link;
+    every CC recipient gets the lighter observer variant (view link only). A CC who is also a
+    signer still gets both — the contents differ. Runs in the REQUEST thread (needs the live db
+    session); returns [(subject, body, to)] for _deliver_check_emails. Best-effort, never raises."""
+    out: list = []
     try:
-        from app.services import notifications
-        sent_any = False
         for role, uid in (("sales", card.sales_rep_user_id), ("planner", card.planner_user_id)):
             addr = _resolve_user_email(db, uid)
             if not addr:
                 logger.info("prejob %s %s signer email skipped — no resolvable address", card.id, role)
                 continue
             content = build_signer_email(db, card, base_url, role)
-            sent_any = notifications.send_email(content["subject"], content["body"], to=addr) or sent_any
+            out.append((content["subject"], content["body"], addr))
         cc_list = list(dict.fromkeys(
             a.strip() for a in (card.cc_recipients or "").split(",")
             if "@" in a and "." in a.split("@")[-1]))
         if cc_list:
             content = build_cc_email(db, card, base_url)
-            for addr in cc_list:
-                sent_any = notifications.send_email(content["subject"], content["body"], to=addr) or sent_any
-        if not sent_any:
-            logger.info("prejob %s check emails — nothing sent (no recipients or SMTP unset)", card.id)
-        return sent_any
+            out.extend((content["subject"], content["body"], addr) for addr in cc_list)
     except Exception as e:  # noqa: BLE001 — best-effort; the submit is already committed
-        logger.warning("prejob %s check email send failed: %s", card.id, str(e)[:200])
-        return False
+        logger.warning("prejob %s check email build failed: %s", card.id, str(e)[:200])
+    return out
+
+
+def _deliver_check_emails(emails: list, card_id: int) -> None:
+    """Daemon-thread SMTP loop — no db access, only the pre-built messages. Each send is already
+    log-and-continue inside notifications.send_email (never raises)."""
+    from app.services import notifications
+    sent_any = False
+    for subject, body, addr in emails:
+        sent_any = notifications.send_email(subject, body, to=addr) or sent_any
+    if not sent_any:
+        logger.info("prejob %s check emails — nothing sent (SMTP unset or all sends failed)", card_id)
 
 
 # ── §3.6 — PDF + email content (the §0.11 transitional mailto pattern) ───────

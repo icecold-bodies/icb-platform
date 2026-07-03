@@ -14,7 +14,7 @@ import { Modal } from '../../components/ui/overlays'
 import { Spinner } from '../../components/ui/feedback'
 import { useToast } from '../../components/ui/toast'
 import { useAppData } from '../../store/AppDataContext'
-import { apiGet, apiPatch, apiPost, handleApiError } from '../../lib/api'
+import { ApiError, apiGet, apiPatch, apiPost, handleApiError } from '../../lib/api'
 import { dmy } from '../../lib/format'
 import { compareTemplatesBySize } from '../../lib/templateSort'
 import { ChassisModelSelect } from '../Chassis/ChassisModelSelect'
@@ -243,7 +243,13 @@ export function PreJobCardModal({
       if (!silent) toast.push({ kind: 'ok', message: 'Draft saved' })
       return saved
     } catch (e) {
-      handleApiError(e, toast.push)
+      // 3 Jul — handleApiError RETHROWS 409s (callers own conflict UX); letting that escape here
+      // made every save/submit retry on a non-draft card fail SILENTLY. Say what the server said.
+      if (e instanceof ApiError && e.status === 409) {
+        toast.push({ kind: 'warn', message: e.detail || 'The card changed — reload and try again.' })
+      } else {
+        handleApiError(e, toast.push)
+      }
       return null
     } finally { setBusy(false) }
   }
@@ -296,7 +302,15 @@ export function PreJobCardModal({
       toast.push({ kind: 'ok',
         message: `Submitted for check — notification emailed to ${signers || 'the signers'}${sent.cc_recipients ? ' (+ CC)' : ''}.` })
       await onConfirm(costing)
-    } catch (e) { handleApiError(e, toast.push) } finally { setBusy(false) }
+    } catch (e) {
+      // 3 Jul — a 409 here means the card already left draft (e.g. an earlier submit landed but
+      // its response was missed) — surface the server's message instead of dying silently.
+      if (e instanceof ApiError && e.status === 409) {
+        toast.push({ kind: 'warn', message: e.detail || 'This card was already submitted — reload to see its state.' })
+      } else {
+        handleApiError(e, toast.push)
+      }
+    } finally { setBusy(false) }
   }
 
   const editable = card?.status === 'draft' && canCreate

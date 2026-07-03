@@ -48,8 +48,7 @@ const SHELL = `
     <div class="strip" id="qcrow"></div>
   </div>
 
-  <div class="hint"><span>✋</span><span>Drag a <b>panel-set</b> into a bay to start a body, build it down the track, then — when <b>you</b> deem it ready — drag the <b>assembly</b> into its Merge block and bring its <b>chassis</b> up to meet it (they attach on matching job; no auto-merge). <b>Click any card</b> for the full job detail. <b>↺ Reset</b> restores the start.</span></div>
-  <div class="foot" id="foot"></div>
+  <!-- mockup-era hint + A06 footnote removed (Michael, 3 Jul — "remove the clutter at the bottom") -->
 </div>
 
 <!-- JOB DETAIL MODAL -->
@@ -709,10 +708,6 @@ export function initProductionFlow(root, opts) {
   $('#mClose').addEventListener('click', closeModal);
   $('#scrim').addEventListener('click', closeModal);
   $('#mTabs').addEventListener('click', e => { const t = e.target.closest('[data-tab]'); if (t) { modalState.tab = t.dataset.tab; paintModal(); } });
-
-  $('#foot').innerHTML =
-    `<b>A06 · Production Flow v0.4.</b> Upgraded visuals (component spec): trailer top-view with <b>4 stage-segments</b> + drawbar, top-view <b>ladder chassis</b>, AWAITING-BODY chassis cards, and the <b>full chassis VIN</b> on every assembly card. Merge per your rules (A07): <b>no auto-merge</b> — the planner drags the ready assembly into its Merge block and brings the chassis up; a block holds only a chassis <em>or</em> an assembly until its same-job partner arrives. <b>Click any card</b> (panel-set, assembly or chassis) for the full job detail — Chassis, BOM, Pre-Job, Drawings, Sign-off and VCL — built from the live MES data (read-only). Mocked locally; VCL = Vehicle Check List (book-in), DCL = dispatch.
- <div class="br"><b>RANGE RHINO 2.0</b> · Icecold Bodies · all data placeholder for the real records.</div>`;
 
   renderAll();
 

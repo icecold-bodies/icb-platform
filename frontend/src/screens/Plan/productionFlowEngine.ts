@@ -268,6 +268,7 @@ export function initProductionFlow(root, opts) {
       <span class="accent" style="background:${col}"></span>
       <div class="pt">${p.id}<span class="meth" style="background:${methCol}">${p.method}</span></div>
       <div class="ps">${p.len.toFixed(1)} m ${p.type} body</div>
+      ${p.vin ? `<div class="ps" style="color:#2563EB;font-weight:700">⛓ ${p.vin}</div>` : ''}
       <div class="pf"><span class="dot" style="background:${col}"></span>${p.ready ? 'Panels cut · ready' : 'On ' + p.method + ' · not ready'} · ${p.cust}</div></div>`;
     }).join('');
   }

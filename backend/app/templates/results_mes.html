@@ -1,0 +1,9 @@
+{# Icecold Bodies MES skin fork of the costing Results / summary page.
+   Inherits the live results template verbatim and overlays the MES skin
+   stylesheet on top — same pattern as calculator_mes.html (WO v4.7). The
+   live /results/{id} route stays bit-for-bit pristine; this renders only
+   when the MES shell embeds it with ?skin=mes (see routers/calculator.py). #}
+{% extends "results.html" %}
+{% block head %}{{ super() }}
+<link rel="stylesheet" href="/static/css/theme-mes.css?v=2"/>
+{% endblock %}

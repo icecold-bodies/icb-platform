@@ -321,19 +321,18 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
                   </td>
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-wrap items-center gap-1">
-                      {/* v1.39.1 (Michael) — View opens the full /results report (the light legacy report,
-                          same-origin). Live rows link straight to it; mock rows (no calculation_id) fall back
-                          to the React costing detail. */}
+                      {/* v1.39.1 (Michael) — View opens the full /results report. 3 Jul: now IN-SHELL
+                          (/costings/results/:id iframes the report under the MES chrome) — the old
+                          direct link stranded the user on the legacy page with no MES menu. Mock rows
+                          (no calculation_id) still fall back to the React costing detail. */}
                       <Tooltip text={c.calculation_id ? 'Open the full costing report' : 'Open the costing detail'}>
                         {c.calculation_id ? (
-                          <a
-                            href={`/results/${c.calculation_id}`}
-                            target="_blank"
-                            rel="noopener"
+                          <Link
+                            to={`/costings/results/${c.calculation_id}`}
                             className="flex items-center gap-1 rounded-md border border-line bg-white px-2 py-1 text-xs font-semibold text-primary hover:bg-primary-light"
                           >
                             <Eye size={12} /> View
-                          </a>
+                          </Link>
                         ) : (
                           <Link
                             to={`/costings/${encodeURIComponent(c.quote_number)}`}

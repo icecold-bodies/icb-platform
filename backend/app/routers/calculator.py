@@ -951,7 +951,11 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
                 pass
 
     report_template = resolve_report_template(tt)
-    return templates.TemplateResponse("results.html", {
+    # ?skin=mes → the thin MES-skin wrapper (results_mes.html, theme-mes.css overlay) so the MES
+    # shell can iframe this page in-app (View button, 3 Jul — the user was stranded on the legacy
+    # page with no MES nav). No param → the live template, bit-for-bit pristine (WO v4.7 constraint).
+    _tmpl = "results_mes.html" if request.query_params.get("skin") == "mes" else "results.html"
+    return templates.TemplateResponse(_tmpl, {
         "request": request, "user": user,
         "record": rec, "dims": dims, "result": result,
         "result_items": result.get("items", []),

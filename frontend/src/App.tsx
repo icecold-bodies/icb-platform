@@ -10,6 +10,7 @@ import { ManagementDashboard } from './screens/Management/ManagementDashboard'
 import { CostingsDashboard } from './screens/Costings/CostingsDashboard'
 import { CostingDetail } from './screens/Costings/CostingDetail'
 import { LiveCalculator } from './screens/Costings/LiveCalculator'
+import { CostingResultsView } from './screens/Costings/CostingResultsView'
 import { MaterialsDashboard } from './screens/Materials/MaterialsDashboard'
 import { POSuggestionQueue } from './screens/Materials/POSuggestionQueue'
 import { StoresReconciliation } from './screens/Materials/StoresReconciliation'
@@ -30,6 +31,9 @@ export default function App() {
       <Route path="/costings/new" element={<Layout><LiveCalculator /></Layout>} />
       {/* Original mocked wizard preserved for offline demos (rep-grouped customer page, fan-out modal) */}
       <Route path="/costings/new-mock" element={<Layout><Configurator /></Layout>} />
+      {/* In-shell costing summary (3 Jul) — embeds the legacy /results report under the MES chrome
+          so View never strands the user outside the menu. */}
+      <Route path="/costings/results/:id" element={<Layout><CostingResultsView /></Layout>} />
       <Route path="/costings/:quote" element={<Layout><CostingDetail /></Layout>} />
       {/* Legacy redirect — old /configurator path */}
       <Route path="/configurator" element={<Navigate to="/costings/new" replace />} />

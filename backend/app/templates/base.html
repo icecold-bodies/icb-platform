@@ -89,7 +89,6 @@
           <span class="nav-icon">⚙</span> Cost Calculator 2
         </a>
       </div>
-      {% if not mes %}
       {% set is_admin = user and user.role == 'admin' %}
       {% set show_g2 = is_admin %}
       {% set show_g3 = is_admin or user_can(user, 'menu.customers') or user_can(user, 'menu.import') or user_can(user, 'menu.users') or user_can(user, 'menu.themes') or user_can(user, 'menu.quote_numbering') %}
@@ -267,7 +266,6 @@
         </a>
         {% endif %}
       </div>
-      {% endif %}
       {% endif %}
     </div>
     <div class="sidebar-footer">

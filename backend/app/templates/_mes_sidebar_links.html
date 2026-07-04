@@ -1,0 +1,18 @@
+{# v1.40.1 — shared MES-skin helper (included by calculator_mes.html / calculator2_mes.html).
+   Inside the embedded costing iframe, the legacy sidebar's admin/config links have no light
+   skin. Rather than collapse the light iframe into a cramped dark page, open every legacy
+   (non-/mes/) sidebar link in a NEW top-level browser tab — so all the admin/config pages
+   (Body Templates, Materials & Prices, Customers, Manage Users, Quote Numbering, …) stay
+   fully reachable while the costing iframe itself stays light. The two /mes/ Cost Calculator
+   links keep navigating in-place. #}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.sidebar-nav a.nav-item[href]').forEach(function (a) {
+      var href = a.getAttribute('href') || '';
+      if (href && href.indexOf('/mes/') !== 0) {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener');
+      }
+    });
+  });
+</script>

@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Package,
   ListChecks,
+  LogOut,
   CalendarClock,
   ClipboardCheck,
   Building2,
@@ -25,6 +26,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useAppData, type BranchRef } from '../../store/AppDataContext'
+import { API_BASE } from '../../lib/api'
 import { Tooltip } from '../ui/Tooltip'
 import { Spinner } from '../ui/feedback'
 import { costingsMock, type PermissionKey } from '../../data/costingsData'
@@ -265,6 +267,18 @@ function UserSwitcher({
           <div className={`border-t px-3 py-2 text-[11px] ${dark ? 'border-slate-700 text-slate-500' : 'border-line text-muted'}`}>
             Switching re-renders the nav and action buttons based on each role's permissions.
           </div>
+          {/* v1.40.1 — real logout: a FULL-PAGE nav to /logout deletes the server session and
+              lands on /login as a whole page, tearing the SPA down (no stale chrome/data). */}
+          <button
+            role="menuitem"
+            data-testid="sign-out"
+            onClick={() => { window.location.href = `${API_BASE}/logout` }}
+            className={`flex w-full items-center gap-3 border-t px-3 py-2.5 text-left text-sm font-semibold ${
+              dark ? 'border-slate-700 text-red-300 hover:bg-slate-800' : 'border-line text-status-red hover:bg-surface-alt'
+            }`}
+          >
+            <LogOut size={18} /> Sign out
+          </button>
         </div>
       )}
     </div>

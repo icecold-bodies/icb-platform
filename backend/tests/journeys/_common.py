@@ -195,23 +195,23 @@ def wait_for_dashboard(page: "Page") -> None:
     page.wait_for_selector("[data-testid='top-nav']", timeout=30_000)
 
 
-def admin_session(page: "Page") -> "Page":
-    """Load the SPA so it autologins as admin, then return the page on the shell.
+def admin_session(page: "Page", base: str = _DEFAULT_BASE) -> "Page":
+    """Mint an admin demo session in this browser context, then load the SPA shell.
 
-    Always call this before deep-linking any ``/mes-app`` sub-route: an
-    unauthenticated deep-link races the auth guard and may bounce to the Jinja
-    ``/login`` page (the v4.26 lesson).
+    v1.40.1: the SPA no longer self-autologins, and the ``/mes-app/*`` shell is now
+    gated server-side (unauthenticated navigation → the Jinja ``/login``). So we POST
+    the demo autologin FIRST — exactly like :func:`role_session` — which sets the
+    context's ``session_id`` cookie; then navigate. The shell gate sees the cookie and
+    serves the app, and because the POST returns only after Set-Cookie, the session is
+    ready before any in-SPA fetch fires (this also retires the old v4.34 autologin-race
+    flake — no more expect_response gymnastics).
 
-    We gate on the autologin POST *response* (not just ``wait_for_dashboard``): the top-nav can
-    render before the session cookie has propagated, so a fetch fired by an immediate in-SPA nav
-    (e.g. the chassis list's mount fetch) races the session and 401s → /login redirect. Waiting
-    for the Set-Cookie response makes the session ready for the next request (WO v4.34 — the root
-    cause behind the recurring test_chassis_journey flake, diagnosed via the instrument-to-
-    diagnose wrap). The SPA re-fires autologin on every full page load (its dedupe resets), so the
-    response is always observable here.
+    Always call this (or :func:`role_session`) before deep-linking any ``/mes-app`` route.
     """
-    with page.expect_response(lambda r: "/api/mes/autologin" in r.url, timeout=30_000):
-        page.goto("/mes-app/")
+    base = base.rstrip("/")
+    resp = page.request.post(f"{base}/api/mes/autologin", headers={"Origin": base})
+    assert resp.ok, f"admin autologin failed: HTTP {resp.status}"
+    page.goto("/mes-app/")
     wait_for_dashboard(page)
     return page
 

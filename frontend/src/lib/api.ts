@@ -108,24 +108,10 @@ export const apiDelete = <T>(path: string): Promise<T> => request<T>(path, { met
 export const apiUpload = <T>(path: string, formData: FormData): Promise<T> =>
   request<T>(path, { method: 'POST', body: formData })
 
-/** Mint a costing-app session for the demo user so the MES SPA inherits it.
- *  Idempotent server-side; silently no-ops when the API is offline.
- *
- *  Deduplicated (WO v4.18 §3.5): the autologin POST fires at most once per app
- *  load, no matter how many contexts call it on mount. Every refresh path — the
- *  Refresh button, the branch-switch signal — uses a context's `refetch()`
- *  (reads only) and must NOT re-trigger autologin. So `bootstrap = mesAutoLogin
- *  + refetch` runs once on mount; `refetch` runs on every subsequent refresh. */
-let _autoLoginPromise: Promise<void> | null = null
-export function mesAutoLogin(): Promise<void> {
-  if (!_autoLoginPromise) {
-    _autoLoginPromise = apiPost('/api/mes/autologin').then(
-      () => undefined,
-      () => undefined, // offline / unauthorised → mock mode takes over
-    )
-  }
-  return _autoLoginPromise
-}
+// v1.40.1 — mesAutoLogin() was removed. The demo autologin bypass is disabled in prod
+// (and its route unmounted), and auth is now enforced by the server-side shell gate
+// (/mes-app/* → /login when unauthenticated) plus <AuthGate>. Contexts read /api/session
+// directly; a 401/403 there redirects to the server login (AppDataContext).
 
 // ── Error → UX mapping (WO §3.2). Mutators call this in their catch block. ──────
 export type ToastKind = 'error' | 'warn' | 'ok'

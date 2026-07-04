@@ -15,7 +15,7 @@ import {
   type ReactNode,
 } from 'react'
 import seed from '../data/icb_materials_data.json'
-import { apiGet, apiPost, handleApiError, mesAutoLogin } from '../lib/api'
+import { apiGet, apiPost, handleApiError } from '../lib/api'
 import { formatPrNumber } from '../lib/format'
 import { useToast } from '../components/ui/toast'
 import { useAppData } from './AppDataContext'
@@ -230,12 +230,9 @@ export function MaterialsProvider({ children }: { children: ReactNode }) {
     setLastUpdated(new Date())
   }, [])
 
-  // Bootstrap once on mount: mint the session (deduped), then read.
+  // Bootstrap once on mount (auth already established by the shell gate + AuthGate).
   useEffect(() => {
-    void (async () => {
-      await mesAutoLogin()
-      await refetch()
-    })()
+    void refetch()
   }, [refetch])
 
   // Branch-changed signal (§4.4): re-scope on an actual active-branch switch.

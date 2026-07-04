@@ -21,12 +21,13 @@ def test_calculator_requires_auth(client):
     assert "/login" in r.headers.get("location", "")
 
 
-def test_mes_app_served(client):
+def test_mes_app_requires_auth(client):
+    # v1.40.1 — the SPA shell is gated: an unauthenticated request is redirected to the
+    # server /login before any app HTML is served (mirrors test_calculator_requires_auth).
+    # Authenticated serving of the shell is covered by the journey suite (real browser + build).
     r = client.get("/mes-app/", follow_redirects=False)
-    # 200 once the frontend is built (CI builds it); 503 if dist is absent.
-    assert r.status_code in (200, 503)
-    if r.status_code == 200:
-        assert "/mes-app/assets" in r.text
+    assert r.status_code in (302, 303, 307)
+    assert "/login" in r.headers.get("location", "")
 
 
 def test_login_runs_through_provider(client):

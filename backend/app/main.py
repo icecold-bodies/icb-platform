@@ -12,6 +12,7 @@ from datetime import datetime, timezone, timedelta
 from io import BytesIO
 from pathlib import Path
 from typing import Optional
+from urllib.parse import quote
 
 from fastapi import FastAPI, Request, Depends, Form, HTTPException, status, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -180,7 +181,12 @@ app.include_router(_r_help.router)
 app.include_router(_r_feedback.router)  # WO v4.38 — POST /api/feedback + clarify
 app.include_router(_r_feedback.admin_router)  # WO v4.38 — /api/admin/feedback inbox
 app.include_router(_r_pre_job_card.router)
-app.include_router(_r_pre_job_card.demo_router)
+# v1.40.1 — the demo autologin route (/api/mes/autologin) is mounted ONLY when
+# autologin is enabled. On prod MES_DEMO_AUTOLOGIN_USER= is empty →
+# _mes_autologin_user() is None → the route is absent entirely (defence-in-depth over
+# the endpoint's own 403). Dev + journey servers set the var, so it stays on there.
+if _r_pre_job_card._mes_autologin_user() is not None:
+    app.include_router(_r_pre_job_card.demo_router)
 app.include_router(_r_chassis_catalogue.router)
 app.include_router(_r_chassis_register.router)  # WO v4.22 — chassis register API
 app.include_router(_r_chassis_records.router)  # WO v4.28 — chassis lifecycle API
@@ -432,9 +438,19 @@ if os.path.isdir(_FRONTEND_ASSETS):
 
 @app.get("/mes-app", include_in_schema=False)
 @app.get("/mes-app/{full_path:path}", include_in_schema=False)
-async def serve_mes_app(full_path: str = ""):
+async def serve_mes_app(request: Request, full_path: str = "", db: Session = Depends(get_db)):
     """Serve the React MES SPA (BrowserRouter). Any non-asset path under
-    /mes-app/ returns index.html so client-side routing and deep links work."""
+    /mes-app/ returns index.html so client-side routing and deep links work.
+
+    AUTH GATE (v1.40.1): the SPA shell is no longer public. An unauthenticated
+    request is redirected to the server login BEFORE any app HTML/JS is served, so a
+    fresh browser sees only the login screen — never app chrome or data. Mirrors the
+    dashboard.py idiom; `next` returns the user to their deep-link after login.
+    Assets under /mes-app/assets/* stay public (a separate StaticFiles mount, matched
+    before this route) — they carry no data."""
+    if not get_current_user(request, db):
+        return RedirectResponse(
+            f"/login?next={quote('/mes-app/' + full_path, safe='/')}", status_code=303)
     if os.path.isfile(_FRONTEND_INDEX):
         # no-cache (revalidate, NOT no-store): the browser re-checks index.html every load, so a rebuilt
         # SPA's new hashed bundle is always picked up — without this the browser heuristically caches

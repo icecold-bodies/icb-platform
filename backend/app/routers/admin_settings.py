@@ -11,7 +11,7 @@ from ..database import (
     get_db, AdminSetting, TrailerType, TrailerGroup, ReportTemplate,
     OrphanedTemplateAssignment, CommodityQuote,
 )
-from ..deps import get_current_user, require_admin, user_can
+from ..deps import get_current_user, require_admin, require_user, user_can
 from ..quote_numbering import (
     get_or_create_counter, preview_template, validate_template, ALLOWED_PLACEHOLDERS,
 )
@@ -41,7 +41,8 @@ def _commodity_enabled(db: Session) -> bool:
 # ── Commodity ─────────────────────────────────────────────────────────────────
 
 @router.get("/api/commodity/enabled")
-async def get_commodity_enabled(db: Session = Depends(get_db)):
+async def get_commodity_enabled(request: Request, db: Session = Depends(get_db)):
+    require_user(request, db)          # v1.40.1 — no longer public
     return {"enabled": _commodity_enabled(db)}
 
 
@@ -60,7 +61,8 @@ async def set_commodity_enabled(request: Request, db: Session = Depends(get_db))
 
 
 @router.get("/api/commodity/sub-category-trend")
-async def commodity_trend(sub_category: str, db: Session = Depends(get_db)):
+async def commodity_trend(sub_category: str, request: Request, db: Session = Depends(get_db)):
+    require_user(request, db)          # v1.40.1 — no longer public
     if not _commodity_enabled(db):
         return {"enabled": False}
     mapping = COMMODITY_TICKERS.get((sub_category or "").upper().strip())

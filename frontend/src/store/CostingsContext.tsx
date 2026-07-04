@@ -18,7 +18,7 @@ import {
   type RepairPhaseInsertion,
   type StatusName,
 } from '../data/costingsData'
-import { apiGet, apiPost, ApiError, handleApiError, mesAutoLogin } from '../lib/api'
+import { apiGet, apiPost, ApiError, handleApiError } from '../lib/api'
 import { useToast } from '../components/ui/toast'
 import { useAppData } from './AppDataContext'
 
@@ -187,12 +187,9 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Bootstrap once on mount: deduped autologin → read.
+  // Bootstrap once on mount (auth already established by the shell gate + AuthGate).
   useEffect(() => {
-    void (async () => {
-      await mesAutoLogin()
-      await refetch()
-    })()
+    void refetch()
   }, [refetch])
 
   // Branch-changed signal (WO v4.18 §4.4): refetch on a real switch only.

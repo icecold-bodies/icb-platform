@@ -228,13 +228,14 @@ function UserSwitcher({
       {open && (
         <div
           role="menu"
-          className={`absolute right-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-md border shadow-2xl ${
+          className={`absolute right-0 top-full z-50 mt-1 flex max-h-[80vh] w-64 flex-col overflow-hidden rounded-md border shadow-2xl ${
             dark ? 'border-slate-700 bg-slate-900 text-slate-100' : 'border-line bg-white text-body'
           }`}
         >
-          <div className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wide ${dark ? 'text-slate-400' : 'text-muted'}`}>
+          <div className={`shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide ${dark ? 'text-slate-400' : 'text-muted'}`}>
             Demo · switch user profile
           </div>
+          <div className="min-h-0 flex-1 overflow-y-auto">
           {profiles.map((p) => {
             const PIcon = PROFILE_ICONS[p.icon] ?? User
             const active = p.id === profile.id
@@ -267,13 +268,15 @@ function UserSwitcher({
           <div className={`border-t px-3 py-2 text-[11px] ${dark ? 'border-slate-700 text-slate-500' : 'border-line text-muted'}`}>
             Switching re-renders the nav and action buttons based on each role's permissions.
           </div>
-          {/* v1.40.1 — real logout: a FULL-PAGE nav to /logout deletes the server session and
+          </div>
+          {/* v1.40.1 — real logout, PINNED below the scroll area so it is always visible even when
+              the profile list overflows: a FULL-PAGE nav to /logout deletes the server session and
               lands on /login as a whole page, tearing the SPA down (no stale chrome/data). */}
           <button
             role="menuitem"
             data-testid="sign-out"
             onClick={() => { window.location.href = `${API_BASE}/logout` }}
-            className={`flex w-full items-center gap-3 border-t px-3 py-2.5 text-left text-sm font-semibold ${
+            className={`flex w-full shrink-0 items-center gap-3 border-t px-3 py-2.5 text-left text-sm font-semibold ${
               dark ? 'border-slate-700 text-red-300 hover:bg-slate-800' : 'border-line text-status-red hover:bg-surface-alt'
             }`}
           >

@@ -262,3 +262,13 @@ body::after {
   pointer-events: none;
   z-index: 9999;
 }
+
+/* ── Layout: full-width calculator (v1.40.1) ──────────────────────────────
+ * The embedded MES calculator lives in a full-width React iframe, but the shared
+ * .page-content caps at 1400px — right for admin CRUD pages, too narrow for the
+ * calculator on a wide monitor (the Bill of Materials was squeezed and the right of
+ * the screen wasted, per the user's report). Un-cap ONLY the calculator pages (those
+ * containing a .calc-shell) so the BOM (the 1fr middle grid column) spreads to fill the
+ * width. Admin pages keep the 1400px cap; the pristine dark /calculator (which never
+ * loads this stylesheet) is untouched. */
+.page-content:has(.calc-shell) { max-width: none; }

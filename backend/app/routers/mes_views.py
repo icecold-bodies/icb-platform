@@ -40,3 +40,15 @@ async def mes_calculator(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("calculator_mes.html", {
         "request": request, "user": user, "trailers": trailers,
     })
+
+
+@router.get("/calculator2", response_class=HTMLResponse)
+async def mes_calculator2(request: Request, db: Session = Depends(get_db)):
+    # v1.40.1 — MES-skinned Cost Calculator 2 so the embedded iframe sidebar can stay light.
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse(url="/login")
+    trailers = db.query(TrailerType).filter_by(is_active=True).order_by(TrailerType.name).all()
+    return templates.TemplateResponse("calculator2_mes.html", {
+        "request": request, "user": user, "trailers": trailers,
+    })

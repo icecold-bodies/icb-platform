@@ -71,18 +71,25 @@
       <h1>GRP Costings System <span style="font-size:11px;font-weight:600;color:var(--blue-hi);opacity:.7;letter-spacing:.04em;vertical-align:middle">{{ app_version }}</span></h1>
     </div>
     <div class="sidebar-nav">
+      {# v1.40.1 — MES-skin awareness: inside the embedded /mes/* calculator iframe, keep the sidebar
+         light (link to the /mes/* forks), retire Dashboard, and hide the admin/config groups below
+         (they have no light skin and are reached via the React Admin menu instead). #}
+      {% set mes = request.url.path.startswith('/mes/') %}
       <div class="nav-group">
         <div class="nav-label">Main</div>
+        {% if not mes %}
         <a href="/" class="nav-item {% if request.url.path == '/' %}active{% endif %}">
           <span class="nav-icon">⊞</span> Dashboard
         </a>
-        <a href="/calculator" class="nav-item {% if request.url.path == '/calculator' %}active{% endif %}">
+        {% endif %}
+        <a href="{{ '/mes/calculator' if mes else '/calculator' }}" class="nav-item {% if request.url.path in ['/calculator', '/mes/calculator'] %}active{% endif %}">
           <span class="nav-icon">⚙</span> Cost Calculator
         </a>
-        <a href="/calculator2" class="nav-item {% if request.url.path == '/calculator2' %}active{% endif %}">
+        <a href="{{ '/mes/calculator2' if mes else '/calculator2' }}" class="nav-item {% if request.url.path in ['/calculator2', '/mes/calculator2'] %}active{% endif %}">
           <span class="nav-icon">⚙</span> Cost Calculator 2
         </a>
       </div>
+      {% if not mes %}
       {% set is_admin = user and user.role == 'admin' %}
       {% set show_g2 = is_admin %}
       {% set show_g3 = is_admin or user_can(user, 'menu.customers') or user_can(user, 'menu.import') or user_can(user, 'menu.users') or user_can(user, 'menu.themes') or user_can(user, 'menu.quote_numbering') %}
@@ -260,6 +267,7 @@
         </a>
         {% endif %}
       </div>
+      {% endif %}
       {% endif %}
     </div>
     <div class="sidebar-footer">

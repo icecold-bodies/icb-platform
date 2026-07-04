@@ -530,7 +530,20 @@ async def load_active_theme(request: Request, call_next):
     # theme-mes.css unconditionally, so no middleware-level toggle is needed.
     # Set the flag to False so any templates still referencing it stay dormant.
     request.state.mes_skin = False
-    return await call_next(request)
+    response = await call_next(request)
+    # v1.40.1 — preserve the MES light-skin marker across PRG redirects (admin CRUD POST -> 303),
+    # so config pages stay light after a save. Trigger off the CURRENT request's ?skin=mes, or the
+    # referer of a form POST that came from a skinned page. Only same-app relative Locations; never
+    # /login or off-site — so this can neither open-redirect nor leak into the standalone dark app.
+    if 300 <= response.status_code < 400:
+        _skinned = (request.query_params.get("skin") == "mes"
+                    or "skin=mes" in (request.headers.get("referer") or ""))
+        if _skinned:
+            _loc = response.headers.get("location", "")
+            if (_loc.startswith("/") and not _loc.startswith("//")
+                    and "skin=" not in _loc and not _loc.startswith("/login")):
+                response.headers["location"] = _loc + ("&" if "?" in _loc else "?") + "skin=mes"
+    return response
 
 
 # get_current_user, require_user, require_admin, user_can, require_perm,

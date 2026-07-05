@@ -243,11 +243,11 @@
           <option value="alpha">A–Z</option>
         </select>
       </label>
-      <label id="bom-collapse-lbl" style="display:none;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);cursor:pointer;user-select:none">
-        <input type="checkbox" id="bom-collapse-all-chk" onchange="calcBomCollapseAll(this.checked)"
-          style="accent-color:var(--blue);width:12px;height:12px;cursor:pointer">
-        Collapse all
-      </label>
+      <button type="button" id="bom-collapse-lbl" onclick="calcBomToggleAll()"
+        style="display:none;align-items:center;gap:5px;font-size:11px;color:var(--blue);cursor:pointer;user-select:none;
+               background:var(--bg-raise);border:1px solid var(--border);border-radius:4px;padding:2px 9px">
+        <span style="font-size:10px">⇕</span><span id="bom-collapse-txt">Expand all</span>
+      </button>
       <span id="bom-count" style="color:var(--text-dim);font-size:10px"></span>
     </div>
     <div class="panel-body" id="bom-area">
@@ -1117,7 +1117,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
-<script defer src="/static/js/calculator.js?v=134"></script>
+<script defer src="/static/js/calculator.js?v=135"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

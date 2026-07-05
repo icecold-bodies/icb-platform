@@ -4452,14 +4452,13 @@ function _renderBodyOptionsInner(bomItems) {
 
 // ── Collapse-all helpers ──────────────────────────────────────────────────────
 function _calcSyncCheckbox() {
-  const chk = document.getElementById('bom-collapse-all-chk');
-  if (!chk) return;
-  // Works for both pre-calc (.parts-group-title) and post-calc (.calc-grp-hdr)
+  // Keeps the Expand/Collapse-all toggle label in sync with section state.
+  const txt = document.getElementById('bom-collapse-txt');
+  if (!txt) return;
   const hdrs = document.querySelectorAll('.calc-grp-hdr');
-  if (hdrs.length) {
-    const allCollapsed = [...hdrs].every(h => h.classList.contains('collapsed'));
-    chk.checked = allCollapsed;
-  }
+  if (!hdrs.length) return;
+  const allCollapsed = [...hdrs].every(h => h.classList.contains('collapsed'));
+  txt.textContent = allCollapsed ? 'Expand all' : 'Collapse all';
 }
 
 function calcBomCollapseAll(collapse) {
@@ -4491,6 +4490,14 @@ function calcBomCollapseAll(collapse) {
     preState[gid] = collapse;
   });
   localStorage.setItem(preKey, JSON.stringify(preState));
+}
+
+// One-click Expand-all / Collapse-all toggle (label reflects the next action).
+function calcBomToggleAll() {
+  const hdrs = document.querySelectorAll('.calc-grp-hdr');
+  const anyOpen = [...hdrs].some(h => !h.classList.contains('collapsed'));
+  calcBomCollapseAll(anyOpen);   // any open → collapse all; all closed → expand all
+  _calcSyncCheckbox();
 }
 
 // ── Pre-calc BOM panel collapse ───────────────────────────────────────────────
@@ -5084,7 +5091,10 @@ function renderBOMWithCosts(items, bomRef) {
   let gIdx = 0;
   for (const [cat, its] of sortedEntries) {
     const gid        = 'cg' + gIdx++;
-    const collapsed  = !!calcState[gid];
+    // Collapsed by default (user ask): a section is open only if the user has
+    // explicitly expanded it (state === false). Unseen sections stay collapsed
+    // so the BOM lands as a scannable list of section subtotals.
+    const collapsed  = calcState[gid] !== false;
     // Optional section flag carried on every item in the group (server-side).
     const _secOptional = its.some(x => x.section_is_optional);
     const _secId       = _secOptional ? (its.find(x => x.bom_section_id != null) || {}).bom_section_id : null;
@@ -5169,7 +5179,7 @@ function renderBOMWithCosts(items, bomRef) {
         style="cursor:pointer;user-select:none">
       <td colspan="4" style="padding:6px 8px;background:var(--bg-panel)">
         ${_optToggle}<span class="grp-chevron" style="font-size:10px;margin-right:5px;color:var(--text-dim)">${collapsed ? '▶' : '▼'}</span>
-        <span style="font-family:var(--font-mono);font-size:10px;color:${_hdrColor};letter-spacing:1px;text-transform:uppercase">${escHtml(cat)}</span><span style="font-family:var(--font-sans);font-size:10px;color:rgba(230,237,243,.55);margin-left:8px;letter-spacing:.2px;text-transform:none">— click on item for detail</span>${_bulkBtn}${formulaDots}${formulaErrorBadge}${eyeBtn}
+        <span class="calc-hdr-name" style="font-family:var(--font-mono);font-size:10px;color:${_hdrColor};letter-spacing:1px;text-transform:uppercase">${escHtml(cat)}</span><span style="font-family:var(--font-sans);font-size:10px;color:rgba(230,237,243,.55);margin-left:8px;letter-spacing:.2px;text-transform:none">— click on item for detail</span>${_bulkBtn}${formulaDots}${formulaErrorBadge}${eyeBtn}
         <span class="calc-hdr-sub" style="float:right;font-family:var(--font-mono);font-size:11px;color:${_hdrColor};font-weight:600;${collapsed ? '' : 'display:none'}">${subtotalTxt}</span>
       </td></tr>`;
 
@@ -5286,7 +5296,7 @@ function renderBOMWithCosts(items, bomRef) {
         </td>
         <td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${it.formula_error ? '#e53935' : 'var(--text-dim)'};white-space:nowrap">${it.formula_error ? '— err —' : fmtNum(it.quantity,3) + ' ' + it.unit}</td>
         <td ${priceCell} style="padding:5px 8px;text-align:right;font-family:var(--font-mono);white-space:nowrap">${unitPrice}</td>
-        <td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${isOv ? 'var(--red)' : 'var(--text-head)'};font-weight:600;white-space:nowrap">${it.excluded ? '<span style="color:var(--text-dim)">—</span>' : lineCost}</td>
+        <td class="calc-line-cost" style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${isOv ? 'var(--red)' : 'var(--text-head)'};font-weight:600;white-space:nowrap">${it.excluded ? '<span style="color:var(--text-dim)">—</span>' : lineCost}</td>
       </tr>`;
     });
   }

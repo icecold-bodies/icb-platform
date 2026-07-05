@@ -1286,6 +1286,17 @@ async function clearSectionPrice() {
   }
 }
 
+// v1.40.1 — keep in-calculator navigations inside the MES light skin. When this page is served
+// skinned (path starts with /mes/, or ?skin=mes present), append skin=mes to same-app links so the
+// destination — and the round-trip back — stays light instead of dropping to the dark legacy app.
+function _skinnify(url) {
+  const inMes = location.pathname.startsWith('/mes/') ||
+                new URLSearchParams(location.search).get('skin') === 'mes';
+  if (!inMes || typeof url !== 'string' || !url.startsWith('/') ||
+      url.startsWith('/mes/') || /[?&]skin=mes(?:&|$)/.test(url)) return url;
+  return url + (url.includes('?') ? '&' : '?') + 'skin=mes';
+}
+
 function ctxEditPermanent() {
   const menu = document.getElementById('bom-ctx-menu');
   const { materialId, bomId, materialName } = menu.dataset;
@@ -1299,8 +1310,8 @@ function ctxEditPermanent() {
   const isCleat  = !!(row?.mounting_cleat_id);
 
   const tid = document.getElementById('trailer-select').value;
-  const returnUrl = encodeURIComponent(`/calculator${tid ? '?trailer=' + tid : ''}`);
-  const destUrl = `/admin/materials?edit=${materialId}&return=${returnUrl}`;
+  const returnUrl = encodeURIComponent(_skinnify(`/calculator${tid ? '?trailer=' + tid : ''}`));
+  const destUrl = _skinnify(`/admin/materials?edit=${materialId}&return=${returnUrl}`);
 
   if (isSkin) {
     document.getElementById('skinwarn-mat-name').textContent     = materialName || row?.material_name || '';
@@ -1358,7 +1369,7 @@ function showMeHowSkinUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-skin-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=skin&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=skin&back=${back}`);
 }
 
 function showMeHowFromSpriceModal() {
@@ -1370,7 +1381,7 @@ function showMeHowFromSpriceModal() {
   const isCleat  = document.getElementById('sprice-cleat-notice')?.style.display !== 'none';
   const type   = isTaping ? 'taping' : isFloor ? 'floor' : isCleat ? 'cleat' : 'skin';
   closeModal('modal-section-price');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=${type}&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=${type}&back=${back}`);
 }
 
 function proceedToMaterialEditFromFloor() {
@@ -1386,7 +1397,7 @@ function showMeHowFloorUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-floor-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=floor&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=floor&back=${back}`);
 }
 
 function proceedToMaterialEditFromCleat() {
@@ -1402,7 +1413,7 @@ function showMeHowCleatUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-cleat-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=cleat&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=cleat&back=${back}`);
 }
 
 function proceedToMaterialEditFromTaping() {
@@ -2178,7 +2189,7 @@ function cancelEdit() {
   // (MES skin, embedded in /costings/new). A hardcoded '/calculator' dumped the
   // MES iframe onto the dark theme on Cancel; pathname keeps the skin we were
   // served on and still drops the ?edit=… query for a clean calculator.
-  window.location.href = window.location.pathname;
+  window.location.href = _skinnify(window.location.pathname);
 }
 
 // Restore the saved profit-ratio dropdown selection. Prefer the exact saved
@@ -2425,7 +2436,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     },
     new: () => {
       // v1.39.8 — same skin-preserving navigation as cancelEdit (see there).
-      window.location.href = window.location.pathname;
+      window.location.href = _skinnify(window.location.pathname);
     },
   });
 

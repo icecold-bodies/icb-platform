@@ -71,6 +71,7 @@ interface AppDataValue {
   apiMode: ApiMode
   isAdmin: boolean              // WO v4.25 — live session user.role === 'admin' (admin inspection gate)
   sessionRole: string | null    // WO v4.31 §3.2 — live session user.role (render-time choices, e.g. workshop price hide)
+  sessionUsername: string | null // v1.40.2 — live session username (gates the demo switcher to the literal `admin` ACCOUNT)
   activeBranch: BranchRef | null
   // Branch picker (WO v4.18).
   accessibleBranches: BranchRef[]
@@ -107,6 +108,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [activeBranch, setActiveBranch] = useState<BranchRef | null>(null)
   const [accessibleBranches, setAccessibleBranches] = useState<BranchRef[]>([])
   const [sessionRole, setSessionRole] = useState<string | null>(null)  // WO v4.25 (admin gate)
+  const [sessionUsername, setSessionUsername] = useState<string | null>(null)  // v1.40.2
 
   useEffect(() => {
     let alive = true
@@ -116,9 +118,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         if (!alive) return
         setSessionPerms(new Set(s.permissions))
         setSessionRole(s.user?.role ?? null)
+        setSessionUsername(s.user?.username ?? null)
         setActiveBranch(s.active_branch)
         setAccessibleBranches(s.accessible_branches)
         setCsrfToken(s.csrf_token ?? null)
+        // v1.40.2 — the displayed identity must be the REAL session user, not the mock
+        // default ("Burt Smith / Sales Rep" misled Michael during the 6 Jul A9930
+        // incident). Permissions in live mode never read from `profile`, so this is
+        // purely display truth; the literal `admin` account may still switch demo
+        // profiles (TopNav gate) for presentations.
+        setProfile({
+          id: 'live-session',
+          name: s.user?.username ?? 'Signed in',
+          role: s.user?.role ?? 'user',
+          icon: s.user?.role === 'admin' ? 'ShieldCheck' : 'User',
+        })
         setApiMode('live')
       } catch (err) {
         if (!alive) return
@@ -190,11 +204,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       apiMode,
       isAdmin: apiMode === 'live' && sessionRole === 'admin',
       sessionRole: apiMode === 'live' ? sessionRole : null,
+      sessionUsername: apiMode === 'live' ? sessionUsername : null,
       activeBranch,
       accessibleBranches,
       switchBranch,
     }
-  }, [acceptedJobs, reworkTickets, tooltipsEnabled, profile, mockPermissions, apiMode, sessionPerms, sessionRole, activeBranch, accessibleBranches, switchBranch])
+  }, [acceptedJobs, reworkTickets, tooltipsEnabled, profile, mockPermissions, apiMode, sessionPerms, sessionRole, sessionUsername, activeBranch, accessibleBranches, switchBranch])
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>
 }

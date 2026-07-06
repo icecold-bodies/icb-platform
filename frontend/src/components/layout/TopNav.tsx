@@ -95,8 +95,13 @@ function entryVisible(entry: NavEntry, has: (k: PermissionKey) => boolean, isAdm
 }
 
 export function TopNav({ dark = false }: { dark?: boolean }) {
-  const { tooltipsEnabled, setTooltipsEnabled, profile, setProfile, hasPermission, isAdmin, apiMode, activeBranch, accessibleBranches, switchBranch } = useAppData()
+  const { tooltipsEnabled, setTooltipsEnabled, profile, setProfile, hasPermission, isAdmin, apiMode, sessionUsername, activeBranch, accessibleBranches, switchBranch } = useAppData()
   const visibleLinks = NAV_LINKS.filter((l) => entryVisible(l, hasPermission, isAdmin))
+  // v1.40.2 — the demo profile switcher is for the literal `admin` ACCOUNT only (Michael's
+  // rule): real staff who merely hold admin RIGHTS must not see it — it changes the displayed
+  // identity, never the real session, and misled testing (6 Jul A9930 incident). In mock mode
+  // (dev/demo without a backend) it stays available to any presenter.
+  const allowProfileSwitch = apiMode !== 'live' || sessionUsername === 'admin'
   const { summary } = useFlagSummary()   // WO v4.36b §3.2 — aggregate flag count → Health Check (§3.3)
 
   return (
@@ -169,6 +174,7 @@ export function TopNav({ dark = false }: { dark?: boolean }) {
           onChange={setProfile}
           profiles={costingsMock.demo_user_profiles}
           dark={dark}
+          allowSwitch={allowProfileSwitch}
         />
       </div>
     </header>
@@ -183,11 +189,13 @@ function UserSwitcher({
   profiles,
   onChange,
   dark,
+  allowSwitch,
 }: {
   profile: ReturnType<typeof useAppData>['profile']
   profiles: typeof costingsMock.demo_user_profiles
   onChange: (p: typeof profile) => void
   dark: boolean
+  allowSwitch: boolean
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -208,7 +216,7 @@ function UserSwitcher({
     .toUpperCase()
   return (
     <div ref={ref} className="relative">
-      <Tooltip text="Switch demo user profile">
+      <Tooltip text={allowSwitch ? 'Switch demo user profile' : 'Account menu'}>
         <button
           onClick={() => setOpen((o) => !o)}
           className="flex items-center gap-2 rounded-md px-2 py-1 text-left hover:bg-white/10"
@@ -232,9 +240,19 @@ function UserSwitcher({
             dark ? 'border-slate-700 bg-slate-900 text-slate-100' : 'border-line bg-white text-body'
           }`}
         >
+          {/* v1.40.2 — profile switching is a literal-`admin`-account demo tool; everyone
+              else gets their real identity + Sign out only (the fake-identity list misled
+              live testing). */}
           <div className={`shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-wide ${dark ? 'text-slate-400' : 'text-muted'}`}>
-            Demo · switch user profile
+            {allowSwitch ? 'Demo · switch user profile' : 'Signed in'}
           </div>
+          {!allowSwitch && (
+            <div className="px-3 pb-2 text-sm">
+              <div className="font-semibold">{profile.name}</div>
+              <div className={`text-xs ${dark ? 'text-slate-400' : 'text-muted'}`}>{profile.role}</div>
+            </div>
+          )}
+          {allowSwitch && (
           <div className="min-h-0 flex-1 overflow-y-auto">
           {profiles.map((p) => {
             const PIcon = PROFILE_ICONS[p.icon] ?? User
@@ -269,6 +287,7 @@ function UserSwitcher({
             Switching re-renders the nav and action buttons based on each role's permissions.
           </div>
           </div>
+          )}
           {/* v1.40.1 — real logout, PINNED below the scroll area so it is always visible even when
               the profile list overflows: a FULL-PAGE nav to /logout deletes the server session and
               lands on /login as a whole page, tearing the SPA down (no stale chrome/data). */}

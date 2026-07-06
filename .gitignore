@@ -60,3 +60,7 @@ Thumbs.db
 build/
 dist-electron/
 *.tsbuildinfo
+
+# MS Office owner-lock temp files (created while a doc is open)
+~$*
+**/~$*

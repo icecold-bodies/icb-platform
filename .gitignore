@@ -64,3 +64,7 @@ dist-electron/
 # MS Office owner-lock temp files (created while a doc is open)
 ~$*
 **/~$*
+
+# Local image source-masters (all 15 are committed byte-identical under
+# backend/app/static/chassis-types/ — see aea8844; no need to double-store 17MB)
+pics/

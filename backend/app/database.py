@@ -1753,6 +1753,43 @@ PERMISSION_CATALOGUE = [
     ("dashboard.approval_rate","View Approval Rate stats card on dashboard",  "data",    {"admin", "full"}),
     # ── Inline recipe editing ────────────────────────────────────────────────
     ("recipes.edit_inline",   "Edit skin formula / taping block prices directly from the calculator", "admin", {"admin"}),
+    # ── MES permission keys (v1.40.1) ────────────────────────────────────────
+    # Mirrors the data inserts of migrations 0005 / 0013 / 0016 / 0017 / 0028
+    # VERBATIM (names, descriptions, grants). Those migrations seed migrated DBs,
+    # but a DB that missed their data inserts (prod, found 6 Jul 2026: the whole
+    # 'mes' family absent -> admin's /api/session permission list lacked
+    # planning.acknowledge, so the SPA locked the Acknowledge button even for
+    # admin) never healed, because this catalogue-driven startup bootstrap only
+    # knew the legacy costings keys. The catalogue is now the authoritative
+    # superset: _bootstrap_permissions() tops up any environment on boot.
+    # Admin has NO grant rows here by design — role 'admin' is a code-level
+    # wildcard (deps.user_can) and /api/session returns the full catalogue for
+    # admins (services/session.effective_permissions).
+    ("production.accept",            "Accept a calculation into production",             "mes", {"sales"}),
+    ("production.pre_job_card",      "Send the pre-job card",                            "mes", {"sales"}),
+    ("production.signoff_sales",     "Sales pre-job sign-off",                           "mes", {"sales"}),
+    ("production.signoff_production","Production pre-job sign-off",                      "mes", {"production"}),
+    ("production.chassis_received",  "Confirm chassis received",                         "mes", {"production", "planner"}),
+    ("planning.acknowledge",         "Acknowledge a job on the Planning Board",          "mes", {"production", "planner"}),
+    ("planning.schedule",            "Schedule / move a job into a slot",                "mes", {"planner"}),
+    ("planning.unschedule",          "Remove a job from a slot",                         "mes", {"planner"}),
+    ("stores.count",                 "Record a stock cycle count",                       "mes", {"stores"}),
+    ("stores.raise_discrepancy",     "Raise a stock discrepancy to Buying",              "mes", {"stores"}),
+    ("buying.resolve_discrepancy",   "Resolve a stock discrepancy",                      "mes", {"buyer", "buyer_senior"}),
+    ("buying.raise_pr",              "Raise a single PR",                                "mes", {"buyer", "buyer_senior"}),
+    ("buying.defer_pr",              "Defer a PO suggestion",                            "mes", {"buyer", "buyer_senior"}),
+    ("buying.override_supplier",     "Override the suggested supplier",                  "mes", {"buyer_senior"}),
+    ("buying.bulk_raise",            "Bulk-raise PRs",                                   "mes", {"buyer_senior"}),
+    ("chassis.create",               "Create a chassis record",                          "mes", {"planner"}),
+    ("chassis.update",               "Edit a chassis record",                            "mes", {"planner", "production"}),
+    ("chassis.vcl",                  "Capture a VCL (book-in) event",                    "mes", {"planner", "production"}),
+    ("chassis.dcl",                  "Capture a DCL (dispatch) event",                   "mes", {"planner", "production"}),
+    ("chassis.assembly_assign",      "Assign a chassis to an assembly bay (parking -> assembly)", "mes", {"planner", "production"}),
+    ("prejob.create",                "Create + submit Pre-Job Cards (Internal Sales)",   "mes", {"sales"}),
+    ("prejob.signoff_sales",         "Sales Rep check sign-off on a Pre-Job Card",       "mes", {"sales"}),
+    ("prejob.signoff_planner",       "Planner check sign-off on a Pre-Job Card",         "mes", {"planner"}),
+    ("qc.inspect",                   "Record QC inspection verdicts (Kenny's inbox + per-category)", "mes", {"qc_inspector", "planner", "production"}),
+    ("qc.signoff",                   "Finalize a QC inspection sign-off (pass -> dispatch)",         "mes", {"qc_inspector"}),
 ]
 
 

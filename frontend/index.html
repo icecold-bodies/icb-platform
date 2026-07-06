@@ -3,6 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // v1.40.2 — anti-nesting guard: the MES SPA must never render inside a frame.
+      // (Seen 6 Jul demo: an auth bounce inside the costing iframe landed on the
+      // /login default -> /mes-app/ -> the whole app recursively inside itself.)
+      // Same-origin parent: reload it once so it rebuilds cleanly. Loop-brake via
+      // sessionStorage (shared across same-origin frames in the tab): if we reloaded
+      // within the last 10s and STILL ended up framed, stop and show an escape link.
+      (function () {
+        if (window.self === window.top) return
+        var KEY = 'mes_frame_guard_at'
+        var last = 0
+        try { last = Number(window.sessionStorage.getItem(KEY) || 0) } catch (e) { /* no-op */ }
+        var recent = Date.now() - last < 10000
+        if (!recent) {
+          try { window.sessionStorage.setItem(KEY, String(Date.now())) } catch (e) { /* no-op */ }
+          try { window.top.location.reload(); return } catch (e) { /* cross-origin parent */ }
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+          document.body.innerHTML =
+            '<div style="font-family:system-ui,sans-serif;padding:24px;font-size:14px">' +
+            'The ICB MES cannot be shown inside another page. ' +
+            '<a href="/mes-app/" target="_top" style="color:#0E4D8C;font-weight:600">Open ICB MES</a></div>'
+        })
+        throw new Error('mes-app: refused to render inside a frame')
+      })()
+    </script>
     <title>Icecold Bodies MES</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

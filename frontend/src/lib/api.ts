@@ -46,7 +46,7 @@ function normalizeDetail(d: unknown): string | undefined {
   try { return JSON.stringify(d) } catch { return String(d) }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, _csrfRetried = false): Promise<T> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
   let res: Response
@@ -71,6 +71,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       detail = normalizeDetail((await res.json())?.detail)
     } catch {
       /* non-JSON error body */
+    }
+    // v1.40.2 — CSRF self-heal: the SPA caches its token at page load, so a login in
+    // another tab / the legacy iframe rotates the session and every mutation from this
+    // (stale) page 403s with "CSRF token invalid" until a manual refresh. Instead:
+    // refetch /api/session once (GET — no CSRF needed, cookie is current), adopt the
+    // fresh token, and retry the original request a single time.
+    if (res.status === 403 && !_csrfRetried && /csrf/i.test(detail ?? '')) {
+      try {
+        const s = await request<{ csrf_token?: string | null }>('/api/session', { method: 'GET' }, true)
+        if (s?.csrf_token) {
+          _csrfToken = s.csrf_token
+          return request<T>(path, init, true)
+        }
+      } catch {
+        /* fall through to the original 403 */
+      }
     }
     throw new ApiError(res.status, detail)
   }

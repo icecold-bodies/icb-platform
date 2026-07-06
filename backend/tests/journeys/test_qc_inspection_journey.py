@@ -48,12 +48,12 @@ def _awaiting_qa_chassis() -> dict:
 
 
 def _open_qc_inbox(page: "Page", base: str, username: str) -> None:
-    """qc_inspector session → deep-link /admin/qc, gating on the autologin round-trip so the inbox fetch
-    doesn't race the auth guard (the v4.26 deep-link lesson). role_session keeps the qc session across the
-    SPA's re-fired autologin; the QC_ROLES gate then renders the screen for the non-admin role."""
+    """qc_inspector session → deep-link /admin/qc. role_session() POSTs the demo autologin directly and
+    owns the session cookie; v1.40.1 removed the SPA's self-autologin (no request to gate on any more —
+    the old expect_response('/api/mes/autologin') wait timed out forever) and the /mes-app/* shell gate
+    serves the SPA because the cookie is already set. The qc-inbox selector is the readiness signal."""
     role_session(page, username, base=base)
-    with page.expect_response(lambda r: "/api/mes/autologin" in r.url, timeout=30_000):
-        page.goto("/mes-app/admin/qc")
+    page.goto("/mes-app/admin/qc")
     page.wait_for_selector("[data-testid='qc-inbox']", timeout=30_000)
 
 

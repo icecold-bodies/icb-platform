@@ -72,6 +72,7 @@ from .routers.admin import (  # WO v4.26 — admin CRUD for the 4 master-data ta
 )
 from .routers.admin import prejob_templates as _r_admin_prejob_templates  # WO v4.33 §3.3
 from .routers.admin import fridge_units as _r_admin_fridge_units  # WO v4.33 — fridge DDM
+from .routers.admin import defect_categories as _r_admin_defect_categories  # WO v4.36c — QC taxonomy DDM
 from .routers.admin import chassis_admin as _r_admin_chassis  # WO v4.36a §3.6 — Merge / Find Orphan
 from .routers import auth as _r_auth, trailers as _r_trailers
 from .routers import skin_taping as _r_skin_taping, calculator as _r_calculator
@@ -85,9 +86,9 @@ from .routers import pdf_templates as _r_pdf_templates
 from .routers import exports as _r_exports
 from .routers import bom_snapshots as _r_bom_snapshots
 from .routers import help as _r_help
+from .routers import feedback as _r_feedback  # WO v4.38 — Feedback Portal
 from .routers import pre_job_card as _r_pre_job_card
 from .routers import chassis_catalogue as _r_chassis_catalogue
-from .routers import mes_views as _r_mes_views  # WO v4.7 — MES skin fork at /mes/*
 from .routers import production_jobs as _r_production_jobs  # WO v4.14 — /api/production-jobs/*
 from .routers import production as _r_production  # WO v4.32 — /api/production/* aggregations
 from .routers import prejob_cards as _r_prejob_cards  # WO v4.33 — Pre-Job Card workflow
@@ -101,6 +102,8 @@ from .routers import suppliers as _r_suppliers
 # WO v4.16 — Planning Board + session/branch + per-role gating
 from .routers import session as _r_session
 from .routers import planning as _r_planning
+from .routers import visual_integrity as _r_visual_integrity  # WO v4.36b — flag derivation endpoints
+from .routers import qc as _r_qc  # WO v4.36c — Kenny QC inspection + dispatch
 
 # ─── Logging setup ───────────────────────────────────────────────────────────
 _log_dir = os.path.join(os.path.dirname(__file__), '..', 'logs')
@@ -171,12 +174,13 @@ app.include_router(_r_pdf_templates.router)
 app.include_router(_r_exports.router)
 app.include_router(_r_bom_snapshots.router)
 app.include_router(_r_help.router)
+app.include_router(_r_feedback.router)  # WO v4.38 — POST /api/feedback + clarify
+app.include_router(_r_feedback.admin_router)  # WO v4.38 — /api/admin/feedback inbox
 app.include_router(_r_pre_job_card.router)
 app.include_router(_r_pre_job_card.demo_router)
 app.include_router(_r_chassis_catalogue.router)
 app.include_router(_r_chassis_register.router)  # WO v4.22 — chassis register API
 app.include_router(_r_chassis_records.router)  # WO v4.28 — chassis lifecycle API
-app.include_router(_r_mes_views.router)  # WO v4.7 — /mes/dashboard + /mes/calculator
 app.include_router(_r_production_jobs.router)  # WO v4.14 — production-jobs API
 app.include_router(_r_production.router)  # WO v4.32 — team-worksheet aggregation
 app.include_router(_r_prejob_cards.router)  # WO v4.33 — Pre-Job Card workflow API
@@ -191,6 +195,7 @@ app.include_router(_r_suppliers.router)
 app.include_router(_r_session.router)
 app.include_router(_r_planning.board_router)
 app.include_router(_r_planning.router)
+app.include_router(_r_visual_integrity.router)  # WO v4.36b — /api/visual-integrity/flags/*
 app.include_router(_r_bom_generate.router)  # WO v4.25 — /api/bom/generate (rules engine)
 # WO v4.26 — admin CRUD for the 4 master-data tables + OITM autocomplete
 app.include_router(_r_admin_rules.router)
@@ -201,6 +206,8 @@ app.include_router(_r_admin_spec_options.search_router)
 app.include_router(_r_admin_prejob_templates.router)  # WO v4.33 §3.3 — template review/approve
 app.include_router(_r_admin_fridge_units.router)  # WO v4.33 — fridge DDM CRUD
 app.include_router(_r_admin_chassis.router)  # WO v4.36a §3.6 — admin Merge / Find Orphan chassis
+app.include_router(_r_admin_defect_categories.router)  # WO v4.36c — QC defect-categories DDM
+app.include_router(_r_qc.router)  # WO v4.36c — /api/qc/* inspection + dispatch
 
 # ─── Diagnostics: crash capture + request logging ───────────────────────────
 # Installed early so they wrap everything below. /debug/health is registered
@@ -493,13 +500,10 @@ async def load_active_theme(request: Request, call_next):
     request.state.theme      = _theme_cache["theme"]
     request.state.nav_groups = dict(_theme_cache["nav_groups"])
 
-    # WO v4.7 — MES skin trigger REMOVED. The skin was previously toggled here
-    # via a query param / cookie / referer check, and base.html loaded the
-    # overlay stylesheet conditionally. That trigger leaked into direct browser
-    # visits whenever the sticky cookie was set. The MES mockup now uses the
-    # forked /mes/dashboard and /mes/calculator routes whose templates load
-    # theme-mes.css unconditionally, so no middleware-level toggle is needed.
-    # Set the flag to False so any templates still referencing it stay dormant.
+    # WO v4.7 — MES skin trigger REMOVED (live /calculator + / stay pristine).
+    # WO v4.37 §3.3 — the /mes/dashboard + /mes/calculator skin-fork routes that
+    # loaded theme-mes.css are retired with the iframe. The flag stays False so any
+    # live template still referencing request.state.mes_skin renders dormant.
     request.state.mes_skin = False
     return await call_next(request)
 

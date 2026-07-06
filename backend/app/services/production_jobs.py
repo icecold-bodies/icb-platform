@@ -261,12 +261,16 @@ def _auto_create_chassis_at_ack(db: Session, job: ProductionJob,
     the job-FK guard a true idempotency key under concurrent acks on the same job."""
     if job.chassis_record_id is not None:
         return                                            # already linked (§3.2 or a prior ack) — idempotent
+    # WO v4.36b.1 — symmetric with v4.36a.4 (§3.2 case 2): do NOT silently no-op when no chassis model was
+    # entered. An UNLINKED job reaching Planning ack now anchors an 'expected' stub UNCONDITIONALLY (make
+    # may be NULL — create_expected_chassis accepts it), so the pipeline always has a chassis record;
+    # v4.36b RED-flags an incomplete stub (chassis_no_make_model) rather than the ack silently anchoring
+    # nothing. The silent-deferral posture is now symmetric across both auto-create touchpoints (ADR 0027).
+    # Do NOT restore the `if not make: return` early-return.
     make = (((chassis_data or {}).get("chassis_model")) or "").strip()
-    if not make:
-        return                                            # no chassis model entered — graceful no-op
     from app.services.chassis import create_expected_chassis
     chassis = create_expected_chassis(
-        db, make=make, vin=None,                          # VIN unknown until VCL receive (mirrors §3.2)
+        db, make=make, vin=None,                          # make="" → NULL-make stub; VIN NULL until VCL (mirrors §3.2)
         body_gap_mm=None, created_via="planning_job_create", source="planning_ack",  # source is VARCHAR(16)
         created_source_ref=_planning_ref(job), who=who)
     job.chassis_record_id = chassis.id
@@ -329,6 +333,7 @@ def chassis_prefill(db: Session, job_id: int) -> dict:
     dealer_id = chassis.dealer_id if chassis else None
     dealer_name = (db.get(Customer, dealer_id).name if dealer_id and db.get(Customer, dealer_id) else None)
     return {"customer_name": customer_name, "customer_id": customer_id, "chassis_type": chassis_type,
+            "chassis_id": (chassis.id if chassis else None),   # WO v4.36.5 §3.3 — the ack's "Edit on Chassis page" deep link
             "dealer_id": dealer_id, "dealer_name": dealer_name, "vin_number": vin_number,
             "vin_source": vin_source,
             # WO v4.36b — chassis-field unification: surface the rest of the linked chassis fields so the
@@ -402,43 +407,42 @@ def record_planning_ack(db: Session, job_id: int, chassis_eta: Optional[date],
     if job.chassis_record_id:
         chassis = db.get(ChassisRecord, job.chassis_record_id)
         if chassis is not None:
+            from app.services.chassis import _apply_chassis_fields   # lazy — avoid import cycle
+            cd = chassis_data or {}
+            changes: dict = {}
             if job.job_number:
-                chassis.job_number = job.job_number
+                changes["job_number"] = job.job_number
             # WO v4.36a §0.5 — VIN format validated (422 on bad format), clash no longer SILENTLY swallowed:
-            # write-once NULL→value with a 409 on clash; a DIFFERENT VIN presented for a chassis that already
-            # has one is surfaced (409), not dropped.
-            vin = ci.validate_vin_format((chassis_data or {}).get("chassis_vin"))
+            # write-once NULL→value with a 409 on clash; a DIFFERENT VIN for an already-VIN'd chassis → 409.
+            vin = ci.validate_vin_format(cd.get("chassis_vin"))
             if vin and not chassis.vin:
                 ci.validate_vin_uniqueness(db, vin, exclude_id=chassis.id)        # 409 on clash (was silent)
-                chassis.vin = vin
-                chassis.vin_source = chassis.vin_source or "planning_ack"
+                changes["vin"] = vin
+                changes["vin_source"] = chassis.vin_source or "planning_ack"
             elif vin and chassis.vin and ci.normalize_vin(vin) != chassis.vin:
                 raise ci.ChassisIntegrityError(
                     f"VIN {ci.normalize_vin(vin)} differs from this chassis's VIN {chassis.vin}. "
                     "Use Merge Chassis to swap the chassis.", status_code=409)
             # WO v4.34.1 §0.3 / v4.36a §0.5 — stamp the planner's chosen supplier, validated as a dealer
             # (is_dealer=true → 422 otherwise). Explicit choice → last-write wins; None leaves it untouched.
-            dealer_id = (chassis_data or {}).get("dealer_id")
+            dealer_id = cd.get("dealer_id")
             if dealer_id is not None:
-                chassis.dealer_id = ci.validate_dealer(db, dealer_id)
-            # WO v4.36b — chassis-field unification: the ack persists the chassis fields onto chassis_records
-            # (single source of truth), not just the costing chassis_data blob. The panel sends the attested
-            # make when §3.9-locked, so make<-chassis_model equals the attested value (safe). VIN keeps its
-            # dedicated write-once path above; ETA stays on the job; the blob is still written (belt-and-braces).
-            cd = chassis_data or {}
+                changes["dealer_id"] = ci.validate_dealer(db, dealer_id)
             # WO v4.36b — fill the chassis make from the ack's chassis-type ONLY when it's blank; NEVER
-            # overwrite an existing/attested make. The §3.9 frontend lock sends the attested value (no-op
-            # here), and the §3.2 pre_job_card contract makes the pre-job-attested spec the source of truth
-            # (test_ack_skips_when_already_linked / test_ack_noops_after_real_prejob_submit).
+            # overwrite an existing/attested make (the §3.9 lock sends the attested value → no-op here;
+            # test_ack_skips_when_already_linked / test_ack_noops_after_real_prejob_submit).
             if cd.get("chassis_model") and not (chassis.make or "").strip():
-                chassis.make = (cd["chassis_model"] or "").strip()[:64] or None
+                changes["make"] = (cd["chassis_model"] or "").strip()[:64] or None
             _widths = {"customer_name": 128, "contact_person": 128, "telephone": 64,
                        "description": 255, "notes": None, "tail_lift_code": 64}
             for col, w in _widths.items():
                 if cd.get(col) is not None:
                     val = (cd[col] or "").strip()
-                    setattr(chassis, col, (val[:w] if w else val) or None)
-            chassis.updated_by = actor
+                    changes[col] = (val[:w] if w else val) or None
+            # WO v4.36.5 §3.1 — route the ack's chassis writes through the central chokepoint (audited,
+            # source='planning_ack'). Single source of truth onto chassis_records; the blob is still written.
+            _apply_chassis_fields(db, chassis, changes, who=actor, source="planning_ack",
+                                  actor_id=getattr(user, "id", None))   # §3.8 — symmetric actor capture w/ the PlanningAck row
     job.status = "planning"
     # hotfix (fix/prejob-card-status-sync) — keep the costing's status in lock-step so the Costings
     # dashboard shows 'Planning' and the costing surfaces as an unscheduled Planning card.

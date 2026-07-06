@@ -14,10 +14,13 @@ import { GripVertical, Plus } from 'lucide-react'
 import { Card } from '../../components/ui/primitives'
 import { useToast } from '../../components/ui/toast'
 import { useAppData } from '../../store/AppDataContext'
-import { ApiError, handleApiError } from '../../lib/api'
+import { ApiError, apiGet, handleApiError } from '../../lib/api'
 import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import { useBayModel } from './useBayModel'
-import type { Bay, BayState, ChassisRecord } from '../Chassis/types'
+import type { AwaitingQaRow, Bay, BayState, ChassisRecord } from '../Chassis/types'
+import { FlagBadges } from '../../components/Flag/FlagBadge'   // WO v4.36b §3.2 — bay-tile flags
+import { AgeingPill } from '../../components/Flag/AgeingPill'   // WO v4.36b §3.7 — colour-coded day-counter
+import { useFlaggedBays } from '../../hooks/useFlags'
 
 // Compact per-state tile language for the lanes (same vocabulary/colours as the Production dashboard tiles).
 const BAY_TILE: Record<BayState, { border: string; badge?: string; badgeClass?: string }> = {
@@ -84,10 +87,25 @@ const DEMO_PREASSEMBLY_CARDS: Record<number, PreAssemblyDemoCard> = {
 
 export function BayModelLanes() {
   const toast = useToast()
+  const { map: bayFlags } = useFlaggedBays()   // WO v4.36b §3.2 — {bay_id → Flag[]} for the assembly tiles
   const { hasPermission, isAdmin } = useAppData()
   const canAssign = isAdmin || hasPermission('chassis.assembly_assign')
   const { mode, bays, parking, occupantByBay, awaitingQa, refresh, assign, markPanelsArrived,
           markBodyAttached, clearPanels, moveToAwaitingQa, returnToParking } = useBayModel(toast.push)
+
+  // WO v4.36c §3.5 (re-landed v4.36e §3.2) — the Dispatch zone fetches INDEPENDENTLY of the core floor
+  // (useBayModel), so a dispatch-feed hiccup can never blank the parking/assembly/QA zones (max isolation;
+  // the earlier allSettled-in-the-shared-refresh slowed the focus-refetched floor + destabilised the layout).
+  // Mount-only (no focus refetch → no shared-scroll reflow churn); refreshes on nav.
+  const [dispatched, setDispatched] = useState<AwaitingQaRow[]>([])
+  const [dispatchError, setDispatchError] = useState(false)
+  useEffect(() => {
+    let live = true
+    apiGet<AwaitingQaRow[]>('/api/qc/dispatched')
+      .then((rows) => { if (live) { setDispatched(rows); setDispatchError(false) } })
+      .catch(() => { if (live) { setDispatched([]); setDispatchError(true) } })   // isolated — never touches the floor
+    return () => { live = false }
+  }, [])
   const [drag, setDrag] = useState<ChassisRecord | null>(null)
   const [rejectBay, setRejectBay] = useState<number | null>(null)
   const [busyBay, setBusyBay] = useState<number | null>(null)
@@ -458,8 +476,7 @@ export function BayModelLanes() {
                     <span>Bay {n}</span>
                     {card && (
                       <span className="flex items-center gap-1">
-                        <span data-testid="day-counter"
-                              className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] font-medium text-muted">Day {card.day}</span>
+                        <AgeingPill days={card.day} testid="day-counter" />{/* §3.7 — consistent colour-coded day-counter */}
                         <span data-testid="demo-pill"
                               className="rounded bg-status-amber px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">DEMO</span>
                       </span>
@@ -551,9 +568,10 @@ export function BayModelLanes() {
                   <span>{bay.code}</span>
                   <span className="flex items-center gap-1">
                     {/* WO v4.36a.5 — days on the bay since assembly_assigned (computed; MERGE occupant tiles only) */}
+                    {/* WO v4.36b §3.7 — AgeingPill colours the days-on-bay by the §0.6 default ramp
+                        (green<=2 / amber 3-4 / red>=5); keeps the day-counter testid. */}
                     {occ && dayCount(bay.since) !== null && (
-                      <span data-testid="day-counter"
-                            className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] font-medium text-muted">Day {dayCount(bay.since)}</span>
+                      <AgeingPill days={dayCount(bay.since)!} testid="day-counter" />
                     )}
                     {mismatch ? (
                       <span data-testid="bay-mismatch" title="The panels and the chassis in this bay are different jobs — they won’t merge."
@@ -581,6 +599,9 @@ export function BayModelLanes() {
                       'empty'
                     )}
                   </div>
+                )}
+                {(bayFlags.get(bay.id)?.length ?? 0) > 0 && (
+                  <div className="mt-1"><FlagBadges flags={bayFlags.get(bay.id)} domain="bays" entityId={bay.id} /></div>
                 )}
                 {mismatch && (
                   <div className="mt-0.5 truncate text-[10px] text-status-red">
@@ -679,6 +700,45 @@ export function BayModelLanes() {
             {canAssign
               ? 'Drag a completed (body-attached) chassis here to free the bay.'
               : 'No chassis awaiting QA.'}
+          </div>
+        )}
+      </Card>
+
+      {/* WO v4.36c §3.5 (re-landed v4.36e §3.2) — DISPATCH zone: full-width, below Awaiting QA (workflow
+          PARKING → ASSEMBLY → AWAITING QA → DISPATCH). QC-passed chassis released for customer collection.
+          Read-only in MVP (no drag-back — the rework loop is Phase 2+). Mirrors the Awaiting-QA visual language.
+          The reflow regression that forced the v4.36c revert is fixed at the PlanningBoard render site, where
+          <BayModelLanes/> is wrapped in a shrink-0 + bounded scroll container (§3.2 Phase B). */}
+      <Card data-testid="dispatch-zone" className="col-span-2">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-sm font-semibold uppercase tracking-wide text-muted">Dispatch</span>
+          <span className="text-[11px] text-muted">{dispatched.length} chassis</span>
+        </div>
+        {dispatchError ? (
+          <div data-testid="dispatch-zone-error"
+            className="rounded-md border border-dashed border-status-amber/50 bg-status-amber/5 p-4 text-center text-xs text-status-amber">
+            Couldn’t load the dispatch list — the other zones are unaffected; it retries on the next refresh.
+          </div>
+        ) : dispatched.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {dispatched.map((c) => (
+              <div key={c.chassis_id} data-testid="dispatch-chassis" data-id={c.chassis_id}
+                className="w-[184px] rounded-md border border-line border-l-4 border-l-status-green bg-status-green/5 p-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-semibold">{c.vin || '—'}</span>
+                  <span className="rounded px-1 text-[10px] font-medium bg-status-green/15 text-status-green">DISPATCH</span>
+                </div>
+                <div className="truncate text-xs text-body">{c.customer_name || '—'}</div>
+                <div className="truncate text-[11px] text-muted">
+                  {[c.make, c.model].filter(Boolean).join(' ') || '—'}
+                  {c.job_number ? ` · ${c.job_number}` : ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-md border border-dashed border-line p-4 text-center text-xs text-muted">
+            No chassis dispatched yet.
           </div>
         )}
       </Card>

@@ -800,6 +800,30 @@ class ChassisRecord(Base):
     updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
     created_by = Column(String(128))
     updated_by = Column(String(128))
+    version = Column(Integer, nullable=False, default=0, server_default="0")  # WO v4.36.5 — optimistic lock (sole-editor concurrency)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 25b. chassis_records_audit — per-field attribute-change trail (WO v4.36.5; clones ProductionJobAudit/0023).
+#      Append-only; the same-schema chassis_id FK (CASCADE) rides on create_all, the cross-schema editor
+#      FK (SET NULL) is created in migration 0029. BA is the consumer during parallel-run troubleshooting.
+# ─────────────────────────────────────────────────────────────────────────────
+class ChassisRecordAudit(Base):
+    __tablename__ = "chassis_records_audit"
+    __table_args__ = (
+        Index("ix_chassis_records_audit_chassis_id", "chassis_id"),
+        Index("ix_chassis_records_audit_created_at", "created_at"),
+        {"schema": "icb_mes"},
+    )
+    id = Column(Integer, primary_key=True)
+    chassis_id = Column(Integer, ForeignKey("icb_mes.chassis_records.id", ondelete="CASCADE"), nullable=False)
+    field_name = Column(String(40), nullable=False)          # the chassis_records column that changed
+    old_value = Column(Text)                                 # stringified prior value (NULL when it was NULL)
+    new_value = Column(Text)                                 # stringified new value
+    source = Column(String(24))                              # chassis_page | planning_ack | system_autocreate | merge | retrofit_link
+    edited_by_user_id = Column(Integer)                      # cross-schema -> icb_costings.users.id (FK SET NULL in 0029)
+    edited_by_name = Column(String(64))                      # snapshot (survives a user rename/delete)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1046,6 +1070,112 @@ class ChassisModel(Base):
     updated_by = Column(String(128))
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Feedback Portal — feedback_submissions (WO v4.38). In-app issue reports + Haiku triage.
+#   user_id is cross-schema (plain Integer here; FK SET NULL -> icb_costings.users added in
+#   migration 0027, mirroring ProductionJobAudit). The row IS the ticket (not best-effort
+#   telemetry like help_request_log) so the table is created by an explicit migration.
+# ─────────────────────────────────────────────────────────────────────────────
+class FeedbackSubmission(Base):
+    __tablename__ = "feedback_submissions"
+    __table_args__ = (
+        Index("ix_feedback_submissions_created_at", "created_at"),
+        Index("ix_feedback_submissions_status", "status"),
+        {"schema": "icb_mes"},
+    )
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at = Column(DateTime(timezone=True), onupdate=_utcnow)
+    user_id = Column(Integer)                  # cross-schema -> icb_costings.users.id (FK SET NULL in 0027)
+    submitter_name = Column(String(120))       # snapshot so the ticket survives a user rename/delete
+    page_url = Column(String(500))             # window.location at report time (/mes-app/* only)
+    user_text = Column(Text, nullable=False)   # the description (required)
+    screenshot_path = Column(String(500))      # on-disk blob path (feedback screenshot dir)
+    # ── Claude-Haiku classification (filled on submit; NULL when AI unconfigured/failed) ──
+    issue_type = Column(String(20))            # bug | question | feature | data
+    severity = Column(String(20))              # blocker | major | minor | nice
+    ai_summary = Column(String(255))           # one-line title for inbox + WhatsApp
+    probable_cause = Column(Text)              # plain-language hint (no code disclosure)
+    clarifying_questions = Column(JSONB)       # list[str] the AI asked
+    user_answers = Column(JSONB)               # the submitter's answers
+    ai_classification = Column(JSONB)          # full structured triage blob
+    ai_model = Column(String(64))              # which model classified (telemetry)
+    # ── Triage lifecycle ──
+    status = Column(String(20), nullable=False, default="submitted")  # submitted|triaged|in_progress|resolved|closed
+    assigned_to = Column(String(120))
+    resolution_notes = Column(Text)
+    status_history = Column(JSONB)             # WO v4.38 W2 — append-only audit: [{at,by,from,to,note}]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 35. QC inspection + dispatch (WO v4.36c) — Kenny's QC + Dispatch MVP.
+#     defect_categories — admin-editable inspection taxonomy (5 seeded defaults; §0.5).
+#     qc_inspections    — one row per category per QC-inspection cycle (UPSERT-keyed).
+#     qc_signoffs       — one IMMUTABLE row per QC cycle; pass -> chassis 'dispatched'.
+#     The QC cycle_number is a QC-ATTEMPT counter (increments on re-inspection after a
+#     FAIL) — NOT the chassis lifecycle cycle (which tracks VCL/DCL visits and does not
+#     change on a QC fail). Derived = 1 + max(qc_signoffs.cycle_number for the chassis).
+#     inspector_user_id is cross-schema -> icb_costings.users.id (FK SET NULL in 0028,
+#     mirroring 0027's feedback user-FK — a signoff outlives a user delete).
+# ─────────────────────────────────────────────────────────────────────────────
+class DefectCategory(Base):
+    __tablename__ = "defect_categories"
+    __table_args__ = (
+        UniqueConstraint("name", name="uq_defect_categories_name"),
+        {"schema": "icb_mes"},
+    )
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), nullable=False)
+    sort_order = Column(Integer, nullable=False, default=100, server_default="100")
+    is_active = Column(Boolean, nullable=False, default=True, server_default="true")
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
+    created_by = Column(String(128))
+    updated_by = Column(String(128))
+    version = Column(Integer, nullable=False, default=1, server_default="1")
+
+
+class QcInspection(Base):
+    __tablename__ = "qc_inspections"
+    __table_args__ = (
+        # one row per category per QC cycle — the UPSERT idempotency key (§3.0 §3a/R2)
+        UniqueConstraint("chassis_record_id", "cycle_number", "category_id",
+                         name="uq_qc_inspections_chassis_cycle_category"),
+        Index("ix_qc_inspections_chassis_cycle", "chassis_record_id", "cycle_number"),
+        {"schema": "icb_mes"},
+    )
+    id = Column(Integer, primary_key=True)
+    chassis_record_id = Column(
+        Integer, ForeignKey("icb_mes.chassis_records.id", ondelete="CASCADE"), nullable=False)
+    cycle_number = Column(Integer, nullable=False, default=1, server_default="1")
+    category_id = Column(
+        Integer, ForeignKey("icb_mes.defect_categories.id", ondelete="RESTRICT"), nullable=False)
+    category_name = Column(String(80))   # denormalized at record time — preserves audit if renamed (§3.0 §3c)
+    inspector_user_id = Column(Integer)  # cross-schema -> icb_costings.users.id (FK SET NULL in 0028)
+    verdict = Column(String(8), nullable=False)          # 'pass' | 'fail'
+    notes = Column(Text)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
+    created_by = Column(String(128))
+
+
+class QcSignoff(Base):
+    __tablename__ = "qc_signoffs"
+    __table_args__ = (
+        # one immutable signoff per QC cycle — the double-signoff idempotency backstop (§3.0 S1/R1)
+        UniqueConstraint("chassis_record_id", "cycle_number", name="uq_qc_signoffs_chassis_cycle"),
+        Index("ix_qc_signoffs_chassis", "chassis_record_id"),
+        {"schema": "icb_mes"},
+    )
+    id = Column(Integer, primary_key=True)
+    chassis_record_id = Column(
+        Integer, ForeignKey("icb_mes.chassis_records.id", ondelete="CASCADE"), nullable=False)
+    cycle_number = Column(Integer, nullable=False, default=1, server_default="1")
+    inspector_user_id = Column(Integer)  # cross-schema -> icb_costings.users.id (FK SET NULL in 0028)
+    overall_verdict = Column(String(8), nullable=False)  # 'pass' | 'fail'
+    notes = Column(Text)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
+    created_by = Column(String(128))
+
+
 __all__ = [
     "ProductionJob", "WorkOrder", "Task", "SignOff", "Photo", "ReworkTicket",
     "PlanningSlot", "PlanningAck", "ProductionJobAudit", "ProductionJobBayEvent",
@@ -1054,8 +1184,10 @@ __all__ = [
     "LiveDailyCount", "ChassisRegister",
     "BomRule", "BomRuleLookup", "MaterialPriceOverride", "BomSpecOption",
     "GeneratedBom", "BomLine",
-    "ChassisRecord", "ChassisLifecycleEvent", "ChassisPhoto",
+    "ChassisRecord", "ChassisRecordAudit", "ChassisLifecycleEvent", "ChassisPhoto",
     "ParkingBay", "AssemblyBay",
     "PrejobTemplate", "PrejobCard", "FridgeUnit", "ChassisModel",
+    "FeedbackSubmission",
+    "DefectCategory", "QcInspection", "QcSignoff",
     "CROSS_SCHEMA_FKS",
 ]

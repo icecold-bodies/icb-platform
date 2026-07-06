@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { data, unitsInProduction } from '../data/mockData'
 import type { MockData, ReworkTicket } from '../data/types'
 import { costingsMock, ROLE_PERMISSIONS, type DemoUserProfile, type PermissionKey } from '../data/costingsData'
-import { apiGet, apiPost, handleApiError, mesAutoLogin, setCsrfToken } from '../lib/api'
+import { apiGet, apiPost, handleApiError, setCsrfToken, ApiError, API_BASE } from '../lib/api'
 import { useToast } from '../components/ui/toast'
 
 // ── Live session (WO v4.17) ───────────────────────────────────────────────────
@@ -111,7 +111,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let alive = true
     void (async () => {
-      await mesAutoLogin()
       try {
         const s = await apiGet<SessionInfo>('/api/session')
         if (!alive) return
@@ -121,8 +120,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setAccessibleBranches(s.accessible_branches)
         setCsrfToken(s.csrf_token ?? null)
         setApiMode('live')
-      } catch {
-        if (alive) setApiMode('mock')
+      } catch (err) {
+        if (!alive) return
+        // v1.40.1 — no fail-open. An unauthenticated session check (401/403) sends the user
+        // to the server login (AD-swappable), returning them to this deep link afterward. Only
+        // a genuine transport error keeps us off the app behind <AuthGate>'s reconnect panel.
+        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+          const here = window.location.pathname + window.location.search
+          window.location.replace(`${API_BASE}/login?next=${encodeURIComponent(here)}`)
+          return
+        }
+        setApiMode('mock')
       }
     })()
     return () => {

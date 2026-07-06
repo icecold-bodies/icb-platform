@@ -1,3 +1,8 @@
+{# v1.40.1 — single source of MES-skin truth: the page is "in MES context" when the request carries
+   ?skin=mes OR the path starts with /mes/. Used in <head> (load theme-mes.css) and in the sidebar
+   (link targets + skin propagation). Request-scoped only — never a cookie — so it can't leak into
+   direct visits of the standalone dark app at / and /calculator. #}
+{% set mes = (request.query_params.get('skin') == 'mes') or request.url.path.startswith('/mes/') %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,9 +30,17 @@
   {% elif theme and theme.css_path %}
   <link rel="stylesheet" href="{{ theme.css_path }}?v=11"/>
   {% endif %}
-  {# WO v4.7 — MES skin overlay no longer loaded conditionally here. The fork
-     at /mes/dashboard and /mes/calculator uses templates that load theme-mes.css
-     via their own {% block head %}, so the live / and /calculator stay pristine. #}
+  {# v1.40.1 — MES light skin, loaded AFTER the DB active-theme so it wins the cascade, whenever the
+     request is in MES context (see `mes` at the top of this file). Keyed purely off the incoming
+     request (no cookie / no request.state), so a direct visit to / or /calculator triggers nothing
+     and the standalone dark app stays bit-for-bit pristine (WO v4.7 constraint). This one conditional
+     skins EVERY page that extends base.html — all the admin/config pages included — which the old
+     per-wrapper {% block head %} approach could not reach. _mes_sidebar_links.html keeps in-iframe
+     navigation light by appending ?skin=mes to legacy sidebar links. #}
+  {% if mes %}
+  <link rel="stylesheet" href="/static/css/theme-mes.css?v=6"/>
+  {% include "_mes_sidebar_links.html" %}
+  {% endif %}
   {% block head %}{% endblock %}
   <style>
     /* Editable nav group labels */
@@ -71,15 +84,21 @@
       <h1>GRP Costings System <span style="font-size:11px;font-weight:600;color:var(--blue-hi);opacity:.7;letter-spacing:.04em;vertical-align:middle">{{ app_version }}</span></h1>
     </div>
     <div class="sidebar-nav">
+      {# v1.40.1 — MES-skin awareness (`mes` is set at the top of this file). Inside the embedded
+         /mes/* iframe the calculators link to the light /mes/* forks and Dashboard is retired;
+         every other (admin/config) link gets ?skin=mes appended by _mes_sidebar_links.html so it
+         opens LIGHT and IN-PLACE in the same iframe (no new tab, no dark). #}
       <div class="nav-group">
         <div class="nav-label">Main</div>
+        {% if not mes %}
         <a href="/" class="nav-item {% if request.url.path == '/' %}active{% endif %}">
           <span class="nav-icon">⊞</span> Dashboard
         </a>
-        <a href="/calculator" class="nav-item {% if request.url.path == '/calculator' %}active{% endif %}">
+        {% endif %}
+        <a href="{{ '/mes/calculator' if mes else '/calculator' }}" class="nav-item {% if request.url.path in ['/calculator', '/mes/calculator'] %}active{% endif %}">
           <span class="nav-icon">⚙</span> Cost Calculator
         </a>
-        <a href="/calculator2" class="nav-item {% if request.url.path == '/calculator2' %}active{% endif %}">
+        <a href="{{ '/mes/calculator2' if mes else '/calculator2' }}" class="nav-item {% if request.url.path in ['/calculator2', '/mes/calculator2'] %}active{% endif %}">
           <span class="nav-icon">⚙</span> Cost Calculator 2
         </a>
       </div>

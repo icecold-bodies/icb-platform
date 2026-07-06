@@ -5,10 +5,11 @@ URLs so the React MES mockup iframe can embed them without affecting how the
 live app renders at / and /calculator (which must stay bit-for-bit pristine,
 dark-Icecold styling, per the user's regression report).
 
-The templates `dashboard_mes.html` and `calculator_mes.html` are thin Jinja
-wrappers that `{% extends %}` their live counterparts and append the
-theme-mes.css overlay in `{% block head %}`. So this router does no more
-than what the live routes do — it just renders the wrapper templates.
+`/mes/dashboard` still renders the thin `dashboard_mes.html` wrapper; the calculator
+routes now render the live `calculator.html` / `calculator2.html` directly — base.html
+applies the MES light skin off the `/mes/` request path (or a `?skin=mes` query param),
+so no per-page wrapper is needed and every admin page reached from the sidebar skins too
+(v1.40.1).
 """
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -37,6 +38,20 @@ async def mes_calculator(request: Request, db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse(url="/login")
     trailers = db.query(TrailerType).filter_by(is_active=True).order_by(TrailerType.name).all()
-    return templates.TemplateResponse("calculator_mes.html", {
+    # v1.40.1 — render the live template directly; base.html applies the MES light skin because the
+    # request path starts with /mes/ (no wrapper template needed).
+    return templates.TemplateResponse("calculator.html", {
+        "request": request, "user": user, "trailers": trailers,
+    })
+
+
+@router.get("/calculator2", response_class=HTMLResponse)
+async def mes_calculator2(request: Request, db: Session = Depends(get_db)):
+    # v1.40.1 — MES-skinned Cost Calculator 2 (base.html skins it off the /mes/ path).
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse(url="/login")
+    trailers = db.query(TrailerType).filter_by(is_active=True).order_by(TrailerType.name).all()
+    return templates.TemplateResponse("calculator2.html", {
         "request": request, "user": user, "trailers": trailers,
     })

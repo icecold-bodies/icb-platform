@@ -1,4 +1,5 @@
 import os
+import re
 import secrets
 import time
 import uuid
@@ -24,23 +25,45 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+# v1.40.1 — validate a post-login redirect target. Only same-origin absolute paths
+# (single leading "/", no scheme, no protocol-relative "//", no backslash/CRLF) are
+# allowed, to prevent open-redirect + header/attribute injection. Default = MES home.
+_SAFE_NEXT_RE = re.compile(r"^/[A-Za-z0-9._~!$&'()*+,;=:@%/?#=&-]*$")
+
+
+def _safe_next(next_url: str) -> str:
+    if not next_url:
+        return "/mes-app/"
+    n = next_url.strip()
+    if not n.startswith("/") or n.startswith("//") or "\\" in n:
+        return "/mes-app/"
+    return n if _SAFE_NEXT_RE.match(n) else "/mes-app/"
+
+
 @router.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request, error: str = ""):
-    return templates.TemplateResponse("login.html", _login_ctx(request, error))
+async def login_page(request: Request, error: str = "", next: str = ""):
+    ctx = _login_ctx(request, error)
+    ctx["next_url"] = _safe_next(next)
+    return templates.TemplateResponse("login.html", ctx)
 
 
 @router.post("/login")
 async def login_post(request: Request, username: str = Form(...),
-                     password: str = Form(...),
+                     password: str = Form(...), next: str = Form(""),
                      db: Session = Depends(get_db)):
     client_ip = _get_client_ip(request)
     is_local  = _is_localhost(request)  # used below for the session-cookie Secure flag
+    next_safe = _safe_next(next)         # v1.40.1 — validated post-login redirect target
+
+    def _render(msg: str):
+        ctx = _login_ctx(request, msg)
+        ctx["next_url"] = next_safe
+        return templates.TemplateResponse("login.html", ctx)
 
     if _is_rate_limited(client_ip):
         logger.warning(f"Login rate-limited for IP {client_ip}")
         remaining = int(_LOCKOUT_SECONDS - (time.time() - _login_attempts[client_ip][0]))
-        return templates.TemplateResponse("login.html",
-            _login_ctx(request, f"Too many failed attempts — try again in {remaining // 60 + 1} minutes"))
+        return _render(f"Too many failed attempts — try again in {remaining // 60 + 1} minutes")
 
     try:
         # WO v4.12: authentication runs through the pluggable AuthProvider
@@ -49,14 +72,12 @@ async def login_post(request: Request, username: str = Form(...),
         user = get_auth_provider().authenticate(db, username, password)
     except Exception as e:
         logger.error(f"Login DB error from {client_ip}: {e}")
-        return templates.TemplateResponse("login.html",
-            _login_ctx(request, "Database unavailable — please try again shortly"))
+        return _render("Database unavailable — please try again shortly")
 
     if not user:
         _record_failed_attempt(client_ip)
         logger.warning(f"Failed login attempt for '{username}' from {client_ip}")
-        return templates.TemplateResponse("login.html",
-            _login_ctx(request, "Invalid credentials"))
+        return _render("Invalid credentials")
 
     _clear_attempts(client_ip)
     logger.info(f"Successful login: '{username}' from {client_ip}")
@@ -74,7 +95,7 @@ async def login_post(request: Request, username: str = Form(...),
     ))
     user.last_login_at = now_utc
     db.commit()
-    response = RedirectResponse(url="/", status_code=303)
+    response = RedirectResponse(url=next_safe, status_code=303)  # v1.40.1 — deep-link return
     # ELECTRON FAILOVER - allow the session cookie to persist over a plain-HTTP
     # LAN. The desktop client reaches this server at http://<lan-ip>:8080 (no
     # TLS), so Host is not localhost and the cookie would otherwise be marked
@@ -99,19 +120,23 @@ async def login_change_password(request: Request,
                                 current_password: str = Form(...),
                                 new_password: str = Form(...),
                                 confirm_password: str = Form(...),
+                                next: str = Form(""),
                                 db: Session = Depends(get_db)):
     client_ip = _get_client_ip(request)
+    next_safe = _safe_next(next)
 
     if _is_rate_limited(client_ip):
         remaining = int(_LOCKOUT_SECONDS - (time.time() - _login_attempts[client_ip][0]))
         ctx = _login_ctx(request, f"Too many failed attempts — try again in {remaining // 60 + 1} minutes")
         ctx["show_change"] = True
+        ctx["next_url"] = next_safe
         return templates.TemplateResponse("login.html", ctx)
 
     def _err(msg):
         ctx = _login_ctx(request, msg)
         ctx["show_change"] = True
         ctx["change_username"] = username
+        ctx["next_url"] = next_safe
         return templates.TemplateResponse("login.html", ctx)
 
     if not new_password or len(new_password) < 6:
@@ -139,6 +164,7 @@ async def login_change_password(request: Request,
 
     ctx = _login_ctx(request, "")
     ctx["notice"] = "Password updated — please sign in with your new password"
+    ctx["next_url"] = next_safe
     return templates.TemplateResponse("login.html", ctx)
 
 

@@ -18,6 +18,7 @@
     <div class="error-msg" style="background:#1e3a1e;color:#7ee87e;border-color:#2e5e2e">{{ notice }}</div>
     {% endif %}
     <form method="post" action="/login" id="login-form" style="{% if show_change %}display:none{% endif %}">
+      <input type="hidden" name="next" value="{{ next_url|default('') }}"/>
       <div class="form-group">
         <label class="form-label">Username</label>
         <input class="form-control" type="text" name="username" autofocus autocomplete="username" required/>
@@ -36,6 +37,7 @@
     </form>
 
     <form method="post" action="/login/change-password" id="change-form" style="{% if not show_change %}display:none{% endif %}">
+      <input type="hidden" name="next" value="{{ next_url|default('') }}"/>
       <div class="form-group">
         <label class="form-label">Username</label>
         <input class="form-control" type="text" name="username" autocomplete="username" required

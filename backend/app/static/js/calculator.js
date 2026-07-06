@@ -1286,6 +1286,17 @@ async function clearSectionPrice() {
   }
 }
 
+// v1.40.1 — keep in-calculator navigations inside the MES light skin. When this page is served
+// skinned (path starts with /mes/, or ?skin=mes present), append skin=mes to same-app links so the
+// destination — and the round-trip back — stays light instead of dropping to the dark legacy app.
+function _skinnify(url) {
+  const inMes = location.pathname.startsWith('/mes/') ||
+                new URLSearchParams(location.search).get('skin') === 'mes';
+  if (!inMes || typeof url !== 'string' || !url.startsWith('/') ||
+      url.startsWith('/mes/') || /[?&]skin=mes(?:&|$)/.test(url)) return url;
+  return url + (url.includes('?') ? '&' : '?') + 'skin=mes';
+}
+
 function ctxEditPermanent() {
   const menu = document.getElementById('bom-ctx-menu');
   const { materialId, bomId, materialName } = menu.dataset;
@@ -1299,8 +1310,8 @@ function ctxEditPermanent() {
   const isCleat  = !!(row?.mounting_cleat_id);
 
   const tid = document.getElementById('trailer-select').value;
-  const returnUrl = encodeURIComponent(`/calculator${tid ? '?trailer=' + tid : ''}`);
-  const destUrl = `/admin/materials?edit=${materialId}&return=${returnUrl}`;
+  const returnUrl = encodeURIComponent(_skinnify(`/calculator${tid ? '?trailer=' + tid : ''}`));
+  const destUrl = _skinnify(`/admin/materials?edit=${materialId}&return=${returnUrl}`);
 
   if (isSkin) {
     document.getElementById('skinwarn-mat-name').textContent     = materialName || row?.material_name || '';
@@ -1358,7 +1369,7 @@ function showMeHowSkinUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-skin-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=skin&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=skin&back=${back}`);
 }
 
 function showMeHowFromSpriceModal() {
@@ -1370,7 +1381,7 @@ function showMeHowFromSpriceModal() {
   const isCleat  = document.getElementById('sprice-cleat-notice')?.style.display !== 'none';
   const type   = isTaping ? 'taping' : isFloor ? 'floor' : isCleat ? 'cleat' : 'skin';
   closeModal('modal-section-price');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=${type}&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=${type}&back=${back}`);
 }
 
 function proceedToMaterialEditFromFloor() {
@@ -1386,7 +1397,7 @@ function showMeHowFloorUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-floor-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=floor&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=floor&back=${back}`);
 }
 
 function proceedToMaterialEditFromCleat() {
@@ -1402,7 +1413,7 @@ function showMeHowCleatUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-cleat-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=cleat&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=cleat&back=${back}`);
 }
 
 function proceedToMaterialEditFromTaping() {
@@ -2178,7 +2189,7 @@ function cancelEdit() {
   // (MES skin, embedded in /costings/new). A hardcoded '/calculator' dumped the
   // MES iframe onto the dark theme on Cancel; pathname keeps the skin we were
   // served on and still drops the ?edit=… query for a clean calculator.
-  window.location.href = window.location.pathname;
+  window.location.href = _skinnify(window.location.pathname);
 }
 
 // Restore the saved profit-ratio dropdown selection. Prefer the exact saved
@@ -2425,7 +2436,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     },
     new: () => {
       // v1.39.8 — same skin-preserving navigation as cancelEdit (see there).
-      window.location.href = window.location.pathname;
+      window.location.href = _skinnify(window.location.pathname);
     },
   });
 
@@ -4441,14 +4452,13 @@ function _renderBodyOptionsInner(bomItems) {
 
 // ── Collapse-all helpers ──────────────────────────────────────────────────────
 function _calcSyncCheckbox() {
-  const chk = document.getElementById('bom-collapse-all-chk');
-  if (!chk) return;
-  // Works for both pre-calc (.parts-group-title) and post-calc (.calc-grp-hdr)
+  // Keeps the Expand/Collapse-all toggle label in sync with section state.
+  const txt = document.getElementById('bom-collapse-txt');
+  if (!txt) return;
   const hdrs = document.querySelectorAll('.calc-grp-hdr');
-  if (hdrs.length) {
-    const allCollapsed = [...hdrs].every(h => h.classList.contains('collapsed'));
-    chk.checked = allCollapsed;
-  }
+  if (!hdrs.length) return;
+  const allCollapsed = [...hdrs].every(h => h.classList.contains('collapsed'));
+  txt.textContent = allCollapsed ? 'Expand all' : 'Collapse all';
 }
 
 function calcBomCollapseAll(collapse) {
@@ -4480,6 +4490,14 @@ function calcBomCollapseAll(collapse) {
     preState[gid] = collapse;
   });
   localStorage.setItem(preKey, JSON.stringify(preState));
+}
+
+// One-click Expand-all / Collapse-all toggle (label reflects the next action).
+function calcBomToggleAll() {
+  const hdrs = document.querySelectorAll('.calc-grp-hdr');
+  const anyOpen = [...hdrs].some(h => !h.classList.contains('collapsed'));
+  calcBomCollapseAll(anyOpen);   // any open → collapse all; all closed → expand all
+  _calcSyncCheckbox();
 }
 
 // ── Pre-calc BOM panel collapse ───────────────────────────────────────────────
@@ -5073,7 +5091,10 @@ function renderBOMWithCosts(items, bomRef) {
   let gIdx = 0;
   for (const [cat, its] of sortedEntries) {
     const gid        = 'cg' + gIdx++;
-    const collapsed  = !!calcState[gid];
+    // Collapsed by default (user ask): a section is open only if the user has
+    // explicitly expanded it (state === false). Unseen sections stay collapsed
+    // so the BOM lands as a scannable list of section subtotals.
+    const collapsed  = calcState[gid] !== false;
     // Optional section flag carried on every item in the group (server-side).
     const _secOptional = its.some(x => x.section_is_optional);
     const _secId       = _secOptional ? (its.find(x => x.bom_section_id != null) || {}).bom_section_id : null;
@@ -5158,7 +5179,7 @@ function renderBOMWithCosts(items, bomRef) {
         style="cursor:pointer;user-select:none">
       <td colspan="4" style="padding:6px 8px;background:var(--bg-panel)">
         ${_optToggle}<span class="grp-chevron" style="font-size:10px;margin-right:5px;color:var(--text-dim)">${collapsed ? '▶' : '▼'}</span>
-        <span style="font-family:var(--font-mono);font-size:10px;color:${_hdrColor};letter-spacing:1px;text-transform:uppercase">${escHtml(cat)}</span><span style="font-family:var(--font-sans);font-size:10px;color:rgba(230,237,243,.55);margin-left:8px;letter-spacing:.2px;text-transform:none">— click on item for detail</span>${_bulkBtn}${formulaDots}${formulaErrorBadge}${eyeBtn}
+        <span class="calc-hdr-name" style="font-family:var(--font-mono);font-size:10px;color:${_hdrColor};letter-spacing:1px;text-transform:uppercase">${escHtml(cat)}</span><span style="font-family:var(--font-sans);font-size:10px;color:rgba(230,237,243,.55);margin-left:8px;letter-spacing:.2px;text-transform:none">— click on item for detail</span>${_bulkBtn}${formulaDots}${formulaErrorBadge}${eyeBtn}
         <span class="calc-hdr-sub" style="float:right;font-family:var(--font-mono);font-size:11px;color:${_hdrColor};font-weight:600;${collapsed ? '' : 'display:none'}">${subtotalTxt}</span>
       </td></tr>`;
 
@@ -5275,7 +5296,7 @@ function renderBOMWithCosts(items, bomRef) {
         </td>
         <td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${it.formula_error ? '#e53935' : 'var(--text-dim)'};white-space:nowrap">${it.formula_error ? '— err —' : fmtNum(it.quantity,3) + ' ' + it.unit}</td>
         <td ${priceCell} style="padding:5px 8px;text-align:right;font-family:var(--font-mono);white-space:nowrap">${unitPrice}</td>
-        <td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${isOv ? 'var(--red)' : 'var(--text-head)'};font-weight:600;white-space:nowrap">${it.excluded ? '<span style="color:var(--text-dim)">—</span>' : lineCost}</td>
+        <td class="calc-line-cost" style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${isOv ? 'var(--red)' : 'var(--text-head)'};font-weight:600;white-space:nowrap">${it.excluded ? '<span style="color:var(--text-dim)">—</span>' : lineCost}</td>
       </tr>`;
     });
   }

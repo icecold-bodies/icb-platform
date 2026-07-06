@@ -1,0 +1,16 @@
+{# v1.40.1 — included by base.html's <head> ONLY when the page is in MES light-skin context
+   (?skin=mes or a /mes/ path). Propagate the light skin across in-iframe navigation: append
+   ?skin=mes to every legacy (non-/mes/, same-app) sidebar link so clicking it loads the target
+   page LIGHT and IN PLACE inside the iframe — no new tab, no dark legacy page. The /mes/ calculator
+   links are already skinned by their path and are left untouched. Idempotent (skips links that
+   already carry the marker). #}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.sidebar-nav a.nav-item[href]').forEach(function (a) {
+      var href = a.getAttribute('href') || '';
+      if (href.charAt(0) === '/' && href.indexOf('/mes/') !== 0 && href.indexOf('skin=mes') === -1) {
+        a.setAttribute('href', href + (href.indexOf('?') === -1 ? '?' : '&') + 'skin=mes');
+      }
+    });
+  });
+</script>

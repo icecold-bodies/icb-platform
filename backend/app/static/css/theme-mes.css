@@ -262,3 +262,63 @@ body::after {
   pointer-events: none;
   z-index: 9999;
 }
+
+/* ── Layout: full-width calculator (v1.40.1) ──────────────────────────────
+ * The embedded MES calculator lives in a full-width React iframe, but the shared
+ * .page-content caps at 1400px — right for admin CRUD pages, too narrow for the
+ * calculator on a wide monitor (the Bill of Materials was squeezed and the right of
+ * the screen wasted, per the user's report). Un-cap ONLY the calculator pages (those
+ * containing a .calc-shell) so the BOM (the 1fr middle grid column) spreads to fill the
+ * width. Admin pages keep the 1400px cap; the pristine dark /calculator (which never
+ * loads this stylesheet) is untouched. */
+.page-content:has(.calc-shell) { max-width: none; }
+/* Cost Summary column wider (user ask: +~130px, 300 -> 430). Only on the wide 3-column layout
+   (>1100px) so the style.css <=1100px single-column responsive collapse is preserved; the BOM
+   (the 1fr middle column) stays dominant. Scoped to the MES skin (this file) — the pristine dark
+   /calculator keeps its 280px 1fr 300px grid. */
+@media (min-width: 1101px) {
+  .calc-shell { grid-template-columns: 280px 1fr 430px; }
+}
+
+/* ── New-look calculator polish (v1.40.1) ─────────────────────────────────────
+ * A small, opt-in set of readability upgrades applied ONLY under the MES skin,
+ * requested off the ICB Design System v2 preview. The pristine dark /calculator
+ * (which never loads this stylesheet) is untouched. Additive overrides only. */
+
+/* 1 — Left-nav "selected": an unmistakable blue rail (was a faint 2px). */
+.sidebar-nav .nav-item.active {
+  border-left: 3px solid var(--blue);
+  background: var(--blue-dim);
+  color: var(--blue-hi);
+  font-weight: 600;
+}
+
+/* 2 — Bold section headers, line totals and section subtotals (hooks added in
+ *     calculator.js: .calc-hdr-name / .calc-line-cost / existing .calc-hdr-sub). */
+.calc-hdr-name  { font-weight: 700 !important; }
+.calc-hdr-sub   { font-weight: 700 !important; }
+.calc-line-cost { font-weight: 700 !important; }
+
+/* 3 — BOM section headers: Apple-style hover + selected. Pale blue + blue rail,
+ *     never a dark-grey highlight. "Selected" == the expanded (open) section.
+ *     The `tr.` prefix out-specifies style.css's `.calc-grp-hdr:hover td`
+ *     (a dark-grey !important hover) so blue always wins, not by load order. */
+.calc-grp-hdr           { transition: transform .12s ease; }
+tr.calc-grp-hdr > td    { transition: background .12s, box-shadow .15s; }
+.calc-grp-hdr:hover     { transform: translateX(2px); }
+tr.calc-grp-hdr:hover > td {
+  background: var(--blue-dim) !important;
+  box-shadow: inset 4px 0 0 var(--blue) !important;
+}
+tr.calc-grp-hdr:not(.collapsed) > td {         /* the open / "selected" section */
+  background: var(--blue-dim) !important;
+  box-shadow: inset 6px 0 0 var(--blue) !important;
+}
+tr.calc-grp-hdr:not(.collapsed):hover > td { box-shadow: inset 6px 0 0 var(--blue) !important; }
+
+/* 4 — Customer picker: highlight the currently-selected customer. */
+#cust-select option:checked {
+  background: var(--blue-dim) !important;
+  color: var(--blue-hi) !important;
+  font-weight: 600;
+}

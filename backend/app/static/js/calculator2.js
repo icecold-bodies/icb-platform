@@ -1077,6 +1077,17 @@ async function clearSectionPrice() {
   }
 }
 
+// v1.40.1 — keep in-calculator navigations inside the MES light skin. When this page is served
+// skinned (path starts with /mes/, or ?skin=mes present), append skin=mes to same-app links so the
+// destination — and the round-trip back — stays light instead of dropping to the dark legacy app.
+function _skinnify(url) {
+  const inMes = location.pathname.startsWith('/mes/') ||
+                new URLSearchParams(location.search).get('skin') === 'mes';
+  if (!inMes || typeof url !== 'string' || !url.startsWith('/') ||
+      url.startsWith('/mes/') || /[?&]skin=mes(?:&|$)/.test(url)) return url;
+  return url + (url.includes('?') ? '&' : '?') + 'skin=mes';
+}
+
 function ctxEditPermanent() {
   const menu = document.getElementById('bom-ctx-menu');
   const { materialId, bomId, materialName } = menu.dataset;
@@ -1093,8 +1104,8 @@ function ctxEditPermanent() {
   // WO v1.39.9 NOTE (pre-existing): this return URL points at /calculator
   // (Costings 1), not /calculator2 — the snapshot shape is shared, so the
   // restore still applies there; left as-is to avoid a behaviour change.
-  const returnUrl = encodeURIComponent(`/calculator${tid ? '?trailer=' + tid : ''}`);
-  const destUrl = `/admin/materials?edit=${materialId}&return=${returnUrl}`;
+  const returnUrl = encodeURIComponent(_skinnify(`/calculator${tid ? '?trailer=' + tid : ''}`));
+  const destUrl = _skinnify(`/admin/materials?edit=${materialId}&return=${returnUrl}`);
 
   if (isSkin) {
     document.getElementById('skinwarn-mat-name').textContent     = materialName || row?.material_name || '';
@@ -1152,7 +1163,7 @@ function showMeHowSkinUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-skin-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=skin&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=skin&back=${back}`);
 }
 
 function showMeHowFromSpriceModal() {
@@ -1164,7 +1175,7 @@ function showMeHowFromSpriceModal() {
   const isCleat  = document.getElementById('sprice-cleat-notice')?.style.display !== 'none';
   const type   = isTaping ? 'taping' : isFloor ? 'floor' : isCleat ? 'cleat' : 'skin';
   closeModal('modal-section-price');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=${type}&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=${type}&back=${back}`);
 }
 
 function proceedToMaterialEditFromFloor() {
@@ -1180,7 +1191,7 @@ function showMeHowFloorUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-floor-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=floor&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=floor&back=${back}`);
 }
 
 function proceedToMaterialEditFromCleat() {
@@ -1196,7 +1207,7 @@ function showMeHowCleatUnlink() {
   const ttId  = warn.dataset.ttId || '';
   const back  = encodeURIComponent(window.location.href);
   closeModal('modal-cleat-perm-warning');
-  window.location.href = `/admin/templates?tour=skin-unlink&tt=${ttId}&type=cleat&back=${back}`;
+  window.location.href = _skinnify(`/admin/templates?tour=skin-unlink&tt=${ttId}&type=cleat&back=${back}`);
 }
 
 function proceedToMaterialEditFromTaping() {
@@ -1859,7 +1870,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (!document.getElementById('approve-btn').disabled) approveCosting();
     },
     new: () => {
-      window.location.href = '/calculator';
+      window.location.href = _skinnify('/calculator');
     },
   });
 

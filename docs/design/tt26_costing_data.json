@@ -1,0 +1,833 @@
+{
+  "meta": {
+    "costingNo": "CS-2025-0478",
+    "status": "LIVE",
+    "trailer": "UP TO 5.5 CHILLER AND 2.3 WIDE",
+    "bodyLengthMm": 5500,
+    "bodyWidthMm": 2300,
+    "bodyHeightMm": 2300,
+    "totalAreaM2": 21.4,
+    "itemCount": 235,
+    "branch": "JHB",
+    "user": {
+      "name": "Burt Smith",
+      "role": "Sales Rep",
+      "initials": "BS"
+    },
+    "customerSelected": {
+      "name": "Kobus Minnaar Vervoer (Pty) Ltd",
+      "code": "C-K0016"
+    },
+    "customers": [
+      {
+        "name": "Kobus Minnaar Vervoer (Pty) Ltd",
+        "code": "C-K0016"
+      },
+      {
+        "name": "Kohler Auto",
+        "code": "C-K0032"
+      },
+      {
+        "name": "Koster Slagpale",
+        "code": "C-K0018"
+      },
+      {
+        "name": "Kroon Hansa (Pty) Ltd",
+        "code": "C-K0025"
+      }
+    ],
+    "dataProvenance": "tt26 dev DB (post price-sync 04/07) + live session screenshot CS-2025-0478"
+  },
+  "topNav": [
+    "Dashboard",
+    "Costings",
+    "Plan",
+    "Materials",
+    "Suggestions",
+    "Forecast",
+    "Reconciliation",
+    "Chassis",
+    "Shop Floor",
+    "Kanban",
+    "Production",
+    "Management",
+    "QC"
+  ],
+  "topNavActive": "Costings",
+  "leftRail": [
+    {
+      "group": "COSTING NAVIGATION",
+      "items": [
+        "Cost Calculator",
+        "Cost Calculator 2"
+      ],
+      "active": "Cost Calculator"
+    },
+    {
+      "group": "BODY STUDIES",
+      "items": [
+        "Body Templates",
+        "Formula Scan",
+        "Settings",
+        "Configurator (preview)",
+        "Body Designer"
+      ]
+    },
+    {
+      "group": "CHASSIS",
+      "items": [
+        "Chassis Options"
+      ]
+    },
+    {
+      "group": "PRICING FORMULAS",
+      "items": [
+        "Floor Plates",
+        "Mounting Cleats",
+        "SAP Prices",
+        "Skin Formulas"
+      ]
+    }
+  ],
+  "config": {
+    "activeTab": "BODY",
+    "doorType": {
+      "selected": "DRD DOORS",
+      "drd": {
+        "eps": 0.06,
+        "pu": 0.0,
+        "checked": "EPS"
+      }
+    },
+    "front": {
+      "eps": 0.06,
+      "pu": 0.0,
+      "checked": "EPS"
+    },
+    "sides": {
+      "eps": 0.06,
+      "pu": 0.0,
+      "checked": "EPS"
+    },
+    "roof": {
+      "eps": 0.076,
+      "pu": 0.0,
+      "checked": "EPS"
+    },
+    "areas": {
+      "wall": 7.36,
+      "roof": 4.14,
+      "floor": 4.14,
+      "frontRear": 5.76,
+      "total": 21.4
+    }
+  },
+  "sections": [
+    {
+      "name": "FRONT",
+      "subtitle": "Front wall assembly",
+      "sectionTotal": 2580.71,
+      "lineCount": 9,
+      "items": [
+        {
+          "material": "EXT GRP SKIN 2*300",
+          "unitPrice": 264.37,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.58,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "EPS",
+          "unitPrice": 127.72,
+          "uom": "m²",
+          "override": true
+        },
+        {
+          "material": "PU",
+          "unitPrice": 157.6,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.58,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "4MM PF PLYWOOD",
+          "unitPrice": 71.48,
+          "uom": "m²",
+          "override": true
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.58,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "58 MM PICTURE FRAME",
+          "unitPrice": 36.32,
+          "uom": "metre",
+          "override": false
+        },
+        {
+          "material": "INT GRP SKIN 1*450",
+          "unitPrice": 282.53,
+          "uom": "m²",
+          "override": false
+        }
+      ]
+    },
+    {
+      "name": "DRD",
+      "subtitle": "Door assembly",
+      "sectionTotal": 3046.5,
+      "lineCount": 10,
+      "items": [
+        {
+          "material": "EXT GRP SKIN 2*300",
+          "unitPrice": 264.37,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.59,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "EPS",
+          "unitPrice": 127.72,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "PU",
+          "unitPrice": 258.32,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.59,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "4MM PF PLYWOOD",
+          "unitPrice": 71.48,
+          "uom": "m²",
+          "override": true
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.59,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "INT GRP SKIN 2*300",
+          "unitPrice": 221.4,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "130*62MM TAPPING BLOCKS_200MM",
+          "unitPrice": 68.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "130*62MM TAPPING BLOCKS_250MM",
+          "unitPrice": 68.0,
+          "uom": "each",
+          "override": false
+        }
+      ]
+    },
+    {
+      "name": "DRD DOOR FITTINGS",
+      "subtitle": "Door fittings and hardware",
+      "sectionTotal": 4146.42,
+      "lineCount": 13,
+      "items": [
+        {
+          "material": "CSLB HINGES",
+          "unitPrice": 146.73,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "SB 51111 DOOR SET",
+          "unitPrice": 506.91,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "28779 DOOR CAPPING",
+          "unitPrice": 149.08,
+          "uom": "metre",
+          "override": true
+        },
+        {
+          "material": "28777 DOOR CAPPING",
+          "unitPrice": 132.13,
+          "uom": "metre",
+          "override": true
+        },
+        {
+          "material": "2316 DOOR RUBBER",
+          "unitPrice": 24.72,
+          "uom": "metre",
+          "override": false
+        },
+        {
+          "material": "2317 DOOR RUBBER",
+          "unitPrice": 60.18,
+          "uom": "metre",
+          "override": false
+        },
+        {
+          "material": "M10*40 GALV. BOLTS",
+          "unitPrice": 0.5,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "M10 SPRING WASHERS",
+          "unitPrice": 0.13,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "0661-0631 LONG RIVETS",
+          "unitPrice": 0.52,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "SILPLUS X WHITE SILICONE",
+          "unitPrice": 116.15,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "3MM ALU BUFFER PLATE",
+          "unitPrice": 329.15,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "T-BAR CATCH",
+          "unitPrice": 56.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "D-RUBBER",
+          "unitPrice": 194.44,
+          "uom": "each",
+          "override": false
+        }
+      ]
+    },
+    {
+      "name": "SIDES",
+      "subtitle": "Side wall panels",
+      "sectionTotal": 6634.0,
+      "lineCount": 10,
+      "items": [
+        {
+          "material": "EXT GRP SKIN 2*300",
+          "unitPrice": 264.37,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.59,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "EPS",
+          "unitPrice": 127.72,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "PU",
+          "unitPrice": 157.6,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.59,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "4MM PF PLYWOOD",
+          "unitPrice": 71.48,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.59,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "INT GRP SKIN 2*300",
+          "unitPrice": 282.53,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "58 MM PICTURE FRAME",
+          "unitPrice": 36.32,
+          "uom": "metre",
+          "override": false
+        },
+        {
+          "material": "3MM MILD STEEL PLATE",
+          "unitPrice": 95.46,
+          "uom": "each",
+          "override": true
+        }
+      ]
+    },
+    {
+      "name": "ROOF",
+      "subtitle": "Roof panel assembly",
+      "sectionTotal": 3861.05,
+      "lineCount": 8,
+      "items": [
+        {
+          "material": "EXT GRP SKIN 2*300",
+          "unitPrice": 221.4,
+          "uom": "m²",
+          "override": true
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.58,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "EPS",
+          "unitPrice": 156.56,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "PU",
+          "unitPrice": 157.6,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.58,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "INT GRP SKIN 2*300",
+          "unitPrice": 221.4,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "94 MM PICTURE FRAME",
+          "unitPrice": 45.22,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "3MM MILD STEEL PLATE",
+          "unitPrice": 95.46,
+          "uom": "each",
+          "override": true
+        }
+      ]
+    },
+    {
+      "name": "FLOOR",
+      "subtitle": "Floor assembly",
+      "sectionTotal": 17814.31,
+      "lineCount": 14,
+      "items": [
+        {
+          "material": "EXT GRP SKIN 2*300",
+          "unitPrice": 221.4,
+          "uom": "m²",
+          "override": true
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.58,
+          "uom": "metre",
+          "override": false
+        },
+        {
+          "material": "EPS",
+          "unitPrice": 156.56,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "PU",
+          "unitPrice": 523.94,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "GLUE LINE",
+          "unitPrice": 28.58,
+          "uom": "metre",
+          "override": false
+        },
+        {
+          "material": "12MM PF PLYWOOD",
+          "unitPrice": 354.03,
+          "uom": "m²",
+          "override": true
+        },
+        {
+          "material": "76*50*3R.T. TUBE",
+          "unitPrice": 102.23,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "228*50 TIMBER",
+          "unitPrice": 128.67,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "100*50 timber",
+          "unitPrice": 128.67,
+          "uom": "metre",
+          "override": false
+        },
+        {
+          "material": "2*300 INT LAMINATION",
+          "unitPrice": 31.94,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "ANTI-SKID FINAL COAT",
+          "unitPrice": 32.09,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "RICE GRAIN ALU FLOOR",
+          "unitPrice": 24356.25,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "1ST ROW KICK PLATE",
+          "unitPrice": 496.05,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "2ND ROW KICK PLATE",
+          "unitPrice": 406.6,
+          "uom": "each",
+          "override": false
+        }
+      ]
+    },
+    {
+      "name": "ALUMINIUM",
+      "subtitle": "Aluminium extrusions",
+      "sectionTotal": 3958.62,
+      "lineCount": 5,
+      "items": [
+        {
+          "material": "28781 small HORIZONTALE CAP",
+          "unitPrice": 203.25,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "28780 SMALL VERTICAL",
+          "unitPrice": 149.08,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "0661-0631 LONG RIVETS",
+          "unitPrice": 0.52,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "SILPLUS - X WHITE",
+          "unitPrice": 116.15,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "BIG ALU CORNERS",
+          "unitPrice": 54.9,
+          "uom": "each",
+          "override": true
+        }
+      ]
+    },
+    {
+      "name": "SUB FRAME + LIGHT BOX ASSY",
+      "subtitle": "Light box frame",
+      "sectionTotal": 6321.39,
+      "lineCount": 21,
+      "items": [
+        {
+          "material": "178*54RSC",
+          "unitPrice": 243.0,
+          "uom": "metre",
+          "override": false
+        },
+        {
+          "material": "100*50*3MM CROSS MEMBER",
+          "unitPrice": 243.0,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "5MM MOUNTING BRACKETS BOTTOM",
+          "unitPrice": 243.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "MOUNTING CLEATS TOP",
+          "unitPrice": 134.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "MOUNTING CLEATS BOTTOM",
+          "unitPrice": 818.36,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "3MM LIGHT BOX",
+          "unitPrice": 384.42,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "76*50 TAPER CHANNEL",
+          "unitPrice": 124.68,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "100*50 RCS BUMPER",
+          "unitPrice": 167.92,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "2MM CHEVRON PLATE",
+          "unitPrice": 260.68,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "1.7 MTR CHEVRON BOARD",
+          "unitPrice": 165.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "115MM RED TRUCK LIGHTS",
+          "unitPrice": 115.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "115MM AMBER TRUCK LIGHTS",
+          "unitPrice": 115.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "CROME NO.PLATE LIGHTS",
+          "unitPrice": 50.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "3MM MUD FLAP PLATES",
+          "unitPrice": 384.42,
+          "uom": "m²",
+          "override": false
+        },
+        {
+          "material": "40*5MM FAT BAR",
+          "unitPrice": 45.4,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "M10*30 GALV BOLTS",
+          "unitPrice": 0.5,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "M10 NYLOCK NUT",
+          "unitPrice": 0.74,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "ICB MUDFLAP",
+          "unitPrice": 267.08,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "1.2MM GALV PLATE",
+          "unitPrice": 300.78,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "SILPLUS X-WHITE",
+          "unitPrice": 116.15,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "0661-0631 RIVETS",
+          "unitPrice": 0.52,
+          "uom": "each",
+          "override": false
+        }
+      ]
+    },
+    {
+      "name": "REAR FRAME & FLOOR PLATE",
+      "subtitle": "Rear frame assembly",
+      "sectionTotal": 2787.92,
+      "lineCount": 9,
+      "items": [
+        {
+          "material": "2.5MM 3CR12 REAR FRAME",
+          "unitPrice": 768.0,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "TOP FRAME RAIN GUTTER",
+          "unitPrice": 768.0,
+          "uom": "metre",
+          "override": true
+        },
+        {
+          "material": "3MM 3CR12 FLOOR PLATE",
+          "unitPrice": 768.0,
+          "uom": "m²",
+          "override": true
+        },
+        {
+          "material": "SILPLUS X-WHITE",
+          "unitPrice": 116.15,
+          "uom": "each",
+          "override": true
+        },
+        {
+          "material": "M8*150 GALV. CUP SQUARES",
+          "unitPrice": 2.5,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "M8*45*3 FENDER WASHER",
+          "unitPrice": 0.21,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "M8 NYLOCK NUT",
+          "unitPrice": 0.34,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "5MM CORNER GUSSET",
+          "unitPrice": 178.4,
+          "uom": "each",
+          "override": false
+        },
+        {
+          "material": "2771-0824 MONOBOLTS",
+          "unitPrice": 3.64,
+          "uom": "each",
+          "override": true
+        }
+      ]
+    },
+    {
+      "name": "SPRAY PAINTING",
+      "subtitle": "Paint and finish",
+      "sectionTotal": 750.0,
+      "lineCount": 1,
+      "items": [
+        {
+          "material": "PAINTING OF SUB FRAME + REAR FRAME",
+          "unitPrice": 750.0,
+          "uom": "each",
+          "override": true
+        }
+      ]
+    },
+    {
+      "name": "REFLEXITE TAPE",
+      "subtitle": "Safety tape",
+      "sectionTotal": 115.2,
+      "lineCount": 1,
+      "items": [
+        {
+          "material": "50MM REFLEXITE TAPE",
+          "unitPrice": 18.0,
+          "uom": "metre",
+          "override": false
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "materialsCost": 51986.12,
+    "costPerM2": 12557.03,
+    "marginPct": 5.0,
+    "marginAmount": 2599.31,
+    "ratioPct": 52.5,
+    "ratioAmount": 49386.82,
+    "totalCost": 103972.25,
+    "sellingPrice": 103972.25,
+    "reflexiteTape": 115.2
+  },
+  "heatmapNote": "sectionTotal drives the visual cost bar; FLOOR is the clear peak (R17 814)."
+}

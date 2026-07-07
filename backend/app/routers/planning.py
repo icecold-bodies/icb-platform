@@ -61,7 +61,8 @@ def schedule_slot(body: ScheduleRequest, db: Session = Depends(get_db),
     """Schedule a job into a slot. 422 chassis-ETA gate; 409 if the cell/job is occupied."""
     try:
         return svc.schedule(db, production_job_id=body.production_job_id, week=body.week,
-                            bay=body.bay, lane=body.lane, slot_position=body.slot_position, user=user)
+                            bay=body.bay, lane=body.lane, slot_position=body.slot_position,
+                            day_of_week=body.day_of_week, user=user)
     except svc.NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except svc.ChassisEtaError as e:
@@ -76,7 +77,8 @@ def move_slot(slot_id: int, body: MoveRequest, db: Session = Depends(get_db),
     """Reschedule a slot to another week/cell. Same chassis-ETA gate + occupied check."""
     try:
         return svc.move(db, slot_id=slot_id, week=body.week, bay=body.bay,
-                        lane=body.lane, slot_position=body.slot_position, user=user)
+                        lane=body.lane, slot_position=body.slot_position,
+                        day_of_week=body.day_of_week, user=user)
     except svc.NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except svc.ChassisEtaError as e:

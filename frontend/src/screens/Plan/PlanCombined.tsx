@@ -259,7 +259,8 @@ export function PlanCombined() {
         kicker="SCHEDULED JOB"
         jobNumber={slot.job?.job_number}
         subtitle={[slot.job?.customer, slot.job?.body_type].filter(Boolean).join(' · ') || undefined}
-        slotLabel={`${slot.bay} · ${slot.week_key}`}
+        // A10 day-slots: the slot label names the exact day (legacy null renders as Monday)
+        slotLabel={`${slot.bay} · ${slot.week_key} · ${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][slot.day_of_week ?? 0]}`}
         overview={overview}
         onClose={close}
       />

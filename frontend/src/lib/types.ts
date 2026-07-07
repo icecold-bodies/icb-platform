@@ -49,6 +49,7 @@ export interface PlanningSlot {
   bay: string                // grid row id, e.g. "V-1"
   lane: string | null        // route grouping, e.g. "vacuum" | "panelshop"
   slot_position: number | null
+  day_of_week: number | null // A10 day-slots (0034): 0=Mon .. 6=Sun; null (legacy) renders as Monday
   job: PlanningJob | null
 }
 
@@ -80,6 +81,7 @@ export interface ScheduleInput {
   bay: string                // the cell id, e.g. "V-1"
   lane?: string | null
   slot_position?: number | null
+  day_of_week?: number | null // A10 day-slots: 0=Mon .. 6=Sun; omitted → Monday
 }
 
 export interface MoveInput {
@@ -87,6 +89,7 @@ export interface MoveInput {
   bay: string
   lane?: string | null
   slot_position?: number | null
+  day_of_week?: number | null // A10 day-slots: omitted → the slot keeps its current day
 }
 
 // ── API response shapes (v4.16 — app/schemas/planning.py) ──────────────────────
@@ -114,6 +117,7 @@ export interface ApiPlanningSlotItem {
   bay: string | null
   lane: string | null
   slot_position: number | null
+  day_of_week: number | null // A10 day-slots (0034)
   status: string | null
   production_job: ApiPlanningJobRef | null
 }

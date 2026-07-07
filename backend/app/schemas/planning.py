@@ -37,6 +37,7 @@ class PlanningSlotItem(BaseModel):
     bay: Optional[str] = None
     lane: Optional[str] = None
     slot_position: Optional[int] = None
+    day_of_week: Optional[int] = None      # A10 day-slots (0034): 0=Mon .. 6=Sun; None = legacy weekly
     status: Optional[str] = None
     production_job: Optional[PlanningJobRef] = None
 
@@ -59,21 +60,26 @@ class PlanningBoard(BaseModel):
 class ScheduleRequest(BaseModel):
     model_config = ConfigDict(json_schema_extra={"example": {
         "production_job_id": 1, "week": "2026-06-01", "bay": "V-1",
-        "lane": "vacuum", "slot_position": 1}})
+        "lane": "vacuum", "slot_position": 1, "day_of_week": 2}})
     production_job_id: int
     week: date                             # any date in the target week (normalised to Monday)
     bay: str                               # the cell identifier (e.g. "V-1")
     lane: Optional[str] = None
     slot_position: Optional[int] = None
+    # A10 day-slots: 0=Mon .. 6=Sun. Omitted → Monday (legacy weekly semantics).
+    day_of_week: Optional[int] = Field(default=None, ge=0, le=6)
 
 
 class MoveRequest(BaseModel):
     model_config = ConfigDict(json_schema_extra={"example": {
-        "week": "2026-06-08", "bay": "V-2", "lane": "vacuum", "slot_position": 2}})
+        "week": "2026-06-08", "bay": "V-2", "lane": "vacuum", "slot_position": 2,
+        "day_of_week": 4}})
     week: date
     bay: str
     lane: Optional[str] = None
     slot_position: Optional[int] = None
+    # A10 day-slots: omitted on move → the slot keeps its current day.
+    day_of_week: Optional[int] = Field(default=None, ge=0, le=6)
 
 
 class RevertRequest(BaseModel):

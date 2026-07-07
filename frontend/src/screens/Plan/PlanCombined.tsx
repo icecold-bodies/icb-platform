@@ -1,10 +1,10 @@
 // WO A09 — Combined Cockpit (Rapid Prototype Phase).
-// One integrated page (handover §2, top → bottom): the A06 Production Flow
-// dashboard (header + 6 KPIs) → the LIVE MES Planning Cockpit (week × slot
-// grid, Unscheduled rail, Inspector, filters, week nav, summary — the existing
-// component, embedded, dock hidden) → Panels ready → Pre-Assembly → Merge →
-// Parking. Single component tree, no iframe; the planner mounts into the A06
-// shell via a React portal so the §2 stacking order lives in one column.
+// One integrated page (handover §2, top → bottom; the A06 header strip + KPI
+// row were removed per Michael 6 Jul): the LIVE MES Planning Cockpit (week ×
+// slot grid, Unscheduled rail, Inspector, filters, week nav, summary — the
+// existing component, embedded, dock hidden) → Panels ready → Pre-Assembly →
+// Merge → Parking. Single component tree, no iframe; the planner mounts into
+// the A06 shell via a React portal so the §2 stacking order lives in one column.
 //
 // Wiring (§3/§4): the Job is the spine. "Panels ready" is DERIVED from the
 // same live PlanningContext board the cockpit mutates — scheduling a job onto

@@ -14,14 +14,8 @@ const A = (f) => '/static/plan/' + f;
 const SHELL = `
 <div class="app">
 
-  <div class="hdr">
-    <div class="mark" title="Icecold Bodies — Range Rhino 2.0"><svg viewBox="0 0 104 84"><polygon points="6,16 34,42 22,50" fill="#141414"/><polygon points="6,16 34,42 27,38" fill="#E2231A"/><polygon points="40,40 50,18 57,40" fill="#141414"/><polygon points="62,40 68,26 74,42" fill="#141414"/><polygon points="22,50 34,42 60,40 78,52 66,70 36,70 24,62" fill="#E2231A"/><polygon points="24,62 36,70 66,70 60,60 38,58" fill="#B81B16"/><polygon points="34,42 60,40 58,52 40,52" fill="#F2F2F2" opacity=".9"/><circle cx="46" cy="52" r="3.4" fill="#141414"/></svg></div>
-    <div class="brand"><h1>Production Flow</h1><div class="sub"><b style="color:var(--brand-red);font-weight:800">ICECOLD</b> BODIES · Kempton Park · click any card for full job detail</div></div>
-    <div class="spacer"></div>
-    <button class="flat-btn" id="resetBtn" title="Restore the starting layout">↺ Reset</button>
-  </div>
-
-  <div class="kpis" id="kpiRow"></div>
+  <!-- A06 header strip (brand + ↺ Reset + 6-KPI row) removed (Michael, 6 Jul — land straight
+       on the planner; its scoped mockup CSS stays verbatim in productionFlow.css). -->
 
   <!-- A09 Combined Cockpit: the live MES Planning Cockpit mounts here (React portal), directly
        above "Panels ready" so nothing separates the planner from its output (handover §2). -->
@@ -153,7 +147,8 @@ export function initProductionFlow(root, opts) {
   // planner backward moves rejected — the merged set is pushed up via
   // opts.onChange so the embedded planner can lock those jobs too).
   // mergedJobs is PERMANENT for the session: dispatch (→ QA) frees the bay but
-  // never re-opens a job's earlier states. Reset (demo) clears it with the seed.
+  // never re-opens a job's earlier states. (The demo ↺ Reset that cleared it was
+  // removed with the A06 header strip, Michael 6 Jul.)
   let mergedJobs = new Set();
   // Single-location rule (Michael, 2 Jul): a job is never in two places. A scheduled job
   // lives ON the planner grid (V/P state) until the planner declares its cut complete by
@@ -285,27 +280,6 @@ export function initProductionFlow(root, opts) {
   function findAssembly(id) { const l = findBodyLoc(id); if (l) return { loc: 'track', ci: l.ci, body: l.body }; for (let li = 0; li < D.PRE.length; li++) { const a = D.PRE[li].merge.assembly; if (a && a.id === id) return { loc: 'merge', li, body: a }; } return null; }
   function assemblyBackToTrack(id, targetLi, desired) { for (let li = 0; li < D.PRE.length; li++) { const m = D.PRE[li].merge; if (m.assembly && m.assembly.id === id) { const body = m.assembly; const pos = findFreePos(D.PRE[targetLi].bodies, body.len, desired != null ? desired : (body.pos || 0)); if (pos == null) return false; dirty = true; m.assembly = null; body.pos = pos; D.PRE[targetLi].bodies.push(body); return true; } } return false; }
 
-  function computeKPIs() {
-    const inPre = D.PRE.reduce((s, b) => s + b.bodies.length, 0);
-    const ready = D.PRE.flatMap(b => b.bodies).filter(x => x.prog >= .95).length;
-    const done = D.PRE.filter(b => b.merge.attached).length;
-    const panelsReady = D.PANELS.filter(p => p.ready).length;
-    const avail = D.PRE.filter(b => !b.bodies.length && !b.merge.attached && !b.merge.assembly).length;
-    return [
-      { v: panelsReady, suf: '/ ' + D.PANELS.length, k: 'Panel sets ready' },
-      { v: inPre, k: 'Bodies in pre-assembly' },
-      { v: ready, k: 'Ready to merge', accent: ready > 0 ? STATUS.green.edge : null },
-      { v: D.PARK.length, k: 'Chassis in parking' },
-      { v: done, k: 'Body + chassis (done)', accent: done > 0 ? STATUS.green.edge : null },
-      { v: avail, k: 'Available bays' }
-    ];
-  }
-  function renderKPIs() {
-    $('#kpiRow').innerHTML = computeKPIs().map(c => `
-  <div class="kpi">${c.accent ? `<span class="accent" style="background:${c.accent}"></span>` : ''}
-   <div class="v">${c.v}${c.suf ? ` <small>${c.suf}</small>` : ''}</div><div class="k">${c.k}</div></div>`).join('');
-  }
-
   function renderPanels() {
     const el = $('#panels');
     if (!D.PANELS.length) { el.innerHTML = '<span class="empty">No panel-sets waiting — all started.</span>'; return; }
@@ -385,7 +359,7 @@ export function initProductionFlow(root, opts) {
       <div class="pf"><span class="dot" style="background:var(--green)"></span>Awaiting QC sign-off${u.cust && u.cust !== '\u2014' ? ' \u00b7 ' + u.cust : ''}</div></div>`).join('');
   }
   function renderAll() {
-    renderKPIs(); renderPanels(); renderPre(); renderPark(); renderQc();
+    renderPanels(); renderPre(); renderPark(); renderQc();
     // Lifecycle notification (business rules 2 Jul): the merged-lock set rides up so the
     // embedded planner can reject backward moves for MERGED WITH CHASSIS jobs.
     try { if (opts.onChange) opts.onChange({ mergedJobs: [...mergedJobs], downstreamJobs: downstreamJobs() }); } catch (e) { /* non-fatal */ }
@@ -588,20 +562,6 @@ export function initProductionFlow(root, opts) {
   });
   root.addEventListener('pointerdown', onPointerDown);
   root.addEventListener('click', onClick);
-  // Reset restores the floor seed; in live mode the Panels-ready zone re-derives
-  // from the last planner push (the planner is the source of truth, not the seed).
-  // Demo semantics: reset also clears the session's merged-lock set.
-  $('#resetBtn').addEventListener('click', () => {
-    // Phase 2: on the live (persisted) floor, Reset clears the SHARED factory floor to empty
-    // bays — the planner/chassis zones re-derive from live data. The A06 demo seed only
-    // applies in offline/seed mode.
-    const live = !!(livePanels || liveParking);
-    D = live ? { PANELS: [], PRE: emptyBays(), PARK: [], QC: [] } : S0();
-    consumedJobs.clear(); mergedJobs = new Set(); mergedChassis = new Set(); cutJobs = new Set();
-    applyLivePanels(); applyLiveParking();
-    dirty = true;
-    renderAll();
-  });
 
   /* ===== JOB DETAIL MODAL ===== */
   function findAny(kind, id) {
@@ -732,7 +692,6 @@ export function initProductionFlow(root, opts) {
     setPanels(list) {
       livePanels = Array.isArray(list) ? list : [];
       applyLivePanels();
-      renderKPIs();
       renderPanels();
     },
     // Live Parking (job-spine): bind the chassis zone to the MES in_workshop pool.
@@ -740,7 +699,6 @@ export function initProductionFlow(root, opts) {
     setParking(list) {
       liveParking = Array.isArray(list) ? list : [];
       const mergeImgChanged = applyLiveParking();
-      renderKPIs();
       renderPark();
       if (mergeImgChanged && !drag) renderPre();   // 0033 — repaint the bay showing the refreshed picture
     },

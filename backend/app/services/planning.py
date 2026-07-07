@@ -66,6 +66,23 @@ def _friday_eod(monday: date) -> datetime:
     return datetime(fri.year, fri.month, fri.day, 23, 59, 59, tzinfo=timezone.utc)
 
 
+# ── A10 day-slots (0034) ──────────────────────────────────────────────────────
+# day_of_week: 0=Mon .. 6=Sun. Legacy rows / omitted request fields normalise to
+# Monday (0) — the same day the weekly backfill chose, so weekly semantics are a
+# strict subset of day semantics.
+def _norm_day(day_of_week) -> int:
+    return day_of_week if day_of_week is not None else 0
+
+
+def _slot_date(monday: date, day_of_week) -> date:
+    return monday + timedelta(days=_norm_day(day_of_week))
+
+
+def _day_eod(monday: date, day_of_week) -> datetime:
+    d = _slot_date(monday, day_of_week)
+    return datetime(d.year, d.month, d.day, 23, 59, 59, tzinfo=timezone.utc)
+
+
 # ── chassis-received signal (WO v4.29 D3 read-bridge, §0.3) ─────────────────────
 # Latest VCL (book-in) event date for a job's linked chassis_record — the authoritative
 # "chassis received" signal. NULL when the job has no chassis_record or no VCL yet.
@@ -105,7 +122,8 @@ def _chassis_received(db: Session, job: ProductionJob) -> bool:
             and (job.chassis_received_at is not None or _has_vcl(db, job)))
 
 
-def eta_gate_reason(job: ProductionJob, target_week: date, *, received: bool) -> Optional[str]:
+def eta_gate_reason(job: ProductionJob, target_week: date, *, received: bool,
+                    day_of_week: Optional[int] = None) -> Optional[str]:
     """Rejection reason if scheduling `job` into `target_week` violates the chassis gate, else None.
 
     WO v4.29 D4 (§0.4 revised; BA 7-Jun): `received` (the D3 signal — VCL event or the legacy
@@ -113,6 +131,10 @@ def eta_gate_reason(job: ProductionJob, target_week: date, *, received: bool) ->
     inverted-symptom fix: a job with neither receipt nor ETA was previously schedulable. The original
     within-target-week guard is RETAINED (Michael's call to keep it): an ETA after the target week
     still blocks. So the gate BLOCKS iff: not received AND (no ETA OR ETA after the target week).
+
+    A10 day-slots (§8.2.7): with a `day_of_week`, the deadline tightens from the week's Friday to the
+    SLOT DAY's end — a Saturday drop accepts an ETA up to that Saturday; an ETA of Monday-next rejects.
+    Weekends get no special allowance (same rule as weekdays, per Simeon's ratified default).
     """
     if received:
         return None
@@ -121,7 +143,15 @@ def eta_gate_reason(job: ProductionJob, target_week: date, *, received: bool) ->
         return ("chassis not received and no ETA captured — capture a chassis ETA "
                 "or mark the chassis received before scheduling")
     eta_dt = eta if eta.tzinfo else eta.replace(tzinfo=timezone.utc)
-    fri = _friday_eod(_monday(target_week))
+    monday = _monday(target_week)
+    if day_of_week is not None:
+        deadline = _day_eod(monday, day_of_week)
+        if eta_dt > deadline:
+            gap = (eta_dt.date() - deadline.date()).days
+            return (f"chassis ETA {eta_dt.date()} is after the slot day ({deadline.date()}); "
+                    f"~{gap} day(s) short — mark chassis received or pick a later day")
+        return None
+    fri = _friday_eod(monday)
     if eta_dt > fri:
         gap = (eta_dt.date() - fri.date()).days
         return (f"chassis ETA {eta_dt.date()} is after the target week (ends {fri.date()}); "
@@ -172,6 +202,7 @@ def _slot_item(slot, job, calc, customer, vcl_date=None, chassis_vin=None) -> Pl
     return PlanningSlotItem(
         id=slot.id, week=slot.week, week_iso=(_iso(slot.week) if slot.week else None),
         bay=slot.bay, lane=slot.lane, slot_position=slot.slot_position, status=slot.status,
+        day_of_week=slot.day_of_week,       # A10 day-slots: None = legacy weekly (renders as Monday)
         production_job=(_job_ref(job, calc, customer, vcl_date, chassis_vin) if job is not None else None),
     )
 
@@ -284,11 +315,15 @@ def build_board(db: Session, *, branch_id=None, weeks_count=12, lane=None, start
 
 
 # ── writes ────────────────────────────────────────────────────────────────────
-def _occupied(db: Session, week: date, bay: str, exclude_slot_id=None) -> bool:
+def _occupied(db: Session, week: date, bay: str, day_of_week=None, exclude_slot_id=None) -> bool:
     stmt = select(PlanningSlot).where(PlanningSlot.week == week, PlanningSlot.bay == bay)
     if exclude_slot_id is not None:
         stmt = stmt.where(PlanningSlot.id != exclude_slot_id)
     rows = db.execute(stmt).scalars().all()
+    # A10 day-slots: the cell key is (bay, week, DAY) — compare normalised days in Python so
+    # legacy NULL-day rows (≡ Monday) still block a Monday drop without dialect-specific SQL.
+    day = _norm_day(day_of_week)
+    rows = [r for r in rows if _norm_day(r.day_of_week) == day]
     if not rows:
         return False
     # WO v1.39.1 — mirror build_board's read filter in the write guard. A slot whose job has
@@ -301,12 +336,14 @@ def _occupied(db: Session, week: date, bay: str, exclude_slot_id=None) -> bool:
     return any(r.production_job_id not in progressed for r in rows)
 
 
-def _set_start(job: ProductionJob, monday: date) -> None:
-    job.planned_start_date = datetime(monday.year, monday.month, monday.day, tzinfo=timezone.utc)
+def _set_start(job: ProductionJob, start: date) -> None:
+    # A10 day-slots: `start` is the SLOT DATE (week Monday + day_of_week) — for a Monday/legacy
+    # weekly slot this is the week's Monday, exactly the pre-0034 value.
+    job.planned_start_date = datetime(start.year, start.month, start.day, tzinfo=timezone.utc)
 
 
 def schedule(db: Session, *, production_job_id: int, week: date, bay: str,
-             lane=None, slot_position=None, user=None) -> PlanningSlotItem:
+             lane=None, slot_position=None, day_of_week=None, user=None) -> PlanningSlotItem:
     job = db.get(ProductionJob, production_job_id)
     if job is None:
         raise NotFoundError(f"production job {production_job_id} not found")
@@ -314,42 +351,53 @@ def schedule(db: Session, *, production_job_id: int, week: date, bay: str,
             PlanningSlot.production_job_id == production_job_id)).first() is not None:
         raise CellOccupiedError(f"production job {production_job_id} is already scheduled; use move")
     monday = _monday(week)
-    reason = eta_gate_reason(job, monday, received=_chassis_received(db, job))
+    day = _norm_day(day_of_week)           # omitted → stored as Monday (legacy weekly semantics)
+    # Gate: a day-aware request is checked against ITS day; a legacy (day-omitted) request keeps
+    # the original weekly Friday-EOD rule — pre-0034 callers see byte-identical gate behaviour.
+    reason = eta_gate_reason(job, monday, received=_chassis_received(db, job), day_of_week=day_of_week)
     if reason:
         raise ChassisEtaError(reason)
-    if _occupied(db, monday, bay):
-        raise CellOccupiedError(f"slot {bay} in week {_iso(monday)} is already occupied")
+    if _occupied(db, monday, bay, day_of_week=day):
+        raise CellOccupiedError(
+            f"slot {bay} {_slot_date(monday, day)} (week {_iso(monday)}) is already occupied")
     slot = PlanningSlot(production_job_id=production_job_id, week=monday, bay=bay,
-                        lane=lane, slot_position=slot_position, status="scheduled")
+                        lane=lane, slot_position=slot_position, day_of_week=day, status="scheduled")
     db.add(slot)
-    _set_start(job, monday)            # §0.4: planned_start_date set; job.status stays 'planning'
+    _set_start(job, _slot_date(monday, day))   # §0.4: planned_start_date set; job.status stays 'planning'
     db.commit()
     db.refresh(slot)
     return _slot_item_by_id(db, slot.id)
 
 
 def move(db: Session, *, slot_id: int, week: date, bay: str,
-         lane=None, slot_position=None, user=None) -> PlanningSlotItem:
+         lane=None, slot_position=None, day_of_week=None, user=None) -> PlanningSlotItem:
     slot = db.get(PlanningSlot, slot_id)
     if slot is None:
         raise NotFoundError(f"planning slot {slot_id} not found")
     job = db.get(ProductionJob, slot.production_job_id) if slot.production_job_id else None
     monday = _monday(week)
+    # Omitted day on move → the slot KEEPS its current day (a week-hop preserves e.g. Wednesday).
+    day = _norm_day(day_of_week if day_of_week is not None else slot.day_of_week)
     if job is not None:
-        reason = eta_gate_reason(job, monday, received=_chassis_received(db, job))
+        # Same split as schedule: day-aware requests gate on their day; legacy (day-omitted)
+        # requests keep the weekly Friday-EOD rule (pre-0034 behaviour preserved).
+        reason = eta_gate_reason(job, monday, received=_chassis_received(db, job),
+                                 day_of_week=day_of_week)
         if reason:
             raise ChassisEtaError(reason)
     target_bay = bay or slot.bay
-    if _occupied(db, monday, target_bay, exclude_slot_id=slot_id):
-        raise CellOccupiedError(f"slot {target_bay} in week {_iso(monday)} is already occupied")
+    if _occupied(db, monday, target_bay, day_of_week=day, exclude_slot_id=slot_id):
+        raise CellOccupiedError(
+            f"slot {target_bay} {_slot_date(monday, day)} (week {_iso(monday)}) is already occupied")
     slot.week = monday
     slot.bay = target_bay
+    slot.day_of_week = day
     if lane is not None:
         slot.lane = lane
     if slot_position is not None:
         slot.slot_position = slot_position
     if job is not None:
-        _set_start(job, monday)
+        _set_start(job, _slot_date(monday, day))
     db.commit()
     return _slot_item_by_id(db, slot_id)
 

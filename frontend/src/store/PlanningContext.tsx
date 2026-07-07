@@ -66,6 +66,7 @@ const apiToSlot = (s: ApiPlanningSlotItem): PlanningSlot => ({
   bay: s.bay ?? '',
   lane: s.lane,
   slot_position: s.slot_position,
+  day_of_week: s.day_of_week ?? null,   // A10 day-slots: null (legacy) renders as Monday
   job: s.production_job ? apiToJob(s.production_job) : null,
 })
 
@@ -163,6 +164,7 @@ export function PlanningProvider({ children }: { children: ReactNode }) {
           bay: input.bay,
           lane: input.lane ?? null,
           slot_position: input.slot_position ?? null,
+          day_of_week: input.day_of_week ?? null,   // A10 day-slots
         })
         await refetch()
       } catch (e) {
@@ -182,6 +184,7 @@ export function PlanningProvider({ children }: { children: ReactNode }) {
           bay: input.bay,
           lane: input.lane ?? null,
           slot_position: input.slot_position ?? null,
+          day_of_week: input.day_of_week ?? null,   // A10 day-slots (null → keep current day)
         })
         await refetch()
       } catch (e) {

@@ -33,6 +33,59 @@ import { useCockpitLayout } from './useCockpitLayout'
 
 const SLOTS = ['V-1', 'V-2', 'V-3', 'V-4', 'V-5', 'P-1', 'P-2', 'P-3']
 
+// ── A10 day-slots (Simeon-ratified v0.2) ─────────────────────────────────────
+// Each bay-week is a 7-day sub-grid: 5 weekday slots + 2 weekend slots that are
+// skinny (24px) until occupied, then flex to full width. 0=Mon .. 6=Sun.
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
+const WEEKDAYS = 5
+const WKND_SKINNY = '24px'
+
+function dayGridTemplate(satOcc: boolean, sunOcc: boolean): string {
+  return `repeat(5, minmax(64px, 1fr)) ${satOcc ? 'minmax(64px, 1fr)' : WKND_SKINNY} ${
+    sunOcc ? 'minmax(64px, 1fr)' : WKND_SKINNY}`
+}
+
+function dayIso(mondayIso: string, day: number): string {
+  const d = new Date(`${mondayIso}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + day)
+  return d.toISOString().slice(0, 10)
+}
+
+// Health = the existing chassis-state machinery (v1.40.x), projected onto the slot's DAY:
+// received → green (on schedule) · ETA on/before the slot day → amber (attention, chassis
+// still inbound) · ETA after the slot day → red (delayed — the plan can't be met) ·
+// no ETA at all → grey (waiting). Mockup tokens (A10/A06 STATUS palette).
+type SlotHealth = 'green' | 'amber' | 'red' | 'grey'
+const HEALTH_HEX: Record<SlotHealth, string> = {
+  green: '#0F9D7A', amber: '#D97706', red: '#DC4A3D', grey: '#64748B',
+}
+function slotHealth(job: PlanningJob, slotDateIso: string): SlotHealth {
+  const state = getChassisState(job)
+  if (state === 'eta_committed') {
+    return (job.chassis_eta ?? '').slice(0, 10) > slotDateIso ? 'red' : 'amber'
+  }
+  return state === 'received' ? 'green' : 'grey'
+}
+
+// Body-type pill — keyword classification of the free-text body_type (ratified taxonomy:
+// Chiller / Freezer / Dry Freight / Insulated / Repair; anything else gets no pill).
+const BODY_PILLS: Array<{ match: RegExp; label: string; hex: string }> = [
+  { match: /chill/i, label: 'CHILLER', hex: '#0891B2' },
+  { match: /freez/i, label: 'FREEZER', hex: '#1E40AF' },
+  { match: /dry/i, label: 'DRY FRT', hex: '#64748B' },
+  { match: /insul/i, label: 'INSUL', hex: '#059669' },
+  { match: /repair/i, label: 'REPAIR', hex: '#7C3AED' },
+]
+function bodyPill(bodyType: string | null): { label: string; hex: string } | null {
+  if (!bodyType) return null
+  const hit = BODY_PILLS.find((p) => p.match.test(bodyType))
+  return hit ? { label: hit.label, hex: hit.hex } : null
+}
+function bodyLength(bodyType: string | null): string | null {
+  const m = (bodyType ?? '').match(/(\d+(?:[.,]\d+)?)\s*m\b/i)
+  return m ? `${m[1].replace(',', '.')}m` : null
+}
+
 // Middle-mouse drag-to-pan for the grid panel (duplicated from PlanningBoard.tsx).
 function useMiddleButtonPan<T extends HTMLElement>() {
   const ref = useRef<T>(null)
@@ -210,8 +263,17 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
     return [...SLOTS, ...extra]
   }, [board.bays])
 
-  const cellFor = (weekKey: string, bay: string): PlanningSlot | undefined =>
-    board.slots.find((s) => s.week_key === weekKey && s.bay === bay)
+  // A10 day-slots: the cell key is (week, bay, DAY). Legacy slots (day_of_week null) render
+  // as Monday — the same day migration 0034 backfilled them to.
+  const slotDay = (s: PlanningSlot): number => s.day_of_week ?? 0
+  const cellFor = (weekKey: string, bay: string, day: number): PlanningSlot | undefined =>
+    board.slots.find((s) => s.week_key === weekKey && s.bay === bay && slotDay(s) === day)
+  // A card is VISIBLE unless its job moved downstream (embedded single-location rule) —
+  // width flexing, utilization dots and the summary all key off visibility, not raw rows.
+  const visibleCell = (weekKey: string, bay: string, day: number): PlanningSlot | undefined => {
+    const c = cellFor(weekKey, bay, day)
+    return c && c.job && !(embedded && downstreamJobIds && downstreamJobIds.has(c.job.id)) ? c : undefined
+  }
   const capFor = (weekKey: string) => board.capacity.find((c) => c.week_key === weekKey)
   // A09 single-location rule (embedded): FILLED / EMPTY / VALUE / GAP derive from the cards
   // VISIBLE on the grid — a job that moved downstream (Panels ready / bays / merge / QC)
@@ -221,24 +283,46 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
   const embFilled = (weekKey: string) => visibleWeekSlots(weekKey).length
   const embValue = (weekKey: string) => visibleWeekSlots(weekKey).reduce((a, s) => a + (s.job?.selling_zar ?? 0), 0)
   const laneForBay = (bay: string): string => (bay.startsWith('P') ? 'panelshop' : 'vacuum')
+  // Bay-label utilization (first visible week): booked weekday count drives the dot —
+  // green 5/5 · amber 2-4 · grey 0-1 (ratified §8.2.3); weekend bookings shown separately.
+  const utilFor = (bay: string) => {
+    const wk = board.weeks[0]
+    if (!wk) return { n: 0, sat: false, sun: false }
+    let n = 0
+    for (let d = 0; d < WEEKDAYS; d++) if (visibleCell(wk.key, bay, d)) n++
+    return { n, sat: !!visibleCell(wk.key, bay, 5), sun: !!visibleCell(wk.key, bay, 6) }
+  }
+  // Week-header day labels share the widest occupancy state across bays so the header
+  // tracks the grid (per-bay rows still flex independently, as in the A10 mockup).
+  const weekWknd = (weekKey: string) => {
+    let sat = false, sun = false
+    for (const b of bays) {
+      sat = sat || !!visibleCell(weekKey, b, 5)
+      sun = sun || !!visibleCell(weekKey, b, 6)
+    }
+    return { sat, sun }
+  }
+  const todayStr = todayIso()
   function flashReject(key: string) {
     setRejectKey(key)
     setTimeout(() => setRejectKey(null), 1800)
   }
 
-  async function dropOnCell(week: PlanningWeekCol, bay: string) {
-    const key = `${week.key}:${bay}`
+  async function dropOnCell(week: PlanningWeekCol, bay: string, day: number) {
+    const key = `${week.key}:${bay}:${day}`
     if (dragSlot) {
       const src = dragSlot
       setDragSlot(null)
-      if (src.week_key === week.key && src.bay === bay) return
+      if (src.week_key === week.key && src.bay === bay && slotDay(src) === day) return
       try {
         setSpinnerKey(key)
-        await move(src.id, { week: week.start, bay, lane: laneForBay(bay) })
+        await move(src.id, { week: week.start, bay, lane: laneForBay(bay), day_of_week: day })
       } catch (e) {
-        if (e instanceof ApiError && e.status === 409) {
+        // 409 occupied / 422 chassis-ETA gate → red flash on the exact day-slot (A10 §3.5
+        // visual reject cue); the 422 detail toast is already pushed by the context.
+        if (e instanceof ApiError && (e.status === 409 || e.status === 422)) {
           flashReject(key)
-          toast.push({ kind: 'warn', message: 'That cell is already occupied.' })
+          if (e.status === 409) toast.push({ kind: 'warn', message: 'That day-slot is already occupied.' })
         }
       } finally {
         setSpinnerKey(null)
@@ -258,11 +342,11 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
       }
       try {
         setSpinnerKey(key)
-        await schedule({ production_job_id: job.id, week: week.start, bay, lane: laneForBay(bay) })
+        await schedule({ production_job_id: job.id, week: week.start, bay, lane: laneForBay(bay), day_of_week: day })
       } catch (e) {
-        if (e instanceof ApiError && e.status === 409) {
+        if (e instanceof ApiError && (e.status === 409 || e.status === 422)) {
           flashReject(key)
-          toast.push({ kind: 'warn', message: 'That cell is already occupied.' })
+          if (e.status === 409) toast.push({ kind: 'warn', message: 'That day-slot is already occupied.' })
         }
       } finally {
         setSpinnerKey(null)
@@ -456,13 +540,32 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="text-white">
-                    <th className="sticky left-0 top-0 z-30 bg-primary px-2 py-2 text-left font-semibold">Slot</th>
-                    {board.weeks.map((w) => (
-                      <th key={w.key} className="sticky top-0 z-20 bg-primary px-2 py-2 text-left font-semibold">
-                        {w.key}
-                        <div className="text-[10px] font-normal opacity-80">{dmy(w.start)}</div>
-                      </th>
-                    ))}
+                    <th className="sticky left-0 top-0 z-30 bg-primary px-2 py-2 text-left font-semibold">V/P Bay</th>
+                    {board.weeks.map((w) => {
+                      const wk = weekWknd(w.key)
+                      return (
+                        <th key={w.key} className="sticky top-0 z-20 bg-primary px-2 py-1.5 text-left font-semibold"
+                            style={{ minWidth: 400 }}>
+                          {w.key}
+                          <span className="ml-1.5 text-[10px] font-normal opacity-80">{dmy(w.start)}</span>
+                          {/* A10 — day sub-columns; weekend labels stay skinny until a bay books one */}
+                          <div className="mt-1 grid gap-[3px]"
+                               style={{ gridTemplateColumns: dayGridTemplate(wk.sat, wk.sun) }}>
+                            {DAY_LABELS.map((label, day) => {
+                              const weekend = day >= WEEKDAYS
+                              const isToday = dayIso(w.start, day) === todayStr
+                              return (
+                                <span key={label}
+                                  className={`overflow-hidden text-center text-[8px] font-bold uppercase tracking-wide ${
+                                    isToday ? 'text-[#FCA5A5]' : weekend ? 'opacity-60' : 'opacity-80'}`}>
+                                  {label}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        </th>
+                      )
+                    })}
                   </tr>
                 </thead>
                 <tbody>
@@ -479,65 +582,127 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
                         </tr>
                       )}
                     <tr className="border-b border-line">
-                      <td className="sticky left-0 z-10 bg-surface-alt px-2 py-1.5 font-mono text-xs font-semibold shadow-[inset_-1px_0_0_#E5E7EB]">{bay}</td>
+                      <td className="sticky left-0 z-10 bg-surface-alt px-2 py-1.5 align-top shadow-[inset_-1px_0_0_#E5E7EB]">
+                        {(() => {
+                          const u = utilFor(bay)
+                          const dotHex = u.n === WEEKDAYS ? HEALTH_HEX.green : u.n >= 2 ? HEALTH_HEX.amber : HEALTH_HEX.grey
+                          const wknd = [u.sat && 'Sat', u.sun && 'Sun'].filter(Boolean).join('/')
+                          return (
+                            <div className="flex min-w-[86px] flex-col gap-0.5">
+                              <span className="font-mono text-xs font-bold text-body">{bay}</span>
+                              <span className="text-[9px] font-semibold uppercase tracking-wide text-muted">
+                                {lane === 'panelshop' ? 'Press' : 'Vacuum'}
+                              </span>
+                              <span className="flex items-center gap-1 whitespace-nowrap text-[10px] text-body/80"
+                                    title="Weekday day-slots booked in the first visible week">
+                                <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: dotHex }} />
+                                {u.n} / {WEEKDAYS}{wknd ? ` + ${wknd}` : ''}
+                              </span>
+                            </div>
+                          )
+                        })()}
+                      </td>
                       {board.weeks.map((w) => {
-                        const cell = cellFor(w.key, bay)
-                        const key = `${w.key}:${bay}`
-                        const rejected = rejectKey === key
-                        const busy = spinnerKey === key
-                        const selected = !!cell?.job && cell.id === selectedSlotId
+                        const satOcc = !!visibleCell(w.key, bay, 5)
+                        const sunOcc = !!visibleCell(w.key, bay, 6)
                         return (
-                          <td
-                            key={key}
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={() => dropOnCell(w, bay)}
-                            className={`relative h-12 px-1 py-1 align-top transition ${
-                              rejected ? 'bg-status-red/30 ring-2 ring-status-red' : cell ? '' : 'bg-surface-alt/40'
-                            }`}
-                          >
-                            {busy && (
-                              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
-                                <Spinner size={16} className="text-primary" />
-                              </div>
-                            )}
-                            {cell && cell.job && !(embedded && downstreamJobIds && downstreamJobIds.has(cell.job.id)) ? (
-                              <button
-                                onClick={() => setSelectedSlotId(cell.id)}
-                                data-testid="cockpit-slot-cell"
-                                data-job-id={cell.job.id}
-                                draggable={canSchedule}
-                                onDragStart={(e) => {
-                                  if (!canSchedule) { e.preventDefault(); return }
-                                  setDragSlot(cell)
-                                  if (cell.job) {
-                                    e.dataTransfer.setData('application/x-panel-job', String(cell.job.id))
-                                    e.dataTransfer.effectAllowed = 'copyMove'
-                                    document.dispatchEvent(new CustomEvent('icb:panel-drag', { detail: { active: true } }))
-                                  }
-                                }}
-                                onDragEnd={() => {
-                                  setDragSlot(null)
-                                  document.dispatchEvent(new CustomEvent('icb:panel-drag', { detail: { active: false } }))
-                                }}
-                                title={cell.job.customer}
-                                className={`flex w-full items-center gap-1 rounded border-l-4 bg-white px-1.5 py-1 text-left hover:border-primary ${
-                                  selected ? 'border-primary ring-1 ring-primary' : 'border-status-green'
-                                } ${canSchedule ? 'cursor-grab active:cursor-grabbing' : ''} ${matchesSource(cell.job) ? '' : 'opacity-30'}`}
-                              >
-                                <span className="flex-1">
-                                  <span className="font-mono text-xs font-semibold">{cell.job.job_number}</span>
-                                  {cell.job.vin && (
-                                    <span className="block truncate font-mono text-[10px] text-muted"
-                                          title={cell.job.vin} data-testid="cockpit-slot-vin">{cell.job.vin}</span>
-                                  )}
-                                  <span className="block truncate text-[11px] text-muted">{cell.job.customer}</span>
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <SourceBadge source={cell.job.source} />
-                                  <ChassisBadge state={getChassisState(cell.job)} eta={cell.job.chassis_eta} />
-                                </span>
-                              </button>
-                            ) : null}
+                          <td key={w.key} className="border-l border-line px-1 py-1 align-top" style={{ minWidth: 400 }}>
+                            <div className="grid gap-[3px]" style={{ gridTemplateColumns: dayGridTemplate(satOcc, sunOcc) }}>
+                              {DAY_LABELS.map((_, day) => {
+                                const cell = visibleCell(w.key, bay, day)
+                                const key = `${w.key}:${bay}:${day}`
+                                const rejected = rejectKey === key
+                                const busy = spinnerKey === key
+                                const weekend = day >= WEEKDAYS
+                                const skinny = weekend && !cell
+                                const slotDate = dayIso(w.start, day)
+                                const isToday = slotDate === todayStr
+                                const selected = !!cell?.job && cell.id === selectedSlotId
+                                const health = cell?.job ? slotHealth(cell.job, slotDate) : null
+                                const pill = cell?.job ? bodyPill(cell.job.body_type) : null
+                                const len = cell?.job ? bodyLength(cell.job.body_type) : null
+                                return (
+                                  <div
+                                    key={day}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDrop={() => dropOnCell(w, bay, day)}
+                                    className={`relative rounded-md transition ${
+                                      rejected ? 'bg-status-red/30 ring-2 ring-status-red' : ''}`}
+                                  >
+                                    {busy && (
+                                      <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-white/60">
+                                        <Spinner size={14} className="text-primary" />
+                                      </div>
+                                    )}
+                                    {cell && cell.job && health ? (
+                                      <button
+                                        onClick={() => setSelectedSlotId(cell.id)}
+                                        data-testid="cockpit-slot-cell"
+                                        data-job-id={cell.job.id}
+                                        data-day={day}
+                                        draggable={canSchedule}
+                                        onDragStart={(e) => {
+                                          if (!canSchedule) { e.preventDefault(); return }
+                                          setDragSlot(cell)
+                                          if (cell.job) {
+                                            e.dataTransfer.setData('application/x-panel-job', String(cell.job.id))
+                                            e.dataTransfer.effectAllowed = 'copyMove'
+                                            document.dispatchEvent(new CustomEvent('icb:panel-drag', { detail: { active: true } }))
+                                          }
+                                        }}
+                                        onDragEnd={() => {
+                                          setDragSlot(null)
+                                          document.dispatchEvent(new CustomEvent('icb:panel-drag', { detail: { active: false } }))
+                                        }}
+                                        title={`${cell.job.customer}${cell.job.vin ? ` · ${cell.job.vin}` : ''} · ${DAY_LABELS[day]} ${slotDate}`}
+                                        className={`relative flex h-[82px] w-full flex-col justify-between overflow-hidden rounded-md border border-line bg-white px-1.5 pb-1 pt-1.5 text-left shadow-sm hover:shadow ${
+                                          selected ? 'ring-1 ring-primary' : ''
+                                        } ${canSchedule ? 'cursor-grab active:cursor-grabbing' : ''} ${matchesSource(cell.job) ? '' : 'opacity-30'}`}
+                                        style={{ borderLeftWidth: 3, borderLeftColor: HEALTH_HEX[health] }}
+                                      >
+                                        {weekend && (
+                                          <span className="absolute right-3 top-0 rounded-b bg-status-amber px-1 pb-px text-[7px] font-extrabold uppercase tracking-wide text-white">
+                                            WKND
+                                          </span>
+                                        )}
+                                        <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full"
+                                              style={{ backgroundColor: HEALTH_HEX[health] }} />
+                                        <span className="min-w-0">
+                                          <span className="block font-mono text-[11px] font-bold leading-tight tabular-nums text-body">
+                                            {cell.job.job_number}
+                                          </span>
+                                          <span className="mt-0.5 block truncate text-[9px] font-semibold text-body/70">
+                                            {cell.job.customer}
+                                          </span>
+                                        </span>
+                                        <span className="flex items-center justify-between gap-1">
+                                          {pill ? (
+                                            <span className="rounded px-1 py-px text-[7px] font-bold uppercase leading-3 tracking-wide text-white"
+                                                  style={{ backgroundColor: pill.hex }}>
+                                              {pill.label}
+                                            </span>
+                                          ) : <span />}
+                                          <span className="text-[9px] font-semibold text-body/70">{len ?? '—'}</span>
+                                        </span>
+                                      </button>
+                                    ) : (
+                                      // Empty day-slot: weekday = dashed drop target; weekend = skinny
+                                      // amber strip (A10 v0.2 — visible but unobtrusive overtime space).
+                                      <div
+                                        className={`flex h-[82px] w-full items-center justify-center rounded-md border border-dashed transition ${
+                                          skinny
+                                            ? 'border-[#FDE0C7] bg-[#FEF3EC] text-[#B45309] hover:border-status-amber'
+                                            : `border-line text-muted hover:border-primary/50 hover:bg-primary/5 ${
+                                                isToday ? 'bg-[#FEF2F2]' : 'bg-surface-alt/40'}`}`}
+                                        title={`${DAY_LABELS[day]} ${slotDate}${weekend ? ' (weekend overtime)' : ''}`}
+                                      >
+                                        <span className={skinny ? 'text-[10px] opacity-60' : 'text-sm opacity-50'}>+</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })}
+                            </div>
                           </td>
                         )
                       })}
@@ -550,7 +715,8 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
                     cells={board.weeks.map((w) => `${embedded ? embFilled(w.key) : capFor(w.key)?.filled ?? 0}`)}
                     tooltipKey="planning_board.weekly_capacity_footer"
                   />
-                  <FooterRow label="Empty" cells={board.weeks.map((w) => `${embedded ? SLOTS.length - embFilled(w.key) : capFor(w.key)?.empty ?? 0}`)} />
+                  {/* A10 day-slots: weekly capacity = 5 weekday slots per bay (weekends are overtime, not capacity) */}
+                  <FooterRow label="Empty" cells={board.weeks.map((w) => `${embedded ? SLOTS.length * WEEKDAYS - embFilled(w.key) : capFor(w.key)?.empty ?? 0}`)} />
                   <FooterRow label="Value" cells={board.weeks.map((w) => zarShort(embedded ? embValue(w.key) : capFor(w.key)?.value_zar ?? 0))} strong />
                   <FooterRow
                     label="Gap vs target"

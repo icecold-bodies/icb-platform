@@ -261,6 +261,9 @@ class PlanningSlot(Base):
     bay = Column(String(32))
     lane = Column(String(32))                      # vacuum | panelshop | ...
     slot_position = Column(Integer)                # 1..N within the lane
+    # A10 day-slots (0034): 0=Mon .. 6=Sun; NULL (legacy rows) normalises to Monday in the
+    # service layer. DB CHECK planning_slots_day_of_week_range guards the range.
+    day_of_week = Column(Integer)
     status = Column(String(16))                    # unscheduled | scheduled | in_progress | completed
     created_at = Column(DateTime(timezone=True), default=_utcnow)
     updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)

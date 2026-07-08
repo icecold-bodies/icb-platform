@@ -18,6 +18,14 @@ export const STATUS_STYLES: Record<StatusName, StatusStyle> = {
   'Rejected':          { pillBg: 'bg-status-red',   pillText: 'text-white', border: 'border-status-red',   hex: '#DC2626' },
   'Repair':            { pillBg: 'bg-[#7E22CE]',    pillText: 'text-white', border: 'border-[#7E22CE]',    hex: '#7E22CE' },
   'Planning':          { pillBg: 'bg-[#06B6D4]',    pillText: 'text-white', border: 'border-[#06B6D4]',    hex: '#06B6D4' },
+  // v1.40.3 — floor-derived stages (mes_status from /plan positions; see plan_status.py).
+  'Vacuum':            { pillBg: 'bg-[#0EA5E9]',    pillText: 'text-white', border: 'border-[#0EA5E9]',    hex: '#0EA5E9' },
+  'Press':             { pillBg: 'bg-[#6366F1]',    pillText: 'text-white', border: 'border-[#6366F1]',    hex: '#6366F1' },
+  'Panels Ready':      { pillBg: 'bg-[#F97316]',    pillText: 'text-white', border: 'border-[#F97316]',    hex: '#F97316' },
+  'Pre-Assembly':      { pillBg: 'bg-[#14B8A6]',    pillText: 'text-white', border: 'border-[#14B8A6]',    hex: '#14B8A6' },
+  'Pre-Merge':         { pillBg: 'bg-[#A855F7]',    pillText: 'text-white', border: 'border-[#A855F7]',    hex: '#A855F7' },
+  'Merged':            { pillBg: 'bg-[#0F9D7A]',    pillText: 'text-white', border: 'border-[#0F9D7A]',    hex: '#0F9D7A' },  // = the plan board's MERGED tag
+  'QC':                { pillBg: 'bg-[#0E4D8C]',    pillText: 'text-white', border: 'border-[#0E4D8C]',    hex: '#0E4D8C' },  // ICB navy
 }
 
 // Neutral fallback for a costing whose status is OUTSIDE the sales-pipeline vocabulary — e.g. one whose
@@ -47,6 +55,14 @@ export function statusFilterTooltipKey(status: StatusName): string {
     case 'Rejected':          return 'costings_dashboard.filter_status_rejected'
     case 'Repair':            return 'costings_dashboard.filter_status_repair'
     case 'Planning':          return 'costings_dashboard.filter_status_planning'
+    // v1.40.3 floor stages (tooltip copy can land in icb_tooltips.json later; unknown keys no-op).
+    case 'Vacuum':            return 'costings_dashboard.filter_status_vacuum'
+    case 'Press':             return 'costings_dashboard.filter_status_press'
+    case 'Panels Ready':      return 'costings_dashboard.filter_status_panels_ready'
+    case 'Pre-Assembly':      return 'costings_dashboard.filter_status_pre_assembly'
+    case 'Pre-Merge':         return 'costings_dashboard.filter_status_pre_merge'
+    case 'Merged':            return 'costings_dashboard.filter_status_merged'
+    case 'QC':                return 'costings_dashboard.filter_status_qc'
   }
 }
 

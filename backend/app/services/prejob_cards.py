@@ -559,10 +559,13 @@ def _display_bits(db: Session, card: PrejobCard) -> dict:
         from app.database import Customer
         cust = db.get(Customer, calc.customer_id)
         customer = cust.name if cust else None
+    # Attention-of contact — the calculation's 0035 write-time snapshot (may be None on
+    # quotes saved before a contact was picked; every consumer renders it conditionally).
+    contact = (getattr(calc, "contact_name", None) or "").strip() or None if calc else None
     def uname(uid):
         u = db.get(User, uid) if uid else None
         return u.username if u else None
-    return {"quote": quote, "customer": customer,
+    return {"quote": quote, "customer": customer, "contact": contact,
             "sales_rep": uname(card.sales_rep_user_id),
             "planner": uname(card.planner_user_id)}
 
@@ -605,10 +608,14 @@ def build_email(db: Session, card: PrejobCard, base_url: str) -> dict:
     subject = f"Pre-Job Card for check — {bits['quote'] or f'card {card.id}'} — {bits['customer'] or ''}".strip(" —")
     sales_link = f"{base}/mes-app/prejob/{card.id}/signoff/sales"
     planner_link = f"{base}/mes-app/prejob/{card.id}/signoff/planner"
+    # For-attention-of line (customer-contacts WO): only when the quote has a contact —
+    # legacy quotes without one keep the exact previous body.
+    _attn = f"For attention of: {bits['contact']}\r\n\r\n" if bits.get("contact") else ""
     body = (
         f"Hi,\r\n\r\n"
         f"The Pre-Job Card for costing {bits['quote'] or card.id} ({bits['customer'] or '—'}) "
         f"is ready for check.\r\n\r\n"
+        f"{_attn}"
         f"Sales Rep ({bits['sales_rep'] or 'unassigned'}) — review and sign off here:\r\n"
         f"{sales_link}\r\n\r\n"
         f"Planner ({bits['planner'] or 'unassigned'}) — review and sign off here:\r\n"
@@ -655,9 +662,11 @@ def build_signer_email(db: Session, card: PrejobCard, base_url: str, role: str) 
     name = bits["sales_rep"] if role == "sales" else bits["planner"]
     link = f"{base}/mes-app/prejob/{card.id}/signoff/{role}"
     subject = f"Pre-job check requires your {role_label} sign-off — Job {job_ref}"
+    _attn = f"For attention of: {bits['contact']}\r\n\r\n" if bits.get("contact") else ""
     body = (
         f"Hi {name or 'there'},\r\n\r\n"
         f"The Pre-Job Card for job {job_ref} is ready for your {role_label} check:\r\n\r\n"
+        f"{_attn}"
         f"{_card_summary_lines(card, bits, job_ref)}\r\n"
         f"Review and sign off as {role_label} here:\r\n"
         f"{link}\r\n\r\n"
@@ -675,10 +684,12 @@ def build_cc_email(db: Session, card: PrejobCard, base_url: str) -> dict:
     job_ref = _job_ref(db, card, bits)
     link = f"{base}/mes-app/prejob/{card.id}"
     subject = f"Pre-job check submitted — Job {job_ref} (for your visibility)"
+    _attn = f"For attention of: {bits['contact']}\r\n\r\n" if bits.get("contact") else ""
     body = (
         f"Hi,\r\n\r\n"
         f"The Pre-Job Card for job {job_ref} ({bits['customer'] or '—'}) has been submitted for "
         f"check. You are receiving this copy for visibility — no action is needed from you.\r\n\r\n"
+        f"{_attn}"
         f"Sign-offs requested from: {bits['sales_rep'] or 'unassigned'} (Sales) and "
         f"{bits['planner'] or 'unassigned'} (Planner).\r\n\r\n"
         f"View the pre-job card (the PDF is viewable in the MES there):\r\n"

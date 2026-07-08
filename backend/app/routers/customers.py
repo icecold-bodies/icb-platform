@@ -134,7 +134,10 @@ async def list_contacts(cust_id: int, db: Session = Depends(get_db),
 
 @router.post("/api/customers/{cust_id}/contacts")
 async def create_contact(cust_id: int, request: Request, db: Session = Depends(get_db),
-                         actor: User = Depends(require_admin)):
+                         actor: User = Depends(require_user)):
+    """Customer-contacts WO — CREATE is require_user (was require_admin): the calculator's
+    inline "+ Add now" quick-add must work for sales users (Nadie) mid-quote. Additive and
+    audited (created_by/updated_by below); update/set-primary/delete stay admin-only."""
     _require_customer(db, cust_id)
     body = await request.json()
     is_primary = bool(body.get("is_primary", False))

@@ -14,6 +14,28 @@ from datetime import date
 import pytest
 
 
+# ── fixtures (same pattern as test_production_jobs_api.py — module-local there) ──
+@pytest.fixture(scope="module")
+def app_mod():
+    import app.main as m
+    from starlette.testclient import TestClient
+    with TestClient(m.app) as _c:   # triggers startup -> seeds admin user
+        yield m
+
+
+@pytest.fixture
+def api(app_mod):
+    from app.database import SessionLocal, User
+    from app.deps import require_user
+    with SessionLocal() as db:
+        admin = db.query(User).filter_by(username="admin").first()
+    app_mod.app.dependency_overrides[require_user] = lambda: admin
+    from starlette.testclient import TestClient
+    with TestClient(app_mod.app) as c:
+        yield c
+    app_mod.app.dependency_overrides.pop(require_user, None)
+
+
 @pytest.fixture
 def floor_job(app_mod):
     """Factory -> (id, job_number) for a bare 'planning' job (workbook-style row)."""

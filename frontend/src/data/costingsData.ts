@@ -91,6 +91,7 @@ export interface Costing {
   quote_number: string
   customer_id: number
   customer_name: string
+  contact_name?: string            // customer-contacts WO — attention-of snapshot (0035)
   body_type: string
   body_category: string
   quote_type: 'New Build' | 'Repair'
@@ -331,6 +332,7 @@ export interface LiveCalculation {
   quote_number: string | null
   trailer: string
   customer: string
+  contact_name?: string | null     // customer-contacts WO — attention-of snapshot (0035)
   user: string
   created_at: string
   grand_total: number | null       // WO v4.30 §0.2a — net of discount (the headline)
@@ -371,6 +373,7 @@ export function liveToCosting(r: LiveCalculation): Costing {
     quote_number: r.quote_number || `#${r.id}`,
     customer_id: 0,
     customer_name: r.customer || '—',
+    contact_name: r.contact_name ?? undefined,
     body_type: r.trailer || '—',
     body_category: '',
     quote_type: r.is_repair ? 'Repair' : 'New Build',

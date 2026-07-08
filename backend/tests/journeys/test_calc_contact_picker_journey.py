@@ -58,10 +58,10 @@ def test_calc_attention_picker(page: Page, contact_customers) -> None:
 
     page.goto("/mes/calculator")
     expect(page.locator("#contact-select")).to_be_visible(timeout=T)
-    # loadCustomers() has resolved once the list is populated; the change listener is
-    # bound synchronously right after that await, so selecting is safe from here on.
-    page.wait_for_function(
-        "document.querySelectorAll('#cust-select option').length > 1", timeout=30_000)
+    # loadCustomers() has resolved once a real customer <option> exists; the change
+    # listener is bound synchronously right after that await, so selecting is safe from
+    # here on. (Locator wait, NOT wait_for_function — the app CSP has no unsafe-eval.)
+    page.locator("#cust-select option").nth(1).wait_for(state="attached", timeout=30_000)
     expect(page.locator("#contact-select")).to_be_disabled()   # no customer yet
 
     # customer with contacts → the PRIMARY auto-selects

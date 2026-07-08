@@ -78,13 +78,20 @@ def build_explosive_quote_context(
     logo_path_fs  = os.path.join(STATIC_DIR, "IceCold-Logo.png")
     css_path_fs   = os.path.join(STATIC_DIR, "css", "report.css")
 
+    # Attention-of contact (customer-contacts WO): the quote's 0035 write-time snapshot,
+    # threaded in via the customer dict. With a contact picked, ATTENTION becomes the
+    # PERSON (and TEL/EMAIL prefer the person's, falling back per-field to the customer's).
+    # No contact → every field renders exactly as before (attention = customer name).
+    contact_name = (customer.get("contact_name") or "").strip()
     return {
         "ref_no":        (quote_number or str(record_id)),
         "date":          _fmt_date_human(created_at),
         "customer_name": customer_name.upper() if customer_name else "Client Name",
-        "attention":     (customer.get("name") or "").strip() or "",
-        "tel_no":        (customer.get("telephone") or "").strip() or "",
-        "email":         (customer.get("email") or "").strip() or "",
+        "attention":     contact_name or (customer.get("name") or "").strip() or "",
+        "tel_no":        ((customer.get("contact_telephone") or "").strip() if contact_name else "")
+                         or (customer.get("telephone") or "").strip() or "",
+        "email":         ((customer.get("contact_email") or "").strip() if contact_name else "")
+                         or (customer.get("email") or "").strip() or "",
         "length_mm":     _fmt_mm(dimensions.get("length")),
         "width_mm":      _fmt_mm(dimensions.get("width")),
         "height_mm":     _fmt_mm(dimensions.get("height")),

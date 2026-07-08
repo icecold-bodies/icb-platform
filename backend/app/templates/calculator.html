@@ -282,6 +282,41 @@
       </select>
     </div>
 
+    <!-- Attention: contact person picker (customer-contacts WO) -->
+    <div id="contact-block" style="padding:6px 12px;border-top:1px solid var(--border);background:var(--bg-panel)">
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
+        color:var(--text-dim);margin-bottom:3px">Attention</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="contact-select" class="form-control" disabled
+          style="flex:1;font-size:12px;background:var(--bg-input);border:1px solid var(--border);
+          border-radius:var(--radius);color:var(--text);padding:4px">
+          <option value="">— Select a customer first —</option>
+        </select>
+        <button type="button" class="btn btn-outline btn-sm" id="contact-add-btn" disabled
+          title="Add a new contact for this customer" onclick="toggleContactAdd(true)"
+          style="padding:4px 10px;font-weight:700">+</button>
+      </div>
+      <div id="contact-empty" style="display:none;font-size:11px;color:var(--text-dim);margin-top:4px">
+        No contacts yet —
+        <a href="#" onclick="toggleContactAdd(true);return false"
+          style="color:var(--blue-hi);font-weight:600">+ Add now</a>
+      </div>
+      <div id="contact-add-form" style="display:none;margin-top:6px;padding:8px;
+        border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-input)">
+        <input class="form-control" id="contact-new-name"  placeholder="Name *"    style="font-size:12px;margin-bottom:4px"/>
+        <input class="form-control" id="contact-new-role"  placeholder="Role"      style="font-size:12px;margin-bottom:4px"/>
+        <input class="form-control" id="contact-new-email" placeholder="Email"     style="font-size:12px;margin-bottom:4px"/>
+        <input class="form-control" id="contact-new-tel"   placeholder="Telephone" style="font-size:12px;margin-bottom:6px"/>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn btn-primary btn-sm" style="flex:1" onclick="submitContactAdd()">
+            <span id="contact-add-spin" class="spinner" style="display:none"></span>Save contact</button>
+          <button type="button" class="btn btn-outline btn-sm" style="flex:1"
+            onclick="toggleContactAdd(false)">Cancel</button>
+        </div>
+        <div id="contact-add-err" style="display:none;font-size:11px;color:var(--red);margin-top:4px"></div>
+      </div>
+    </div>
+
     <div class="panel-footer">
       <div class="grand-total-display">
         <div class="grand-total-label">Total Cost</div>
@@ -1117,7 +1152,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
-<script defer src="/static/js/calculator.js?v=135"></script>
+<script defer src="/static/js/calculator.js?v=136"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

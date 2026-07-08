@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ..database import (
     get_db,
     TrailerType, BillOfMaterial, BOMSection,
-    CalculationRecord, Customer, Formula, GlobalVariable,
+    CalculationRecord, Customer, CustomerContact, Formula, GlobalVariable,
 )
 from ..deps import get_current_user, user_can
 from ..services import (
@@ -707,6 +707,28 @@ async def check_duplicate(customer_id: int, trailer_type_id: int,
 
 # ─── Approve / save ───────────────────────────────────────────────────────────
 
+def _contact_snapshot(db: Session, customer_id, contact_id) -> dict:
+    """Resolve the selected customer-contact into write-time SNAPSHOT fields (migration
+    0035). The snapshot — not a live join — is what the quote's PDF Attention line and
+    check emails show forever after: renaming or soft-deleting the contact later must not
+    rewrite quote history (ADR 0016 deprecate-not-drop pattern). A contact that doesn't
+    belong to the selected customer (or is inactive) can only reach here via a stale or
+    hand-crafted payload, so fail loud with 422 rather than silently mis-attributing."""
+    fields = {"contact_id": None, "contact_name": None, "contact_email": None,
+              "contact_telephone": None, "contact_role": None}
+    if not contact_id or not customer_id:
+        return fields
+    c = db.query(CustomerContact).filter_by(id=int(contact_id)).first()
+    if c is None or c.customer_id != int(customer_id) or not c.is_active:
+        raise HTTPException(
+            status_code=422,
+            detail="Selected contact does not belong to the selected customer "
+                   "(or is inactive) — re-select the contact and save again.")
+    fields.update({"contact_id": c.id, "contact_name": c.name, "contact_email": c.email,
+                   "contact_telephone": c.telephone, "contact_role": c.role})
+    return fields
+
+
 @router.post("/api/approve")
 async def api_approve(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
@@ -718,6 +740,9 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     dims           = body.get("dimensions", {})
     profit_margin  = float(body.get("profit_margin", 0))
     customer_id    = body.get("customer_id") or None
+    # Contact person this quote is for-attention-of (nullable — resolved to a write-time
+    # snapshot BEFORE the heavy BOM compute so a bad pairing 422s fast).
+    contact_fields = _contact_snapshot(db, customer_id, body.get("contact_id") or None)
     overrides      = {str(k): float(v) for k, v in body.get("overrides", {}).items()}
     override_reasons = {str(k): str(v).strip() for k, v in (body.get("override_reasons") or {}).items() if str(v).strip()}
     version_action = body.get("version_action")
@@ -820,6 +845,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             rec.result_json     = json.dumps(result)
             rec.is_repair       = is_repair
             rec.customer_id     = customer_id
+            for _k, _v in contact_fields.items():
+                setattr(rec, _k, _v)
             rec.discount_kind   = result.get("discount_kind")
             rec.discount_input  = result.get("discount_input")
             rec.discount_amount = result.get("discount_amount")
@@ -831,6 +858,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             result["trailer_name"]  = tt.name
             _cust = db.query(Customer).filter_by(id=customer_id).first() if customer_id else None
             result["customer_name"] = _cust.name if _cust else None
+            result["contact_id"]    = rec.contact_id
+            result["contact_name"]  = rec.contact_name
             return JSONResponse(result)
 
         if customer_id and version_action is None:
@@ -871,6 +900,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             discount_input=result.get("discount_input"),
             discount_amount=result.get("discount_amount"),
             net_total=result.get("net_total"),
+            **contact_fields,
         )
         db.add(rec)
         db.flush()
@@ -908,6 +938,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     result["trailer_name"] = tt.name
     customer = db.query(Customer).filter_by(id=customer_id).first() if customer_id else None
     result["customer_name"] = customer.name if customer else None
+    result["contact_id"]   = rec.contact_id
+    result["contact_name"] = rec.contact_name
     return JSONResponse(result)
 
 
@@ -1028,6 +1060,7 @@ async def api_list_calculations(
             "quote_number": r.quote_number or None,
             "trailer":  r.trailer_type.name if r.trailer_type else "—",
             "customer": r.customer.name if r.customer else "—",
+            "contact_name": getattr(r, "contact_name", None),   # attention-of snapshot (0035)
             "user":     r.user.username if r.user else "—",
             "created_at": r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "—",
             "grand_total": grand_total if full_access else None,   # net of discount (headline)
@@ -1153,6 +1186,13 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "id": rec.id,
         "trailer_type_id": rec.trailer_type_id,
         "customer_id":     rec.customer_id,
+        # Contact snapshot (migration 0035) — contact_id drives edit-mode re-selection;
+        # the snapshot fields are the historical display values.
+        "contact_id":        rec.contact_id,
+        "contact_name":      rec.contact_name,
+        "contact_email":     rec.contact_email,
+        "contact_telephone": rec.contact_telephone,
+        "contact_role":      rec.contact_role,
         "dimensions":      dims,
         "profit_margin":   float(result_data.get("profit_margin")
                                  or input_state.get("profit_margin") or 0),

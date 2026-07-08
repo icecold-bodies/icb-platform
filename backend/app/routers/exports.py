@@ -890,6 +890,11 @@ async def report_for_record(record_id: int, request: Request, db: Session = Depe
             "name": rec.customer.name or "",
             "email": rec.customer.email or "",
             "telephone": rec.customer.telephone or "",
+            # Attention-of contact — the 0035 write-time snapshot, NOT a live join, so a
+            # re-render years later still shows the person the quote was addressed to.
+            "contact_name": rec.contact_name or "",
+            "contact_email": rec.contact_email or "",
+            "contact_telephone": rec.contact_telephone or "",
         }
 
     try:

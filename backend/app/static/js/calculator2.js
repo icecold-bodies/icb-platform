@@ -208,6 +208,7 @@ function saveLastSession() {
       margin:      +_v('f-margin') || 0,
       ratio:       _v('f-ratio'),
       customer_id: _v('cust-select') || null,
+      contact_id:  _v('contact-select') || null,
       chassis_on:  chOn,
       chassis: chOn ? {
         length:        +_v('f-ch-length')     || 0,
@@ -278,8 +279,8 @@ async function restoreLastSession() {
       ratioSel.value = session.ratio;
   }
 
-  // Restore customer
-  if (session.customer_id) setCustomer(session.customer_id);
+  // Restore customer (+ the attention-of contact riding the same snapshot)
+  if (session.customer_id) setCustomer(session.customer_id, session.contact_id || null);
 
   // Restore chassis if it was enabled
   if (session.chassis_on && session.chassis) {
@@ -1764,14 +1765,126 @@ function renderCustomerList(custs) {
   if (prev && sel.querySelector(`option[value="${prev}"]`)) sel.value = prev;
 }
 
-function setCustomer(customerId) {
+function setCustomer(customerId, contactId = null) {
+  // Programmatic selection does NOT fire the select's change event, so every caller
+  // (edit reopen, copy-from, session restore) gets the Attention picker refreshed here;
+  // contactId pre-selects a saved contact instead of the primary-contact default.
   const sel = document.getElementById('cust-select');
   if (!customerId) {
     sel.value = '';
+    void loadContactsForCustomer(null);
     return;
   }
   const target = String(customerId);
   if (sel.querySelector(`option[value="${target}"]`)) sel.value = target;
+  void loadContactsForCustomer(sel.value || null, contactId);
+}
+
+// ── Attention: customer-contact picker (customer-contacts WO) ────────────────
+// Parity port from calculator.js — the quote's for-attention-of person. Contacts
+// load per selected customer; the primary (or sole) contact auto-selects; "+"
+// quick-adds inline so the quote flow is never left to set up a contact.
+let allContacts = [];            // active contacts of the currently selected customer
+let _contactsForCustomer = null; // which customer the in-flight/loaded list belongs to
+
+async function onCustomerChanged() {
+  await loadContactsForCustomer(document.getElementById('cust-select').value || null);
+}
+
+async function loadContactsForCustomer(custId, presetContactId = null) {
+  const sel    = document.getElementById('contact-select');
+  const addBtn = document.getElementById('contact-add-btn');
+  const empty  = document.getElementById('contact-empty');
+  if (!sel) return;                                  // page variant without the picker
+  toggleContactAdd(false);
+  allContacts = [];
+  _contactsForCustomer = custId;
+  if (!custId) {
+    sel.innerHTML = '<option value="">— Select a customer first —</option>';
+    sel.disabled = true;
+    if (addBtn) addBtn.disabled = true;
+    if (empty) empty.style.display = 'none';
+    return;
+  }
+  sel.disabled = true;
+  sel.innerHTML = '<option value="">Loading…</option>';
+  if (addBtn) addBtn.disabled = false;
+  let contacts = [];
+  try {
+    contacts = await api('GET', `/api/customers/${custId}/contacts`);
+  } catch(e) { /* non-fatal — render the empty state */ }
+  if (_contactsForCustomer !== custId) return;       // stale response — a newer selection won
+  allContacts = Array.isArray(contacts) ? contacts : [];
+  renderContactList(presetContactId);
+}
+
+function renderContactList(presetContactId = null) {
+  const sel   = document.getElementById('contact-select');
+  const empty = document.getElementById('contact-empty');
+  if (!allContacts.length) {
+    sel.innerHTML = '<option value="">— No contacts —</option>';
+    sel.disabled = true;
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">— No contact —</option>' + allContacts.map(c => {
+    const bits = [c.name || '(unnamed)'];
+    if (c.role) bits.push(c.role);
+    const label = bits.join(' — ') + (c.is_primary ? ' ● primary' : '');
+    return `<option value="${c.id}">${escHtml(label)}</option>`;
+  }).join('');
+  // Default: explicit preset (edit/copy/session restore) → primary → sole contact → none.
+  let target = '';
+  if (presetContactId && allContacts.some(c => String(c.id) === String(presetContactId))) {
+    target = String(presetContactId);
+  } else {
+    const primary = allContacts.find(c => c.is_primary);
+    if (primary) target = String(primary.id);
+    else if (allContacts.length === 1) target = String(allContacts[0].id);
+  }
+  sel.value = target;
+}
+
+function toggleContactAdd(show) {
+  const form = document.getElementById('contact-add-form');
+  if (!form) return;
+  form.style.display = show ? '' : 'none';
+  const err = document.getElementById('contact-add-err');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  if (show) {
+    ['contact-new-name', 'contact-new-role', 'contact-new-email', 'contact-new-tel']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('contact-new-name')?.focus();
+  }
+}
+
+async function submitContactAdd() {
+  const custId = document.getElementById('cust-select').value || null;
+  const err = document.getElementById('contact-add-err');
+  const showErr = msg => { if (err) { err.textContent = msg; err.style.display = ''; } };
+  if (!custId) { showErr('Select a customer first.'); return; }
+  const name = document.getElementById('contact-new-name').value.trim();
+  if (!name) { showErr('Contact name is required.'); return; }
+  const spin = document.getElementById('contact-add-spin');
+  if (spin) spin.style.display = '';
+  try {
+    const created = await api('POST', `/api/customers/${custId}/contacts`, {
+      name,
+      role:       document.getElementById('contact-new-role').value.trim(),
+      email:      document.getElementById('contact-new-email').value.trim(),
+      telephone:  document.getElementById('contact-new-tel').value.trim(),
+      is_primary: !allContacts.length,   // a customer's first contact becomes the default
+    });
+    toggleContactAdd(false);
+    await loadContactsForCustomer(custId, created.id);
+    toast(`Contact ${created.name} added`, 'success');
+  } catch(e) {
+    showErr('Could not save contact: ' + e.message);
+  } finally {
+    if (spin) spin.style.display = 'none';
+  }
 }
 
 function applyCalculationInputs(payload) {
@@ -1785,7 +1898,7 @@ function applyCalculationInputs(payload) {
   document.getElementById('f-axles').value = dims.num_axles ?? document.getElementById('f-axles').value;
   document.getElementById('f-doors').value = dims.num_doors ?? document.getElementById('f-doors').value;
   document.getElementById('f-margin').value = payload.profit_margin ?? 0;
-  setCustomer(payload.customer_id);
+  setCustomer(payload.customer_id, payload.contact_id ?? null);
   // Restore body-option selections from saved calculation
   if (payload.body_option_selections && typeof payload.body_option_selections === 'object') {
     Object.assign(bodyOptionSelections, payload.body_option_selections);
@@ -1840,6 +1953,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   } catch(e) { /* non-fatal */ }
 
   await loadCustomers();
+  // Customer-contacts WO — a user click on the customer list re-populates the
+  // Attention picker (programmatic selections go through setCustomer instead).
+  document.getElementById('cust-select')?.addEventListener('change', onCustomerChanged);
 
   window.addEventListener('beforeunload', saveLastSession);
 
@@ -4191,10 +4307,12 @@ let _pendingNextVersion  = 2;
 async function approveCosting() {
   if (!lastCalcPayload) { toast('Nothing to approve — select a trailer first', 'error'); return; }
   const customerId = document.getElementById('cust-select').value || null;
+  const contactId  = document.getElementById('contact-select')?.value || null;
 
   _pendingApproveBase = {
     ...lastCalcPayload,
     customer_id: customerId ? +customerId : null,
+    contact_id:  contactId  ? +contactId  : null,
     is_repair: !!document.getElementById('repair-quote-tick')?.checked,
   };
 

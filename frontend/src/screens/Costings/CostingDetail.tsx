@@ -137,6 +137,7 @@ export function CostingDetail() {
           <SectionTitle>Configuration</SectionTitle>
           <dl className="grid grid-cols-2 gap-3 text-sm">
             <Row label="Customer" value={c.customer_name} />
+            {c.contact_name ? <Row label="Attention" value={c.contact_name} /> : null}
             <Row label="Body type" value={c.body_type} />
             <Row label="Quote type" value={c.quote_type} />
             <Row label="Site" value={c.site} />

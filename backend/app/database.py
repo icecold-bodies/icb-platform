@@ -473,6 +473,18 @@ class CalculationRecord(Base):
     # arrives at Icecold. Records the receipt date + who confirmed.
     chassis_received_at      = Column(DateTime, nullable=True)
     chassis_received_by      = Column(String(64), nullable=True)
+    # Customer-contact snapshot (migration 0035). The contact person this quote is FOR
+    # ATTENTION OF, captured as a write-time snapshot (ADR 0016 deprecate-not-drop /
+    # chassis_records edited_by_name pattern): later contact edits or deletes must not
+    # rewrite quote history. contact_id survives soft-delete (is_active=false) and goes
+    # NULL only on a hard DELETE of the contact row (ondelete=SET NULL) — the snapshot
+    # columns keep the display values either way.
+    contact_id        = Column(Integer, ForeignKey("customer_contacts.id", ondelete="SET NULL"),
+                               nullable=True)
+    contact_name      = Column(String(200), nullable=True)
+    contact_email     = Column(String(300), nullable=True)
+    contact_telephone = Column(String(100), nullable=True)
+    contact_role      = Column(String(100), nullable=True)
     trailer_type = relationship("TrailerType", back_populates="calculations")
     user         = relationship("User", back_populates="calculations", foreign_keys=[user_id])
     approver     = relationship("User", back_populates="approved_calculations", foreign_keys=[approved_by_user_id])

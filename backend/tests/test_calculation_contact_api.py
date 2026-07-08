@@ -38,20 +38,32 @@ def app_mod():
 
 @pytest.fixture
 def api(app_mod):
-    """Admin via dependency override (no session cookie → CSRF middleware self-skips)."""
-    from app.database import SessionLocal, User
+    """Admin client. Dependency overrides cover the Depends-gated customers router; the
+    calculator endpoints authenticate via get_current_user(request, db) INSIDE the handler,
+    which no override reaches — so also mint a REAL UserSession row and send it as a raw
+    Cookie header (the [[testclient-session-cookie]] house pattern: raw header, not the
+    httpx jar — dot-less 'testserver' domain; expires_at=None is valid/never-expiring).
+    GETs are CSRF-safe methods, so no X-CSRF-Token is needed for the reads."""
+    import uuid
+    from app.database import SessionLocal, User, UserSession
     from app.deps import require_admin, require_user
     from starlette.testclient import TestClient
+    sid = str(uuid.uuid4())            # user_sessions.id is VARCHAR(36) — exactly a bare UUID
     with SessionLocal() as db:
         _purge(db)
         admin = db.query(User).filter_by(username="admin").first()
+        db.add(UserSession(id=sid, user_id=admin.id, role=admin.role, expires_at=None))
+        db.commit()
     app_mod.app.dependency_overrides[require_user] = lambda: admin
     app_mod.app.dependency_overrides[require_admin] = lambda: admin
     with TestClient(app_mod.app) as c:
+        c.headers["Cookie"] = f"session_id={sid}"
         yield c
     app_mod.app.dependency_overrides.pop(require_user, None)
     app_mod.app.dependency_overrides.pop(require_admin, None)
     with SessionLocal() as db:
+        db.query(UserSession).filter_by(id=sid).delete()
+        db.commit()
         _purge(db)
 
 

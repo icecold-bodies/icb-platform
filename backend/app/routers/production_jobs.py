@@ -23,6 +23,7 @@ from ..schemas.production_jobs import (
 from ..schemas.planning import RevertRequest
 from ..schemas.chassis import PanelsArrivedRequest
 from ..services import chassis as chassis_svc
+from ..services import plan_status as plan_status_svc
 from ..services import planning as planning_svc
 from ..services import production_jobs as svc
 
@@ -55,6 +56,9 @@ def list_production_jobs(
     items = [to_list_item(job, calc, customer, bc) for (job, calc, customer, bc) in rows]
     for it in items:
         it.sap_retired = retired
+    # v1.40.3 — floor-aware mes_status: 'planning' jobs pick up their furthest /plan
+    # position (Vacuum/Press → … → QC) as the DISPLAY label; raw status untouched.
+    plan_status_svc.apply_floor_status(items, plan_status_svc.floor_status_by_job_number(db))
     return items
 
 
@@ -142,6 +146,8 @@ def get_production_job(job_id: int, db: Session = Depends(get_db), user: User = 
     except svc.NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     detail = to_detail(job, calc, customer, branch_code)
+    # v1.40.3 — floor-aware mes_status on the detail too (same overlay as the list).
+    plan_status_svc.apply_floor_status([detail], plan_status_svc.floor_status_by_job_number(db))
     # §3.2 enrichment — current generated_bom + chassis-with-latest-VCL + bay context.
     bom = svc.load_current_bom(db, job)
     if bom is not None:

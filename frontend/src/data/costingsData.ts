@@ -1,6 +1,10 @@
 import raw from './icb_costings_data.json'
 
 // MES status names (verbatim from icb_costings_data.json / icb_tooltips.json).
+// v1.40.3 — extended past 'Planning' with the floor-derived stages (Michael 6 Jul:
+// "the status stops at Planning but the process continues"). These arrive via
+// mes_status on /api/production-jobs, derived read-only from the /plan floor
+// (services/plan_status.py); the raw job status stays 'planning' underneath.
 export type StatusName =
   | 'Pending'
   | 'Accepted'
@@ -9,6 +13,13 @@ export type StatusName =
   | 'Rejected'
   | 'Repair'
   | 'Planning'
+  | 'Vacuum'
+  | 'Press'
+  | 'Panels Ready'
+  | 'Pre-Assembly'
+  | 'Pre-Merge'
+  | 'Merged'
+  | 'QC'
 
 // Permission keys (Addendum v1.2.1 §7 + Work Order v4 §7). Kept as a union of
 // literals so missing keys are flagged at compile time.
@@ -403,13 +414,21 @@ function deriveActions(status: StatusName, isRepair: boolean): string[] {
   return a
 }
 
-// All MES statuses (drives the filter chips order).
+// All MES statuses (drives the filter chips order) — pipeline order, floor stages
+// after Planning (v1.40.3), terminal/exception states last.
 export const ALL_STATUSES: StatusName[] = [
   'Pending',
   'Accepted',
   'Pre-Job Sent',
   'Pre-Job Confirmed',
   'Planning',
+  'Vacuum',
+  'Press',
+  'Panels Ready',
+  'Pre-Assembly',
+  'Pre-Merge',
+  'Merged',
+  'QC',
   'Rejected',
   'Repair',
 ]

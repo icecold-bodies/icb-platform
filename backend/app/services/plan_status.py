@@ -40,6 +40,15 @@ FLOOR_STAGE_LABELS = ("Vacuum", "Press", "Panels Ready", "Pre-Assembly",
                       "Pre-Merge", "Merged", "QC")
 
 
+def stage_key_for(lane, bay) -> str:
+    """The production_stage_thresholds.stage_code for a V/P planning slot. lane is the
+    authoritative machine kind ('panelshop' = Press); the bay-prefix check is only the
+    fallback for lane-less legacy slots. Single source of stage truth — shared by the
+    floor-status derivation below and the board's stage-clock (thresholds WO)."""
+    is_press = (lane == "panelshop") if lane else str(bay or "").upper().startswith("P")
+    return "press" if is_press else "vacuum"
+
+
 def _jobs_from(entries, key: str = "job") -> list[str]:
     """Job numbers out of a floor-doc list that may hold dicts or bare values."""
     out = []
@@ -67,8 +76,7 @@ def floor_status_by_job_number(db: Session) -> dict[str, str]:
         for lane, bay, job_number in rows:
             if not job_number:
                 continue
-            is_press = (lane == "panelshop") if lane else str(bay or "").upper().startswith("P")
-            out[str(job_number)] = "Press" if is_press else "Vacuum"
+            out[str(job_number)] = "Press" if stage_key_for(lane, bay) == "press" else "Vacuum"
     except Exception:  # noqa: BLE001 — never let status derivation break a list API
         logger.warning("floor-status: planning-slot scan failed", exc_info=True)
 

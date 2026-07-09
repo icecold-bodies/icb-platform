@@ -30,6 +30,19 @@ class PlanningJobRef(BaseModel):
     chassis_vin: Optional[str] = None       # WO v4.35 §3.3+ — linked chassis VIN (None when unlinked)
 
 
+class SlotStageProgress(BaseModel):
+    """Stage-clock inputs for a scheduled V/P slot (thresholds WO, migration 0036).
+    elapsed_hours is SERVER-computed at response time (negative before the clock
+    starts); the SPA ticks forward from its fetch moment so client clock skew never
+    enters the math. started_at is display copy only ("Starts Thu 07:00")."""
+    stage: str                             # thresholds stage_code: 'vacuum' | 'press'
+    label: str
+    threshold_hours: float
+    workday_start: str                     # 'HH:MM' echo for the drawer copy
+    started_at: datetime                   # slot's scheduled day @ workday_start (server-local)
+    elapsed_hours: float
+
+
 class PlanningSlotItem(BaseModel):
     id: int
     week: Optional[date] = None
@@ -40,6 +53,7 @@ class PlanningSlotItem(BaseModel):
     day_of_week: Optional[int] = None      # A10 day-slots (0034): 0=Mon .. 6=Sun; None = legacy weekly
     status: Optional[str] = None
     production_job: Optional[PlanningJobRef] = None
+    progress: Optional[SlotStageProgress] = None   # additive — None when no active threshold applies
 
 
 class CapacityCell(BaseModel):

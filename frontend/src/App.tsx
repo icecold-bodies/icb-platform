@@ -15,7 +15,6 @@ import { StoresReconciliation } from './screens/Materials/StoresReconciliation'
 import { ChassisList } from './screens/Chassis/ChassisList'
 import { ChassisDetail } from './screens/Chassis/ChassisDetail'
 import { AdminModule } from './screens/Admin/AdminModule'
-import { FeedbackInbox } from './screens/Admin/FeedbackInbox'
 import { PrejobSignoffPage } from './screens/Prejob/PrejobSignoffPage'
 import { PlanCombined } from './screens/Plan/PlanCombined'
 
@@ -61,10 +60,10 @@ export default function App() {
       <Route path="/prejob/:id/signoff/:role" element={<Layout><PrejobSignoffPage /></Layout>} />
       {/* v1.39.11 — view-only pre-job card page (the CC email's link target: observers, no sign-off) */}
       <Route path="/prejob/:id" element={<Layout><PrejobSignoffPage /></Layout>} />
-      {/* WO v4.25 read-only inspector → WO v4.26 full admin CRUD module (admin-gated) */}
-      <Route path="/admin" element={<Navigate to="/admin/spec-options" replace />} />
-      {/* WO v4.38 — Feedback Inbox (admin-only). Static path outranks /admin/:resource in v6. */}
-      <Route path="/admin/feedback" element={<Layout><FeedbackInbox /></Layout>} />
+      {/* WO v4.25 read-only inspector → WO v4.26 full admin CRUD module (admin-gated).
+          v1.40.6 — Health Check is the Admin landing page (Michael's Master-Data WO), and
+          /admin/feedback now resolves through the module like every other admin resource. */}
+      <Route path="/admin" element={<Navigate to="/admin/health-check" replace />} />
       <Route path="/admin/:resource" element={<Layout><AdminModule /></Layout>} />
       <Route path="*" element={<Navigate to="/production" replace />} />
     </Routes>

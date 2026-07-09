@@ -42,6 +42,18 @@ export interface PlanningJob {
   vin: string | null         // WO v4.35 §3.3+ — linked chassis VIN (None when unlinked)
 }
 
+/** v1.40.6 thresholds WO — stage-clock inputs for a scheduled V/P slot. elapsed_hours is
+ * SERVER-computed at fetch time (negative = clock not started yet); the UI ticks forward
+ * from the fetch moment (PlanningContext.lastUpdated), so client clock skew never enters. */
+export interface SlotStageProgress {
+  stage: string              // thresholds stage_code: 'vacuum' | 'press'
+  label: string
+  threshold_hours: number
+  workday_start: string      // 'HH:MM' (drawer copy)
+  started_at: string         // ISO datetime (display copy only, e.g. "Starts Thu 07:00")
+  elapsed_hours: number
+}
+
 export interface PlanningSlot {
   id: number                 // planning_slot id (live) — used to move / unschedule
   week_key: string           // canonical week key (matches PlanningWeekCol.key)
@@ -51,6 +63,7 @@ export interface PlanningSlot {
   slot_position: number | null
   day_of_week: number | null // A10 day-slots (0034): 0=Mon .. 6=Sun; null (legacy) renders as Monday
   job: PlanningJob | null
+  progress: SlotStageProgress | null   // v1.40.6 — null when no active threshold applies
 }
 
 export interface PlanningWeekCol {
@@ -120,6 +133,7 @@ export interface ApiPlanningSlotItem {
   day_of_week: number | null // A10 day-slots (0034)
   status: string | null
   production_job: ApiPlanningJobRef | null
+  progress?: SlotStageProgress | null   // v1.40.6 — stage-clock inputs (additive)
 }
 
 export interface ApiCapacityCell {

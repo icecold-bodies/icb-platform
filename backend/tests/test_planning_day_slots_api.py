@@ -233,3 +233,55 @@ def test_api_same_cell_409_names_the_day(api, fresh_planning_job):
     r = api.post("/api/planning-slots", json={"production_job_id": b, "week": "2026-10-05",
                                               "bay": bay, "day_of_week": 3})
     assert r.status_code == 409 and "2026-10-08" in r.json()["detail"]   # Thursday named in the error
+
+
+def test_floor_doc_downstream_releases_cell(api, fresh_planning_job):
+    """v1.40.6 ghost-slot fix (the 9-Jul 'V-1 Wednesday' report): a job the FLOOR DOCUMENT
+    has taken past Vacuum/Press must release its V/P cell — the A06 engine progresses jobs
+    in the doc only (no bay events), the /plan UI hides those cards, and before this fix
+    the visually-empty cell still 409'd on drop. Asserts the full agreement: hidden from
+    the board, schedulable over (Michael's exact action), slot row surviving
+    non-destructively (reversibility: panels dragged back re-surface it)."""
+    import json as J
+    from app.database import SessionLocal
+    from app.models.mes import PlanFloorState, PlanningSlot, ProductionJob
+
+    ghost_pid = fresh_planning_job(chassis_received_at=_RCV)
+    other_pid = fresh_planning_job(chassis_received_at=_RCV)
+    week, bay = "2026-10-05", _bay()
+    r = api.post("/api/planning-slots", json={"production_job_id": ghost_pid, "week": week,
+                                              "bay": bay, "lane": "vacuum", "day_of_week": 2})
+    assert r.status_code == 201, r.text
+    ghost_slot_id = r.json()["id"]
+
+    with SessionLocal() as db:
+        jn = db.get(ProductionJob, ghost_pid).job_number
+        row = db.get(PlanFloorState, 1)
+        created_row = row is None
+        original = row.state if row is not None else None
+        doc = J.loads(original) if original else {}
+        doc.setdefault("cut", []).append({"job": jn})     # Panels Ready — past Vacuum/Press
+        if created_row:
+            db.add(PlanFloorState(id=1, state=J.dumps(doc)))
+        else:
+            row.state = J.dumps(doc)
+        db.commit()
+
+    try:
+        board = api.get("/api/planning-board", params={"weeks": 12}).json()
+        assert all(s["id"] != ghost_slot_id for s in board["slots"]), \
+            "doc-downstream slot must be hidden from the board"
+        r2 = api.post("/api/planning-slots", json={"production_job_id": other_pid, "week": week,
+                                                   "bay": bay, "lane": "vacuum", "day_of_week": 2})
+        assert r2.status_code == 201, f"the freed cell must accept a drop: {r2.text}"
+        with SessionLocal() as db:
+            assert db.get(PlanningSlot, ghost_slot_id) is not None, \
+                "the ghost's slot row must survive non-destructively"
+    finally:
+        with SessionLocal() as db:
+            row = db.get(PlanFloorState, 1)
+            if created_row and row is not None:
+                db.delete(row)
+            elif row is not None:
+                row.state = original
+            db.commit()

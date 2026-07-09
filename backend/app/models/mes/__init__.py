@@ -29,8 +29,8 @@ values in comments — avoids native PG ENUM churn in migrations.
 from datetime import date, datetime, timezone
 
 from sqlalchemy import (
-    Boolean, Column, Date, DateTime, Float, ForeignKey, Index, Integer, Numeric, String, Text,
-    UniqueConstraint, text as sa_text,
+    Boolean, CheckConstraint, Column, Date, DateTime, Float, ForeignKey, Index, Integer, Numeric,
+    String, Text, Time, UniqueConstraint, text as sa_text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -1056,6 +1056,36 @@ class FridgeUnit(Base):
     mounting_drawing = Column(String(8))                   # 'A' (v4.33) | 'B'|'D'|'F'|'G'|'H' later
     cutout_width_mm = Column(Integer)                      # fills {{fridge_cutout_width}}
     cutout_height_mm = Column(Integer)                     # fills {{fridge_cutout_height}}
+    is_active = Column(Boolean, nullable=False, default=True, server_default=sa_text("true"))
+    version = Column(Integer, nullable=False, default=1, server_default="1")
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+    created_by = Column(String(128))
+    updated_by = Column(String(128))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 33a. production_stage_thresholds — per-stage duration targets (migration 0036).
+#     Admin captures how long panels should spend in a production stage
+#     (vacuum=8h, press=4h seeds); the planning board turns a scheduled V/P
+#     day-slot into elapsed-vs-threshold progress. stage_code is deliberately
+#     decoupled from planning_slots.lane strings ('panelshop' maps → 'press' in
+#     services/plan_status.stage_key_for) so future stages (assembly, qc…) are
+#     new rows, not schema changes. workday_start is per-row: the clock starts
+#     at that time-of-day on the slot's scheduled day (wall-clock 24/7 after).
+# ─────────────────────────────────────────────────────────────────────────────
+class ProductionStageThreshold(Base):
+    __tablename__ = "production_stage_thresholds"
+    __table_args__ = (
+        UniqueConstraint("stage_code", name="uq_production_stage_thresholds_stage_code"),
+        CheckConstraint("threshold_hours > 0", name="ck_production_stage_thresholds_hours_pos"),
+        {"schema": "icb_mes"},
+    )
+    id = Column(Integer, primary_key=True)
+    stage_code = Column(String(32), nullable=False)        # 'vacuum' | 'press' | future stages
+    label = Column(String(64), nullable=False)             # display name on cards/drawer
+    threshold_hours = Column(Numeric(6, 2), nullable=False)
+    workday_start = Column(Time, nullable=False, server_default=sa_text("'07:00:00'"))
     is_active = Column(Boolean, nullable=False, default=True, server_default=sa_text("true"))
     version = Column(Integer, nullable=False, default=1, server_default="1")
     created_at = Column(DateTime(timezone=True), default=_utcnow)

@@ -67,11 +67,37 @@ def test_admin_journey(page: Page) -> None:
     expect(admin_nav).to_be_visible(timeout=T)
     admin_nav.click()
 
+    # 2b) v1.40.6 Master-Data overhaul — the Admin entry lands on HEALTH CHECK (the WO's
+    #     landing page), and the sidebar renders the three permission-ready groups with
+    #     their frozen ID badges (badge text = the page's permanent tag, e.g. O3).
+    expect(page.get_by_test_id("health-total")).to_be_visible(timeout=T)
+    for gid in ("ops", "system", "mfg"):
+        expect(page.get_by_test_id(f"admin-group-{gid}")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("admin-nav-health-check")).to_contain_text("O3")
+    expect(page.get_by_test_id("admin-nav-feedback")).to_be_visible()        # ex-orphan route, now in the menu
+    expect(page.get_by_test_id("admin-nav-production-thresholds")).to_contain_text("M3")
+    shot(page, "01b-grouped-sidebar-health-landing")
+
     # 3) Walk all four master-data sub-screens; each must render its table.
     for key in ADMIN_SUBSCREENS:
         page.get_by_test_id(f"admin-nav-{key}").click()
         expect(page.get_by_test_id("admin-table")).to_be_visible(timeout=T)
         shot(page, f"02-subscreen-{key}")
+
+    # 3b) v1.40.6 — Production stage thresholds (M3): the 0036 seeds render, and an
+    #     edit round-trips through the new 'time' field (saved unchanged — no data drift).
+    page.get_by_test_id("admin-nav-production-thresholds").click()
+    expect(page.get_by_test_id("admin-table")).to_be_visible(timeout=T)
+    vacuum_row = page.locator("[data-testid='admin-row']", has_text="vacuum")
+    expect(vacuum_row).to_have_count(1, timeout=T)
+    expect(vacuum_row).to_contain_text("07:00")
+    vacuum_row.get_by_test_id("admin-edit").click()
+    expect(page.get_by_test_id("admin-form")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("field-workday_start")).to_have_value("07:00")
+    page.get_by_test_id("admin-save").click()
+    expect(page.get_by_test_id("admin-form")).to_be_hidden(timeout=T)
+    expect(vacuum_row).to_contain_text("8", timeout=T)
+    shot(page, "02b-production-thresholds")
 
     # 4) Full CRUD lifecycle on a BOM rule. Re-select the rules sub-screen
     #    explicitly so this block doesn't depend on the loop's final state.

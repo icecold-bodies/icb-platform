@@ -9,6 +9,7 @@ import { Spinner } from '../../../components/ui/feedback'
 import { zar, dmy } from '../../../lib/format'
 import { getChassisState, type PlanningSlot } from '../../../lib/types'
 import { JobCardSections } from '../JobCardSections'
+import { SlotStageClock } from './slotProgress'
 
 export function CockpitSlotDetail({
   slot,
@@ -18,6 +19,7 @@ export function CockpitSlotDetail({
   onRevert,
   onViewProduction,
   hideSections,
+  clockLastUpdated,
 }: {
   slot: PlanningSlot
   canTick: boolean
@@ -28,6 +30,9 @@ export function CockpitSlotDetail({
   // 3 Jul — the standardized Plan drawer hides enrichment sections its own tabs already cover
   // (the planning BOM: the drawer's Bill of Materials tab shows the LIVE costing sheet instead).
   hideSections?: ReadonlyArray<'chassis' | 'bom' | 'bay'>
+  // v1.40.6 thresholds WO — the board-fetch moment the stage clock ticks from (prop, not
+  // context: the embedded drawer node mounts outside the cockpit's tree).
+  clockLastUpdated?: Date | null
 }) {
   const job = slot.job!
   const cs = getChassisState(job)
@@ -56,6 +61,9 @@ export function CockpitSlotDetail({
         <div><div className="text-xs text-muted">Slot</div>{slot.bay} · {slot.week_key}</div>
         <div><div className="text-xs text-muted">Selling</div>{job.selling_zar != null ? zar(job.selling_zar) : '—'}</div>
       </div>
+
+      {/* v1.40.6 — elapsed-vs-threshold stage clock (renders only when the board served progress) */}
+      <SlotStageClock progress={slot.progress} lastUpdated={clockLastUpdated ?? null} />
 
       <div className="rounded-md border border-line p-3">
         {cs === 'received' ? (

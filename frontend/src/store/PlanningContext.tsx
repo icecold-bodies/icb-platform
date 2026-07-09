@@ -68,6 +68,7 @@ const apiToSlot = (s: ApiPlanningSlotItem): PlanningSlot => ({
   slot_position: s.slot_position,
   day_of_week: s.day_of_week ?? null,   // A10 day-slots: null (legacy) renders as Monday
   job: s.production_job ? apiToJob(s.production_job) : null,
+  progress: s.progress ?? null,         // v1.40.6 — stage-clock inputs (thresholds WO)
 })
 
 const apiToBoard = (b: ApiPlanningBoard): PlanningBoardView => ({

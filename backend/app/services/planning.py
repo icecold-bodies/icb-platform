@@ -270,6 +270,21 @@ def _progressed_job_ids(db: Session) -> set:
             select(ChassisLifecycleEvent.id).where(
                 ChassisLifecycleEvent.chassis_record_id == ChassisRecord.id,
                 ChassisLifecycleEvent.event_type == "body_attached").exists()))).scalars().all())
+    # v1.40.6 ghost-slot fix (Michael, 9 Jul — job 32795 / V-1 Wed): the A06 floor engine
+    # progresses jobs inside the floor DOCUMENT only (cut/consumed/pre-assembly/merge/qc) —
+    # it writes NONE of the two event signals above (the v1.40.0 §9 event-integration gap).
+    # The /plan UI hides those cards from the grid via the same document (downstreamJobIds),
+    # so without this fourth signal a visually-empty cell still 409s on drop. Reuse the
+    # plan_status parser (best-effort, degrades to {}): any floor stage past Vacuum/Press
+    # means the job has left the V/P grid. Reversibility holds — dragging panels BACK off
+    # the floor removes the job from the doc's lists, and the intact slot row re-surfaces.
+    from app.services.plan_status import floor_status_by_job_number
+    downstream = {jn for jn, stage in floor_status_by_job_number(db).items()
+                  if stage not in ("Vacuum", "Press")}
+    if downstream:
+        ids |= set(db.execute(
+            select(ProductionJob.id)
+            .where(ProductionJob.job_number.in_(downstream))).scalars().all())
     ids.discard(None)
     return ids
 

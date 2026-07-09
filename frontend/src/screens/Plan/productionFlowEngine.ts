@@ -192,7 +192,7 @@ export function initProductionFlow(root, opts) {
     opts.transport.post(type, payload)
       .then(r => {
         pending = null;
-        loadState(r.state);                                    // authoritative render
+        loadStateImpl(r.state);                                // authoritative render
         if (after) after();
       })
       .catch(err => {
@@ -759,6 +759,23 @@ export function initProductionFlow(root, opts) {
      - setPanels: bind "Panels ready" to the LIVE scheduled Vacuum/Press set
        (§4 — filtered against consumed + on-floor jobs, never a static list)
      - plannerSlot: the mount point for the live Planning Cockpit portal (§2) */
+  function loadStateImpl(json) {
+      if (drag || pending) return false;
+      let s = null;
+      try { s = json ? JSON.parse(json) : null; } catch (e) { s = null; }
+      D.PRE = (s && Array.isArray(s.pre) && s.pre.length === 5) ? s.pre : emptyBays();
+      D.QC = (s && Array.isArray(s.qc)) ? s.qc : [];
+      consumedJobs.clear(); (s && s.consumed || []).forEach(j => consumedJobs.add(String(j)));
+      cutJobs = new Set((s && s.cut || []).map(String));
+      cutAt = (s && s.cutAt && typeof s.cutAt === 'object') ? s.cutAt : {};
+      mergedJobs = new Set((s && s.mergedJobs || []).map(String));
+      mergedChassis = new Set((s && s.mergedChassis || []).map(String));
+      applyLivePanels(); applyLiveParking();
+      dirty = false;
+      renderAll();
+      return true;
+    }
+
   return {
     cleanup() {
       root.removeEventListener('pointerdown', onPointerDown);
@@ -784,23 +801,8 @@ export function initProductionFlow(root, opts) {
     },
     // Phase 2 — replay a persisted (or another user's) floor snapshot. Refused mid-drag
     // (the next poll retries); never re-persists what it just loaded.
-    loadState(json) {
-      if (drag || pending) return false;
-      let s = null;
-      try { s = json ? JSON.parse(json) : null; } catch (e) { s = null; }
-      D.PRE = (s && Array.isArray(s.pre) && s.pre.length === 5) ? s.pre : emptyBays();
-      D.QC = (s && Array.isArray(s.qc)) ? s.qc : [];
-      consumedJobs.clear(); (s && s.consumed || []).forEach(j => consumedJobs.add(String(j)));
-      cutJobs = new Set((s && s.cut || []).map(String));
-      cutAt = (s && s.cutAt && typeof s.cutAt === 'object') ? s.cutAt : {};
-      mergedJobs = new Set((s && s.mergedJobs || []).map(String));
-      mergedChassis = new Set((s && s.mergedChassis || []).map(String));
-      applyLivePanels(); applyLiveParking();
-      dirty = false;
-      renderAll();
-      return true;
-    },
-    getState() { return serializeState(); },
+    loadState: loadStateImpl,
+        getState() { return serializeState(); },
     isBusy() { return !!pending; },
     // The session's MERGED WITH CHASSIS jobs (permanent lock set, business rules 2 Jul).
     getMergedJobs() { return [...mergedJobs]; },

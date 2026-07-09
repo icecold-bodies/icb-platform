@@ -284,3 +284,72 @@ def test_admin_page_permission_rows_bootstrapped(app_mod):
     with SessionLocal() as db:
         present = {p.name for p in db.query(Permission).filter(Permission.name.in_(keys)).all()}
     assert present == set(keys), f"missing: {set(keys) - present}"
+
+
+# ── v1.40.8 — the drawer's floor-stage clock (job-card bundle) ────────────────
+
+def test_job_card_stage_clock_matrix(api, fresh_planning_job):
+    """GET /api/plan/job-card/{job}.stage_clock: Panels Ready (stamped) → panels_ready
+    threshold + positive elapsed; Pre-Assembly body stamp → pre_assembly; merge.assembly
+    stamp → 'merge' threshold with stage_label Pre-Merge; UNSTAMPED cut entry → clock
+    fields None (no invented start); off-floor job → stage_clock None entirely."""
+    import json as J
+    from datetime import datetime, timedelta, timezone
+    from app.database import SessionLocal
+    from app.models.mes import PlanFloorState, ProductionJob
+
+    pids = [fresh_planning_job() for _ in range(5)]
+    with SessionLocal() as db:
+        jns = [db.get(ProductionJob, p).job_number for p in pids]
+        cut_j, body_j, merge_j, bare_j, off_j = jns
+        stamp = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+        row = db.get(PlanFloorState, 1)
+        created_row = row is None
+        original = row.state if row is not None else None
+        doc = J.loads(original) if original else {}
+        doc.setdefault("cut", []).extend([cut_j, bare_j])
+        doc["cutAt"] = {**(doc.get("cutAt") or {}), cut_j: stamp}   # bare_j deliberately unstamped
+        doc.setdefault("pre", [])
+        doc["pre"] = doc["pre"] or []
+        doc["pre"].append({"id": "Bay QA", "bodies": [
+            {"id": body_j, "job": body_j, "enteredAt": stamp}],
+            "merge": {"chassis": None, "attached": None,
+                      "assembly": {"id": merge_j, "job": merge_j, "mergeEnteredAt": stamp}}})
+        if created_row:
+            db.add(PlanFloorState(id=1, state=J.dumps(doc)))
+        else:
+            row.state = J.dumps(doc)
+        db.commit()
+
+    try:
+        def clock(jn):
+            r = api.get(f"/api/plan/job-card/{jn}")
+            assert r.status_code == 200, r.text
+            return r.json()["stage_clock"]
+
+        c = clock(cut_j)
+        assert c["stage"] == "panels_ready" and c["stage_label"] == "Panels Ready"
+        assert c["threshold_hours"] == 24.0
+        assert 1.9 < c["elapsed_hours"] < 2.5          # stamped 2h ago (range: CI slowness)
+
+        b = clock(body_j)
+        assert b["stage"] == "pre_assembly" and b["threshold_hours"] == 40.0
+        assert b["elapsed_hours"] is not None
+
+        m = clock(merge_j)
+        assert m["stage"] == "merge" and m["stage_label"] == "Pre-Merge"
+        assert m["threshold_hours"] == 16.0
+
+        bare = clock(bare_j)
+        assert bare is not None and bare["stage"] == "panels_ready"
+        assert bare["elapsed_hours"] is None and bare["started_at"] is None
+
+        assert clock(off_j) is None                    # not on the floor doc at all
+    finally:
+        with SessionLocal() as db:
+            row = db.get(PlanFloorState, 1)
+            if created_row and row is not None:
+                db.delete(row)
+            elif row is not None:
+                row.state = original
+            db.commit()

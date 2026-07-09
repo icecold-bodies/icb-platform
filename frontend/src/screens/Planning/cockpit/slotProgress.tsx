@@ -34,7 +34,7 @@ export const TONE_BAR: Record<ProgressTone, string> = {
   amber: 'bg-status-amber',
   red: 'bg-status-red',
 }
-const TONE_TEXT: Record<ProgressTone, string> = {
+export const TONE_TEXT: Record<ProgressTone, string> = {
   pending: 'text-muted',
   green: 'text-status-green',
   amber: 'text-status-amber',

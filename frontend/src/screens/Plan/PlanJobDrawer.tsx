@@ -13,8 +13,10 @@
 //   Pre-Job — card state + PDF.
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { Clock } from 'lucide-react'
 
 import { apiGet } from '../../lib/api'
+import { TONE_BAR, TONE_TEXT, pctClamped, progressTone } from '../Planning/cockpit/slotProgress'
 
 export interface PlanBomItem {
   code: string | null
@@ -25,6 +27,14 @@ export interface PlanBomItem {
   line_total: number | null
 }
 export interface PlanBomCategory { category: string; count: number; total: number | null; items: PlanBomItem[] }
+export interface PlanStageClock {
+  stage: string            // thresholds stage_code ('panels_ready' | 'pre_assembly' | 'merge' | 'qc')
+  label: string            // the threshold row's label (what the admin captured)
+  stage_label: string      // the floor position ('Pre-Merge' vs the shared 'Merge' threshold)
+  threshold_hours: number
+  started_at: string | null    // engine transition stamp; null = entry predates v1.40.8 stamps
+  elapsed_hours: number | null // SERVER-computed at fetch; the drawer ticks forward from fetch
+}
 export interface PlanJobBundle {
   job: { id: number; job_number: string; customer?: string | null; description?: string | null
          status?: string | null; calculation_id?: number | null }
@@ -32,6 +42,43 @@ export interface PlanJobBundle {
          categories: PlanBomCategory[]; grand_total: number | null } | null
   chassis: Record<string, unknown> | null
   prejob: { id: number; status: string; sent_for_check_at?: string | null; pdf_url: string } | null
+  stage_clock?: PlanStageClock | null   // v1.40.8 — floor-stage clock (Michael 9 Jul)
+}
+
+/** v1.40.8 — the drawer header's floor-stage clock: "Pre-Assembly clock · 12.3h of 40h (31%)".
+ * Server computes elapsed at fetch; this ticks forward from the fetch moment (60s), so client
+ * clock skew never enters the math (the V/P slotProgress model). Hidden when the floor entry
+ * predates the engine's transition stamps (no invented start times). */
+function FloorStageClock({ clock, fetchedAtMs }: { clock: PlanStageClock; fetchedAtMs: number }) {
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNowMs(Date.now()), 60_000)
+    return () => clearInterval(t)
+  }, [])
+  if (clock.elapsed_hours == null) return null
+  const elapsed = clock.elapsed_hours + Math.max(0, nowMs - fetchedAtMs) / 3_600_000
+  const tone = progressTone(elapsed, clock.threshold_hours)
+  const fmt = (h: number) => `${(Math.round(h * 10) / 10).toFixed(1)}h`
+  return (
+    <div data-testid="floor-stage-clock" data-tone={tone}
+         className="mt-2 flex items-center gap-2 rounded-md bg-white/70 px-2.5 py-2">
+      <Clock size={15} className={TONE_TEXT[tone]} />
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] uppercase tracking-wide text-muted">
+          {clock.stage_label} clock{clock.stage_label !== clock.label ? ` · ${clock.label} threshold` : ''}
+        </div>
+        <div className={`text-sm font-semibold tabular-nums ${TONE_TEXT[tone]}`}>
+          {fmt(elapsed)} of {fmt(clock.threshold_hours)}
+          {' '}({Math.round((elapsed / clock.threshold_hours) * 100)}%)
+          {tone === 'red' ? ' — over threshold' : ''}
+        </div>
+      </div>
+      <div className="h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-line/60">
+        <div className={`h-full ${TONE_BAR[tone]}`}
+             style={{ width: `${pctClamped(elapsed, clock.threshold_hours)}%` }} />
+      </div>
+    </div>
+  )
 }
 
 const zar = (n: number) =>
@@ -76,6 +123,7 @@ export function PlanJobTabs({ kicker, jobNumber, subtitle, slotLabel, overview, 
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<TabKey>(initialTab ?? (overview ? 'overview' : 'bom'))
   const [openCats, setOpenCats] = useState<Set<string>>(new Set())
+  const [fetchedAtMs, setFetchedAtMs] = useState(() => Date.now())   // v1.40.8 — stage-clock tick anchor
 
   useEffect(() => {
     let live = true
@@ -83,7 +131,8 @@ export function PlanJobTabs({ kicker, jobNumber, subtitle, slotLabel, overview, 
     const done = () => { if (live) setLoading(false) }
     if (jobNumber) {
       apiGet<PlanJobBundle>(`/api/plan/job-card/${encodeURIComponent(jobNumber)}`)
-        .then((b) => { if (live) setBundle(b) }).catch(() => { /* facts-only drawer */ }).finally(done)
+        .then((b) => { if (live) { setBundle(b); setFetchedAtMs(Date.now()) } })
+        .catch(() => { /* facts-only drawer */ }).finally(done)
     } else if (chassisId != null) {
       apiGet<Record<string, unknown>>(`/api/chassis-records/${chassisId}`)
         .then((c) => { if (live) setChassisOnly(c) }).catch(() => { /* header-only */ }).finally(done)
@@ -121,6 +170,8 @@ export function PlanJobTabs({ kicker, jobNumber, subtitle, slotLabel, overview, 
             <div className="num">{jobNumber ? `#${jobNumber}` : s('vin')}</div>
             {subtitle && <div className="meta">{subtitle}</div>}
             {slotLabel && <div className="job">{slotLabel}</div>}
+            {/* v1.40.8 — floor-stage clock, header-level so every tab shows it */}
+            {bundle?.stage_clock && <FloorStageClock clock={bundle.stage_clock} fetchedAtMs={fetchedAtMs} />}
           </div>
           <button className="x" onClick={onClose} data-testid="plan-drawer-close">✕</button>
         </div>

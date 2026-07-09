@@ -22,10 +22,16 @@ def _contact_dict(c: CustomerContact) -> dict:
 @router.get("/api/customers")
 async def get_customers(db: Session = Depends(get_db), user: User = Depends(require_user),
                         q: str | None = None, is_dealer: bool | None = None,
-                        limit: int | None = None):
+                        limit: int | None = None, include_contacts: bool = False):
     """List customers. WO v4.34.1 §3.2 — `is_dealer` exposed + filterable (drives the Planning-ack
-    dealer typeahead, §3.3) and a `q` name/bp_code search (drives the Customers admin list, §3.5)."""
+    dealer typeahead, §3.3) and a `q` name/bp_code search (drives the Customers admin list, §3.5).
+    v1.40.9 — `include_contacts=true` embeds each customer's ACTIVE contacts (primary first,
+    compact shape) so the legacy User Setup > Customers page can show them read-only without
+    2160 follow-up calls; default off keeps every other consumer's payload unchanged."""
     query = db.query(Customer)
+    if include_contacts:
+        from sqlalchemy.orm import selectinload
+        query = query.options(selectinload(Customer.contacts))
     if is_dealer is not None:
         query = query.filter(Customer.is_dealer.is_(bool(is_dealer)))
     if q:
@@ -34,7 +40,19 @@ async def get_customers(db: Session = Depends(get_db), user: User = Depends(requ
     query = query.order_by(Customer.name)
     if limit is not None and limit > 0:
         query = query.limit(limit)
-    return [_cust_dict(c) for c in query.all()]
+    rows = query.all()
+    if not include_contacts:
+        return [_cust_dict(c) for c in rows]
+    out = []
+    for c in rows:
+        d = _cust_dict(c)
+        d["contacts"] = [
+            {"name": ct.name or "", "role": ct.role or "", "is_primary": bool(ct.is_primary)}
+            for ct in sorted((x for x in c.contacts if x.is_active),
+                             key=lambda x: (not x.is_primary, (x.name or "").lower()))
+        ]
+        out.append(d)
+    return out
 
 
 @router.post("/api/customers")

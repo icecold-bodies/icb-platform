@@ -353,3 +353,19 @@ def test_job_card_stage_clock_matrix(api, fresh_planning_job):
             elif row is not None:
                 row.state = original
             db.commit()
+
+
+def test_startup_bootstraps_seed_fresh_env(app_mod):
+    """v1.40.9 — init_db's three bootstraps (permissions / report templates / chassis
+    catalogues) run on every boot. On CI's fresh icb_test, THIS suite's own TestClient
+    startup is what seeds them — the dead _run_migrations body that once held these
+    calls was deleted, so this asserts the rewiring stays live."""
+    from sqlalchemy import text
+    from app.database import SessionLocal
+    with SessionLocal() as db:
+        rt = db.execute(text("SELECT count(*) FROM icb_costings.report_templates")).scalar()
+        co = db.execute(text("SELECT count(*) FROM icb_costings.chassis_options")).scalar()
+        cc = db.execute(text("SELECT count(*) FROM icb_costings.chassis_constants")).scalar()
+    assert rt >= 4, f"report templates not seeded (got {rt})"
+    assert co >= 40, f"chassis options not seeded (got {co})"
+    assert cc >= 15, f"chassis constants not seeded (got {cc})"

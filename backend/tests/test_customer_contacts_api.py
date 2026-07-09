@@ -109,3 +109,25 @@ def test_set_primary_rejects_inactive(api, cust_id):
     api.delete(f"{base}/{c['id']}")                         # soft-delete
     r = api.post(f"{base}/{c['id']}/set-primary", json={})
     assert r.status_code == 422
+
+
+def test_list_include_contacts_embeds_active_primary_first(api, cust_id):
+    """v1.40.9 — GET /api/customers?include_contacts=true embeds each customer's ACTIVE
+    contacts (primary first, compact shape) for the legacy User Setup > Customers page;
+    the default payload stays contact-free (every other consumer unchanged)."""
+    base = f"/api/customers/{cust_id}/contacts"
+    api.post(base, json={"name": f"{_MARK} Zeta", "role": "Ops"})
+    api.post(base, json={"name": f"{_MARK} Alpha", "is_primary": True})
+    gone = api.post(base, json={"name": f"{_MARK} Gone"}).json()
+    api.delete(f"{base}/{gone['id']}")            # soft-deleted → must not embed
+
+    rows = api.get("/api/customers", params={"include_contacts": "true"}).json()
+    mine = next(c for c in rows if c["id"] == cust_id)
+    marks = [ct for ct in mine["contacts"] if ct["name"].startswith(_MARK)]
+    assert [m["name"] for m in marks][0] == f"{_MARK} Alpha", "primary must sort first"
+    assert marks[0]["is_primary"] is True and marks[0]["role"] == ""
+    assert any(m["name"] == f"{_MARK} Zeta" and m["role"] == "Ops" for m in marks)
+    assert all(m["name"] != f"{_MARK} Gone" for m in marks), "soft-deleted contact leaked"
+
+    lean = next(c for c in api.get("/api/customers").json() if c["id"] == cust_id)
+    assert "contacts" not in lean, "default payload must stay contact-free"

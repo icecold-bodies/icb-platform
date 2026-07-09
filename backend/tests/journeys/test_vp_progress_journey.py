@@ -113,7 +113,7 @@ def progress_fixture():
 def test_vp_progress_bars_and_drawer_clock(page: Page, progress_fixture) -> None:
     red_id, pend_id = progress_fixture["red"], progress_fixture["pending"]
     admin_session(page)
-    page.goto("/plan")
+    page.goto("/mes-app/plan")   # the SPA shell path — bare /plan is not a served route
 
     # The cockpit grid portals into the floor engine; our TODAY job's card carries the bar.
     red_card = page.locator(f"[data-testid='cockpit-slot-cell'][data-job-id='{red_id}']")

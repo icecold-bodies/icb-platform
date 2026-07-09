@@ -270,7 +270,9 @@ def test_floor_doc_downstream_releases_cell(api, fresh_planning_job):
         db.commit()
 
     try:
-        board = api.get("/api/planning-board", params={"weeks": 12}).json()
+        # Anchor the 12-week window ON the slot's week — 2026-10-05 sits outside the rolling
+        # window from "today", which made the previous inverse assertion pass vacuously.
+        board = api.get("/api/planning-board", params={"weeks": 12, "start": week}).json()
         assert any(s["id"] == ghost_slot_id for s in board["slots"]), \
             "doc-downstream slot must STAY in board.slots — the Panels-Ready rail feeds off it (9934)"
         pool_ids = {j["id"] for j in board["unscheduled_pool"]}

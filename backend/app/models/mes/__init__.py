@@ -933,13 +933,49 @@ class AssemblyBay(Base):
 
 class PlanFloorState(Base):
     """A09 Plan module (Phase 2, migration 0032) — the Production Flow floor as a single JSON
-    document (one physical factory → one row, id=1). Coarse by design: the prototype's floor
-    shape evolves freely; event-level integration with the chassis/bay chokepoints is later."""
+    document (one physical factory → one row, id=1). v1.41.0 (§9 event integration P1): the
+    SERVER is now the only writer — every mutation arrives as a typed transition
+    (services/floor.apply_transition, SELECT FOR UPDATE on this row), bumps `version`, and
+    appends a FloorEvent. The raw whole-document PUT is gone (it was the two-browsers
+    last-writer-wins clobber engine, and mock-mode sessions could seed-stomp the shared row)."""
     __tablename__ = "plan_floor_state"
     __table_args__ = ({"schema": "icb_mes"},)
     id = Column(Integer, primary_key=True)
     state = Column(Text, nullable=False, default="{}", server_default="{}")
     updated_at = Column(DateTime(timezone=True))
+    version = Column(Integer, nullable=False, default=0, server_default="0")   # 0037 — bumped per write
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 29a. floor_events — the Production Flow floor's append-only journal (§9 P1,
+#     migration 0037). One row per server-applied floor transition (+ floor_reset
+#     and cut_pruned housekeeping entries). House audit idiom (0023/0024/0029):
+#     append-only; job_number is a SNAPSHOT and production_job_id is SET NULL —
+#     the floor's journal outlives its jobs (floor_reset has no job at all);
+#     user_id cross-schema FK SET NULL created in the migration + user_name
+#     display snapshot. details carries the transition payload echo (li, pos,
+#     vin, matched…) and doc_version records the version AFTER the apply, so a
+#     journal replay can be ordered and clobber forensics are one query.
+# ─────────────────────────────────────────────────────────────────────────────
+class FloorEvent(Base):
+    __tablename__ = "floor_events"
+    __table_args__ = (
+        Index("ix_floor_events_job_created", "job_number", "created_at"),
+        Index("ix_floor_events_type_created", "event_type", "created_at"),
+        {"schema": "icb_mes"},
+    )
+    id = Column(Integer, primary_key=True)
+    event_type = Column(String(32), nullable=False)   # the 11 transition types + floor_reset + cut_pruned
+    job_number = Column(String(32))                    # snapshot; NULL for floor_reset
+    production_job_id = Column(Integer, ForeignKey("icb_mes.production_jobs.id",
+                                                   ondelete="SET NULL"), nullable=True)
+    from_stage = Column(String(24))                    # vp|panels_ready|pre_assembly|pre_merge|merged|qc|parking
+    to_stage = Column(String(24))
+    details = Column(JSONB)                            # payload echo: li, to_li, pos, vin, matched, card…
+    doc_version = Column(Integer, nullable=False)      # plan_floor_state.version AFTER this apply
+    user_id = Column(Integer)                          # cross-schema FK → icb_costings.users (SET NULL, 0037)
+    user_name = Column(String(64))                     # display-name snapshot (house audit rule)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

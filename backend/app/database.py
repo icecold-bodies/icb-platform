@@ -1154,6 +1154,10 @@ PERMISSION_CATALOGUE = [
     ("admin.merge-chassis",         "Admin: Merge Chassis",                           "admin", set()),
     ("admin.feedback",              "Admin: Feedback inbox",                          "admin", set()),
     ("admin.production-thresholds", "Admin: Production stage thresholds",             "admin", set()),
+    # v1.41.0 §9 P1 — the FIRST admin.* key that is ALSO enforced server-side (the floor-reset
+    # endpoint calls user_can directly): resetting the shared Production Flow floor is a
+    # deliberate, journaled admin action (floor_events 'floor_reset'), never a /plan gesture.
+    ("admin.floor-reset",           "Admin: Reset the Production Flow floor",         "admin", set()),
 ]
 
 

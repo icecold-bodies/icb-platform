@@ -12,8 +12,8 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity, AlertTriangle, BadgeDollarSign, BookOpen, Building2, ClipboardCheck,
-  FileSignature, Inbox, LayoutTemplate, Merge, Refrigerator, SearchX, SlidersHorizontal,
-  Timer, Truck, Workflow,
+  FileSignature, Inbox, LayoutTemplate, Merge, Refrigerator, RotateCcw, SearchX,
+  SlidersHorizontal, Timer, Truck, Workflow,
 } from 'lucide-react'
 
 import { apiGet } from '../../lib/api'
@@ -260,6 +260,17 @@ export const ADMIN_RESOURCES: Record<string, ResourceConfig> = {
     ],
     icon: Timer, displayId: 'M3', permKey: 'admin.production-thresholds',
   },
+  // v1.41.0 §9 P1 — admin-only Production Flow floor reset (journaled floor_reset event;
+  // the FIRST admin.* key that is also enforced server-side by its endpoint).
+  'floor-reset': {
+    key: 'floor-reset',
+    title: 'Floor reset (Production Flow)',
+    basePath: '/api/plan/floor-reset',
+    columns: [],
+    fields: [],
+    custom: true,
+    icon: RotateCcw, displayId: 'M5', permKey: 'admin.floor-reset',
+  },
   // WO v4.33.1 §3.1 — admin nav-aid: Pre-Job Cards awaiting sign-off (custom list view, not CRUD).
   'prejob-signoffs': {
     key: 'prejob-signoffs',
@@ -318,7 +329,7 @@ export const ADMIN_GROUPS: AdminGroup[] = [
   },
   {
     id: 'mfg', label: 'Manufacturing data',
-    items: ['chassis-models', 'fridge-units', 'production-thresholds', 'defect-categories'],
+    items: ['chassis-models', 'floor-reset', 'fridge-units', 'production-thresholds', 'defect-categories'],
   },
 ]
 

@@ -30,31 +30,54 @@ router = APIRouter(prefix="/api/plan", tags=["plan"])
 ROW_ID = 1
 
 
-class FloorStateIn(BaseModel):
-    state: str  # opaque JSON document (the client owns the shape)
-
-
 @router.get("/floor-state")
 def get_floor_state(db: Session = Depends(get_db), user: User = Depends(require_user)):
     row = db.get(PlanFloorState, ROW_ID)
     if row is None:
-        return {"state": None, "updated_at": None}
-    return {"state": row.state, "updated_at": row.updated_at.isoformat() if row.updated_at else None}
+        return {"state": None, "updated_at": None, "version": 0}
+    return {"state": row.state,
+            "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+            "version": int(row.version or 0)}   # v1.41.0 — server write counter (debug + P3)
 
 
-@router.put("/floor-state")
-def put_floor_state(payload: FloorStateIn, db: Session = Depends(get_db),
-                    user: User = Depends(require_user)):
-    row = db.get(PlanFloorState, ROW_ID)
-    now = datetime.now(timezone.utc)
-    if row is None:
-        row = PlanFloorState(id=ROW_ID, state=payload.state, updated_at=now)
-        db.add(row)
-    else:
-        row.state = payload.state
-        row.updated_at = now
-    db.commit()
-    return {"ok": True, "updated_at": now.isoformat()}
+# v1.41.0 §9 P1 — the whole-document PUT is GONE. It was the two-browsers last-writer-wins
+# clobber engine, and an un-mode-gated mock session could seed-stomp the shared floor with it.
+# Every floor mutation is now a typed, validated, journaled transition:
+
+class FloorTransitionIn(BaseModel):
+    """Type validated at the edge; per-type payload fields validated by the service's
+    transition functions under the row lock (they carry the from-location staleness guards)."""
+    model_config = {"extra": "allow"}
+    type: str
+
+
+@router.post("/floor-transitions")
+def floor_transition(payload: FloorTransitionIn, db: Session = Depends(get_db),
+                     user: User = Depends(require_user)):
+    """Apply ONE floor transition server-side: lock → validate (engine-guard ports +
+    entity-level staleness) → mutate the doc → version++ → journal a floor_event → commit.
+    409/422 roll everything back — the doc is never half-applied."""
+    from ..services import floor as floor_svc
+    body = payload.model_dump()
+    ttype = body.pop("type")
+    return floor_svc.apply_transition(db, ttype=ttype, payload=body, user=user)
+
+
+class FloorResetIn(BaseModel):
+    confirm: bool = False
+
+
+@router.post("/floor-reset")
+def floor_reset(payload: FloorResetIn, db: Session = Depends(get_db),
+                user: User = Depends(require_user)):
+    """Admin-only (admin.floor-reset — the first server-enforced admin.* page key): reset the
+    shared floor to empty, journaled as a floor_reset event. version stays monotonic."""
+    if not payload.confirm:
+        raise HTTPException(status_code=422, detail="Pass confirm=true to reset the shared floor.")
+    if not user_can(user, "admin.floor-reset", db):
+        raise HTTPException(status_code=403, detail="Permission denied: admin.floor-reset")
+    from ..services import floor as floor_svc
+    return floor_svc.reset_floor(db, user=user)
 
 
 def _stage_clock(db: Session, job_number: str):

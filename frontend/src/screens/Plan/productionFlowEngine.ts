@@ -165,6 +165,44 @@ export function initProductionFlow(root, opts) {
   // loadState replays a saved (or another user's) snapshot — never mid-drag,
   // and never re-persisting what it just loaded.
   let dirty = false;
+  // ── v1.41.0 §9 P1 — server-confirmed transitions (live mode) ────────────────
+  // pending = the single in-flight transition (one human planner; blocks re-entry
+  // and blocks poll loadState). Mock/offline mode takes localApply() — exactly the
+  // pre-P1 behavior, so the seed demo keeps working with zero server dependency.
+  let pending = null;
+  function _pendEl(payload) {
+    const key = payload.id != null ? payload.id : (payload.vin != null ? payload.vin : payload.job);
+    if (key != null) {
+      const esc = (window.CSS && CSS.escape) ? CSS.escape(String(key)) : String(key);
+      const el = root.querySelector('[data-id="' + esc + '"]');
+      if (el) return el;
+    }
+    if (payload.li != null) return root.querySelector('.m-block[data-merge="' + payload.li + '"]');
+    return null;
+  }
+  function commit(type, payload, localApply, after) {
+    if (!opts.transport || !opts.transport.isLive()) {        // mock/offline: today's behavior
+      if (localApply()) { renderAll(); if (after) after(); }
+      return;
+    }
+    if (pending) return;                                       // single-flight
+    pending = { type };
+    const el = _pendEl(payload);
+    if (el) el.classList.add('pend');
+    opts.transport.post(type, payload)
+      .then(r => {
+        pending = null;
+        loadState(r.state);                                    // authoritative render
+        if (after) after();
+      })
+      .catch(err => {
+        pending = null;
+        const msg = (err && (err.detail || err.message)) ||
+          'Move rejected — the floor changed under you. It has been refreshed.';
+        if (opts.onError) { try { opts.onError(String(msg)); } catch (e) { /* non-fatal */ } }
+        renderAll();                                           // D untouched → card snaps back
+      });
+  }
   function serializeState() {
     return JSON.stringify({
       v: 1,
@@ -534,21 +572,54 @@ export function initProductionFlow(root, opts) {
     if (d.ghost) d.ghost.remove();
     const tgt = validTarget(d.kind, d.id, document.elementFromPoint(e.clientX, e.clientY));
     if (tgt) {
-      if (d.kind === 'panel' && tgt.t === 'vp') { const pp = D.PANELS.find(x => x.id === d.id); if (pp) { cutJobs.delete(String(pp.job)); delete cutAt[String(pp.job)]; dirty = true; applyLivePanels(); } }
-      else if (d.kind === 'panel' && tgt.t === 'pa') startBody(d.id, tgt.li);
-      else if (d.kind === 'body' && tgt.t === 'pa') { const lr = tgt.el.getBoundingClientRect(); const desired = ((e.clientX - d.gdx) - lr.left - 12 + TPAD) / PX; const a = findAssembly(d.id); if (a && a.loc === 'merge') assemblyBackToTrack(d.id, tgt.li, desired); else moveBody(d.id, tgt.li, desired); }
-      else if (d.kind === 'body' && tgt.t === 'panels') bodyBackToPanels(d.id);
-      else if (d.kind === 'body' && tgt.t === 'merge') dropAssembly(d.id, tgt.li);
-      else if (d.kind === 'chassis' && tgt.t === 'merge') dropChassis(tgt.li, d.id);
-      else if (d.kind === 'chassis' && tgt.t === 'park') chassisBackToParking(d.id);
+      if (d.kind === 'panel' && tgt.t === 'vp') {
+        const pp = D.PANELS.find(x => x.id === d.id);
+        if (pp) commit('undo_cut', { job: String(pp.job) },
+          () => { cutJobs.delete(String(pp.job)); delete cutAt[String(pp.job)]; dirty = true; applyLivePanels(); return true; });
+      }
+      else if (d.kind === 'panel' && tgt.t === 'pa') {
+        const pp = D.PANELS.find(x => x.id === d.id);
+        commit('start_body',
+          { job: pp ? String(pp.job) : String(d.id), li: tgt.li,
+            card: pp ? { len: pp.len, type: pp.type, cust: pp.cust, vin: pp.vin, method: pp.method, origin: pp.origin } : {} },
+          () => startBody(d.id, tgt.li));
+      }
+      else if (d.kind === 'body' && tgt.t === 'pa') {
+        const lr = tgt.el.getBoundingClientRect(); const desired = ((e.clientX - d.gdx) - lr.left - 12 + TPAD) / PX;
+        const a = findAssembly(d.id);
+        if (a && a.loc === 'merge') commit('assembly_back_to_track', { id: String(d.id), li: tgt.li, desired },
+          () => assemblyBackToTrack(d.id, tgt.li, desired));
+        else commit('move_body', { id: String(d.id), li: tgt.li, desired },
+          () => moveBody(d.id, tgt.li, desired));
+      }
+      else if (d.kind === 'body' && tgt.t === 'panels') commit('body_back_to_panels', { id: String(d.id) }, () => bodyBackToPanels(d.id));
+      else if (d.kind === 'body' && tgt.t === 'merge') commit('drop_assembly', { id: String(d.id), li: tgt.li }, () => dropAssembly(d.id, tgt.li));
+      else if (d.kind === 'chassis' && tgt.t === 'merge') {
+        const pk = D.PARK.find(x => String(x.id) === String(d.id));
+        commit('drop_chassis',
+          { li: tgt.li, vin: String(d.id),
+            card: pk ? { model: pk.model, cust: pk.cust, kind: pk.kind, img: pk.img } : {} },
+          () => dropChassis(tgt.li, d.id));
+      }
+      else if (d.kind === 'chassis' && tgt.t === 'park') commit('chassis_back_to_parking', { vin: String(d.id) }, () => chassisBackToParking(d.id));
     }
     renderAll();
   }
   function onClick(e) {
     const qo = e.target.closest('[data-qc-open]');
     if (qo) { window.location.assign('/mes-app/admin/qc'); return; }
-    const cf = e.target.closest('[data-confirm]'); if (cf) { confirmMerge(+cf.dataset.confirm); return; }
-    const dsp = e.target.closest('[data-dispatch]'); if (dsp) { dispatch(+dsp.dataset.dispatch); return; }
+    const cf = e.target.closest('[data-confirm]'); if (cf) {
+      const li = +cf.dataset.confirm;
+      commit('confirm_merge', { li },
+        () => { const m = D.PRE[li].merge; if (!(m.assembly && m.chassis)) return false; confirmMerge(li); return false; },
+        () => requestAnimationFrame(() => mergeCrescendo(li)));
+      return;
+    }
+    const dsp = e.target.closest('[data-dispatch]'); if (dsp) {
+      const li = +dsp.dataset.dispatch;
+      commit('dispatch', { li }, () => { dispatch(li); return false; });
+      return;
+    }
     const det = e.target.closest('[data-detail-kind]'); if (det) { openModal(det.dataset.detailKind, det.dataset.detailId); }
   }
   // V/P -> PANELS READY: the planner drags a scheduled grid card down into this strip
@@ -566,7 +637,8 @@ export function initProductionFlow(root, opts) {
     const jid = e.dataTransfer?.getData('application/x-panel-job');
     if (!jid) return;
     e.preventDefault();
-    declareCut(jid);
+    const lp = (livePanels || []).find(x => String(x.jobId) === String(jid) || String(x.job) === String(jid));
+    commit('declare_cut', { job: lp ? String(lp.job) : String(jid) }, () => declareCut(jid));
   });
   root.addEventListener('pointerdown', onPointerDown);
   root.addEventListener('click', onClick);
@@ -713,7 +785,7 @@ export function initProductionFlow(root, opts) {
     // Phase 2 — replay a persisted (or another user's) floor snapshot. Refused mid-drag
     // (the next poll retries); never re-persists what it just loaded.
     loadState(json) {
-      if (drag) return false;
+      if (drag || pending) return false;
       let s = null;
       try { s = json ? JSON.parse(json) : null; } catch (e) { s = null; }
       D.PRE = (s && Array.isArray(s.pre) && s.pre.length === 5) ? s.pre : emptyBays();
@@ -729,6 +801,7 @@ export function initProductionFlow(root, opts) {
       return true;
     },
     getState() { return serializeState(); },
+    isBusy() { return !!pending; },
     // The session's MERGED WITH CHASSIS jobs (permanent lock set, business rules 2 Jul).
     getMergedJobs() { return [...mergedJobs]; },
     plannerSlot: $('#plannerSlot'),

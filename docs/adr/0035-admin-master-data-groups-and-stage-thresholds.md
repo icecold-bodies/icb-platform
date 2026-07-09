@@ -45,9 +45,13 @@ FeedbackInbox joined the module as O1 (URL unchanged — `/admin/feedback` now r
 `/admin/:resource`).
 
 ### 2. Production-stage thresholds: stage-generic table, per-row workday_start
-`icb_mes.production_stage_thresholds` (migration 0036): `stage_code` UNIQUE ('vacuum','press'
-seeded at 8h/4h), `threshold_hours` NUMERIC CHECK > 0, `workday_start` TIME default 07:00,
-`is_active`, audit cols. Future stages (assembly, qc…) are **new rows, not schema changes**.
+`icb_mes.production_stage_thresholds` (migration 0036): `stage_code` UNIQUE, `threshold_hours`
+NUMERIC CHECK > 0, `workday_start` TIME default 07:00, `is_active`, audit cols. Seeded stages:
+vacuum 8h / press 4h (Michael's ratified examples) plus — added mid-review at Michael's request —
+the downstream floor stages as **capture-ready rows with placeholder hours** (panels_ready 24h,
+pre_assembly 40h, merge 16h, qc 8h; the admin edits the real values). Only vacuum/press drive live
+bars this release: the downstream rows are inert until the floor document carries per-item entry
+timestamps (the §9 event-integration phase). Future stages remain **new rows, not schema changes**.
 `stage_code` is deliberately decoupled from `planning_slots.lane` strings — the mapping
 (`'panelshop'` → `'press'`, bay-prefix fallback) lives in ONE place,
 `plan_status.stage_key_for`, shared by the floor-status derivation and the board clock.

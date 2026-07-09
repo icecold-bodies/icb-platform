@@ -43,13 +43,20 @@ def upgrade() -> None:
     if not _have(bind):
         from app.database import Base
         Base.metadata.create_all(bind=bind, tables=[_table_obj()])
-    # Seed the two ratified stages (Michael's example values). ON CONFLICT keeps
-    # re-runs and already-seeded DBs untouched — admin edits are never clobbered.
+    # Seed the ratified V/P stages (Michael's example values) plus the downstream floor
+    # stages (Michael, 9 Jul — capture-ready rows; their hours are PLACEHOLDERS for the
+    # admin to edit, and no bars render for them until the floor document carries entry
+    # timestamps — the v1.40.0 §9 event-integration phase). ON CONFLICT keeps re-runs and
+    # already-seeded DBs untouched — admin edits are never clobbered.
     op.execute(sa_text(
         "INSERT INTO icb_mes.production_stage_thresholds "
         "(stage_code, label, threshold_hours, workday_start, is_active, version, created_by) VALUES "
-        "('vacuum', 'Vacuum', 8.00, '07:00:00', true, 1, 'migration_0036'), "
-        "('press',  'Press',  4.00, '07:00:00', true, 1, 'migration_0036') "
+        "('vacuum',        'Vacuum',        8.00,  '07:00:00', true, 1, 'migration_0036'), "
+        "('press',         'Press',         4.00,  '07:00:00', true, 1, 'migration_0036'), "
+        "('panels_ready',  'Panels Ready',  24.00, '07:00:00', true, 1, 'migration_0036'), "
+        "('pre_assembly',  'Pre-Assembly',  40.00, '07:00:00', true, 1, 'migration_0036'), "
+        "('merge',         'Merge',         16.00, '07:00:00', true, 1, 'migration_0036'), "
+        "('qc',            'QC',            8.00,  '07:00:00', true, 1, 'migration_0036') "
         "ON CONFLICT (stage_code) DO NOTHING"
     ))
 

@@ -61,6 +61,13 @@ function FieldInput({ field, value, onChange }: {
     return <input type="date" data-testid={testId} className={base} value={String(value ?? '')}
                   onChange={(e) => onChange(e.target.value || null)} />
   }
+  if (field.type === 'time') {
+    // v1.40.6 (production thresholds workday_start) — value round-trips as 'HH:MM[:SS]';
+    // the input wants HH:MM, the backend accepts either.
+    return <input type="time" data-testid={testId} className={base}
+                  value={String(value ?? '').slice(0, 5)}
+                  onChange={(e) => onChange(e.target.value || null)} />
+  }
   // text — with optional OITM autocomplete
   const listId = field.oitmAutocomplete ? `dl-${field.name}` : undefined
   return (

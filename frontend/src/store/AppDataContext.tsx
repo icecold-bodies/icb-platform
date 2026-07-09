@@ -65,7 +65,9 @@ interface AppDataValue {
   // Permission model + demo user-switcher (Addendum v1.2.1).
   profile: DemoUserProfile
   setProfile: (p: DemoUserProfile) => void
-  hasPermission: (k: PermissionKey) => boolean
+  // v1.40.6 — also accepts the SPA-admin page keys (`admin.<slug>`, PERMISSION_CATALOGUE
+  // category 'admin'), which are DENY-by-default in live mode (see hasPermission).
+  hasPermission: (k: PermissionKey | `admin.${string}`) => boolean
   permissions: PermissionKey[]
   // Live session (WO v4.17).
   apiMode: ApiMode
@@ -175,12 +177,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const mockPermissions = useMemo<PermissionKey[]>(() => ROLE_PERMISSIONS[profile.id] ?? [], [profile])
 
   const value = useMemo<AppDataValue>(() => {
-    const hasPermission = (k: PermissionKey): boolean => {
+    const hasPermission = (k: PermissionKey | `admin.${string}`): boolean => {
       if (apiMode === 'live') {
         const serverKey = KEY_ALIAS[k] ?? k
+        // v1.40.6 — the admin.* page keys are DENY-by-default: the permissive fallback
+        // below must never expose an admin menu item to a user without an explicit grant
+        // (admins receive the full catalogue from /api/session, so they always pass).
+        if (serverKey.startsWith('admin.')) return sessionPerms.has(serverKey)
         return SERVER_KEYS.has(serverKey) ? sessionPerms.has(serverKey) : true
       }
-      return mockPermissions.includes(k)
+      return mockPermissions.includes(k as PermissionKey)
     }
     return {
       data,

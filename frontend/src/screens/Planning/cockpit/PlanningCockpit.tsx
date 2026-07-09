@@ -29,6 +29,7 @@ import { BayModelLanes } from '../BayModelLanes'
 import { PlanningAckPanel } from '../PlanningAckPanel'
 import { ChassisBadge, SourceBadge, FooterRow } from './badges'
 import { CockpitSlotDetail } from './CockpitSlotDetail'
+import { TONE_BAR, elapsedNowHours, pctClamped, progressTone } from './slotProgress'
 import { useCockpitLayout } from './useCockpitLayout'
 
 const SLOTS = ['V-1', 'V-2', 'V-3', 'V-4', 'V-5', 'P-1', 'P-2', 'P-3']
@@ -209,6 +210,14 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
     () => costings.filter((c) => c.status === 'Pre-Job Confirmed' && c.production_job_id != null),
     [costings],
   )
+
+  // v1.40.6 thresholds WO — one grid-level 60s tick re-renders the stage-progress bars
+  // between board polls (KanbanTV precedent; the 30s poll re-syncs server elapsed anyway).
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNowMs(Date.now()), 60_000)
+    return () => clearInterval(t)
+  }, [])
 
   const [dragPoolJob, setDragPoolJob] = useState<PlanningJob | null>(null)
   const [dragSlot, setDragSlot] = useState<PlanningSlot | null>(null)
@@ -684,6 +693,19 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
                                           ) : <span />}
                                           <span className="text-[9px] font-semibold text-body/70">{len ?? '—'}</span>
                                         </span>
+                                        {/* v1.40.6 — stage clock vs admin threshold (bottom strip; empty track = pending) */}
+                                        {cell.progress && (() => {
+                                          const el = elapsedNowHours(cell.progress, lastUpdated, nowMs)
+                                          const tone = progressTone(el, cell.progress.threshold_hours)
+                                          return (
+                                            <span data-testid="slot-progress" data-tone={tone}
+                                                  title={`${cell.progress.label}: ${el < 0 ? 'not started' : `${el.toFixed(1)}h of ${cell.progress.threshold_hours}h`}`}
+                                                  className="absolute inset-x-0 bottom-0 h-[3px] bg-line/60">
+                                              <span className={`block h-full ${TONE_BAR[tone]}`}
+                                                    style={{ width: `${pctClamped(el, cell.progress.threshold_hours)}%` }} />
+                                            </span>
+                                          )
+                                        })()}
                                       </button>
                                     ) : (
                                       // Empty day-slot: weekday = dashed drop target; weekend = skinny
@@ -753,6 +775,7 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
               {selectedLiveSlot?.job ? (
                 <CockpitSlotDetail
                   slot={selectedLiveSlot}
+                  clockLastUpdated={lastUpdated}
                   canTick={canTickChassis}
                   canRevert={canUnschedule && selectedLiveSlot.job?.status === 'planning'
                     && !(lockedJobIds && selectedLiveSlot.job && lockedJobIds.has(selectedLiveSlot.job.id))}
@@ -797,6 +820,7 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
         const overview = (
           <CockpitSlotDetail
             slot={selectedLiveSlot}
+            clockLastUpdated={lastUpdated}
             // 3 Jul (Michael) — inside the standardized drawer the planning-BOM section is
             // redundant: the drawer's Bill of Materials tab shows the live costing sheet.
             hideSections={renderSlotDrawer ? ['bom'] : undefined}

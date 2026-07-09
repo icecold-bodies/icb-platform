@@ -57,6 +57,41 @@ def put_floor_state(payload: FloorStateIn, db: Session = Depends(get_db),
     return {"ok": True, "updated_at": now.isoformat()}
 
 
+def _stage_clock(db: Session, job_number: str):
+    """v1.40.8 drawer stage-clock (Michael 9 Jul): elapsed-vs-threshold for the job's
+    FLOOR stage (Panels Ready / Pre-Assembly / Pre-Merge / Merged / QC). Entry times are
+    the engine's transition stamps in the floor document; unstamped legacy entries return
+    elapsed_hours=None (the drawer shows no clock rather than a guessed one). V/P jobs
+    return None here — their clock is slot-based and already lives on the cockpit card +
+    CockpitSlotDetail. Stamps are UTC ISO (client toISOString), so the math stays aware."""
+    from ..models.mes import ProductionStageThreshold
+    from ..services.plan_status import FLOOR_STAGE_CODES, floor_stage_entry_info
+    info = floor_stage_entry_info(db).get(str(job_number))
+    if not info:
+        return None
+    code = FLOOR_STAGE_CODES.get(info["label"])
+    if code is None:
+        return None
+    t = db.execute(select(ProductionStageThreshold).where(
+        ProductionStageThreshold.stage_code == code,
+        ProductionStageThreshold.is_active.is_(True))).scalars().first()
+    if t is None:
+        return None
+    started_iso = elapsed = None
+    if info.get("entered_at"):
+        try:
+            dt = datetime.fromisoformat(str(info["entered_at"]).replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            elapsed = (datetime.now(timezone.utc) - dt).total_seconds() / 3600.0
+            started_iso = dt.isoformat()
+        except (ValueError, TypeError):
+            pass
+    return {"stage": t.stage_code, "label": t.label, "stage_label": info["label"],
+            "threshold_hours": float(t.threshold_hours),
+            "started_at": started_iso, "elapsed_hours": elapsed}
+
+
 @router.get("/job-card/{job_number}")
 def job_card(job_number: str, db: Session = Depends(get_db), user: User = Depends(require_user)):
     """The Plan drawer bundle for one job. BOM = the costing sheet's live items (excluded lines
@@ -75,6 +110,8 @@ def job_card(job_number: str, db: Session = Depends(get_db), user: User = Depend
             "calculation_id": job.calculation_record_id,
         },
         "bom": None, "chassis": None, "prejob": None,
+        # v1.40.8 — the drawer's floor stage-clock (None for V/P-stage or off-floor jobs).
+        "stage_clock": _stage_clock(db, str(job_number)),
     }
 
     if job.calculation_record_id:

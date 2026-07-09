@@ -111,6 +111,62 @@ def floor_status_by_job_number(db: Session) -> dict[str, str]:
     return out
 
 
+#: Floor-stage label → production_stage_thresholds.stage_code (v1.40.8 drawer clocks).
+#: Pre-Merge and Merged share the single 'merge' threshold — the clock runs on through
+#: confirm-merge. Vacuum/Press are slot-based (scheduled-day semantics), not doc-based.
+FLOOR_STAGE_CODES = {
+    "Panels Ready": "panels_ready",
+    "Pre-Assembly": "pre_assembly",
+    "Pre-Merge": "merge",
+    "Merged": "merge",
+    "QC": "qc",
+}
+
+
+def floor_stage_entry_info(db: Session) -> dict[str, dict]:
+    """job_number → {"label": floor-stage label, "entered_at": ISO str | None} for jobs
+    ON the floor document. entered_at = the engine's v1.40.8 transition stamps
+    (doc.cutAt[job] for Panels Ready; body.enteredAt for Pre-Assembly;
+    body.mergeEnteredAt for Pre-Merge/Merged; qc entry.enteredAt). Entries that predate
+    the stamps yield entered_at=None — the drawer hides the clock rather than inventing
+    a start time. Same best-effort read-only posture as floor_status_by_job_number;
+    later stages overwrite earlier ones (furthest position wins)."""
+    info: dict[str, dict] = {}
+    try:
+        row = db.get(PlanFloorState, 1)
+        doc = json.loads(row.state) if row is not None and row.state else {}
+    except Exception:  # noqa: BLE001 — never let a malformed doc break the drawer
+        logger.warning("floor-clock: floor-state document unreadable", exc_info=True)
+        return info
+
+    cut_at = doc.get("cutAt") if isinstance(doc.get("cutAt"), dict) else {}
+    for j in _jobs_from(doc.get("cut")):
+        info[j] = {"label": "Panels Ready", "entered_at": cut_at.get(j)}
+    for bay in doc.get("pre") or []:
+        if not isinstance(bay, dict):
+            continue
+        for b in bay.get("bodies") or []:
+            if isinstance(b, dict) and b.get("job") is not None:
+                info[str(b["job"])] = {"label": "Pre-Assembly", "entered_at": b.get("enteredAt")}
+        merge = bay.get("merge") or {}
+        assembly = merge.get("assembly")
+        if isinstance(assembly, dict) and assembly.get("job") is not None:
+            info[str(assembly["job"])] = {"label": "Pre-Merge",
+                                          "entered_at": assembly.get("mergeEnteredAt")}
+        attached = merge.get("attached")
+        if isinstance(attached, dict):
+            body = attached.get("body")
+            if isinstance(body, dict) and body.get("job") is not None:
+                info[str(body["job"])] = {"label": "Merged",
+                                          "entered_at": body.get("mergeEnteredAt")}
+    for e in doc.get("qc") or []:
+        if isinstance(e, dict) and e.get("job") is not None:
+            info[str(e["job"])] = {"label": "QC", "entered_at": e.get("enteredAt")}
+        elif e is not None and str(e).strip():
+            info[str(e)] = {"label": "QC", "entered_at": None}
+    return info
+
+
 def apply_floor_status(items, floor: dict[str, str]) -> None:
     """Overlay floor-derived labels onto API items (list or detail models, mutated
     in place). Only 'planning' jobs are eligible — the floor can't out-rank an

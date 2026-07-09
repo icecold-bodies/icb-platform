@@ -155,6 +155,9 @@ export function initProductionFlow(root, opts) {
   // dragging the grid card down into Panels ready — cutJobs holds those declarations
   // (persisted). The real Panels-Cut-Complete event will replace declareCut() only.
   let cutJobs = new Set();
+  // v1.40.8 — stage-clock stamps: when each cut was DECLARED (job -> ISO). Rides the
+  // persisted doc; the drawer's Panels-Ready clock reads it server-side.
+  let cutAt = {};
 
   // ── Phase 2 — persisted floor state ────────────────────────────────────────
   // Every floor MUTATION marks the state dirty; renderAll then hands a JSON
@@ -168,6 +171,7 @@ export function initProductionFlow(root, opts) {
       pre: D.PRE,
       qc: D.QC || [],
       cut: [...cutJobs],
+      cutAt,
       consumed: [...consumedJobs],
       mergedJobs: [...mergedJobs],
       mergedChassis: [...mergedChassis],
@@ -230,7 +234,7 @@ export function initProductionFlow(root, opts) {
     // prune cut declarations for jobs the planner no longer schedules (and that never started)
     for (const j of [...cutJobs]) {
       if (!livePanels.some(p => String(p.job) === j) && !consumedJobs.has(j) && !onFloor.has(j)
-          && !inQc.has(j) && !mergedJobs.has(j)) cutJobs.delete(j);
+          && !inQc.has(j) && !mergedJobs.has(j)) { cutJobs.delete(j); delete cutAt[j]; }
     }
     D.PANELS = livePanels.filter(p => cutJobs.has(String(p.job))
       && !consumedJobs.has(String(p.job)) && !onFloor.has(String(p.job))
@@ -249,6 +253,7 @@ export function initProductionFlow(root, opts) {
     if (!lp) return false;
     if (mergedJobs.has(String(lp.job))) return false;
     cutJobs.add(String(lp.job));
+    cutAt[String(lp.job)] = new Date().toISOString();   // v1.40.8 — Panels-Ready clock starts
     dirty = true;
     applyLivePanels();
     renderAll();
@@ -278,7 +283,7 @@ export function initProductionFlow(root, opts) {
   function vinTag(v) { return v && v !== '—' ? 'DEMV…' + String(v).slice(-3) : 'awaiting'; }
   function findBodyLoc(id) { for (let ci = 0; ci < D.PRE.length; ci++) { const bi = D.PRE[ci].bodies.findIndex(b => b.id === id); if (bi >= 0) return { ci, bi, body: D.PRE[ci].bodies[bi] }; } return null; }
   function findAssembly(id) { const l = findBodyLoc(id); if (l) return { loc: 'track', ci: l.ci, body: l.body }; for (let li = 0; li < D.PRE.length; li++) { const a = D.PRE[li].merge.assembly; if (a && a.id === id) return { loc: 'merge', li, body: a }; } return null; }
-  function assemblyBackToTrack(id, targetLi, desired) { for (let li = 0; li < D.PRE.length; li++) { const m = D.PRE[li].merge; if (m.assembly && m.assembly.id === id) { const body = m.assembly; const pos = findFreePos(D.PRE[targetLi].bodies, body.len, desired != null ? desired : (body.pos || 0)); if (pos == null) return false; dirty = true; m.assembly = null; body.pos = pos; D.PRE[targetLi].bodies.push(body); return true; } } return false; }
+  function assemblyBackToTrack(id, targetLi, desired) { for (let li = 0; li < D.PRE.length; li++) { const m = D.PRE[li].merge; if (m.assembly && m.assembly.id === id) { const body = m.assembly; const pos = findFreePos(D.PRE[targetLi].bodies, body.len, desired != null ? desired : (body.pos || 0)); if (pos == null) return false; dirty = true; m.assembly = null; delete body.mergeEnteredAt; body.pos = pos; D.PRE[targetLi].bodies.push(body); return true; } } return false; }
 
   function renderPanels() {
     const el = $('#panels');
@@ -381,7 +386,8 @@ export function initProductionFlow(root, opts) {
     // can rebuild the exact panel-set in seed mode.
     // chassisVin: the job's linked chassis VIN rides the panel-set from the planner (live spine),
     // so the body tag + merge hints show the real chassis from the moment the body starts.
-    D.PRE[li].bodies.push({ id: p.job, job: p.job, cust: p.cust, len: p.len, type: p.type, status: 'green', prog: 0, pos, days: 0, chassisVin: p.vin || '—', method: p.method, origin: p.origin });
+    D.PRE[li].bodies.push({ id: p.job, job: p.job, cust: p.cust, len: p.len, type: p.type, status: 'green', prog: 0, pos, days: 0, chassisVin: p.vin || '—', method: p.method, origin: p.origin,
+      enteredAt: new Date().toISOString() });   // v1.40.8 — Pre-Assembly clock starts
     return true;
   }
   // Reverse transition (business rules 2 Jul): ASSEMBLY BAY → PANELS READY.
@@ -398,6 +404,7 @@ export function initProductionFlow(root, opts) {
       dirty = true;
       D.PRE[loc.ci].bodies.splice(loc.bi, 1);
       consumedJobs.delete(job);
+      cutAt[job] = new Date().toISOString();   // v1.40.8 — re-entered Panels Ready now
       applyLivePanels();
       return true;
     }
@@ -405,6 +412,7 @@ export function initProductionFlow(root, opts) {
     dirty = true;
     D.PRE[loc.ci].bodies.splice(loc.bi, 1);
     consumedJobs.delete(job);
+    cutAt[job] = new Date().toISOString();   // v1.40.8 — re-entered Panels Ready now
     D.PANELS.push({ id: 'PS-' + b.job, job: b.job, cust: b.cust, len: b.len, type: b.type, method: b.method || 'Vacuum', origin: b.origin, ready: true });
     return true;
   }
@@ -429,7 +437,7 @@ export function initProductionFlow(root, opts) {
     const body = loc.body;
     if (m.chassis && m.chassis.job !== body.job) return false;
     dirty = true;
-    D.PRE[li].bodies.splice(loc.bi, 1); m.assembly = body; return true; /* if chassis already here → Busy with merge (no auto-attach) */
+    D.PRE[li].bodies.splice(loc.bi, 1); body.mergeEnteredAt = new Date().toISOString(); m.assembly = body; return true;   // v1.40.8 — Merge clock starts /* if chassis already here → Busy with merge (no auto-attach) */
   }
   function dispatch(li) {
     const a = D.PRE[li].merge.attached;
@@ -437,7 +445,7 @@ export function initProductionFlow(root, opts) {
       // End of the line (end-goal): the merged unit leaves the floor into the QC queue.
       (D.QC = D.QC || []).unshift({ id: a.body.id, job: a.body.job, cust: a.body.cust,
         len: a.body.len, type: a.body.type, vin: (a.chassis && a.chassis.id) || '\u2014',
-        matched: !!a.matched });
+        matched: !!a.matched, enteredAt: new Date().toISOString() });   // v1.40.8 \u2014 QC clock starts
     }
     D.PRE[li].merge.attached = null; dirty = true; renderAll();
   }
@@ -526,7 +534,7 @@ export function initProductionFlow(root, opts) {
     if (d.ghost) d.ghost.remove();
     const tgt = validTarget(d.kind, d.id, document.elementFromPoint(e.clientX, e.clientY));
     if (tgt) {
-      if (d.kind === 'panel' && tgt.t === 'vp') { const pp = D.PANELS.find(x => x.id === d.id); if (pp) { cutJobs.delete(String(pp.job)); dirty = true; applyLivePanels(); } }
+      if (d.kind === 'panel' && tgt.t === 'vp') { const pp = D.PANELS.find(x => x.id === d.id); if (pp) { cutJobs.delete(String(pp.job)); delete cutAt[String(pp.job)]; dirty = true; applyLivePanels(); } }
       else if (d.kind === 'panel' && tgt.t === 'pa') startBody(d.id, tgt.li);
       else if (d.kind === 'body' && tgt.t === 'pa') { const lr = tgt.el.getBoundingClientRect(); const desired = ((e.clientX - d.gdx) - lr.left - 12 + TPAD) / PX; const a = findAssembly(d.id); if (a && a.loc === 'merge') assemblyBackToTrack(d.id, tgt.li, desired); else moveBody(d.id, tgt.li, desired); }
       else if (d.kind === 'body' && tgt.t === 'panels') bodyBackToPanels(d.id);
@@ -712,6 +720,7 @@ export function initProductionFlow(root, opts) {
       D.QC = (s && Array.isArray(s.qc)) ? s.qc : [];
       consumedJobs.clear(); (s && s.consumed || []).forEach(j => consumedJobs.add(String(j)));
       cutJobs = new Set((s && s.cut || []).map(String));
+      cutAt = (s && s.cutAt && typeof s.cutAt === 'object') ? s.cutAt : {};
       mergedJobs = new Set((s && s.mergedJobs || []).map(String));
       mergedChassis = new Set((s && s.mergedChassis || []).map(String));
       applyLivePanels(); applyLiveParking();

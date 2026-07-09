@@ -73,7 +73,9 @@ export function AdminModule() {
             if (visible.length === 0) return null
             return (
               <div key={group.id} data-testid={`admin-group-${group.id}`}>
-                <div className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                {/* Michael 9 Jul — group headings pop: bold, brand blue, small accent chip. */}
+                <div className="mb-1.5 flex items-center gap-1.5 border-b border-primary/15 px-1 pb-1 text-xs font-bold uppercase tracking-wider text-primary">
+                  <span className="h-2 w-2 rounded-sm bg-primary/80" aria-hidden />
                   {group.label}
                 </div>
                 <div className="space-y-0.5">

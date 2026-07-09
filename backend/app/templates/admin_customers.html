@@ -28,11 +28,12 @@
           <th>Name</th>
           <th>Email</th>
           <th>Telephone</th>
+          <th>Contacts</th>
           <th></th>
         </tr>
       </thead>
       <tbody id="cust-tbody">
-        <tr><td colspan="6" style="text-align:center;padding:24px">
+        <tr><td colspan="7" style="text-align:center;padding:24px">
           <span class="spinner"></span> Loading…
         </td></tr>
       </tbody>
@@ -109,6 +110,18 @@
         <input type="checkbox" id="edit-active" style="width:15px;height:15px"/>
         <label for="edit-active" style="font-size:13px;cursor:pointer">Active</label>
       </div>
+      <!-- v1.40.9 — read-only contact people (captured in the quote flow / MES admin) -->
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px">
+          Contact people
+        </div>
+        <div id="edit-contacts-list" style="font-size:13px"></div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px">
+          Add or edit contacts in the MES admin:
+          <a href="/mes-app/admin/customers" target="_blank" rel="noopener"
+             style="color:var(--blue-hi);font-weight:600">Admin → Customers (S2)</a>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-danger" onclick="deleteCustomer()">Delete</button>
@@ -126,7 +139,7 @@ let allCustomers = [];
 
 async function loadCustomers() {
   try {
-    allCustomers = await api('GET', '/api/customers');
+    allCustomers = await api('GET', '/api/customers?include_contacts=true');
     filterTable();
   } catch(e) { toast('Failed to load customers: ' + e.message, 'error'); }
 }
@@ -140,7 +153,8 @@ function filterTable() {
     if (!q) return true;
     return (c.name.toLowerCase().includes(q) ||
             c.bp_code.toLowerCase().includes(q) ||
-            c.email.toLowerCase().includes(q));
+            c.email.toLowerCase().includes(q) ||
+            (c.contacts || []).some(ct => ct.name.toLowerCase().includes(q)));
   });
   renderTable(filtered);
 }
@@ -149,7 +163,7 @@ function renderTable(custs) {
   const tbody = document.getElementById('cust-tbody');
   document.getElementById('cust-count').textContent = custs.length + ' customers';
   if (!custs.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-dim)">No customers found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-dim)">No customers found</td></tr>';
     return;
   }
   tbody.innerHTML = custs.map(c => `
@@ -163,6 +177,7 @@ function renderTable(custs) {
       <td style="font-weight:500">${escHtml(c.name)}</td>
       <td style="font-size:12px;color:var(--text-dim)">${escHtml(c.email)}</td>
       <td style="font-size:12px;color:var(--text-dim)">${escHtml(c.telephone)}</td>
+      <td style="font-size:12px">${contactCell(c)}</td>
       <td class="td-actions">
         <button class="btn btn-outline btn-sm" onclick="openEdit(${c.id})">Edit</button>
       </td>
@@ -211,6 +226,7 @@ function openEdit(id) {
   document.getElementById('edit-email').value    = c.email;
   document.getElementById('edit-telephone').value= c.telephone;
   document.getElementById('edit-active').checked = c.is_active;
+  fillEditContacts(c);
   openModal('modal-edit-customer');
 }
 
@@ -244,6 +260,30 @@ async function deleteCustomer() {
     closeModal('modal-edit-customer');
     toast('Customer deleted', 'success');
   } catch(e) { toast(e.message, 'error'); }
+}
+
+// v1.40.9 — contact people are captured in the quote flow / MES admin; this legacy
+// page shows them READ-ONLY (manage them at /mes-app/admin/customers, S2).
+function contactCell(c) {
+  const list = c.contacts || [];
+  if (!list.length) return '<span style="color:var(--text-dim)">—</span>';
+  const shown = list.slice(0, 2).map(ct =>
+    (ct.is_primary ? '<span title="Primary contact" style="color:var(--orange)">★</span> ' : '') + escHtml(ct.name)).join(' · ');
+  const more = list.length > 2 ? ` <span style="color:var(--text-dim)">+${list.length - 2} more</span>` : '';
+  return shown + more;
+}
+
+function fillEditContacts(c) {
+  const box = document.getElementById('edit-contacts-list');
+  if (!box) return;
+  const list = c.contacts || [];
+  box.innerHTML = list.length
+    ? list.map(ct => `<div style="display:flex;gap:6px;align-items:center;padding:2px 0">
+        <span style="width:14px;text-align:center;color:var(--orange)">${ct.is_primary ? '★' : ''}</span>
+        <span>${escHtml(ct.name)}</span>
+        ${ct.role ? `<span style="color:var(--text-dim);font-size:11px">— ${escHtml(ct.role)}</span>` : ''}
+      </div>`).join('')
+    : '<div style="color:var(--text-dim)">No contact people yet</div>';
 }
 
 function escHtml(s) {

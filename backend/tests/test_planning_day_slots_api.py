@@ -236,12 +236,14 @@ def test_api_same_cell_409_names_the_day(api, fresh_planning_job):
 
 
 def test_floor_doc_downstream_releases_cell(api, fresh_planning_job):
-    """v1.40.6 ghost-slot fix (the 9-Jul 'V-1 Wednesday' report): a job the FLOOR DOCUMENT
-    has taken past Vacuum/Press must release its V/P cell — the A06 engine progresses jobs
-    in the doc only (no bay events), the /plan UI hides those cards, and before this fix
-    the visually-empty cell still 409'd on drop. Asserts the full agreement: hidden from
-    the board, schedulable over (Michael's exact action), slot row surviving
-    non-destructively (reversibility: panels dragged back re-surface it)."""
+    """v1.40.6 ghost-slot fix + the same-day 9934 refinement: a job the FLOOR DOCUMENT has
+    taken past Vacuum/Press must (a) KEEP its slot in board.slots — the /plan Panels-Ready
+    rail feeds off board slots (boardToPanels → engine setPanels), and the engine PRUNES
+    cut declarations for jobs missing from that feed, so filtering these slots out of the
+    board left cut-but-not-consumed jobs invisible everywhere and one doc-persist from
+    losing their Panels-Ready state; (b) release its CELL for drops (the V-1 Wednesday
+    ghost — grid cards are hidden CLIENT-side); (c) stay out of the unscheduled pool;
+    (d) keep its slot row non-destructively (panels dragged back re-surface it)."""
     import json as J
     from app.database import SessionLocal
     from app.models.mes import PlanFloorState, PlanningSlot, ProductionJob
@@ -269,8 +271,10 @@ def test_floor_doc_downstream_releases_cell(api, fresh_planning_job):
 
     try:
         board = api.get("/api/planning-board", params={"weeks": 12}).json()
-        assert all(s["id"] != ghost_slot_id for s in board["slots"]), \
-            "doc-downstream slot must be hidden from the board"
+        assert any(s["id"] == ghost_slot_id for s in board["slots"]), \
+            "doc-downstream slot must STAY in board.slots — the Panels-Ready rail feeds off it (9934)"
+        pool_ids = {j["id"] for j in board["unscheduled_pool"]}
+        assert ghost_pid not in pool_ids, "a cut job must not be re-schedulable from the pool"
         r2 = api.post("/api/planning-slots", json={"production_job_id": other_pid, "week": week,
                                                    "bay": bay, "lane": "vacuum", "day_of_week": 2})
         assert r2.status_code == 201, f"the freed cell must accept a drop: {r2.text}"

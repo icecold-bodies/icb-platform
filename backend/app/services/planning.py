@@ -270,21 +270,36 @@ def _progressed_job_ids(db: Session) -> set:
             select(ChassisLifecycleEvent.id).where(
                 ChassisLifecycleEvent.chassis_record_id == ChassisRecord.id,
                 ChassisLifecycleEvent.event_type == "body_attached").exists()))).scalars().all())
-    # v1.40.6 ghost-slot fix (Michael, 9 Jul — job 32795 / V-1 Wed): the A06 floor engine
-    # progresses jobs inside the floor DOCUMENT only (cut/consumed/pre-assembly/merge/qc) —
-    # it writes NONE of the two event signals above (the v1.40.0 §9 event-integration gap).
-    # The /plan UI hides those cards from the grid via the same document (downstreamJobIds),
-    # so without this fourth signal a visually-empty cell still 409s on drop. Reuse the
-    # plan_status parser (best-effort, degrades to {}): any floor stage past Vacuum/Press
-    # means the job has left the V/P grid. Reversibility holds — dragging panels BACK off
-    # the floor removes the job from the doc's lists, and the intact slot row re-surfaces.
+    ids.discard(None)
+    return ids
+
+
+def _floor_downstream_job_ids(db: Session) -> set:
+    """v1.40.6 ghost-slot fix, REFINED same-day (job 9934, prod): ids of jobs the floor
+    DOCUMENT shows past Vacuum/Press (cut/pre-assembly/merge/qc — the A06 engine writes no
+    bay events, the v1.40.0 §9 gap). Consumers pick deliberately:
+
+      * `_occupied` — YES: a doc-downstream job's cell must accept a drop (the V-1
+        Wednesday ghost, PR #86).
+      * the unscheduled POOL — YES: a cut job is not re-schedulable into V/P.
+      * `build_board`'s slot list — **NO**: the /plan Panels-Ready rail is FED from
+        board.slots (PlanCombined.boardToPanels → engine setPanels), and the engine even
+        PRUNES cut declarations for jobs missing from that feed (applyLivePanels) — the
+        #86 round-5 version filtered these slots out of the board, which starved the rail
+        and left cut-but-not-consumed jobs (9934) invisible on every /plan surface, one
+        doc-persist away from losing their Panels-Ready state. Grid cards stay hidden
+        CLIENT-side via downstreamJobIds, exactly as before #86.
+
+    Reversibility holds — dragging panels back off the floor removes the job from the
+    doc's lists and the intact slot row re-surfaces everywhere."""
     from app.services.plan_status import floor_status_by_job_number
     downstream = {jn for jn, stage in floor_status_by_job_number(db).items()
                   if stage not in ("Vacuum", "Press")}
-    if downstream:
-        ids |= set(db.execute(
-            select(ProductionJob.id)
-            .where(ProductionJob.job_number.in_(downstream))).scalars().all())
+    if not downstream:
+        return set()
+    ids = set(db.execute(
+        select(ProductionJob.id)
+        .where(ProductionJob.job_number.in_(downstream))).scalars().all())
     ids.discard(None)
     return ids
 
@@ -358,7 +373,10 @@ def build_board(db: Session, *, branch_id=None, weeks_count=12, lane=None, start
     lanes = sorted({it.bay for it in all_items if it.bay}, key=_bay_sort_key)
     slotted_ids = {r[0].production_job_id for r in rows if r[0].production_job_id}
     # exclude the progressed jobs from the pool too — they belong to assembly/merge/QA, not the board.
-    pool = _unscheduled_pool(db, branch_id=branch_id, exclude_ids=slotted_ids | progressed)
+    # Doc-downstream jobs (cut/pre/merge/qc in the floor document) are also not re-schedulable,
+    # but their SLOTS stay in the board above — the Panels-Ready rail feeds off them (9934 fix).
+    pool = _unscheduled_pool(db, branch_id=branch_id,
+                             exclude_ids=slotted_ids | progressed | _floor_downstream_job_ids(db))
     grid = len(lanes)
     capacity = []
     for w in weeks_sorted:
@@ -389,7 +407,10 @@ def _occupied(db: Session, week: date, bay: str, day_of_week=None, exclude_slot_
     # PlanningSlot row is left intact non-destructively. Without this filter that lingering row
     # makes a visibly-empty cell raise "already occupied" (the bug). Only a VISIBLE (non-progressed)
     # slot counts as occupied here, exactly as the board paints it.
-    progressed = _progressed_job_ids(db)
+    # v1.40.6 (PR #86 + the 9934 refinement): doc-downstream jobs also free their cells — the
+    # /plan grid hides those cards client-side (downstreamJobIds), so to the planner the cell
+    # is empty and must accept a drop, even though the slot stays in board.slots for the rail.
+    progressed = _progressed_job_ids(db) | _floor_downstream_job_ids(db)
     return any(r.production_job_id not in progressed for r in rows)
 
 

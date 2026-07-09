@@ -963,6 +963,19 @@ def init_db():
     legacy SQLite/MySQL _run_migrations() were removed in the unified
     monorepo, WO v4.12.)"""
     _seed_defaults()
+    # v1.40.6 — the permission-catalogue bootstrap MUST run on every boot: the v4.12
+    # unification orphaned _run_migrations() (no call sites) and with it the
+    # _bootstrap_permissions() call, so the "catalogue tops up any environment on
+    # boot" promise (the 6-Jul prod-permissions lesson, comment at the MES-keys
+    # block) silently stopped being true. Nobody noticed because every pre-existing
+    # key is ALSO seeded by a migration; the admin.* page keys are the first
+    # catalogue-only family. Idempotent + additive; never deletes or downgrades.
+    try:
+        _bootstrap_permissions()
+    except Exception as e:  # noqa: BLE001 — a bootstrap failure must not block boot
+        import logging as _logging
+        _logging.getLogger("burtcost.bootstrap").error(
+            "PERMISSION BOOTSTRAP FAILED: %s: %s", type(e).__name__, str(e)[:300], exc_info=True)
 
 
 def _seed_defaults():

@@ -17,10 +17,10 @@ from sqlalchemy.orm import Session
 from app.database import CalculationRecord, Customer
 from app.models.mes import (
     ChassisLifecycleEvent, ChassisRecord, PlanningSlot, ProductionJob, ProductionJobAudit,
-    ProductionJobBayEvent, SignOff, Task, WorkOrder,
+    ProductionJobBayEvent, ProductionStageThreshold, SignOff, Task, WorkOrder,
 )
 from app.schemas.planning import (
-    CapacityCell, PlanningBoard, PlanningJobRef, PlanningSlotItem, WeekRef,
+    CapacityCell, PlanningBoard, PlanningJobRef, PlanningSlotItem, SlotStageProgress, WeekRef,
 )
 from app.services.errors import (
     CellOccupiedError, ChassisEtaError, NotFoundError, RevertNotAllowedError,
@@ -274,6 +274,47 @@ def _progressed_job_ids(db: Session) -> set:
     return ids
 
 
+def _attach_stage_progress(db: Session, slots: List[PlanningSlotItem]) -> None:
+    """Thresholds WO (0036) — stage-clock inputs for the VISIBLE scheduled V/P slots.
+    Runs on build_board's post-_progressed_job_ids list, so a lingering slot whose job
+    already moved to assembly/merge/QA can never grow a bar. Stateless per fetch:
+    started_at = the slot's scheduled day (NULL-day legacy rows ≡ Monday, matching every
+    other renderer) at the stage's workday_start; elapsed is wall-clock 24/7 and NEGATIVE
+    before the clock starts (the SPA renders that as 'pending'). Naive server-local
+    datetimes throughout — consistent with the date.today() week anchoring above (the
+    factory and server share a timezone; SA has no DST — ADR 0035)."""
+    from app.services.plan_status import stage_key_for
+    try:
+        thresholds = {
+            t.stage_code: t
+            for t in db.execute(select(ProductionStageThreshold)
+                                .where(ProductionStageThreshold.is_active.is_(True))).scalars()
+        }
+    except Exception:  # noqa: BLE001 — a broken thresholds read must never break the board
+        return
+    if not thresholds:
+        return
+    now = datetime.now()
+    for it in slots:
+        if it.production_job is None or it.status not in ("scheduled", "in_progress"):
+            continue
+        if it.week is None:
+            continue
+        t = thresholds.get(stage_key_for(it.lane, it.bay))
+        if t is None:
+            continue
+        start_dt = datetime.combine(it.week + timedelta(days=_norm_day(it.day_of_week)),
+                                    t.workday_start)
+        it.progress = SlotStageProgress(
+            stage=t.stage_code,
+            label=t.label,
+            threshold_hours=float(t.threshold_hours),
+            workday_start=t.workday_start.strftime("%H:%M"),
+            started_at=start_dt,
+            elapsed_hours=(now - start_dt).total_seconds() / 3600.0,
+        )
+
+
 def build_board(db: Session, *, branch_id=None, weeks_count=12, lane=None, start=None) -> PlanningBoard:
     rows = db.execute(_slot_select(branch_id=branch_id, lane=lane)).all()
     # WO v4.36a.5 follow-up — a job whose panels have gone to a bay (or is merged / in Awaiting QA) has left
@@ -297,6 +338,7 @@ def build_board(db: Session, *, branch_id=None, weeks_count=12, lane=None, start
     shown_weeks = set(weeks_sorted)
     weeks = [WeekRef(iso=_iso(w), start=w) for w in weeks_sorted]
     slots = [it for it in all_items if it.week in shown_weeks]
+    _attach_stage_progress(db, slots)
     # WO v4.29 D5: natural-numeric bay order (Bay-2 < Bay-10), not ASCII string order.
     lanes = sorted({it.bay for it in all_items if it.bay}, key=_bay_sort_key)
     slotted_ids = {r[0].production_job_id for r in rows if r[0].production_job_id}

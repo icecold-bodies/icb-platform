@@ -280,7 +280,7 @@ def test_admin_page_permission_rows_bootstrapped(app_mod):
     (the catalogue bootstrap is the authoritative healing mechanism)."""
     from app.database import PERMISSION_CATALOGUE, Permission, SessionLocal
     keys = [n for (n, _d, c, _r) in PERMISSION_CATALOGUE if c == "admin" and n.startswith("admin.")]
-    assert len(keys) == 16
+    assert len(keys) == 17          # 16 page keys + admin.floor-reset (v1.41.0)
     with SessionLocal() as db:
         present = {p.name for p in db.query(Permission).filter(Permission.name.in_(keys)).all()}
     assert present == set(keys), f"missing: {set(keys) - present}"

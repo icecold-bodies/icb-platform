@@ -1802,6 +1802,29 @@ PERMISSION_CATALOGUE = [
     ("prejob.signoff_planner",       "Planner check sign-off on a Pre-Job Card",         "mes", {"planner"}),
     ("qc.inspect",                   "Record QC inspection verdicts (Kenny's inbox + per-category)", "mes", {"qc_inspector", "planner", "production"}),
     ("qc.signoff",                   "Finalize a QC inspection sign-off (pass -> dispatch)",         "mes", {"qc_inspector"}),
+    # ── SPA Admin (Master Data) page keys (Admin Master-Data WO, v1.40.6) ────
+    # One stable key per admin menu item so the BA can box individual pages into
+    # roles later. default_roles EMPTY by design: role 'admin' is the code-level
+    # wildcard (deps.user_can) and needs no rows; nobody else sees an admin page
+    # until a grant row is added. Today's only consumer is the SPA sidebar
+    # visibility filter (AppDataContext denies unknown admin.* keys by default);
+    # server-side require_perm enforcement per page is the future roles release.
+    ("admin.health-check",          "Admin: Health Check dashboard",                  "admin", set()),
+    ("admin.qc",                    "Admin: QC inspection screen",                    "admin", set()),
+    ("admin.defect-categories",     "Admin: QC defect categories",                    "admin", set()),
+    ("admin.spec-options",          "Admin: Spec options (DDM dropdowns)",            "admin", set()),
+    ("admin.rules",                 "Admin: BOM rules",                               "admin", set()),
+    ("admin.lookups",               "Admin: Rule lookups (spec -> SAP code)",         "admin", set()),
+    ("admin.price-overrides",       "Admin: Price overrides",                         "admin", set()),
+    ("admin.prejob-templates",      "Admin: Pre-Job templates",                       "admin", set()),
+    ("admin.fridge-units",          "Admin: Fridge units",                            "admin", set()),
+    ("admin.chassis-models",        "Admin: Chassis types",                           "admin", set()),
+    ("admin.prejob-signoffs",       "Admin: Pre-Job sign-offs",                       "admin", set()),
+    ("admin.customers",             "Admin: Customers + contacts",                    "admin", set()),
+    ("admin.orphan-chassis",        "Admin: Find Orphan Chassis",                     "admin", set()),
+    ("admin.merge-chassis",         "Admin: Merge Chassis",                           "admin", set()),
+    ("admin.feedback",              "Admin: Feedback inbox",                          "admin", set()),
+    ("admin.production-thresholds", "Admin: Production stage thresholds",             "admin", set()),
 ]
 
 

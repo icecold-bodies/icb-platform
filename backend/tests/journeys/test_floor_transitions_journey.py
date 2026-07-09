@@ -181,6 +181,8 @@ def test_server_confirmed_floor_drags(page: Page, floor_fixture) -> None:
         with SessionLocal() as db:
             return bool(db.execute(select(FloorEvent).where(
                 FloorEvent.event_type == "floor_reset")).scalars().first())
-    expect(page.get_by_test_id("floor-reset-button")).to_be_enabled(timeout=T)  # busy state released
+    # Success signal = the toast (the component CLEARS the typed confirm on success,
+    # which re-disables the button by design — asserting enabled here was wrong).
+    expect(page.get_by_test_id("toast").first).to_be_visible(timeout=T)
     assert _reset_logged(), "floor_reset must be journaled"
     shot(page, "04-floor-reset", journey=JOURNEY)

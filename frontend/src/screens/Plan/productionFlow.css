@@ -236,3 +236,14 @@
 .a06-flow .bomcat .amt{margin-left:auto;font-weight:780;font-variant-numeric:tabular-nums}
 .a06-flow .bomwrap{border:1px solid var(--hair);border-top:none;border-radius:0 0 10px 10px;padding:2px 10px 10px;background:#fff;overflow-x:auto}
 .a06-flow .bomtotal{display:flex;justify-content:space-between;gap:12px;margin-top:16px;padding:12px 4px 0;border-top:2px solid var(--ink);font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+
+/* v1.41.0 §9 P1 — a card whose transition is in flight (server-confirmed drags) */
+.a06-flow .pend {
+  opacity: .55;
+  pointer-events: none;
+  animation: floorPend 1s ease-in-out infinite;
+}
+@keyframes floorPend {
+  0%, 100% { filter: none; }
+  50% { filter: brightness(1.25); }
+}

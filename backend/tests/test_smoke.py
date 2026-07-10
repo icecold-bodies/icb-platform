@@ -97,7 +97,7 @@ def test_mes_schema_tables():
         v436c_tables = db.execute(text(
             "select count(*) from information_schema.tables where table_schema='icb_mes' "
             "and table_name in ('defect_categories','qc_inspections','qc_signoffs')")).scalar()  # WO v4.36c (0028)
-    assert n == 42                                              # +chassis_models (0021); +production_jobs_audit (0023); +production_job_bay_events (0024); +feedback_submissions (v4.38 0027); +chassis_records_audit (v4.36.5 0029); +defect_categories/qc_inspections/qc_signoffs (v4.36c 0028); +plan_floor_state (Plan module, 0032); +production_stage_thresholds (v1.40.6, 0036)
+    assert n == 43                                              # +chassis_models (0021); +production_jobs_audit (0023); +production_job_bay_events (0024); +feedback_submissions (v4.38 0027); +chassis_records_audit (v4.36.5 0029); +defect_categories/qc_inspections/qc_signoffs (v4.36c 0028); +plan_floor_state (Plan module, 0032); +production_stage_thresholds (v1.40.6, 0036); +floor_events (§9 P1, 0037)
     assert v436c_tables == 3
     assert new_tables == 4
     assert v422_tables == 2

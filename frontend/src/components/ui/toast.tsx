@@ -49,6 +49,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={it.id}
             role="status"
+            data-testid="toast"
+            data-kind={it.kind}
             onClick={() => remove(it.id)}
             className={`pointer-events-auto cursor-pointer rounded-lg px-4 py-2.5 text-sm shadow-lg ${KIND_CLS[it.kind]}`}
           >

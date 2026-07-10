@@ -22,7 +22,8 @@ import { initProductionFlow } from './productionFlowEngine'
 import { usePlanning } from '../../store/PlanningContext'
 import { PlanningCockpit, type RenderSlotDrawer } from '../Planning/cockpit/PlanningCockpit'
 import { PlanJobDrawerShell, PlanJobTabs } from './PlanJobDrawer'
-import { apiGet, apiPut } from '../../lib/api'
+import { apiGet, apiPost } from '../../lib/api'
+import { useToast } from '../../components/ui/toast'
 import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { PlanningBoardView } from '../../lib/types'
 import type { ChassisRecord } from '../Chassis/types'
@@ -34,6 +35,7 @@ interface FlowApi {
   getMergedJobs: () => string[]
   loadState: (json: string | null) => boolean
   getState: () => string
+  isBusy: () => boolean                 // v1.41.0 — a transition POST is in flight
   plannerSlot: HTMLElement | null
 }
 
@@ -170,6 +172,12 @@ export function PlanCombined() {
   const openCardRef = useRef(openCardDrawer)
   useEffect(() => { openCardRef.current = openCardDrawer }, [openCardDrawer])
 
+  // v1.41.0 §9 P1 — the whole-doc onPersist PUT is GONE. Every live-mode mutation posts a
+  // typed transition; the server validates, applies, journals and returns the authoritative
+  // doc. Mock/offline mode keeps the engine's local behavior (transport.isLive gates it).
+  const modeRef = useRef(mode)
+  useEffect(() => { modeRef.current = mode }, [mode])
+  const toast = useToast()
   useEffect(() => {
     if (!ref.current) return
     const inst = initProductionFlow(ref.current, {
@@ -177,17 +185,21 @@ export function PlanCombined() {
         setMergedJobNos(s.mergedJobs)
         setDownstreamJobNos(s.downstreamJobs ?? [])
       },
-      onPersist: (json: string) => {
-        void apiPut<{ updated_at: string }>('/api/plan/floor-state', { state: json })
-          .then((r) => { stampRef.current = r.updated_at })
-          .catch(() => { /* non-fatal — next mutation retries */ })
+      transport: {
+        isLive: () => modeRef.current === 'live',
+        post: (type: string, payload: Record<string, unknown>) =>
+          apiPost<{ state: string; updated_at: string; version: number }>(
+            '/api/plan/floor-transitions', { type, ...payload })
+            .then((r) => { stampRef.current = r.updated_at; return r }),
       },
+      onError: (msg: string) => toast.push({ kind: 'warn', message: msg }),
       // 3 Jul — card clicks route to the standardized React drawer (stable ref: live data inside).
       onOpenCard: (kind: string, id: string) => openCardRef.current(kind, id),
     }) as FlowApi
     setApi(inst)
     apiRef.current = inst
     return () => { inst.cleanup(); setApi(null); apiRef.current = null }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Initial floor load + the change poll (floor 8s; board + chassis 30s).
@@ -196,6 +208,7 @@ export function PlanCombined() {
     if (!api || mode !== 'live') return
     let dead = false
     const pull = async (initial: boolean) => {
+      if (!initial && api.isBusy()) return   // v1.41.0 — never reload over an in-flight transition
       try {
         const r = await apiGet<{ state: string | null; updated_at: string | null }>('/api/plan/floor-state')
         if (dead) return

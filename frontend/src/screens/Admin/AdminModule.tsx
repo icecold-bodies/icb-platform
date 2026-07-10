@@ -18,6 +18,7 @@ import { MergeChassisAdmin } from './MergeChassisAdmin'
 import { HealthCheckAdmin } from './HealthCheck'   // WO v4.36b §3.3
 import { QcInspector } from './QcInspector'         // WO v4.36c §3.2
 import { FeedbackInbox } from './FeedbackInbox'     // v1.40.6 — joins the module (was an orphan route)
+import { FloorResetAdmin } from './FloorResetAdmin' // v1.41.0 — §9 P1 admin floor reset
 import { ADMIN_GROUPS, ADMIN_RESOURCES } from './adminResources'
 
 // WO v4.33.1 §3.1 — custom (non-CRUD) admin screens dispatch by resource key. A future custom
@@ -32,6 +33,7 @@ const CUSTOM_ADMIN_SCREENS: Record<string, ComponentType> = {
   'health-check': HealthCheckAdmin,                // WO v4.36b §3.3
   'qc': QcInspector,                               // WO v4.36c §3.2 — Kenny's QC inbox + inspection form
   feedback: FeedbackInbox,                         // v1.40.6 — WO v4.38 inbox, now inside Master Data
+  'floor-reset': FloorResetAdmin,                  // v1.41.0 — §9 P1 journaled floor reset
 }
 
 // WO v4.36c §3.2 — QC inspection is reachable by the QC-capable roles, not only admin; every OTHER

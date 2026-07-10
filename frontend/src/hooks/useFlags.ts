@@ -18,6 +18,8 @@ export interface Flag {
   group: string
   domain: 'chassis' | 'jobs' | 'bays'
   pulse: boolean
+  /** Per-instance measurement, e.g. "Vacuum 12.4h of 8h" (stage-threshold breaches); null otherwise. */
+  detail?: string | null
 }
 
 export interface FlagSummary {

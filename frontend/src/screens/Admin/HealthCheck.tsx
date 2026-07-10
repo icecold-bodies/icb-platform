@@ -141,9 +141,13 @@ export function HealthCheckAdmin() {
             <ul className="divide-y divide-line" data-testid="health-drill-list">
               {drill.map((r, i) => {
                 const { label, href } = drillItem(sel.domain, sel.flag, r)
+                const detail = r.flags?.find((f) => f.flag === sel.flag)?.detail
                 return (
                   <li key={i} className="flex items-center justify-between py-1.5 text-sm">
-                    <span>{label}</span>
+                    <span>
+                      {label}
+                      {detail && <span className="ml-2 text-xs font-semibold text-status-red/90">{detail}</span>}
+                    </span>
                     <Link to={href} data-testid="health-drill-open"
                           className="text-xs font-semibold text-primary hover:underline">open →</Link>
                   </li>

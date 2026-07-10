@@ -23,14 +23,14 @@ whose gt is exceeded. `pulse=True` marks a flag whose first-render-per-user gets
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy import select
 
 from app.models.mes import (
-    AssemblyBay, ChassisLifecycleEvent, ChassisRecord, PrejobCard, ProductionJob,
-    ProductionJobBayEvent,
+    AssemblyBay, ChassisLifecycleEvent, ChassisRecord, PlanningSlot, PrejobCard,
+    ProductionJob, ProductionJobBayEvent, ProductionStageThreshold,
 )
 from app.services import chassis as chassis_svc
 from app.services import production_jobs as pj_svc
@@ -91,6 +91,26 @@ FLAG_SPECS: dict[str, FlagSpec] = {
     "signoff_role_pending_5days": FlagSpec(
         "signoff_role_pending_5days", "jobs", "Sign-offs", "Role pending",
         "Outstanding Sign-offs admin → nudge the named role", ((5, "amber"),), pulse=True),
+    # Stage-threshold breaches (Michael's 10-Jul WO): jobs past their production_stage_thresholds
+    # limit in V/P (scheduled-slot clock, ADR 0035 model) or Panels Ready / Pre-Assembly (the
+    # v1.40.8 floor-doc entry stamps). Severity is RATIO-based, computed in the breach core (amber
+    # on breach, red at >=1.5x threshold) — the bands here are catalog metadata (worst = red dot).
+    "stage_vacuum_overdue": FlagSpec(
+        "stage_vacuum_overdue", "jobs", "Jobs", "Vacuum overdue",
+        "Past the vacuum threshold — declare the panels cut or reschedule the slot",
+        ((-1, "amber"), (0, "red")), pulse=True),
+    "stage_press_overdue": FlagSpec(
+        "stage_press_overdue", "jobs", "Jobs", "Press overdue",
+        "Past the press threshold — declare the panels cut or reschedule the slot",
+        ((-1, "amber"), (0, "red")), pulse=True),
+    "stage_panels_ready_overdue": FlagSpec(
+        "stage_panels_ready_overdue", "jobs", "Jobs", "Panels Ready overdue",
+        "Panels waiting past the threshold — move them onto an assembly bay",
+        ((-1, "amber"), (0, "red")), pulse=True),
+    "stage_pre_assembly_overdue": FlagSpec(
+        "stage_pre_assembly_overdue", "jobs", "Jobs", "Pre-Assembly overdue",
+        "Body on the track past the threshold — advance it toward merge",
+        ((-1, "amber"), (0, "red")), pulse=True),
     # ── Bays domain ──
     "bay_ready_to_merge_stale": FlagSpec(
         "bay_ready_to_merge_stale", "bays", "Bays", "Ready to merge",
@@ -165,8 +185,11 @@ def _resolve(spec: FlagSpec, age_days: Optional[int]) -> Optional[str]:
     return sev
 
 
-def _hit(spec: FlagSpec, severity: str, age_days: Optional[int]) -> dict:
-    """One flag instance, as rendered: enum + resolved severity + age + display metadata."""
+def _hit(spec: FlagSpec, severity: str, age_days: Optional[int],
+         detail: Optional[str] = None) -> dict:
+    """One flag instance, as rendered: enum + resolved severity + age + display metadata.
+    `detail` is an optional per-instance measurement string (e.g. 'Vacuum 12.4h of 8h') —
+    surfaced in the Health Check drill list + badge tooltip; None for the classic flags."""
     return {
         "flag": spec.flag,
         "severity": severity,
@@ -176,6 +199,7 @@ def _hit(spec: FlagSpec, severity: str, age_days: Optional[int]) -> dict:
         "group": spec.group,
         "domain": spec.domain,
         "pulse": spec.pulse,
+        "detail": detail,
     }
 
 
@@ -240,9 +264,118 @@ def _all_chassis_flags(db, *, now: Optional[datetime] = None) -> dict[int, list[
     return out
 
 
+#: production_stage_thresholds.stage_code → breach flag key (Michael's 10-Jul WO scope:
+#: V/P + Panels Ready + Pre-Assembly; merge/qc deliberately excluded this release).
+_STAGE_FLAG_KEYS = {
+    "vacuum": "stage_vacuum_overdue",
+    "press": "stage_press_overdue",
+    "panels_ready": "stage_panels_ready_overdue",
+    "pre_assembly": "stage_pre_assembly_overdue",
+}
+
+
+def _all_stage_breach_flags(db, *, now: Optional[datetime] = None) -> dict[int, list[dict]]:
+    """{job_id: [flag, ...]} — in-flight jobs past their production-stage threshold.
+
+    Two clocks, mirroring the surfaces the thresholds already drive:
+      * V/P — scheduled planning_slots, elapsed from the slot's scheduled day at the stage's
+        workday_start (naive server-local, wall-clock 24/7 — the _attach_stage_progress /
+        ADR 0035 model). Jobs already progressed past V/P (bay events OR the floor doc) are
+        skipped, exactly like the board's own bars.
+      * Panels Ready / Pre-Assembly — the floor document's v1.40.8 entry stamps (UTC).
+        Unstamped legacy entries have no clock and can NEVER breach (the honesty rule —
+        no invented start times).
+
+    Severity is ratio-based: amber on breach, red at >=1.5x the threshold. age_days = whole
+    days SINCE the breach began (feeds the badge age pill); `detail` carries the precise
+    measurement. Inactive/missing threshold rows → stage never flags."""
+    from app.services import planning as planning_svc
+    from app.services.plan_status import floor_stage_entry_info, stage_key_for
+
+    now = _aware(now) or _now()
+    now_local = now.astimezone().replace(tzinfo=None)   # ≡ datetime.now() at request time
+    try:
+        thresholds = {
+            t.stage_code: t
+            for t in db.execute(select(ProductionStageThreshold)
+                                .where(ProductionStageThreshold.is_active.is_(True))).scalars()
+        }
+    except Exception:  # noqa: BLE001 — advisory flags must never break the flag stream
+        return {}
+    if not any(code in thresholds for code in _STAGE_FLAG_KEYS):
+        return {}
+
+    # worst breach per (job_id, stage_code) — a job with several V/P slots flags once, at its worst
+    worst: dict[tuple[int, str], tuple[float, float]] = {}   # → (elapsed_h, threshold_h)
+
+    def note(job_id: int, stage_code: str, elapsed_h: float, threshold_h: float):
+        if elapsed_h <= threshold_h:
+            return
+        key = (job_id, stage_code)
+        if key not in worst or elapsed_h > worst[key][0]:
+            worst[key] = (elapsed_h, threshold_h)
+
+    # ── V/P: scheduled slots, board-identical exclusions ──
+    slot_rows = db.execute(
+        select(PlanningSlot, ProductionJob)
+        .join(ProductionJob, ProductionJob.id == PlanningSlot.production_job_id)
+        .where(PlanningSlot.status.in_(("scheduled", "in_progress")),
+               ProductionJob.status.in_(_FLAGGABLE_JOB_STATUSES))).all()
+    if slot_rows:
+        skip = planning_svc._progressed_job_ids(db) | planning_svc._floor_downstream_job_ids(db)
+        for slot, job in slot_rows:
+            if job.id in skip or slot.week is None:
+                continue
+            t = thresholds.get(stage_key_for(slot.lane, slot.bay))
+            if t is None:
+                continue
+            start_dt = datetime.combine(
+                slot.week + timedelta(days=planning_svc._norm_day(slot.day_of_week)),
+                t.workday_start)
+            note(job.id, t.stage_code,
+                 (now_local - start_dt).total_seconds() / 3600.0, float(t.threshold_hours))
+
+    # ── Panels Ready / Pre-Assembly: floor-doc entry stamps (furthest position wins upstream) ──
+    floor_codes = {"Panels Ready": "panels_ready", "Pre-Assembly": "pre_assembly"}
+    stamped: dict[str, tuple[str, float, float]] = {}       # job_number → (code, elapsed, threshold)
+    for jn, inf in floor_stage_entry_info(db).items():
+        code = floor_codes.get(inf.get("label") or "")
+        t = thresholds.get(code) if code else None
+        stamp = inf.get("entered_at")
+        if t is None or not stamp:
+            continue
+        try:
+            started = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if started.tzinfo is None:
+            started = started.replace(tzinfo=timezone.utc)
+        elapsed = (now - started).total_seconds() / 3600.0
+        if elapsed > float(t.threshold_hours):
+            stamped[jn] = (code, elapsed, float(t.threshold_hours))
+    if stamped:
+        for jid, jn in db.execute(
+            select(ProductionJob.id, ProductionJob.job_number)
+            .where(ProductionJob.job_number.in_(list(stamped)),
+                   ProductionJob.status.in_(_FLAGGABLE_JOB_STATUSES))).all():
+            code, elapsed, thr = stamped[str(jn)]
+            note(jid, code, elapsed, thr)
+
+    out: dict[int, list[dict]] = {}
+    for (job_id, stage_code), (elapsed_h, thr_h) in worst.items():
+        spec = FLAG_SPECS[_STAGE_FLAG_KEYS[stage_code]]
+        t = thresholds[stage_code]
+        sev = "red" if elapsed_h >= 1.5 * thr_h else "amber"
+        age = int(max(0.0, elapsed_h - thr_h) // 24)
+        out.setdefault(job_id, []).append(
+            _hit(spec, sev, age, detail=f"{t.label} {elapsed_h:.1f}h of {thr_h:g}h"))
+    return out
+
+
 def _all_job_flags(db, *, now: Optional[datetime] = None) -> dict[int, list[dict]]:
     """{job_id: [flag, ...]} for flaggable in-flight jobs, plus the card-derived sign-off/stale flags
-    mapped onto their job (a Pre-Job Card maps to its calc's job)."""
+    mapped onto their job (a Pre-Job Card maps to its calc's job), plus the stage-threshold
+    breach flags (V/P slot clocks + floor-doc stamps — see _all_stage_breach_flags)."""
     now = now or _now()
     today = now.date()
     jobs = db.execute(
@@ -280,6 +413,10 @@ def _all_job_flags(db, *, now: Optional[datetime] = None) -> dict[int, list[dict
         role_pending = card.sales_rep_signoff_at is None or card.planner_signoff_at is None
         if role_pending:
             add(job.id, "signoff_role_pending_5days", sent_age)
+
+    # stage-threshold breaches join the jobs stream (summary, drill list, per-job chips)
+    for jid, hits in _all_stage_breach_flags(db, now=now).items():
+        out.setdefault(jid, []).extend(hits)
     return out
 
 

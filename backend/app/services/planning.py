@@ -390,6 +390,27 @@ def build_board(db: Session, *, branch_id=None, weeks_count=12, lane=None, start
 
 
 # ── writes ────────────────────────────────────────────────────────────────────
+def mark_slots_cut(db: Session, *, job_number: str, cut: bool) -> int:
+    """§9 P2 — declare-cut REALIZES the 'completed' slot vocabulary (the 0034 comment lists
+    unscheduled|scheduled|in_progress|completed; 'completed' was never written until now).
+    cut=True flips the job's scheduled/in_progress V/P slots to 'completed'; cut=False (undo)
+    flips them back to 'scheduled'. NO COMMIT — the floor transaction owns it (floor.py).
+    Returns the number of slot rows flipped (0 is fine — e.g. an undo after the slot was
+    already reverted)."""
+    from_statuses = ("scheduled", "in_progress") if cut else ("completed",)
+    to_status = "completed" if cut else "scheduled"
+    rows = db.execute(
+        select(PlanningSlot)
+        .join(ProductionJob, ProductionJob.id == PlanningSlot.production_job_id)
+        .where(ProductionJob.job_number == str(job_number),
+               PlanningSlot.status.in_(from_statuses))).scalars().all()
+    for s in rows:
+        s.status = to_status
+    if rows:
+        db.flush()
+    return len(rows)
+
+
 def _occupied(db: Session, week: date, bay: str, day_of_week=None, exclude_slot_id=None) -> bool:
     stmt = select(PlanningSlot).where(PlanningSlot.week == week, PlanningSlot.bay == bay)
     if exclude_slot_id is not None:
@@ -410,6 +431,10 @@ def _occupied(db: Session, week: date, bay: str, day_of_week=None, exclude_slot_
     # v1.40.6 (PR #86 + the 9934 refinement): doc-downstream jobs also free their cells — the
     # /plan grid hides those cards client-side (downstreamJobIds), so to the planner the cell
     # is empty and must accept a drop, even though the slot stays in board.slots for the rail.
+    # §9 P2: a 'completed' slot (panels declared cut) never occupies its cell either — it is
+    # never grid-visible, and unlike the doc-derived signal this holds even if the cut entry
+    # was pruned from the floor document (no new ghost class).
+    rows = [r for r in rows if (r.status or "scheduled") in ("scheduled", "in_progress")]
     progressed = _progressed_job_ids(db) | _floor_downstream_job_ids(db)
     return any(r.production_job_id not in progressed for r in rows)
 
@@ -485,6 +510,11 @@ def _assert_revertible(db: Session, slot: PlanningSlot, job: Optional[Production
     slot-centric DELETE (drag) nor the job-centric POST (modal) can bypass them. Raises
     RevertNotAllowedError (→409) naming the failed rule. An orphan slot (no job) is allowed through as
     cleanup — there is nothing downstream to protect."""
+    if slot.status == "completed":
+        # §9 P2 — the slot's job has declared its panels cut on the Production Flow floor.
+        raise RevertNotAllowedError(
+            "this job's panels are declared cut on the floor — undo the cut "
+            "(drag the Panels Ready card back to its slot) before unscheduling")
     if slot.status not in ("scheduled",):
         raise RevertNotAllowedError(
             f"slot {slot.id} is '{slot.status}', not 'scheduled' — only a scheduled slot can be reverted")

@@ -23,9 +23,33 @@ names its from-location (id/li/vin/job) and the validator checks "is it where yo
 is" under the row lock, so two planners dragging DIFFERENT items both succeed while a
 stale drag of a moved item 409s with a human message.
 
-P2 (v1.41.1) wires the domain chokepoints (record_body_attached, record_moved_to_awaiting_qa,
-record_panels_arrived_in_bay, assign/return…) into this same transaction via commit=False
-threading; bay_for_line() maps floor lane → assembly_bays by sort_order ordinal.
+P2 (v1.41.x) — FULL INTEGRATION: the transitions now drive the domain chokepoints inside the
+SAME locked transaction via commit=False threading (send_pre_job_card precedent). Lock order
+is floor_row → jobs → chassis (the row lock is taken first, always).
+
+    declare_cut / undo_cut        → planning_svc.mark_slots_cut (slots 'completed' ⇄ 'scheduled')
+    drop_assembly                 → record_panels_arrived_in_bay (relink-tolerant, see below)
+    assembly_back_to_track        → clear_panels_arrived
+    body_back_to_panels           → clear_panels_arrived (idempotent 0 when never staged)
+    drop_chassis                  → assign_assembly_bay        (UPSERT — re-drops self-heal)
+    chassis_back_to_parking       → return_chassis_to_parking  (+ production_jobs_audit row)
+    confirm_merge                 → record_body_attached       (THE real merge: links
+                                    job.chassis_record_id; VIN-attestation guard for free)
+    dispatch                      → record_moved_to_awaiting_qa (status 'awaiting_qa' —
+                                    Kenny's QC inbox picks it up natively)
+
+DELIBERATE DEVIATION from the P1 design note: the panels_arrived_in_bay moment is
+drop_assembly (the single-slot MERGE BLOCK), not start_body — a floor line's TRACK holds
+many bodies, but the DB bay model is one job's panels per bay (busy-bay 409) and
+compute_bay_merge_readiness derives 'ready_to_merge' from loose panels + chassis on the
+bay, which is exactly the merge block's shape. start_body/move_body stay doc-only
+(journaled in floor_events as before).
+
+Bay identity: _bay_for_line() maps floor line index → the nth ACTIVE assembly_bays row by
+(sort_order, id) — no link table, no second truth. Cutover tolerance: transitions whose DB
+fact is ALREADY true (a pre-P2 panels event on the same bay, body already attached to the
+same pair, chassis already awaiting QA) no-op with a details note instead of 409ing, so
+in-flight floors converge instead of jamming; anything contradictory stays LOUD.
 """
 from __future__ import annotations
 
@@ -39,6 +63,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.mes import FloorEvent, PlanFloorState, PlanningSlot, ProductionJob
+from app.services import chassis as chassis_svc
+from app.services import planning as planning_svc
 
 logger = logging.getLogger("icb.floor")
 
@@ -174,12 +200,25 @@ def _scheduled_job_numbers(db: Session) -> set[str]:
     return {str(j) for j in rows if j}
 
 
+def _slot_anchor_job_numbers(db: Session) -> set[str]:
+    """§9 P2 — jobs still ANCHORED to a V/P slot row: 'scheduled' + 'completed' (declare-cut
+    flips a cut job's slot to completed, but the row remains its anchor — the prune and the
+    back-to-panels reverse must not treat a cut job as unscheduled)."""
+    rows = db.execute(
+        select(ProductionJob.job_number)
+        .join(PlanningSlot, PlanningSlot.production_job_id == ProductionJob.id)
+        .where(PlanningSlot.status.in_(("scheduled", "in_progress", "completed")))).scalars().all()
+    return {str(j) for j in rows if j}
+
+
 def _prune_cut(db: Session, doc: dict, events: list[dict]) -> None:
     """The engine's lazy cut-prune (applyLivePanels :231-237), moved server-side: cut entries
     whose job is no longer scheduled and never started anything are dropped. In the engine
     this never set dirty (lazily persisted); with the PUT gone it MUST live here or orphan
-    entries would strand in the doc forever. Each drop journals a cut_pruned event."""
-    sched = _scheduled_job_numbers(db)
+    entries would strand in the doc forever. Each drop journals a cut_pruned event.
+    §9 P2: the anchor set includes 'completed' slots — declare-cut flips the slot status,
+    and without this the very act of cutting would de-anchor (and prune) the cut entry."""
+    sched = _slot_anchor_job_numbers(db)
     on_floor = _jobs_on_floor(doc)
     in_qc = _qc_jobs(doc)
     consumed = {str(j) for j in doc["consumed"]}
@@ -209,6 +248,60 @@ def _bad(code: int, msg: str):
     raise HTTPException(status_code=code, detail=msg)
 
 
+# ── §9 P2 chokepoint plumbing ─────────────────────────────────────────────────
+
+def _actor(ctx: dict) -> str:
+    return (getattr(ctx.get("user"), "username", None) or "floor")[:64]
+
+
+def _bay_for_line(db: Session, li: int):
+    """Floor line index (0-4) → the nth ACTIVE assembly_bays row by (sort_order, id) — the
+    exact order every bay list/admin surface uses. No link table, no second truth: reordering
+    bays in Master Data re-aims the map (Master Data owns bay identity)."""
+    bays = chassis_svc.list_assembly_bays(db)
+    if li >= len(bays):
+        _bad(422, f"Bay {li + 1} has no matching assembly bay in Master Data "
+                  f"(only {len(bays)} active).")
+    return bays[li]
+
+
+def _chassis_by_vin(db: Session, vin: str):
+    from app.models.mes import ChassisRecord
+    return db.execute(select(ChassisRecord).where(
+        ChassisRecord.vin == vin, ChassisRecord.deleted_at.is_(None))
+        .order_by(ChassisRecord.id.desc())).scalars().first()
+
+
+def _require_job(db: Session, job_number: str) -> ProductionJob:
+    pj = _job_by_number(db, job_number)
+    if pj is None:
+        _bad(422, f"No production job found for {job_number} — the floor can't write its "
+                  "production events.")
+    return pj
+
+
+def _sync_panels_event(db: Session, pj: ProductionJob, bay, ctx: dict):
+    """Ensure the DB says this job's panels are in `bay` (the drop_assembly chokepoint).
+    Same-bay pre-existing event (pre-P2 lane, or a body re-staged after assembly_back left
+    the event... it doesn't — see clear below) → no-op; an event on a DIFFERENT bay is
+    RELINKED (clear + re-record, one transaction) — the floor is the operating surface and
+    Master-Data order is bay truth. Consumed panels 409 inside clear_panels_arrived (loud).
+    Returns the bay_id the event was relinked from, or None."""
+    from app.models.mes import ProductionJobBayEvent
+    existing = db.execute(
+        select(ProductionJobBayEvent.bay_id).where(
+            ProductionJobBayEvent.production_job_id == pj.id,
+            ProductionJobBayEvent.event_type == "panels_arrived_in_bay")
+        .order_by(ProductionJobBayEvent.id.desc())).scalars().first()
+    user_id = getattr(ctx.get("user"), "id", None)
+    if existing == bay.id:
+        return None
+    if existing is not None:
+        chassis_svc.clear_panels_arrived(db, pj.id, commit=False)
+    chassis_svc.record_panels_arrived_in_bay(db, pj.id, bay.id, user_id=user_id, commit=False)
+    return existing
+
+
 # ── the 11 transitions (each: validate → mutate doc → return the event draft) ─
 
 def _t_declare_cut(db, doc, p, ctx):
@@ -222,8 +315,12 @@ def _t_declare_cut(db, doc, p, ctx):
         _bad(409, f"Job {job}'s panels are already on the floor.")
     doc["cut"].append(job)
     doc["cutAt"][job] = _now_iso()
+    # P2: realize the slot vocabulary — the V/P slot is done producing (its clock stops, the
+    # cell frees, unschedule 409s until undo). No commit — apply_transition owns the txn.
+    flipped = planning_svc.mark_slots_cut(db, job_number=job, cut=True)
     return {"event_type": "declare_cut", "job_number": job,
-            "from_stage": "vp", "to_stage": "panels_ready", "details": {}}
+            "from_stage": "vp", "to_stage": "panels_ready",
+            "details": {"slots_completed": flipped}}
 
 
 def _t_undo_cut(db, doc, p, ctx):
@@ -235,8 +332,10 @@ def _t_undo_cut(db, doc, p, ctx):
         _bad(409, f"Job {job}'s panels have already started — drag the body back first.")
     doc["cut"] = [x for x in doc["cut"] if str(x) != job]
     doc["cutAt"].pop(job, None)
+    flipped = planning_svc.mark_slots_cut(db, job_number=job, cut=False)   # completed → scheduled
     return {"event_type": "undo_cut", "job_number": job,
-            "from_stage": "panels_ready", "to_stage": "vp", "details": {}}
+            "from_stage": "panels_ready", "to_stage": "vp",
+            "details": {"slots_rescheduled": flipped}}
 
 
 def _t_start_body(db, doc, p, ctx):
@@ -279,16 +378,20 @@ def _t_body_back_to_panels(db, doc, p, ctx):
     job = str(loc["body"].get("job"))
     if job in {str(x) for x in doc["mergedJobs"]}:
         _bad(409, f"Job {job} is merged with its chassis — it can't move back to Panels Ready.")
-    if job not in _scheduled_job_numbers(db):
-        _bad(409, f"Job {job} is no longer scheduled on the planner — it can't re-enter the queue.")
+    if job not in _slot_anchor_job_numbers(db):        # P2: a cut job's slot is 'completed', still an anchor
+        _bad(409, f"Job {job} has no V/P slot row anymore — it can't re-enter the queue.")
     doc["pre"][loc["ci"]]["bodies"].pop(loc["bi"])
     doc["consumed"] = [x for x in doc["consumed"] if str(x) != job]
     if job not in {str(x) for x in doc["cut"]}:
         doc["cut"].append(job)
     doc["cutAt"][job] = _now_iso()                     # re-entered Panels Ready NOW (v1.40.8 rule)
+    # P2: if the panels ever staged at a merge block, un-commit them from the DB bay too
+    # (idempotent — removed=0 for a track-only body; 409s if consumed by an attached body).
+    pj = _job_by_number(db, job)
+    removed = chassis_svc.clear_panels_arrived(db, pj.id, commit=False)["removed"] if pj else 0
     return {"event_type": "body_back_to_panels", "job_number": job,
             "from_stage": "pre_assembly", "to_stage": "panels_ready",
-            "details": {"from_li": loc["ci"]}}
+            "details": {"from_li": loc["ci"], "panels_events_cleared": removed}}
 
 
 def _t_move_body(db, doc, p, ctx):
@@ -331,11 +434,20 @@ def _t_drop_assembly(db, doc, p, ctx):
     if isinstance(chassis, dict) and chassis.get("job") is not None \
             and str(chassis["job"]) != str(body.get("job")):
         _bad(409, f"The staged chassis belongs to job {chassis['job']} — same-job merges only.")
+    # P2 chokepoint — the merge block is the 1:1 "panels on the bay" moment (a line's TRACK
+    # holds many bodies; the DB bay model is one job's panels per bay). Same-bay pre-existing
+    # event no-ops; a stale different-bay event is relinked; consumed panels 409 loudly.
+    pj = _require_job(db, str(body.get("job")))
+    bay = _bay_for_line(db, li)
+    relinked_from = _sync_panels_event(db, pj, bay, ctx)
     doc["pre"][li]["bodies"].pop(loc["bi"])
     body["mergeEnteredAt"] = _now_iso()
     m["assembly"] = body
+    details = {"li": li, "bay_id": bay.id, "bay_code": bay.code}
+    if relinked_from is not None:
+        details["panels_relinked_from_bay_id"] = relinked_from
     return {"event_type": "drop_assembly", "job_number": str(body.get("job")),
-            "from_stage": "pre_assembly", "to_stage": "pre_merge", "details": {"li": li}}
+            "from_stage": "pre_assembly", "to_stage": "pre_merge", "details": details}
 
 
 def _t_assembly_back_to_track(db, doc, p, ctx):
@@ -355,9 +467,14 @@ def _t_assembly_back_to_track(db, doc, p, ctx):
     body.pop("mergeEnteredAt", None)                   # merge clock cleared; pre-assembly clock resumes
     body["pos"] = pos
     doc["pre"][li]["bodies"].append(body)
+    # P2: leaving the merge block un-commits the panels from the DB bay (reverse of
+    # drop_assembly; 409s inside if a body was already attached — matches the doc guard).
+    pj = _job_by_number(db, str(body.get("job")))
+    removed = chassis_svc.clear_panels_arrived(db, pj.id, commit=False)["removed"] if pj else 0
     return {"event_type": "assembly_back_to_track", "job_number": str(body.get("job")),
             "from_stage": "pre_merge", "to_stage": "pre_assembly",
-            "details": {"from_li": found["li"], "li": li, "pos": pos}}
+            "details": {"from_li": found["li"], "li": li, "pos": pos,
+                        "panels_events_cleared": removed}}
 
 
 def _t_drop_chassis(db, doc, p, ctx):
@@ -388,6 +505,11 @@ def _t_drop_chassis(db, doc, p, ctx):
     if isinstance(assembly, dict) and assembly.get("job") is not None and linked_job \
             and str(assembly["job"]) != linked_job:
         _bad(409, f"Chassis {vin} belongs to job {linked_job} — same-job merges only.")
+    # P2 chokepoint — the chassis physically arrives at the line's bay. assign_assembly_bay
+    # UPSERTs the cycle's assembly_assigned event (re-drops self-heal) and carries the house
+    # guards: booked-in (open VCL) 422, VIN/customer 409s, one-chassis-per-bay 409.
+    bay = _bay_for_line(db, li)
+    chassis_svc.assign_assembly_bay(db, rec.id, bay.id, _actor(ctx), commit=False)
     card = p.get("card") or {}
     m["chassis"] = {
         "id": vin, "job": linked_job,
@@ -397,7 +519,8 @@ def _t_drop_chassis(db, doc, p, ctx):
     }
     return {"event_type": "drop_chassis", "job_number": linked_job,
             "from_stage": "parking", "to_stage": "pre_merge",
-            "details": {"li": li, "vin": vin}}
+            "details": {"li": li, "vin": vin, "bay_id": bay.id, "bay_code": bay.code,
+                        "chassis_record_id": rec.id}}
 
 
 def _t_chassis_back_to_parking(db, doc, p, ctx):
@@ -408,11 +531,20 @@ def _t_chassis_back_to_parking(db, doc, p, ctx):
         if isinstance(ch, dict) and str(ch.get("id")) == vin:
             if m.get("assembly"):
                 _bad(409, "Pull the body back to the track before returning the chassis to Parking.")
+            # P2 chokepoint — the reverse of assign_assembly_bay: deletes the cycle's
+            # assembly_assigned event, status back to 'in_workshop', production_jobs_audit
+            # row when a job is linked (the re-prioritisation trail).
+            rec = _chassis_by_vin(db, vin)
+            if rec is None:
+                _bad(404, f"No chassis with VIN {vin}.")
+            chassis_svc.return_chassis_to_parking(
+                db, rec.id, ctx.get("user"),
+                reason="Returned to Parking from the floor merge block", commit=False)
             m["chassis"] = None
             return {"event_type": "chassis_back_to_parking",
                     "job_number": str(ch.get("job")) if ch.get("job") else None,
                     "from_stage": "pre_merge", "to_stage": "parking",
-                    "details": {"li": li, "vin": vin}}
+                    "details": {"li": li, "vin": vin, "chassis_record_id": rec.id}}
     _bad(409, f"Chassis {vin} is not staged in any merge block — the floor has moved on. Refreshed.")
 
 
@@ -426,17 +558,32 @@ def _t_confirm_merge(db, doc, p, ctx):
         _bad(409, f"Bay {li + 1} needs both a body and a chassis staged before Confirm merge.")
     job = str(assembly.get("job"))
     matched = chassis.get("job") is not None and str(chassis["job"]) == job
+    vin = str(chassis.get("id"))
+    # P2 chokepoint — THE REAL MERGE: record_body_attached writes the lifecycle event, links
+    # job.chassis_record_id, and enforces the VIN-attestation lock (a planner-attested VIN on
+    # the Pre-Job Card refuses a different chassis — the floor gets that protection for free).
+    # Cutover tolerance: if the DB already says attached for this SAME pair (pre-P2 lane),
+    # no-op with a note instead of the 409 — the floor converges on the existing truth.
+    rec = _chassis_by_vin(db, vin)
+    if rec is None:
+        _bad(409, f"No chassis record for VIN {vin} — the merge can't be written to the DB.")
+    pj = _require_job(db, job)
+    details = {"li": li, "vin": vin, "matched": matched, "chassis_record_id": rec.id}
+    cycle = chassis_svc._latest_cycle(db, rec.id)
+    if chassis_svc._has_event(db, rec.id, "body_attached", cycle) \
+            and pj.chassis_record_id in (None, rec.id):
+        details["already_attached"] = True
+    else:
+        chassis_svc.record_body_attached(db, rec.id, pj.id, _actor(ctx), commit=False)
     m["attached"] = {"body": assembly, "chassis": chassis, "matched": matched}
     m["assembly"] = None
     m["chassis"] = None
     if job not in {str(x) for x in doc["mergedJobs"]}:
         doc["mergedJobs"].append(job)
-    vin = str(chassis.get("id"))
     if vin not in {str(x) for x in doc["mergedChassis"]}:
         doc["mergedChassis"].append(vin)
     return {"event_type": "confirm_merge", "job_number": job,
-            "from_stage": "pre_merge", "to_stage": "merged",
-            "details": {"li": li, "vin": vin, "matched": matched}}
+            "from_stage": "pre_merge", "to_stage": "merged", "details": details}
 
 
 def _t_dispatch(db, doc, p, ctx):
@@ -449,17 +596,30 @@ def _t_dispatch(db, doc, p, ctx):
         _bad(409, f"Bay {li + 1} has no merge-complete unit to dispatch.")
     body = att.get("body") or {}
     chassis = att.get("chassis") or {}
+    vin = str(chassis.get("id") or "")
+    # P2 chokepoint — the Awaiting-QA handoff: status → 'awaiting_qa' clears the bay across
+    # every derivation and lands the unit in Kenny's QC inbox natively. Cutover tolerance:
+    # already-awaiting chassis (pre-P2 lane) no-op with a note.
+    if not vin or vin == "—":
+        _bad(409, "The merged unit has no chassis VIN — it can't be dispatched to QC.")
+    rec = _chassis_by_vin(db, vin)
+    if rec is None:
+        _bad(409, f"No chassis record for VIN {vin} — the dispatch can't be written to the DB.")
+    details = {"li": li, "vin": vin, "chassis_record_id": rec.id}
+    if rec.status == "awaiting_qa":
+        details["already_awaiting_qa"] = True
+    else:
+        chassis_svc.record_moved_to_awaiting_qa(db, rec.id, _actor(ctx), commit=False)
     entry = {
         "id": body.get("id"), "job": body.get("job"), "cust": body.get("cust"),
         "len": body.get("len"), "type": body.get("type"),
-        "vin": chassis.get("id") or "—", "matched": bool(att.get("matched")),
+        "vin": vin, "matched": bool(att.get("matched")),
         "enteredAt": _now_iso(),
     }
     doc["qc"].insert(0, entry)
     m["attached"] = None
     return {"event_type": "dispatch", "job_number": str(body.get("job")),
-            "from_stage": "merged", "to_stage": "qc",
-            "details": {"li": li, "vin": entry["vin"]}}
+            "from_stage": "merged", "to_stage": "qc", "details": details}
 
 
 _TRANSITIONS: dict[str, Callable] = {
@@ -519,7 +679,7 @@ def apply_transition(db: Session, *, ttype: str, payload: dict, user) -> dict:
     doc = _load_doc(row)
     housekeeping: list[dict] = []
     _prune_cut(db, doc, housekeeping)
-    draft = fn(db, doc, payload, {})
+    draft = fn(db, doc, payload, {"user": user})   # P2: chokepoints need the actor
     new_version = int(row.version or 0) + 1
     row.state = json.dumps(doc)
     row.version = new_version

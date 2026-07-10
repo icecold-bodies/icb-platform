@@ -630,13 +630,15 @@ def _current_assembly_bay_id(db: Session, record_id: int):
 
 
 def assign_assembly_bay(db: Session, record_id: int, bay_id: int, who: str,
-                        event_date=None, notes=None) -> ChassisLifecycleEvent:
+                        event_date=None, notes=None, commit: bool = True) -> ChassisLifecycleEvent:
     """WO v4.31 §0.4/§0.12 — attribute a booked-in chassis to an assembly bay (parking -> assembly).
 
     UPSERTs the single 'assembly_assigned' event for the chassis's open cycle (the destination bay lives
     on the EVENT — the single source of truth) and moves chassis_records.status to 'in_assembly'. No
     denormalised bay column (§0.12). One chassis per bay (occupancy guard, BA lock 2026-06-10);
     re-assigning moves the chassis to a different (free) bay.
+    commit=False folds this into a caller-owned transaction (§9 P2 floor transitions — the
+    send_pre_job_card precedent); the default keeps every existing caller byte-identical.
     """
     rec = db.get(ChassisRecord, record_id)
     if rec is None:
@@ -694,7 +696,10 @@ def assign_assembly_bay(db: Session, record_id: int, bay_id: int, who: str,
         evt.notes = notes
     rec.status = "in_assembly"                  # §0.12: denormalise STATE onto status (no bay column)
     rec.updated_by = who
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     db.refresh(evt)
     return evt
 
@@ -909,7 +914,7 @@ def _has_event(db: Session, record_id: int, etype: str, cycle: int) -> bool:
 
 
 def record_body_attached(db: Session, record_id: int, production_job_id: int, who: str,
-                         notes=None) -> ChassisLifecycleEvent:
+                         notes=None, commit: bool = True) -> ChassisLifecycleEvent:
     """WO v4.35 §3.2 — the body_attached chokepoint (DEV-2 PHASE-only: logs the event, chassis_records
     .status stays 'in_assembly'). Pre-conditions (§0.4): the chassis has a prior assembly_assigned event
     (it's on a bay), and the linked production_job is 'in_production' (actor permission is gated at the
@@ -957,12 +962,16 @@ def record_body_attached(db: Session, record_id: int, production_job_id: int, wh
     if job.chassis_record_id is None:
         job.chassis_record_id = record_id            # complete the body↔chassis link (the merge)
     rec.updated_by = who                             # touch only; status stays 'in_assembly' (DEV-2)
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()                                   # §9 P2 — the floor transaction owns the commit
     db.refresh(evt)
     return evt
 
 
-def record_moved_to_awaiting_qa(db: Session, record_id: int, who: str, notes=None) -> ChassisLifecycleEvent:
+def record_moved_to_awaiting_qa(db: Session, record_id: int, who: str, notes=None,
+                                commit: bool = True) -> ChassisLifecycleEvent:
     """WO v4.36a.1 §0.5 — the Awaiting-QA handoff chokepoint. A body-attached chassis is moved off its
     assembly bay into the QA queue: this logs a 'moved_to_awaiting_qa' event AND promotes the chassis
     status to 'awaiting_qa' ATOMICALLY (one txn). Unlike body_attached (a phase-only EVENT that keeps
@@ -999,7 +1008,10 @@ def record_moved_to_awaiting_qa(db: Session, record_id: int, who: str, notes=Non
     db.add(evt)
     rec.status = "awaiting_qa"                        # PHASE TRANSITION — left assembly → clears the bay
     rec.updated_by = who
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()                                    # §9 P2 — the floor transaction owns the commit
     db.refresh(evt)
     return evt
 
@@ -1019,7 +1031,8 @@ def list_awaiting_qa(db: Session) -> list[dict]:
             for cid, vin, make, model, cust, jn in rows]
 
 
-def return_chassis_to_parking(db: Session, record_id: int, user, reason=None) -> dict:
+def return_chassis_to_parking(db: Session, record_id: int, user, reason=None,
+                              commit: bool = True) -> dict:
     """WO v4.36a.2 — the REVERSE of assign_assembly_bay: move a chassis OFF its assembly bay back to the
     parking pool (status 'in_assembly' → 'in_workshop'), so a more urgent job can take the bay. Allowed
     ONLY before a merge — i.e. no 'body_attached' event this cycle (after a merge the only exit is forward,
@@ -1065,12 +1078,16 @@ def return_chassis_to_parking(db: Session, record_id: int, user, reason=None) ->
             production_job_id=job.id, action="chassis_returned_to_parking",
             previous_status="in_assembly", new_status="in_workshop", previous_bay=bay_code,
             user_id=getattr(user, "id", None), user_name=who, reason=clean_reason))
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()                                               # §9 P2 — caller-owned transaction
     return {"chassis_id": record_id, "bay_code": bay_code, "reverted": True}
 
 
 def record_panels_arrived_in_bay(db: Session, production_job_id: int, bay_id: int, *,
-                                 user_id=None, notes=None, event_type: str = "panels_arrived_in_bay"):
+                                 user_id=None, notes=None, event_type: str = "panels_arrived_in_bay",
+                                 commit: bool = True):
     """WO v4.35 §3.3b — the panels-arrived chokepoint (the JOB-side of the merge; mirrors
     record_body_attached). Writes to production_job_bay_events (NOT chassis_lifecycle_events). Validation:
     (1) event_type allowlisted; (2) job + active bay exist; (3) a job's panels live in exactly ONE bay —
@@ -1121,12 +1138,15 @@ def record_panels_arrived_in_bay(db: Session, production_job_id: int, bay_id: in
     evt = ProductionJobBayEvent(production_job_id=production_job_id, bay_id=bay_id,
                                 event_type=event_type, user_id=user_id, notes=notes)
     db.add(evt)
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()                                   # §9 P2 — the floor transaction owns the commit
     db.refresh(evt)
     return evt
 
 
-def clear_panels_arrived(db: Session, production_job_id: int) -> dict:
+def clear_panels_arrived(db: Session, production_job_id: int, commit: bool = True) -> dict:
     """WO v4.35 §3.3b — the move-panels-back undo: remove a job's panels_arrived_in_bay event(s) so a
     wrong-bay drop can be corrected without a full reseed (the one-bay-per-job rule otherwise strands the
     panels). Idempotent — returns the count removed (0 if the job had none). 404 if the job is unknown.
@@ -1157,7 +1177,10 @@ def clear_panels_arrived(db: Session, production_job_id: int) -> dict:
         if _b is not None:
             _b.build_stage = None
             _b.build_progress_pct = 0
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()                                   # §9 P2 — the floor transaction owns the commit
     return {"production_job_id": production_job_id, "removed": int(removed or 0)}
 
 

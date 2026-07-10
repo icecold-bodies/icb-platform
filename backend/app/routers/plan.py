@@ -51,15 +51,38 @@ class FloorTransitionIn(BaseModel):
     type: str
 
 
+# §9 P2 — per-transition permission gates (admin passes everything via the user_can
+# wildcard). Cut declarations are planning work; physical floor moves that write chassis /
+# bay events are assembly work; a cosmetic track shuffle stays open to any signed-in user.
+_TRANSITION_PERMS = {
+    "declare_cut": "planning.schedule",
+    "undo_cut": "planning.schedule",
+    "start_body": "chassis.assembly_assign",
+    "body_back_to_panels": "chassis.assembly_assign",
+    "drop_assembly": "chassis.assembly_assign",
+    "assembly_back_to_track": "chassis.assembly_assign",
+    "drop_chassis": "chassis.assembly_assign",
+    "chassis_back_to_parking": "chassis.assembly_assign",
+    "confirm_merge": "chassis.assembly_assign",
+    "dispatch": "chassis.assembly_assign",
+    # move_body: doc-only cosmetic — require_user suffices
+}
+
+
 @router.post("/floor-transitions")
 def floor_transition(payload: FloorTransitionIn, db: Session = Depends(get_db),
                      user: User = Depends(require_user)):
     """Apply ONE floor transition server-side: lock → validate (engine-guard ports +
-    entity-level staleness) → mutate the doc → version++ → journal a floor_event → commit.
-    409/422 roll everything back — the doc is never half-applied."""
+    entity-level staleness) → mutate the doc → version++ → journal a floor_event →
+    P2: drive the domain chokepoints in the same transaction → commit.
+    409/422 roll everything back — doc and DB are never half-applied."""
     from ..services import floor as floor_svc
     body = payload.model_dump()
     ttype = body.pop("type")
+    perm = _TRANSITION_PERMS.get(ttype)
+    if perm and not user_can(user, perm, db):
+        raise HTTPException(status_code=403,
+                            detail=f"Permission denied: {perm} is required to {ttype.replace('_', ' ')}.")
     return floor_svc.apply_transition(db, ttype=ttype, payload=body, user=user)
 
 

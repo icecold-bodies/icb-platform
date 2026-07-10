@@ -34,11 +34,21 @@ The DOC SHAPE IS UNCHANGED byte-for-byte: every reader (plan_status labels, draw
 planning occupancy/pool) is untouched in P1 — near-zero blast radius.
 
 ## Next phases
-P2 (v1.41.1): the domain chokepoints join the SAME transaction via commit=False threading
-(record_body_attached on confirm-merge, record_moved_to_awaiting_qa on dispatch,
-record_panels_arrived_in_bay/assign_assembly_bay/clear/return on the bay legs); bay lane N
-maps to the Nth active assembly_bays row by sort_order; declare-cut realizes
-planning_slots.status='completed'; one admin floor-reset at cutover aligns worlds.
+P2 (SHIPPED v1.41.x — as built): the domain chokepoints join the SAME transaction via
+commit=False threading (record_body_attached on confirm-merge — THE merge, links
+job.chassis_record_id + VIN-attestation guard; record_moved_to_awaiting_qa on dispatch —
+Kenny's QC inbox feeds natively; assign/return on the chassis legs). Bay lane N maps to
+the Nth active assembly_bays row by sort_order. Declare-cut realizes
+planning_slots.status='completed' (unschedule 409s until undo-cut; the prune anchor set
+includes completed slots). AS-BUILT DEVIATION from this sketch:
+record_panels_arrived_in_bay fires on **drop_assembly** (the 1:1 merge block), NOT
+start_body — a line's track holds many bodies while the DB bay model is one job's panels
+per bay (busy-bay 409), and compute_bay_merge_readiness's 'ready_to_merge' is exactly the
+merge-block shape. start_body/move_body stay doc-only (journaled). Cutover tolerances:
+DB-already-true facts (same-bay panels event, same-pair body_attached, already
+awaiting_qa) no-op with a journal note; contradictions stay loud. Per-transition perms:
+declare/undo_cut = planning.schedule, physical moves = chassis.assembly_assign, move_body
+= require_user. One admin floor-reset at cutover aligns worlds.
 P3 sketch: readers move off doc-parsing onto floor_events/chokepoint queries; the QC zone
 derives from awaiting_qa records (fixing the unbounded doc list); the doc slims to layout.
 

@@ -19,6 +19,7 @@ export function FlagBadge({ flag, domain, entityId }: {
   const cls = SEV_STYLE[flag.severity] ?? 'bg-surface-alt text-muted'
   const ageTxt = flag.age_days != null ? `${flag.age_days}d` : ''
   const title = `${flag.label}`
+    + (flag.detail ? ` · ${flag.detail}` : '')
     + (flag.age_days != null ? ` · ${flag.age_days} day${flag.age_days === 1 ? '' : 's'}` : '')
     + ` — ${flag.remediation}`
   const pill = (

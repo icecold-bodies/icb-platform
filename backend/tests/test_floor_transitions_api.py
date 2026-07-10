@@ -495,8 +495,13 @@ def test_merge_and_dispatch_cutover_tolerance(api, fresh_planning_job, booked_in
         db.add(ChassisLifecycleEvent(chassis_record_id=rec_id, cycle_number=1,
                                      event_type="body_attached",
                                      event_date=date.today(), created_by="t"))
-        # craft the doc: body + chassis staged in li's merge block (pre-P2 shape)
+        # craft the doc: body + chassis staged in li's merge block (pre-P2 shape).
+        # CI's fresh icb_test has no singleton row yet (dev does) — create like _locked_row;
+        # floor_doc_guard captured created-ness and deletes it on teardown.
         row = db.get(PlanFloorState, 1)
+        if row is None:
+            row = PlanFloorState(id=1, state="{}", version=0)
+            db.add(row)
         doc = json.loads(row.state or "{}")
         if not isinstance(doc.get("pre"), list) or len(doc["pre"]) != 5:
             doc["pre"] = [{"id": f"Bay {n}", "bodies": [],

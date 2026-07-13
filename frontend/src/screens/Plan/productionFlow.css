@@ -257,8 +257,11 @@
 .a06-flow .chute-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:13px;letter-spacing:.01em}
 .a06-flow .chute-empty::before{content:"◇";margin-right:8px;font-size:14px;opacity:.6}
 
-/* Card — 150×108, absolute, animated left (mockup .card) */
-.a06-flow .pa-card{position:absolute;top:10px;width:150px;height:108px;background:#fff;border:1px solid #CBD5E1;border-left:3px solid #059669;border-radius:6px;box-shadow:0 2px 4px rgba(15,23,42,.06);padding:8px 10px 6px;display:flex;flex-direction:column;gap:4px;z-index:2;cursor:grab;transition:left 800ms ease-in-out}
+/* Card — 150×108, absolute, animated left (mockup .card). transform:none is load-bearing:
+   the card keeps the legacy .body-wrap class for the drag pipeline, and that base rule's
+   top:50% + translateY(-50%) (which centred the old 42px body images) would shift a 108px
+   card 44px above the lane and clip the job number. */
+.a06-flow .pa-card{position:absolute;top:10px;transform:none;width:150px;height:108px;background:#fff;border:1px solid #CBD5E1;border-left:3px solid #059669;border-radius:6px;box-shadow:0 2px 4px rgba(15,23,42,.06);padding:8px 10px 6px;display:flex;flex-direction:column;gap:4px;z-index:2;cursor:grab;transition:left 800ms ease-in-out}
 .a06-flow .pa-card:active{cursor:grabbing}
 .a06-flow .pa-card .job-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
 .a06-flow .pa-card .job-num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}

@@ -333,7 +333,7 @@ def test_job_card_stage_clock_matrix(api, fresh_planning_job):
         assert 1.9 < c["elapsed_hours"] < 2.5          # stamped 2h ago (range: CI slowness)
 
         b = clock(body_j)
-        assert b["stage"] == "pre_assembly" and b["threshold_hours"] == 40.0
+        assert b["stage"] == "pre_assembly" and b["threshold_hours"] == 2.0   # 0038 — A11 ratified 2h
         assert b["elapsed_hours"] is not None
 
         m = clock(merge_j)

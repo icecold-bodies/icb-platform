@@ -36,6 +36,8 @@ interface FlowApi {
   loadState: (json: string | null) => boolean
   getState: () => string
   isBusy: () => boolean                 // v1.41.0 — a transition POST is in flight
+  // A11 chute — pre_assembly threshold (hours) + server clock anchor, from /floor-state.
+  setChuteConfig: (cfg: { thresholdHours?: number | null; serverNow?: string | null }) => void
   plannerSlot: HTMLElement | null
 }
 
@@ -210,8 +212,16 @@ export function PlanCombined() {
     const pull = async (initial: boolean) => {
       if (!initial && api.isBusy()) return   // v1.41.0 — never reload over an in-flight transition
       try {
-        const r = await apiGet<{ state: string | null; updated_at: string | null }>('/api/plan/floor-state')
+        const r = await apiGet<{
+          state: string | null; updated_at: string | null
+          server_now?: string | null
+          thresholds?: { pre_assembly?: { hours: number } | null } | null
+        }>('/api/plan/floor-state')
         if (dead) return
+        // A11 chute — refresh the threshold + server-clock anchor on every poll (an admin
+        // threshold tune propagates within 8s; card positions stay skew-proof).
+        api.setChuteConfig({ thresholdHours: r.thresholds?.pre_assembly?.hours ?? null,
+                             serverNow: r.server_now ?? null })
         if (initial || (r.updated_at && r.updated_at !== stampRef.current)) {
           if (api.loadState(r.state)) stampRef.current = r.updated_at
         }

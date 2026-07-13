@@ -28,6 +28,8 @@ const SHELL = `
 
   <div class="zone">
     <div class="zhead"><span class="zt">Pre-Assembly → Merge</span><span class="zc">body builds along the track; the planner brings it &amp; its chassis into the Merge block</span><span class="zr">drag the ready assembly into Merge, then its chassis ↓</span></div>
+    <!-- A11 chute — aggregate andon across all 5 bays (on-track / approaching / ready / hold / breach) -->
+    <div class="andon" id="paAndon"></div>
     <div id="preRows"></div>
   </div>
 
@@ -158,6 +160,13 @@ export function initProductionFlow(root, opts) {
   // v1.40.8 — stage-clock stamps: when each cut was DECLARED (job -> ISO). Rides the
   // persisted doc; the drawer's Panels-Ready clock reads it server-side.
   let cutAt = {};
+  // ── A11 chute (Simeon-ratified v0.2) — per-card work clocks ────────────────
+  // Cards auto-advance by (now - enteredAt) / threshold. Threshold + server clock
+  // anchor arrive via setChuteConfig from every floor-state poll (skew-proof: positions
+  // use SERVER time). Defaults keep mock/offline mode sane at the ratified 2h.
+  let chuteThresholdS = 2 * 3600;
+  let chuteSkewMs = 0;
+  let zTop = 0;   // forward-drag = bring-to-front only (visual disambiguation, never persisted)
 
   // ── Phase 2 — persisted floor state ────────────────────────────────────────
   // Every floor MUTATION marks the state dirty; renderAll then hands a JSON
@@ -299,15 +308,60 @@ export function initProductionFlow(root, opts) {
   }
 
   function occPos(bodies) { const o = [false, false, false, false]; bodies.forEach(x => { const a = x.pos, b = x.pos + x.len; for (let p = 0; p < NPOS; p++) { if (a < (p + 1) * 10 && b > p * 10) o[p] = true; } }); return o; }
+
+  // ── A11 chute math — elapsed / stage band per card ──────────────────────────
+  // Hold freezes the DISPLAY clock at heldElapsedS (server snapshots it; resume re-bases
+  // enteredAt). Unparseable/missing stamps read as elapsed 0 — never invent time (the
+  // v1.41.1 honesty rule's client cousin).
+  function bodyElapsedS(x, nowMs) {
+    if (x.held) return Math.max(0, +x.heldElapsedS || 0);
+    const t = Date.parse(x.enteredAt || '');
+    if (!isFinite(t)) return 0;
+    return Math.max(0, (nowMs + chuteSkewMs - t) / 1000);
+  }
+  function chuteFrac(x, nowMs) { return chuteThresholdS > 0 ? bodyElapsedS(x, nowMs) / chuteThresholdS : 0; }
+  // Colour ramp (mockup legend): 0-50 green · 50-80 warm · 80-100 hot · 100+ ready(pulse) ·
+  // 150%+ breach (Health Check already alerts; the chute just paints it red).
+  function chuteStage(frac, held) {
+    if (held) return 'hold';
+    if (frac >= 1.5) return 'breach';
+    if (frac >= 1) return 'ready';
+    if (frac >= 0.8) return 'hot';
+    if (frac >= 0.5) return 'warm';
+    return 'green';
+  }
+  function fmtHM(s) {
+    const m = Math.max(0, Math.round(s / 60));
+    if (m < 1) return '<1m';
+    const h = Math.floor(m / 60), mm = m % 60;
+    return h ? h + 'h ' + String(mm).padStart(2, '0') + 'm' : mm + 'm';
+  }
+  function typePill(t) {
+    const s = String(t || '').toLowerCase();
+    if (s.indexOf('chill') >= 0) return { l: 'Chiller', c: 'chiller' };
+    if (s.indexOf('freez') >= 0) return { l: 'Freezer', c: 'freezer' };
+    if (s.indexOf('dry') >= 0) return { l: 'Dry F.', c: 'dryfreight' };
+    if (s.indexOf('insul') >= 0) return { l: 'Insulated', c: 'insulated' };
+    if (s.indexOf('repair') >= 0) return { l: 'Repair', c: 'repair' };
+    return null;
+  }
+
   function bayState(b) {
-    const occ = occPos(b.bodies); const delay = b.bodies.some(x => x.status === 'amber' || x.status === 'red');
+    const nowMs = Date.now();
+    const cards = b.bodies.map(x => ({ f: chuteFrac(x, nowMs), held: !!x.held }));
+    const held = cards.filter(c => c.held).length;
+    const ready = cards.some(c => !c.held && c.f >= 1);
+    const warm = cards.some(c => !c.held && c.f >= 0.5 && c.f < 1);
+    const holdSuffix = held ? ' (' + held + ' hold)' : '';
     let key, lbl, col;
     if (b.merge.attached) { key = 'done'; lbl = 'Merge complete'; col = '#0F9D7A'; }
     else if (b.merge.assembly) { key = 'busy'; lbl = 'Busy with merge'; col = '#2563EB'; }
     else if (!b.bodies.length) { key = 'avail'; lbl = 'Available'; col = '#94A3B8'; }
-    else if (delay) { key = 'attn'; lbl = 'Attention'; col = STATUS.amber.edge; }
-    else { key = 'flow'; lbl = 'Building'; col = STATUS.green.edge; }
-    return { occ, key, lbl, col };
+    else if (ready) { key = 'ready'; lbl = 'Ready' + holdSuffix; col = '#0F9D7A'; }
+    else if (warm) { key = 'attn'; lbl = 'Approaching' + holdSuffix; col = STATUS.amber.edge; }
+    else if (held && held === b.bodies.length) { key = 'hold'; lbl = 'On hold'; col = '#94A3B8'; }
+    else { key = 'flow'; lbl = 'Building' + holdSuffix; col = STATUS.green.edge; }
+    return { key, lbl, col, count: b.bodies.length };
   }
   function findFreePos(others, len, desired) {
     const max = CHUTE - len; desired = Math.max(0, Math.min(max, desired));
@@ -317,7 +371,9 @@ export function initProductionFlow(root, opts) {
     let best = null, bd = 1e9; for (const g of gaps) { const p = Math.max(g[0], Math.min(g[1], desired)); const d = Math.abs(p - desired); if (d < bd) { bd = d; best = p; } } return best;
   }
   function applyStageFill(b) { if (b.status === 'green') { b.prog = Math.max(0, Math.min(1, b.pos / (CHUTE - b.len))); } }
-  function readyBody(b) { return b.bodies.find(x => x.prog >= .95); }
+  // A11 — "ready" is now TIME-based (elapsed >= threshold), not track-position; a held card's
+  // frozen clock counts too. Feeds the merge block's existing "ready ✓" hint unchanged.
+  function readyBody(b) { const nowMs = Date.now(); return b.bodies.find(x => chuteFrac(x, nowMs) >= 1); }
   function vinTag(v) { return v && v !== '—' ? 'DEMV…' + String(v).slice(-3) : 'awaiting'; }
   function findBodyLoc(id) { for (let ci = 0; ci < D.PRE.length; ci++) { const bi = D.PRE[ci].bodies.findIndex(b => b.id === id); if (bi >= 0) return { ci, bi, body: D.PRE[ci].bodies[bi] }; } return null; }
   function findAssembly(id) { const l = findBodyLoc(id); if (l) return { loc: 'track', ci: l.ci, body: l.body }; for (let li = 0; li < D.PRE.length; li++) { const a = D.PRE[li].merge.assembly; if (a && a.id === id) return { loc: 'merge', li, body: a }; } return null; }
@@ -338,18 +394,34 @@ export function initProductionFlow(root, opts) {
   }
 
   function paLane(b, ci) {
-    const st = bayState(b), padL = 12;
-    let guides = ''; for (let i = 0; i < NPOS; i++) { const mx = padL + (CHUTE * (i / NPOS)) * PX; guides += `<div class="guide" style="left:${mx}px"></div><div class="glab" style="left:${mx}px">${POS[i]}</div>`; }
+    // A11 chute — the LANE half is time-driven (cards positioned by elapsed/threshold,
+    // 150px cards, chevron belt). The .m-block half below is UNTOUCHED (Michael's boundary).
+    const st = bayState(b), nowMs = Date.now(), CARD_W = 150;
     let els = '';
     b.bodies.forEach(x => {
-      const left = padL + x.pos * PX - TPAD;
-      els += `<div class="btag" style="left:${padL + x.pos * PX}px;top:5px"><span class="bj">J${x.job}</span> <span class="bch">⛓ ${x.chassisVin && x.chassisVin !== '—' ? x.chassisVin : 'awaiting'}</span></div>`;
-      els += `<div class="body-wrap" data-id="${x.id}" data-kind="body" style="left:${left}px">${renderTrailer({ lengthM: x.len, status: x.status, progress: x.prog, pxPerM: PX, bodyH: BODYH })}</div>`;
-      if (x.prog >= .95) { const t = (LANEH - (BODYH + 6)) / 2; els += `<div class="ready-ring" style="left:${padL + x.pos * PX - 3}px;top:${t}px;width:${x.len * PX + 6}px;height:${BODYH + 6}px"></div>`; }
+      const rawF = chuteFrac(x, nowMs), p = Math.max(0, Math.min(rawF, 1));
+      const stage = chuteStage(rawF, !!x.held);
+      const pill = typePill(x.type);
+      const elapsedS = bodyElapsedS(x, nowMs);
+      const remS = Math.max(0, chuteThresholdS - elapsedS);
+      let foot;
+      if (x.held) foot = `<span class="cd">${fmtHM(remS)}</span><span class="csub">paused · ${fmtHM(elapsedS)} done</span>`;
+      else if (rawF >= 1) foot = `<span class="ready-tick">✓ Ready</span><span class="csub">awaiting merge</span>`;
+      else foot = `<span class="cd">${fmtHM(remS)}</span><span class="csub">to ready</span>`;
+      els += `<div class="body-wrap pa-card stage-${stage}" data-id="${x.id}" data-kind="body"
+        title="J${x.job} · ${x.cust || ''} · right-click to ${x.held ? 'resume' : 'hold'}"
+        style="left:calc(8px + ${p.toFixed(4)} * (100% - ${CARD_W + 16}px))">
+        ${x.held ? '<div class="hold-badge">⏸ Hold</div>' : ''}
+        <div class="job-row"><span class="job-num">J${x.job}</span>${pill ? `<span class="tpill ${pill.c}">${pill.l}</span>` : ''}</div>
+        <div class="ccust">${x.cust || '—'}</div>
+        <div class="body-viz"></div>
+        <div class="cfoot">${foot}</div>
+        <div class="pbar"><span style="width:${(p * 100).toFixed(1)}%"></span></div>
+      </div>`;
     });
-    const empty = b.bodies.length || b.merge.attached || b.merge.assembly ? '' : `<div class="empty-note"><span class="o"></span>Available — drop a panel-set to start</div>`;
+    const empty = b.bodies.length || b.merge.attached || b.merge.assembly ? '' : `<div class="chute-empty">Available — drop a panel-set to start</div>`;
     const dotStyle = st.key === 'avail' ? `background:transparent;border:1.5px dashed ${st.col}` : `background:${st.col}`;
-    const dots = st.occ.map(o => `<span class="pdot ${o ? 'on' : ''}"></span>`).join('');
+    const slots = [0, 1, 2, 3].map(i => `<span class="slot-dot ${i < Math.min(st.count, 4) ? 'filled' : ''}"></span>`).join('');
     const m = b.merge; let cls = '', mc;
     if (m.attached) {
       cls = 'done'; const a = m.attached; const vin = (a.chassis && a.chassis.id) ? a.chassis.id : '—';
@@ -373,12 +445,26 @@ export function initProductionFlow(root, opts) {
       mc = `<div class="mt">Merge</div><div class="msub">body meets<br>chassis here</div>`;
     }
     return `<div class="pa-rail"><div class="bid">${b.id}</div>
-      <div class="st" style="color:${st.col}"><span class="d" style="${dotStyle}"></span>${st.lbl}</div>
-      <div class="dots">${dots}</div></div>
-    <div class="pa-lane" data-bi="${ci}" style="height:${LANEH}px;border-left-color:${st.key === 'attn' ? STATUS.amber.edge : 'transparent'}">${guides}${empty}${els}</div>
+      <div class="st" style="color:${st.col}"><span class="d ${st.key === 'ready' ? 'd-pulse' : ''}" style="${dotStyle}"></span>${st.lbl}</div>
+      <div class="slots">${slots}</div></div>
+    <div class="pa-lane chute" data-bi="${ci}">${empty}${els}</div>
     <div class="m-block ${cls}" data-merge="${ci}">${mc}</div>`;
   }
-  function renderPre() { $('#preRows').innerHTML = D.PRE.map((b, i) => `<div class="pa-row">${paLane(b, i)}</div>`).join(''); }
+  // A11 — aggregate andon across all 5 bays (mockup: lights + counts; breach only when present).
+  function renderAndon() {
+    const el = $('#paAndon'); if (!el) return;
+    const nowMs = Date.now();
+    let ok = 0, app = 0, ready = 0, hold = 0, breach = 0;
+    D.PRE.forEach(b => (b.bodies || []).forEach(x => {
+      if (x.held) { hold++; return; }
+      const f = chuteFrac(x, nowMs);
+      if (f >= 1.5) breach++; else if (f >= 1) ready++; else if (f >= 0.5) app++; else ok++;
+    }));
+    el.innerHTML = `<span class="alabel">Pre-Assembly · Andon</span>
+      <span class="alights"><span class="alight ${(ok + ready) ? 'on-green' : ''}"></span><span class="alight ${app ? 'on-amber' : ''}"></span><span class="alight ${breach ? 'on-red' : ''}"></span></span>
+      <span class="atext"><b>${ok}</b> on track · <b>${app}</b> approaching · <b>${ready}</b> ready · <b>${hold}</b> hold${breach ? ` · <b>${breach}</b> breach` : ''}</span>`;
+  }
+  function renderPre() { $('#preRows').innerHTML = D.PRE.map((b, i) => `<div class="pa-row">${paLane(b, i)}</div>`).join(''); renderAndon(); }
 
   function renderPark() {
     const el = $('#parking');
@@ -502,6 +588,10 @@ export function initProductionFlow(root, opts) {
   /* ===== drag ===== */
   let drag = null;
   function onPointerDown(e) {
+    // A11 — right-click is the hold/resume gesture (onContext); only the PRIMARY button may
+    // arm the drag/click pipeline, else button-2's pointerup reads as a click and opens the
+    // drawer over the floor (the scrim then eats the next drag).
+    if (e.button !== 0) return;
     const el = e.target.closest('.pcard,.body-wrap,.ccard,.mbody,.cpull'); if (!el) return;
     if (el.classList.contains('pcard') && el.dataset.ready === '0') return;
     drag = { id: el.dataset.id, kind: el.dataset.kind, el, fromPark: el.classList.contains('ccard'), sx: e.clientX, sy: e.clientY, moved: false, ghost: null };
@@ -585,12 +675,37 @@ export function initProductionFlow(root, opts) {
           () => startBody(d.id, tgt.li));
       }
       else if (d.kind === 'body' && tgt.t === 'pa') {
-        const lr = tgt.el.getBoundingClientRect(); const desired = ((e.clientX - d.gdx) - lr.left - 12 + TPAD) / PX;
         const a = findAssembly(d.id);
-        if (a && a.loc === 'merge') commit('assembly_back_to_track', { id: String(d.id), li: tgt.li, desired },
-          () => assemblyBackToTrack(d.id, tgt.li, desired));
-        else commit('move_body', { id: String(d.id), li: tgt.li, desired },
-          () => moveBody(d.id, tgt.li, desired));
+        if (a && a.loc === 'merge') {
+          commit('assembly_back_to_track', { id: String(d.id), li: tgt.li, desired: 0 },
+            () => assemblyBackToTrack(d.id, tgt.li, 0));
+        } else {
+          // A11 chute semantics: cross-bay = move (clock rides along, enteredAt untouched);
+          // same-bay drag BACK = reset_timer to the drop fraction ("needs more time");
+          // same-bay drag FORWARD = bring-to-front only (visual disambiguation, ratified #5).
+          const loc = findBodyLoc(d.id);
+          const lr = tgt.el.getBoundingClientRect();
+          const usable = Math.max(1, lr.width - 166);
+          const fx = Math.max(0, Math.min(1, ((e.clientX - d.gdx) - lr.left - 8) / usable));
+          if (loc && loc.ci !== tgt.li) {
+            commit('move_body', { id: String(d.id), li: tgt.li, desired: 0 },
+              () => moveBody(d.id, tgt.li, 0));
+          } else if (loc) {
+            const cur = Math.min(chuteFrac(loc.body, Date.now()), 1);
+            if (fx < cur - 0.01) {
+              commit('reset_timer', { id: String(d.id), fraction: +fx.toFixed(4) }, () => {
+                const b2 = loc.body;
+                b2.enteredAt = new Date(Date.now() - fx * chuteThresholdS * 1000).toISOString();
+                if (b2.held) b2.heldElapsedS = fx * chuteThresholdS;
+                dirty = true; return true;
+              });
+            } else {
+              const esc = (window.CSS && CSS.escape) ? CSS.escape(String(d.id)) : String(d.id);
+              const elc = root.querySelector('.pa-card[data-id="' + esc + '"]');
+              if (elc) elc.style.zIndex = String(50 + (zTop = (zTop + 1) % 40));
+            }
+          }
+        }
       }
       else if (d.kind === 'body' && tgt.t === 'panels') commit('body_back_to_panels', { id: String(d.id) }, () => bodyBackToPanels(d.id));
       else if (d.kind === 'body' && tgt.t === 'merge') commit('drop_assembly', { id: String(d.id), li: tgt.li }, () => dropAssembly(d.id, tgt.li));
@@ -642,6 +757,28 @@ export function initProductionFlow(root, opts) {
   });
   root.addEventListener('pointerdown', onPointerDown);
   root.addEventListener('click', onClick);
+  // A11 chute — right-click a card toggles hold/resume (mockup interaction model).
+  function onContext(e) {
+    const el = e.target.closest('.pa-card'); if (!el) return;
+    e.preventDefault();
+    const id = el.dataset.id;
+    commit('toggle_hold', { id: String(id) }, () => {
+      const loc = findBodyLoc(id); if (!loc) return false;
+      const b2 = loc.body; const now = Date.now();
+      if (b2.held) {
+        b2.enteredAt = new Date(now - (Math.max(0, +b2.heldElapsedS || 0)) * 1000).toISOString();
+        b2.held = false; delete b2.heldAt; delete b2.heldElapsedS;
+      } else {
+        b2.heldElapsedS = bodyElapsedS(b2, now);
+        b2.held = true; b2.heldAt = new Date(now).toISOString();
+      }
+      dirty = true; return true;
+    });
+  }
+  root.addEventListener('contextmenu', onContext);
+  // A11 chute — cards re-position every 15s (elapsed/threshold); paused while a drag or an
+  // in-flight transition holds the floor. 15s ≈ 0.2% of the 2h threshold — sub-2px steps.
+  const chuteTick = window.setInterval(() => { if (!drag && !pending) renderPre(); }, 15000);
 
   /* ===== JOB DETAIL MODAL ===== */
   function findAny(kind, id) {
@@ -780,11 +917,19 @@ export function initProductionFlow(root, opts) {
     cleanup() {
       root.removeEventListener('pointerdown', onPointerDown);
       root.removeEventListener('click', onClick);
+      root.removeEventListener('contextmenu', onContext);   // A11 chute
+      window.clearInterval(chuteTick);                       // A11 chute
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       if (drag && drag.ghost) drag.ghost.remove();
       drag = null;
       root.innerHTML = '';
+    },
+    // A11 chute — threshold + server clock anchor, refreshed on every floor-state poll.
+    setChuteConfig(cfg) {
+      if (cfg && isFinite(+cfg.thresholdHours) && +cfg.thresholdHours > 0) chuteThresholdS = +cfg.thresholdHours * 3600;
+      if (cfg && cfg.serverNow) { const t = Date.parse(cfg.serverNow); if (isFinite(t)) chuteSkewMs = t - Date.now(); }
+      if (!drag && !pending) renderPre();
     },
     setPanels(list) {
       livePanels = Array.isArray(list) ? list : [];

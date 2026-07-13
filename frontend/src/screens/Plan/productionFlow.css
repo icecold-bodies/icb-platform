@@ -247,3 +247,65 @@
   0%, 100% { filter: none; }
   50% { filter: brightness(1.25); }
 }
+
+/* ═══ A11 Pre-Assembly Chute (Simeon-ratified v0.2 mockup, adapted 1:1) ═══════════
+   Health ramp tokens (mockup :root): --ok #059669 / --warm #D97706 / --hot #B45309 /
+   --breach #DC2626; soft tints for the body-viz stripes. Scoped under .a06-flow. */
+.a06-flow .pa-lane.chute{position:relative;background:#F5F7FA;overflow:hidden;min-height:130px;height:130px;border-left:none}
+.a06-flow .pa-lane.chute::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(60deg,rgba(148,163,184,0) 0px,rgba(148,163,184,0) 22px,rgba(148,163,184,.15) 22px,rgba(148,163,184,.15) 26px);background-size:60px 60px;animation:chuteBelt 5s linear infinite;opacity:.7;pointer-events:none}
+@keyframes chuteBelt{0%{background-position:0 0}100%{background-position:60px 0}}
+.a06-flow .chute-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:13px;letter-spacing:.01em}
+.a06-flow .chute-empty::before{content:"◇";margin-right:8px;font-size:14px;opacity:.6}
+
+/* Card — 150×108, absolute, animated left (mockup .card) */
+.a06-flow .pa-card{position:absolute;top:10px;width:150px;height:108px;background:#fff;border:1px solid #CBD5E1;border-left:3px solid #059669;border-radius:6px;box-shadow:0 2px 4px rgba(15,23,42,.06);padding:8px 10px 6px;display:flex;flex-direction:column;gap:4px;z-index:2;cursor:grab;transition:left 800ms ease-in-out}
+.a06-flow .pa-card:active{cursor:grabbing}
+.a06-flow .pa-card .job-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.a06-flow .pa-card .job-num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+.a06-flow .pa-card .tpill{font-size:9px;padding:1px 5px;border-radius:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:700;color:#fff}
+.a06-flow .pa-card .tpill.chiller{background:#0891B2}
+.a06-flow .pa-card .tpill.freezer{background:#1E40AF}
+.a06-flow .pa-card .tpill.dryfreight{background:#64748B}
+.a06-flow .pa-card .tpill.insulated{background:#059669}
+.a06-flow .pa-card .tpill.repair{background:#7C3AED}
+.a06-flow .pa-card .ccust{font-size:10px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a06-flow .pa-card .body-viz{height:22px;margin:2px 0;border-radius:3px;opacity:.85;background:repeating-linear-gradient(90deg,#D1FAE5 0 18px,transparent 18px 20px);transition:background 800ms ease-in-out}
+.a06-flow .pa-card .cfoot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto}
+.a06-flow .pa-card .cd{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:13px;font-weight:700;line-height:1}
+.a06-flow .pa-card .csub{font-size:9px;color:#94A3B8;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.a06-flow .pa-card .pbar{height:4px;border-radius:2px;background:#E2E8F0;overflow:hidden}
+.a06-flow .pa-card .pbar>span{display:block;height:100%;border-radius:2px;background:#059669;transition:width 800ms ease-in-out,background 800ms ease-in-out}
+
+/* Stage modifiers (mockup colour ramp) */
+.a06-flow .pa-card.stage-warm{border-left-color:#D97706}
+.a06-flow .pa-card.stage-warm .pbar>span{background:#D97706}
+.a06-flow .pa-card.stage-warm .body-viz{background:repeating-linear-gradient(90deg,#FEF3C7 0 18px,transparent 18px 20px)}
+.a06-flow .pa-card.stage-hot{border-left-color:#B45309}
+.a06-flow .pa-card.stage-hot .pbar>span{background:#B45309}
+.a06-flow .pa-card.stage-hot .body-viz{background:repeating-linear-gradient(90deg,#FED7AA 0 18px,transparent 18px 20px)}
+.a06-flow .pa-card.stage-breach{border-left-color:#DC2626}
+.a06-flow .pa-card.stage-breach .pbar>span{background:#DC2626}
+.a06-flow .pa-card.stage-breach .body-viz{background:repeating-linear-gradient(90deg,#FEE2E2 0 18px,transparent 18px 20px)}
+.a06-flow .pa-card.stage-ready{border-left-color:#059669;animation:chuteReadyPulse 1.8s ease-in-out infinite}
+@keyframes chuteReadyPulse{0%,100%{box-shadow:0 0 0 2px rgba(5,150,105,.35),0 6px 16px rgba(5,150,105,.35)}50%{box-shadow:0 0 0 4px rgba(5,150,105,.65),0 8px 22px rgba(5,150,105,.55)}}
+.a06-flow .pa-card .ready-tick{display:inline-block;padding:2px 6px;border-radius:3px;background:#059669;color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.a06-flow .pa-card.on-hold,.a06-flow .pa-card.stage-hold{filter:grayscale(.85) opacity(.75);border-left-color:#94A3B8}
+.a06-flow .pa-card .hold-badge{position:absolute;top:6px;right:6px;background:#0F172A;color:#fff;font-size:9px;padding:2px 5px;border-radius:3px;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+
+/* Rail additions — ready-pulse dot + slot dots (mockup .bay-label) */
+.a06-flow .pa-rail .d.d-pulse{animation:chuteDotPulse 1.6s ease-in-out infinite}
+@keyframes chuteDotPulse{0%,100%{opacity:1}50%{opacity:.35}}
+.a06-flow .pa-rail .slots{display:flex;gap:4px;margin-top:6px}
+.a06-flow .pa-rail .slot-dot{width:6px;height:6px;border-radius:50%;background:transparent;border:1px solid #CBD5E1;display:inline-block}
+.a06-flow .pa-rail .slot-dot.filled{background:#0F172A;border-color:#0F172A}
+
+/* Andon strip (mockup .andon) */
+.a06-flow .andon{display:flex;align-items:center;gap:14px;padding:8px 14px;background:#fff;border:1px solid var(--hair);border-radius:10px;margin:0 0 10px}
+.a06-flow .andon .alabel{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#475569;font-weight:700}
+.a06-flow .andon .alights{display:flex;gap:10px;margin-left:auto}
+.a06-flow .andon .alight{width:14px;height:14px;border-radius:50%;background:#E2E8F0;box-shadow:inset 0 -2px 3px rgba(0,0,0,.12)}
+.a06-flow .andon .alight.on-green{background:#059669;box-shadow:0 0 12px rgba(5,150,105,.55),inset 0 -2px 3px rgba(0,0,0,.15)}
+.a06-flow .andon .alight.on-amber{background:#D97706;box-shadow:0 0 12px rgba(217,119,6,.55),inset 0 -2px 3px rgba(0,0,0,.15)}
+.a06-flow .andon .alight.on-red{background:#DC2626;box-shadow:0 0 12px rgba(220,38,38,.55),inset 0 -2px 3px rgba(0,0,0,.15)}
+.a06-flow .andon .atext{font-size:12px;color:#475569;min-width:280px;text-align:right}
+.a06-flow .andon .atext b{font-variant-numeric:tabular-nums;color:#0F172A}

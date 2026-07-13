@@ -55,14 +55,16 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Optional
 
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.mes import FloorEvent, PlanFloorState, PlanningSlot, ProductionJob
+from app.models.mes import (
+    FloorEvent, PlanFloorState, PlanningSlot, ProductionJob, ProductionStageThreshold,
+)
 from app.services import chassis as chassis_svc
 from app.services import planning as planning_svc
 
@@ -108,11 +110,35 @@ def _load_doc(row: Optional[PlanFloorState]) -> dict:
     return out
 
 
-def _now_iso() -> str:
+def _iso_z(dt: datetime) -> str:
     """Millisecond 'Z' format — byte-parity with Date.prototype.toISOString(), which the
     v1.40.8 stamps established and _stage_clock's replace('Z','+00:00') parse expects."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + \
-        f"{datetime.now(timezone.utc).microsecond // 1000:03d}Z"
+    return dt.strftime("%Y-%m-%dT%H:%M:%S.") + f"{dt.microsecond // 1000:03d}Z"
+
+
+def _now_iso() -> str:
+    return _iso_z(datetime.now(timezone.utc))
+
+
+def _parse_stamp(iso) -> Optional[datetime]:
+    """Tolerant parse of a doc stamp (engine toISOString / _iso_z). None when absent/garbled —
+    callers treat an unparseable entry stamp as elapsed 0 (the v1.41.1 honesty rule's cousin:
+    never invent time)."""
+    try:
+        dt = datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return None
+
+
+def _pre_assembly_threshold_s(db: Session) -> float:
+    """A11 chute: the pre_assembly stage threshold in SECONDS (production_stage_thresholds is
+    hours). Falls back to the ratified 2h if the row is missing/inactive — reset_timer must
+    not 500 because an admin deactivated a threshold row."""
+    t = db.execute(select(ProductionStageThreshold).where(
+        ProductionStageThreshold.stage_code == "pre_assembly",
+        ProductionStageThreshold.is_active.is_(True))).scalars().first()
+    return float(t.threshold_hours) * 3600.0 if t is not None else 2.0 * 3600.0
 
 
 def _jobs_on_floor(doc: dict) -> set[str]:
@@ -416,6 +442,67 @@ def _t_move_body(db, doc, p, ctx):
             "details": {"from_li": loc["ci"], "li": li, "pos": pos}}
 
 
+# ── A11 Pre-Assembly Chute (v1.42) — per-card work-clock transitions ───────────
+# The chute renders each body's position from (now - enteredAt) / pre_assembly threshold.
+# Two operator gestures mutate that clock, both journaled like every other transition:
+#   reset_timer — a drag BACK re-arms the clock to `fraction` of the threshold ("this
+#                 needs more time"). Forward drags are visual-only and never reach here.
+#   toggle_hold — pause/resume. Hold freezes the DISPLAY clock by snapshotting elapsed
+#                 seconds (held/heldAt/heldElapsedS on the body — additive doc fields);
+#                 resume re-bases enteredAt = now - snapshot so work-time continues where
+#                 it paused. Health Check's wall-clock breach view (v1.41.1) deliberately
+#                 keeps reading the raw stamps — a held body still occupies the bay.
+
+def _t_reset_timer(db, doc, p, ctx):
+    body_id = str(p.get("id") or "") or _bad(422, "reset_timer needs a body id")
+    try:
+        frac = float(p.get("fraction"))
+    except (TypeError, ValueError):
+        frac = -1.0
+    if not (0.0 <= frac <= 1.0):
+        _bad(422, "reset_timer needs a fraction between 0 and 1.")
+    loc = _find_body_loc(doc, body_id)
+    if loc is None:
+        _bad(409, "That body is no longer on a bay track — the floor has moved on. Refreshed.")
+    body = loc["body"]
+    thr_s = _pre_assembly_threshold_s(db)
+    new_elapsed_s = frac * thr_s
+    old_entered = body.get("enteredAt")
+    body["enteredAt"] = _iso_z(datetime.now(timezone.utc) - timedelta(seconds=new_elapsed_s))
+    if body.get("held"):
+        body["heldElapsedS"] = round(new_elapsed_s, 3)   # a held card re-arms its frozen display too
+    return {"event_type": "reset_timer", "job_number": str(body.get("job")),
+            "from_stage": "pre_assembly", "to_stage": "pre_assembly",
+            "details": {"li": loc["ci"], "fraction": round(frac, 4),
+                        "threshold_s": round(thr_s, 1),
+                        "old_entered_at": old_entered, "new_entered_at": body["enteredAt"]}}
+
+
+def _t_toggle_hold(db, doc, p, ctx):
+    body_id = str(p.get("id") or "") or _bad(422, "toggle_hold needs a body id")
+    loc = _find_body_loc(doc, body_id)
+    if loc is None:
+        _bad(409, "That body is no longer on a bay track — the floor has moved on. Refreshed.")
+    body = loc["body"]
+    now = datetime.now(timezone.utc)
+    if body.get("held"):
+        held_s = max(0.0, float(body.get("heldElapsedS") or 0.0))
+        body["enteredAt"] = _iso_z(now - timedelta(seconds=held_s))
+        body["held"] = False
+        body.pop("heldAt", None)
+        body.pop("heldElapsedS", None)
+        details = {"li": loc["ci"], "is_held": False, "resumed_elapsed_s": round(held_s, 3)}
+    else:
+        entered = _parse_stamp(body.get("enteredAt"))
+        elapsed_s = max(0.0, (now - entered).total_seconds()) if entered else 0.0
+        body["held"] = True
+        body["heldAt"] = _iso_z(now)
+        body["heldElapsedS"] = round(elapsed_s, 3)
+        details = {"li": loc["ci"], "is_held": True, "held_elapsed_s": round(elapsed_s, 3)}
+    return {"event_type": "toggle_hold", "job_number": str(body.get("job")),
+            "from_stage": "pre_assembly", "to_stage": "pre_assembly", "details": details}
+
+
 def _t_drop_assembly(db, doc, p, ctx):
     body_id = str(p.get("id") or "") or _bad(422, "drop_assembly needs a body id")
     li = p.get("li")
@@ -628,6 +715,8 @@ _TRANSITIONS: dict[str, Callable] = {
     "start_body": _t_start_body,
     "body_back_to_panels": _t_body_back_to_panels,
     "move_body": _t_move_body,
+    "reset_timer": _t_reset_timer,     # A11 chute — drag-back re-arms the work clock
+    "toggle_hold": _t_toggle_hold,     # A11 chute — pause/resume the work clock
     "drop_assembly": _t_drop_assembly,
     "assembly_back_to_track": _t_assembly_back_to_track,
     "drop_chassis": _t_drop_chassis,

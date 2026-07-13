@@ -30,14 +30,29 @@ router = APIRouter(prefix="/api/plan", tags=["plan"])
 ROW_ID = 1
 
 
+def _chute_extras(db: Session) -> dict:
+    """A11 chute — additive floor-state payload: the pre_assembly threshold (hours, from the
+    v1.40.6 admin table) + a server clock anchor so the client positions cards on SERVER
+    time (skew-proof; same one-fetch + client-tick idiom as the v1.40.6/8 clocks)."""
+    from ..models.mes import ProductionStageThreshold
+    t = db.execute(select(ProductionStageThreshold).where(
+        ProductionStageThreshold.stage_code == "pre_assembly",
+        ProductionStageThreshold.is_active.is_(True))).scalars().first()
+    return {
+        "server_now": datetime.now(timezone.utc).isoformat(),
+        "thresholds": {"pre_assembly": {"hours": float(t.threshold_hours)} if t is not None else None},
+    }
+
+
 @router.get("/floor-state")
 def get_floor_state(db: Session = Depends(get_db), user: User = Depends(require_user)):
     row = db.get(PlanFloorState, ROW_ID)
     if row is None:
-        return {"state": None, "updated_at": None, "version": 0}
+        return {"state": None, "updated_at": None, "version": 0, **_chute_extras(db)}
     return {"state": row.state,
             "updated_at": row.updated_at.isoformat() if row.updated_at else None,
-            "version": int(row.version or 0)}   # v1.41.0 — server write counter (debug + P3)
+            "version": int(row.version or 0),   # v1.41.0 — server write counter (debug + P3)
+            **_chute_extras(db)}
 
 
 # v1.41.0 §9 P1 — the whole-document PUT is GONE. It was the two-browsers last-writer-wins
@@ -66,6 +81,10 @@ _TRANSITION_PERMS = {
     "confirm_merge": "chassis.assembly_assign",
     "dispatch": "chassis.assembly_assign",
     # move_body: doc-only cosmetic — require_user suffices
+    # A11 chute (ratified): the work-clock gestures are planner work, same gate as
+    # the other bay scheduling moves.
+    "reset_timer": "planning.schedule",
+    "toggle_hold": "planning.schedule",
 }
 
 

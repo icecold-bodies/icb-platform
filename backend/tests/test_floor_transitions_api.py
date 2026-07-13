@@ -600,3 +600,86 @@ def test_floor_reset_admin_gate_and_journal(app_mod, admin, floor_doc_guard):
             if u:
                 db.delete(u)
             db.commit()
+
+
+# ── A11 Pre-Assembly Chute (v1.42) — reset_timer + toggle_hold ────────────────
+
+def _doc_body(state_json, jn, li=0):
+    doc = json.loads(state_json)
+    return next(b for b in doc["pre"][li]["bodies"] if str(b.get("job")) == jn)
+
+
+def _elapsed_s(body):
+    entered = datetime.fromisoformat(str(body["enteredAt"]).replace("Z", "+00:00"))
+    return (datetime.now(timezone.utc) - entered).total_seconds()
+
+
+def test_a11_reset_timer_rearms_clock_and_journals(api, fresh_planning_job, floor_doc_guard):
+    """reset_timer: fraction bounds 422; stale id 409 (doc untouched); a valid 0.20 re-arms
+    enteredAt so elapsed = 20% of the 0038 threshold (2h → ~24 min) and journals old/new."""
+    pid = fresh_planning_job()
+    jn = _jn(pid)
+    _schedule(pid)
+    assert api.post(T, json={"type": "declare_cut", "job": jn}).status_code == 200
+    r = api.post(T, json={"type": "start_body", "job": jn, "li": 0,
+                          "card": {"len": 5.4, "type": "Chiller", "cust": "FLT"}})
+    assert r.status_code == 200, r.text
+
+    assert api.post(T, json={"type": "reset_timer", "id": jn, "fraction": 1.7}).status_code == 422
+    assert api.post(T, json={"type": "reset_timer", "id": jn, "fraction": -0.2}).status_code == 422
+    assert api.post(T, json={"type": "reset_timer", "id": jn}).status_code == 422
+    assert api.post(T, json={"type": "reset_timer", "id": "FLT-GONE", "fraction": 0.5}).status_code == 409
+
+    r = api.post(T, json={"type": "reset_timer", "id": jn, "fraction": 0.20})
+    assert r.status_code == 200, r.text
+    body = _doc_body(r.json()["state"], jn)
+    # 20% of 2h = 1440 s; generous band for CI slowness
+    assert 1380 <= _elapsed_s(body) <= 1620
+
+    from app.database import SessionLocal
+    from app.models.mes import FloorEvent
+    from sqlalchemy import select
+    with SessionLocal() as db:
+        ev = db.execute(select(FloorEvent).where(
+            FloorEvent.job_number == jn, FloorEvent.event_type == "reset_timer")
+            .order_by(FloorEvent.id.desc())).scalars().first()
+        assert ev is not None and ev.from_stage == "pre_assembly" and ev.to_stage == "pre_assembly"
+        assert ev.details["fraction"] == 0.2
+        assert ev.details["old_entered_at"] and ev.details["new_entered_at"]
+
+
+def test_a11_toggle_hold_freezes_then_resumes_elapsed(api, fresh_planning_job, floor_doc_guard):
+    """toggle_hold: hold snapshots elapsed into heldElapsedS (display clock freezes);
+    resume re-bases enteredAt = now - snapshot so work-time continues where it paused;
+    both directions journal; a reset while HELD re-arms the frozen snapshot too."""
+    pid = fresh_planning_job()
+    jn = _jn(pid)
+    _schedule(pid)
+    assert api.post(T, json={"type": "declare_cut", "job": jn}).status_code == 200
+    assert api.post(T, json={"type": "start_body", "job": jn, "li": 1,
+                             "card": {"len": 5.4, "type": "Freezer", "cust": "FLT"}}).status_code == 200
+    # park the clock at 50% (3600 s of the 2h threshold), then hold
+    assert api.post(T, json={"type": "reset_timer", "id": jn, "fraction": 0.5}).status_code == 200
+
+    r = api.post(T, json={"type": "toggle_hold", "id": jn})
+    assert r.status_code == 200, r.text
+    body = _doc_body(r.json()["state"], jn, li=1)
+    assert body["held"] is True and body.get("heldAt")
+    assert 3540 <= body["heldElapsedS"] <= 3780
+
+    # a drag-back while held re-arms the frozen display too
+    r = api.post(T, json={"type": "reset_timer", "id": jn, "fraction": 0.25})
+    assert r.status_code == 200
+    body = _doc_body(r.json()["state"], jn, li=1)
+    assert body["held"] is True and 1740 <= body["heldElapsedS"] <= 1980
+
+    r = api.post(T, json={"type": "toggle_hold", "id": jn})
+    assert r.status_code == 200, r.text
+    body = _doc_body(r.json()["state"], jn, li=1)
+    assert not body.get("held") and "heldAt" not in body and "heldElapsedS" not in body
+    assert 1740 <= _elapsed_s(body) <= 2100     # resumed where it paused (25% ≈ 1800 s)
+
+    evs = _events_for(jn)
+    assert evs.count("toggle_hold") == 2 and evs.count("reset_timer") == 2
+
+    assert api.post(T, json={"type": "toggle_hold", "id": "FLT-GONE"}).status_code == 409

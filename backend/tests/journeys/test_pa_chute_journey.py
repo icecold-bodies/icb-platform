@@ -173,14 +173,18 @@ def test_chute_right_click_holds_and_drag_back_resets(page: Page, chute_floor) -
     shot(page, "02-right-click-hold", journey=JOURNEY)
 
     # pointer-drag the 65% card BACK to ~10% → reset_timer → stage returns to green and
-    # the server doc's enteredAt re-arms to <20% elapsed
+    # the server doc's enteredAt re-arms to <20% elapsed. Scroll the card into view first
+    # and clamp the drop x into the viewport — the engine resolves drops via
+    # document.elementFromPoint, which returns None outside the visible viewport.
     warm = page.locator(".pa-card[data-id='JCHU2']")
+    warm.scroll_into_view_if_needed()
     wb = warm.bounding_box()
     lane = page.locator(".pa-lane.chute").nth(1)
     lb = lane.bounding_box()
+    drop_x = max(lb["x"] + 30, 10)
     page.mouse.move(wb["x"] + wb["width"] / 2, wb["y"] + wb["height"] / 2)
     page.mouse.down()
-    page.mouse.move(lb["x"] + 30, lb["y"] + lb["height"] / 2, steps=12)
+    page.mouse.move(drop_x, lb["y"] + lb["height"] / 2, steps=12)
     page.mouse.up()
     expect(page.locator(".pa-card[data-id='JCHU2'].stage-green")).to_be_visible(timeout=T)
     assert "reset_timer" in _events("JCHU2")

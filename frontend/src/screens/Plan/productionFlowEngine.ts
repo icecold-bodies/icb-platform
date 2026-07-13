@@ -588,6 +588,10 @@ export function initProductionFlow(root, opts) {
   /* ===== drag ===== */
   let drag = null;
   function onPointerDown(e) {
+    // A11 — right-click is the hold/resume gesture (onContext); only the PRIMARY button may
+    // arm the drag/click pipeline, else button-2's pointerup reads as a click and opens the
+    // drawer over the floor (the scrim then eats the next drag).
+    if (e.button !== 0) return;
     const el = e.target.closest('.pcard,.body-wrap,.ccard,.mbody,.cpull'); if (!el) return;
     if (el.classList.contains('pcard') && el.dataset.ready === '0') return;
     drag = { id: el.dataset.id, kind: el.dataset.kind, el, fromPark: el.classList.contains('ccard'), sx: e.clientX, sy: e.clientY, moved: false, ghost: null };

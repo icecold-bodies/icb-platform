@@ -450,6 +450,20 @@ function _insulationPairFor(masterId) {
   return { eps, pu };
 }
 
+// v1.42.1 — keep the edit pin honest on a deliberate in-edit toggle. The pin
+// (editBodyVarOverrides) exists so REOPENING a saved quote reproduces its figures
+// even after global copy-on-switches moved the body template; but it rides every
+// recompute payload (body_variable_overrides), so a pair the user toggles INSIDE
+// the edit never reached the numbers — the radios (and the template, which the
+// switch still writes) said EPS while the quantities stayed pinned to the saved
+// state (the N9936 frozen-quantity report). Mirroring just the switched rows into
+// the pin lets the deliberate change through while every untouched variable keeps
+// its saved-figure stability.
+function _pinBodyVar(row, v) {
+  if (!editBodyVarOverrides || !row || row.material_name == null) return;
+  editBodyVarOverrides[String(row.material_name)] = Number(v) || 0;
+}
+
 // ── Rear-door (DRD/SRD) insulation carry ─────────────────────────────────
 // A body is quoted as EITHER double rear doors (DRD) OR a single rear door
 // (SRD), never both. There is one rear-door insulation thickness that follows
@@ -496,6 +510,7 @@ async function _carryRearDoorThickness(newGrp, oldGrp) {
   const setVal = (row, v) => {
     v = Number(v) || 0;
     if ((Number(row.variable_value) || 0) !== v) { row.variable_value = v; writes.push([row.id, v]); }
+    _pinBodyVar(row, v);   // pin mirrors the FINAL pair state even when no PUT was needed (v1.42.1)
   };
   setVal(newPair.eps, side === 'EPS' ? T : 0);
   setVal(newPair.pu,  side === 'PU'  ? T : 0);
@@ -565,6 +580,8 @@ async function _applyInsulationCopyZero(selectedMasterId) {
   }
   selected.variable_value = carry;
   other.variable_value = 0;
+  _pinBodyVar(selected, carry);   // in-edit toggle must reach the recompute (v1.42.1)
+  _pinBodyVar(other, 0);
   try {
     await api('PUT', `/api/bom/${selected.id}`, { variable_value: carry });
     await api('PUT', `/api/bom/${other.id}`,    { variable_value: 0 });

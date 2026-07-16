@@ -872,7 +872,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 raise HTTPException(
                     status_code=409,
                     detail="A costing for this customer and trailer was saved just before yours. "
-                           "Please go back and choose 'Save as new version' or 'Replace'."
+                           "Please go back and choose 'Save as new costing', 'Save as Revision' "
+                           "or 'Replace'."
                 )
 
         if customer_id and version_action == "replace":
@@ -885,6 +886,14 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             result["version"] = 1
         elif version_action == "new_version":
             result["version"] = next_version
+        elif version_action == "save_as_new":
+            # Nadie WO (16 Jul): an INDEPENDENT new costing for the same customer +
+            # body type — not a revision, not a replacement. Nothing is deleted,
+            # nothing is linked, the reuse path above stays "new_version"-only, and
+            # assign_quote_number below allocates the next number off the running
+            # counter. The None-only race guard is deliberately skipped: the user
+            # explicitly chose this outcome on the duplicate modal.
+            result["version"] = 1
         else:
             result["version"] = 1
 

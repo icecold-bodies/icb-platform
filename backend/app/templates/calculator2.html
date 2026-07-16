@@ -366,24 +366,35 @@
         background:var(--bg-panel);border:1px solid var(--border);
         border-radius:var(--radius);padding:10px 14px;margin-bottom:4px;
         line-height:2"></div>
-      <label id="dup-reuse-qno-wrap" style="display:none;font-size:12px;margin-top:10px;cursor:pointer;user-select:none">
-        <input type="checkbox" id="dup-reuse-qno" style="vertical-align:middle"> Reuse quote number
-        <span id="dup-reuse-qno-val" style="font-family:var(--font-mono);color:var(--blue-hi)"></span>
-        <span style="color:var(--text-dim)"> for this revision</span>
-      </label>
       <p style="font-size:11px;color:var(--text-dim);margin-top:10px">
         Choose how to proceed:
       </p>
     </div>
+    <!-- Nadie WO (16 Jul): third escape hatch — mirrors calculator.html's duplicate modal
+         (repair calc keeps the same three-way choice; is_repair rides _pendingApproveBase). -->
     <div class="modal-footer" style="flex-direction:column;gap:8px;align-items:stretch">
       <button class="btn btn-primary" style="width:100%;justify-content:center"
+        id="dup-savenew-btn"
+        onclick="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity='';approveWithAction('save_as_new')"
+        onmouseenter="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity='.35'"
+        onmouseleave="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity=''"
+        onfocus="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity='.35'"
+        onblur="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity=''">
+        ✚ Save as new costing
+      </button>
+      <label id="dup-reuse-qno-wrap" style="display:none;font-size:12px;margin:2px 2px -2px;cursor:pointer;user-select:none">
+        <input type="checkbox" id="dup-reuse-qno" style="vertical-align:middle"> Reuse quote number
+        <span id="dup-reuse-qno-val" style="font-family:var(--font-mono);color:var(--blue-hi)"></span>
+        <span style="color:var(--text-dim)"> for this revision</span>
+      </label>
+      <button class="btn btn-outline" style="width:100%;justify-content:center"
         id="dup-newver-btn" onclick="approveWithAction('new_version')">
         ⊞ Save as Revision <span id="dup-next-ver"></span>
       </button>
       <button class="btn" style="width:100%;justify-content:center;
         background:rgba(248,81,73,.15);border:1px solid var(--red);color:var(--red)"
         onclick="approveWithAction('replace')">
-        🗑 Replace — delete today's existing costing(s) and save new
+        🗑 Replace — delete ALL this customer's costings for this body type, save new
       </button>
       <button class="btn btn-outline" style="width:100%;justify-content:center"
         onclick="closeModal('modal-duplicate')">Cancel</button>

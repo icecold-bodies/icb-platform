@@ -86,7 +86,8 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
       return (
         c.customer_name.toLowerCase().includes(ql) ||
         c.quote_number.toLowerCase().includes(ql) ||
-        c.body_type.toLowerCase().includes(ql)
+        c.body_type.toLowerCase().includes(ql) ||
+        (c.contact_name ?? '').toLowerCase().includes(ql)
       )
     })
   }, [costings, q, filter, scope, profile, mode])
@@ -203,7 +204,7 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search customer, quote number, body type…"
+            placeholder="Search customer, contact, quote number, body type…"
             className="flex-1 text-sm outline-none"
           />
           {q && (
@@ -237,6 +238,8 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
                 <th className="px-2 py-2"></th>
                 <Tooltip k="costings_dashboard.column_quote_number"><th className="px-3 py-2 font-semibold">Quote #</th></Tooltip>
                 <Tooltip k="costings_dashboard.column_customer"><th className="px-3 py-2 font-semibold">Customer</th></Tooltip>
+                {/* Nadie WO (16 Jul): attention-of snapshot (0035) — tells 12 Hino George quotes apart at a glance */}
+                <Tooltip k="costings_dashboard.column_contact"><th className="px-3 py-2 font-semibold">Contact</th></Tooltip>
                 <Tooltip k="costings_dashboard.column_body_type"><th className="px-3 py-2 font-semibold">Body type</th></Tooltip>
                 <Tooltip k="costings_dashboard.column_extras_count"><th className="px-3 py-2 text-center font-semibold">Extras</th></Tooltip>
                 <Tooltip k="costings_dashboard.column_created_by"><th className="px-3 py-2 font-semibold">Rep</th></Tooltip>
@@ -266,6 +269,9 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
                   </td>
                   <td className="px-3 py-2 font-mono text-xs font-semibold">{c.quote_number}</td>
                   <td className="px-3 py-2">{c.customer_name}</td>
+                  <td className="max-w-[150px] truncate px-3 py-2" title={c.contact_name ?? undefined}>
+                    {c.contact_name ?? ''}
+                  </td>
                   <td className="px-3 py-2">
                     <span>{c.body_type.replace(/\s*\(REPAIR\)$/i, '')}</span>
                     {c.requires_chassis && (
@@ -417,7 +423,7 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-sm text-muted">
+                  <td colSpan={11} className="px-4 py-12 text-center text-sm text-muted">
                     No costings match the current filters.
                   </td>
                 </tr>

@@ -135,42 +135,48 @@ export function CostingDetail() {
       <div className="mb-4 grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <SectionTitle>Configuration</SectionTitle>
-          <dl className="grid grid-cols-2 gap-3 text-sm">
-            <Row label="Customer" value={c.customer_name} />
-            {c.contact_name ? <Row label="Attention" value={c.contact_name} /> : null}
-            <Row label="Body type" value={c.body_type} />
-            <Row label="Quote type" value={c.quote_type} />
-            <Row label="Site" value={c.site} />
-            <Row
-              label="Chassis"
-              value={c.requires_chassis ? (c.chassis_supplied_by === 'in-house' ? 'In-house' : 'Customer supplied') : 'Not required'}
-              icon={c.requires_chassis ? <Truck size={13} className="text-muted" /> : undefined}
-            />
-            <Row label="Created by" value={c.created_by} />
-            <Row label="Created" value={`${dmy(c.created_at)} ${hhmm(c.created_at)}`} />
-            <Row label="Markup" value={`${c.markup_pct}%`} />
-          </dl>
+          <div className="flex flex-col gap-4 lg:flex-row">
+            <div className="flex-1">
+              <dl className="grid grid-cols-2 gap-3 text-sm">
+                <Row label="Customer" value={c.customer_name} />
+                {c.contact_name ? <Row label="Attention" value={c.contact_name} /> : null}
+                <Row label="Body type" value={c.body_type} />
+                <Row label="Quote type" value={c.quote_type} />
+                <Row label="Site" value={c.site} />
+                <Row
+                  label="Chassis"
+                  value={c.requires_chassis ? (c.chassis_supplied_by === 'in-house' ? 'In-house' : 'Customer supplied') : 'Not required'}
+                  icon={c.requires_chassis ? <Truck size={13} className="text-muted" /> : undefined}
+                />
+                <Row label="Created by" value={c.created_by} />
+                <Row label="Created" value={`${dmy(c.created_at)} ${hhmm(c.created_at)}`} />
+                <Row label="Markup" value={`${c.markup_pct}%`} />
+              </dl>
 
-          {c.extras_list && c.extras_list.length > 0 && (
-            <div className="mt-4">
-              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Extras ({c.extras_count})</div>
-              <div className="flex flex-wrap gap-1.5">
-                {c.extras_list.map((x) => (
-                  <span key={x} className="rounded-full bg-surface-alt px-2 py-0.5 text-xs">{x}</span>
-                ))}
-              </div>
-            </div>
-          )}
+              {c.extras_list && c.extras_list.length > 0 && (
+                <div className="mt-4">
+                  <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Extras ({c.extras_count})</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {c.extras_list.map((x) => (
+                      <span key={x} className="rounded-full bg-surface-alt px-2 py-0.5 text-xs">{x}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {c.quote_type === 'Repair' && c.repair_scope && (
-            <div className="mt-4 rounded-md border border-[#7E22CE]/30 bg-[#7E22CE]/5 p-3">
-              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#7E22CE]">Repair scope</div>
-              <p className="text-sm text-body">{c.repair_scope}</p>
-              {c.repair_phase_entry && (
-                <p className="mt-2 text-xs text-muted"><strong>Phase entry plan: </strong>{c.repair_phase_entry}</p>
+              {c.quote_type === 'Repair' && c.repair_scope && (
+                <div className="mt-4 rounded-md border border-[#7E22CE]/30 bg-[#7E22CE]/5 p-3">
+                  <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#7E22CE]">Repair scope</div>
+                  <p className="text-sm text-body">{c.repair_scope}</p>
+                  {c.repair_phase_entry && (
+                    <p className="mt-2 text-xs text-muted"><strong>Phase entry plan: </strong>{c.repair_phase_entry}</p>
+                  )}
+                </div>
               )}
             </div>
-          )}
+
+            <BodyOptionsPanel calculationId={c.calculation_id ?? null} mode={mode} />
+          </div>
         </Card>
 
         <Card>
@@ -617,6 +623,50 @@ function StatusTimeline({ c, statusHex }: { c: Costing; statusHex: string }) {
   )
 }
 
+function mm(thicknessM: number): string {
+  return `${Math.round(thicknessM * 1000)} mm`
+}
+
+function titleCase(s: string): string {
+  return s.charAt(0) + s.slice(1).toLowerCase()
+}
+
+function BodyOptionsPanel({ calculationId, mode }: { calculationId: number | null; mode: string }) {
+  const [data, setData] = useState<BodyOptionsDisplay | null | undefined>(undefined)
+  const [err, setErr] = useState(false)
+  useEffect(() => {
+    if (mode !== 'live' || calculationId == null) return
+    let alive = true
+    apiGet<{ body_options_display?: BodyOptionsDisplay | null }>(`/api/calculations/${calculationId}`)
+      .then((r) => { if (alive) setData(r.body_options_display ?? null) })
+      .catch(() => { if (alive) setErr(true) })
+    return () => { alive = false }
+  }, [calculationId, mode])
+
+  if (mode !== 'live' || calculationId == null || err || data === undefined) return null
+
+  const panelsLine = data?.panels.length
+    ? data.panels.map((p) => `${titleCase(p.location)} — ${p.insulation} ${mm(p.thickness_m)}`).join(' · ')
+    : null
+
+  return (
+    <div data-testid="body-options-panel" className="w-full shrink-0 border-t border-border pt-3 lg:mt-0 lg:w-64 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
+      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Body options</div>
+      {data === null ? (
+        <p data-testid="body-options-not-recorded" className="text-xs text-muted">Body options not recorded on this costing.</p>
+      ) : (
+        <div className="space-y-1 text-sm text-body">
+          {data.rear_door && (
+            <p>Rear door — {data.rear_door.door_type} · {data.rear_door.insulation} {mm(data.rear_door.thickness_m)}</p>
+          )}
+          {panelsLine && <p>{panelsLine}</p>}
+          {data.floor_type && <p>Floor type — {data.floor_type}</p>}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // v1.39.1 backport (Item 5+7) — the REAL bill of materials, laid out to match the LEGACY costings Results
 // page (Costing model/app/templates/results.html): grouped by category (first-seen order) with an uppercase
 // category band, the full legacy column set (Material / SAP Code / Formula / Qty / Unit / Unit Price / Waste% /
@@ -635,6 +685,16 @@ interface BomRow {
   waste_pct?: number | null
   line_cost?: number
   excluded?: boolean
+}
+
+// v1.42 — Body options panel: door type / insulation / floor type as selected on
+// the quote, derived server-side (see body_options_display on GET
+// /api/calculations/{id}). Read-only summary; scope is door+insulation+floor-type
+// only — fittings/extras stay in the BOM table above.
+interface BodyOptionsDisplay {
+  rear_door: { door_type: string; insulation: string; thickness_m: number } | null
+  panels: Array<{ location: string; insulation: string; thickness_m: number }>
+  floor_type: string | null
 }
 
 interface SavedResult {

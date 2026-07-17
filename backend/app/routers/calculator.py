@@ -46,6 +46,111 @@ def _attach_formula_debug(result: dict, body_vars: dict, formula_lib: dict,
     result["formula_library_resolved"] = resolved
 
 
+_REAR_DOOR_GROUPS = ("DRD", "SRD")
+_INSULATION_LOCATIONS = ("FRONT", "SIDES", "ROOF", "FLOOR")
+
+
+def _derive_body_options_display(bom_rows: list, input_state: dict, saved_body_variables: dict | None) -> dict | None:
+    """Read-only decode of a saved costing's door/insulation/floor-type choices
+    for display on the costing detail page. Pure function of BOM master data
+    (current) + the record's saved input_state/body_variables — never mutates
+    anything, never invents a value. Returns None when nothing is derivable
+    (pre-input_state legacy record with no usable body_variables either)."""
+    body_opt_sel = {str(k): bool(v) for k, v in (input_state.get("body_option_selections") or {}).items()}
+    ui_snapshot = input_state.get("ui_snapshot") or {}
+    ui_body_vars = ui_snapshot.get("body_variables") or {}
+    drd_srd = ui_snapshot.get("drd_srd") or {}
+    saved_body_variables = saved_body_variables or {}
+
+    groups: dict[tuple[str, str], list] = {}
+    for row in bom_rows:
+        if not row.is_body_option or not row.material:
+            continue
+        key = (row.body_option_group or "", row.body_option_subgroup or "")
+        groups.setdefault(key, []).append(row)
+
+    def thickness_for(row) -> float | None:
+        name = row.material.name
+        if name in saved_body_variables and saved_body_variables[name] is not None:
+            return float(saved_body_variables[name])
+        v = ui_body_vars.get(str(row.id))
+        if v is not None:
+            return float(v)
+        if row.variable_value is not None:
+            return float(row.variable_value)
+        return None
+
+    def insulation_pair(key):
+        sibs = groups.get(key) or []
+        if len(sibs) != 2:
+            return None
+        eps = next((r for r in sibs if "EPS" in r.material.name.upper()), None)
+        pu = next((r for r in sibs if "PU" in r.material.name.upper()), None)
+        if not eps or not pu or eps.id == pu.id:
+            return None
+        return eps, pu
+
+    def selected_side(pair):
+        eps, pu = pair
+        eps_sel = body_opt_sel.get(str(eps.id))
+        pu_sel = body_opt_sel.get(str(pu.id))
+        if eps_sel and not pu_sel:
+            return eps, "EPS"
+        if pu_sel and not eps_sel:
+            return pu, "PU"
+        # Legacy fallback (no selections snapshot): the non-zero side of the
+        # pair is the one that was quoted (v1.39.10 invariant).
+        eps_t = thickness_for(eps) or 0
+        pu_t = thickness_for(pu) or 0
+        if eps_t and not pu_t:
+            return eps, "EPS"
+        if pu_t and not eps_t:
+            return pu, "PU"
+        return None
+
+    panels = []
+    rear_door = None
+    for (grp, sub), _sibs in groups.items():
+        if sub != "INSULATION":
+            continue
+        pair = insulation_pair((grp, sub))
+        if not pair:
+            continue
+        side = selected_side(pair)
+        if not side:
+            continue
+        row, kind = side
+        thickness = thickness_for(row)
+        if not thickness:
+            continue
+        if grp in _REAR_DOOR_GROUPS:
+            active = None
+            on = [g for g in _REAR_DOOR_GROUPS if drd_srd.get(g)]
+            if len(on) == 1:
+                active = on[0]
+            if active is None:
+                active = grp  # legacy fallback: this group's own pair was the only one costed
+            if active != grp:
+                continue
+            rear_door = {"door_type": grp, "insulation": kind, "thickness_m": round(thickness, 6)}
+        elif grp in _INSULATION_LOCATIONS:
+            panels.append({"location": grp, "insulation": kind, "thickness_m": round(thickness, 6)})
+
+    floor_type = None
+    for row in groups.get(("FLOOR", ""), []):
+        if body_opt_sel.get(str(row.id)):
+            floor_type = row.material.name
+            break
+
+    location_order = {loc: i for i, loc in enumerate(_INSULATION_LOCATIONS)}
+    panels.sort(key=lambda p: location_order.get(p["location"], 99))
+
+    if not rear_door and not panels and not floor_type:
+        return None
+
+    return {"rear_door": rear_door, "panels": panels, "floor_type": floor_type}
+
+
 # ─── Calculator page ──────────────────────────────────────────────────────────
 
 @router.get("/calculator", response_class=HTMLResponse)
@@ -1191,6 +1296,12 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         result_data = {}
     input_state = result_data.get("input_state") or {}
     status = rec.status or ("accepted" if rec.approved_at else "pending")
+    bom_rows = (db.query(BillOfMaterial)
+                .filter_by(trailer_type_id=rec.trailer_type_id, is_body_option=True)
+                .options(*_bom_load_options())
+                .all())
+    body_options_display = _derive_body_options_display(
+        bom_rows, input_state, result_data.get("body_variables"))
     return {
         "id": rec.id,
         "trailer_type_id": rec.trailer_type_id,
@@ -1241,4 +1352,7 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         # The saved result itself (sans the bulky input_state echo) so the editor
         # can display the original figures and run a balance check against them.
         "saved_result":  {k: v for k, v in result_data.items() if k != "input_state"},
+        # Derived door/insulation/floor-type summary for the costing detail page
+        # (v1.42 body options panel). None when nothing is derivable.
+        "body_options_display": body_options_display,
     }

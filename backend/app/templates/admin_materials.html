@@ -224,11 +224,17 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Category</label>
-          <select id="add-cat">
-            {% for c in categories %}
-            <option value="{{ c.id }}">{{ c.name }}</option>
-            {% endfor %}
-          </select>
+          <!-- v1.42 (Michael 17 Jul) — inline "+" so a new material never has to
+               leave the modal to get its category created first -->
+          <div style="display:flex;gap:6px;align-items:stretch">
+            <select id="add-cat" style="flex:1;min-width:0">
+              {% for c in categories %}
+              <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-outline" type="button" id="add-cat-new-btn" title="Add a new category"
+              onclick="openNewCategoryModal()" style="padding:4px 12px;font-weight:700;flex:0 0 auto">+</button>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Unit of Measure</label>
@@ -268,6 +274,27 @@
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-add')">Cancel</button>
       <button class="btn btn-primary" onclick="saveMaterial(null)">Add Material</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Category (inline from the Add Material modal) ──────────────────── -->
+<div class="modal-backdrop hidden" id="modal-new-category" style="z-index:1001">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Add Category</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-new-category')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Category name</label>
+        <input class="form-control" id="new-cat-name" placeholder="e.g. FLOOR SHEETING"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();createCategoryInline();}else if(event.key==='Escape'){closeModal('modal-new-category');}"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-new-category')">Cancel</button>
+      <button class="btn btn-primary" id="new-cat-save" onclick="createCategoryInline()">Add Category</button>
     </div>
   </div>
 </div>
@@ -1180,6 +1207,56 @@ async function openEditModal(id) {
 
   openModal('modal-edit');
   setTimeout(() => document.getElementById('edit-name').focus(), 100);
+}
+
+// ── v1.42 — inline category creation from the Add Material modal ─────────────
+// POST /api/categories exists (admin-gated); this just gives it a UI so a new
+// material never has to leave the modal. The fresh category is inserted
+// alphabetically into every category select on the page (add / edit / filter)
+// and pre-selected where the user was working.
+function openNewCategoryModal() {
+  const inp = document.getElementById('new-cat-name');
+  inp.value = '';
+  openModal('modal-new-category');
+  setTimeout(() => inp.focus(), 100);
+}
+
+async function createCategoryInline() {
+  const inp = document.getElementById('new-cat-name');
+  const name = inp.value.trim();
+  if (!name) { toast('Enter a category name', 'warn'); return; }
+  const addSel = document.getElementById('add-cat');
+  // Duplicate guard (the DB name column is unique — catch it before the 500).
+  const existing = [...addSel.options].find(o => o.textContent.trim().toUpperCase() === name.toUpperCase());
+  if (existing) {
+    addSel.value = existing.value;
+    closeModal('modal-new-category');
+    toast(`Category "${existing.textContent.trim()}" already exists — selected it`, 'info');
+    return;
+  }
+  const btn = document.getElementById('new-cat-save');
+  btn.disabled = true;
+  try {
+    const cat = await api('POST', '/api/categories', { name });
+    ['add-cat', 'edit-cat', 'cat-filter'].forEach(selId => {
+      const s = document.getElementById(selId);
+      if (!s) return;
+      const o = document.createElement('option');
+      o.value = String(cat.id);
+      o.textContent = cat.name;
+      // Keep the server's alphabetical order; the filter's "All Categories"
+      // placeholder (value="") always stays first.
+      const before = [...s.options].find(x => x.value !== '' && x.textContent.trim().localeCompare(cat.name) > 0);
+      s.insertBefore(o, before || null);
+    });
+    addSel.value = String(cat.id);
+    closeModal('modal-new-category');
+    toast(`Category "${cat.name}" added`, 'success');
+  } catch (e) {
+    toast('Could not add category: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 async function saveMaterial(id) {

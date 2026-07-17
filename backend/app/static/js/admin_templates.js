@@ -597,6 +597,76 @@ async function renameSection(sectionName) {
   }
 }
 
+// ── v1.42 — Edit Section modal (rename + optional flag + delete) ─────────────
+// The pencil on every section header opens this. The Optional tick maps to
+// BOMSection.is_optional; sections named "OPTIONAL …" are optional BY NAME
+// (the v1.42 prefix rule) — the tick locks ON for those so the effective
+// behaviour is never misrepresented.
+let _editingSectionName = null;
+
+function _esSyncOptionalLock() {
+  const nameEl = document.getElementById('es-name');
+  const tick   = document.getElementById('es-optional');
+  const note   = document.getElementById('es-optional-note');
+  if (!nameEl || !tick || !note) return;
+  const byName = (nameEl.value || '').trim().toUpperCase().startsWith('OPTIONAL');
+  if (byName) {
+    tick.checked = true;
+    tick.disabled = true;
+    note.textContent = 'Optional by name — any section starting with "OPTIONAL" is opt-in automatically.';
+  } else {
+    tick.disabled = false;
+    note.textContent = '';
+  }
+}
+
+function openSectionEditModal(sectionName) {
+  const sec = bomSectionMap[sectionName];
+  if (!sec) return toast('Section not found', 'error');
+  _editingSectionName = sectionName;
+  document.getElementById('es-name').value = sectionName;
+  document.getElementById('es-optional').checked = !!sec.is_optional;
+  _esSyncOptionalLock();
+  openModal('modal-edit-section');
+}
+
+async function saveSectionFromModal() {
+  const sec = bomSectionMap[_editingSectionName];
+  if (!sec) return toast('Section not found', 'error');
+  const name = (document.getElementById('es-name').value || '').trim();
+  if (!name) return toast('Section name cannot be empty', 'error');
+  const tick = document.getElementById('es-optional');
+  const body = { is_optional: !!tick.checked };
+  if (name !== _editingSectionName) body.name = name;
+  try {
+    await api('PUT', `/api/bom-sections/${sec.id}`, body);
+    closeModal('modal-edit-section');
+    toast(`Section "${name}" saved`, 'success');
+    await loadBOMSections();
+    await loadBOM(currentTTId);
+  } catch(e) {
+    toast('Save failed: ' + e.message, 'error');
+  }
+}
+
+async function deleteSectionFromModal() {
+  const sec = bomSectionMap[_editingSectionName];
+  if (!sec) return toast('Section not found', 'error');
+  const sure = await confirmModal(
+    `Delete section "${_editingSectionName}"? This is only possible while no BOM lines use it.`,
+    { title: 'Delete section', okText: 'Delete', danger: true });
+  if (!sure) return;
+  try {
+    await api('DELETE', `/api/bom-sections/${sec.id}`);
+    closeModal('modal-edit-section');
+    toast(`Section "${_editingSectionName}" deleted`, 'success');
+    await loadBOMSections();
+    await loadBOM(currentTTId);
+  } catch(e) {
+    toast(e.message, 'error');   // 409 carries the "used by N BOM lines" message
+  }
+}
+
 async function setSectionMultiplier(sectionName, currentMult) {
   const input = await promptModal(
     `Enter a multiplier for "${sectionName}" (e.g. 2 for two sides, 1 for default).`,
@@ -857,8 +927,8 @@ function renderBOM(items) {
       + sectionBadge('#1f1530', '#a371f7', '#6b3fb5', 'review',   reviewCount,   'manual-review');
 
     const renameBtn = secInfo
-      ? ` <span onclick='event.stopPropagation();renameSection(${catJson})'
-            title="Rename section"
+      ? ` <span onclick='event.stopPropagation();openSectionEditModal(${catJson})'
+            title="Edit section (rename · optional flag · delete)"
             style="margin-left:6px;opacity:.4;font-size:11px;cursor:pointer">✎</span>`
       : '';
 

@@ -736,6 +736,29 @@ async def update_bom_section(section_id: int, request: Request, db: Session = De
             "is_optional": section_effective_optional(row.name, row.is_optional)}
 
 
+@router.delete("/api/bom-sections/{section_id}")
+async def delete_bom_section(section_id: int, request: Request, db: Session = Depends(get_db)):
+    """Delete a BOM section — refused (409) while ANY bill-of-materials row still
+    references it, by FK id or by the legacy string column. Fail-loud by design:
+    the admin reassigns/deletes the rows first, we never silently orphan them."""
+    require_admin(request, db)
+    row = db.query(BOMSection).filter_by(id=section_id).first()
+    if not row:
+        raise HTTPException(status_code=404)
+    in_use = (db.query(BillOfMaterial)
+              .filter((BillOfMaterial.bom_section_id == section_id)
+                      | (BillOfMaterial.bom_section == row.name))
+              .count())
+    if in_use:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Section '{row.name}' is used by {in_use} BOM line"
+                   f"{'s' if in_use != 1 else ''} — move or delete those lines first.")
+    db.delete(row)
+    db.commit()
+    return {"ok": True, "deleted": row.name}
+
+
 # ─── Body Option Groups ───────────────────────────────────────────────────────
 
 @router.post("/api/bom/bulk-selection-mode")

@@ -53,6 +53,15 @@ SectionSnapshot = namedtuple(
 )
 
 
+def section_effective_optional(name, flag) -> bool:
+    """A section is opt-in (excluded from costing totals until the user enables
+    it) when its admin flag says so OR its name is prefixed OPTIONAL — Michael's
+    rule, 17 Jul 2026 (v1.42): any "OPTIONAL …" category behaves like OPTIONAL
+    EXTRAS with zero further admin work. Read-time derivation only — the stored
+    BOMSection.is_optional flag is never written by this rule."""
+    return bool(flag) or (name or "").strip().upper().startswith("OPTIONAL")
+
+
 def _load_section_snapshot() -> SectionSnapshot:
     """Single DB hit → pre-built lookup dicts. Runs at most once per TTL per worker."""
     db = SessionLocal()
@@ -63,7 +72,7 @@ def _load_section_snapshot() -> SectionSnapshot:
                 name=s.name,
                 sort_order=s.sort_order,
                 multiplier=s.multiplier or 1.0,
-                is_optional=bool(s.is_optional),
+                is_optional=section_effective_optional(s.name, s.is_optional),
                 archived_at=s.archived_at,
                 body_option_master_id=s.body_option_master_id,
             )

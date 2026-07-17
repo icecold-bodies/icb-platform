@@ -2380,15 +2380,20 @@ async function restoreChassisSelection(ch) {
 // or without a UI snapshot, so saved extras always re-balance on edit.
 function restoreOptionalSectionsFromResult(tid, items) {
   if (!window.OptionalSections || !Array.isArray(items) || !tid) return;
+  // v1.42 — key off inclusion only, NOT the save-time section_is_optional flag.
+  // A section can become optional after the save (the OPTIONAL-name-prefix rule,
+  // or an admin flagging it later): filtering on the saved flag would default-
+  // exclude those lines on reopen and silently drop the total. Enabling a
+  // non-optional section is a server-side no-op, so the wider set is safe.
   const enabled = new Set();
   items.forEach(it => {
-    if (it && it.section_is_optional && !it.excluded && it.bom_section_id != null) {
+    if (it && !it.excluded && it.bom_section_id != null) {
       enabled.add(+it.bom_section_id);
     }
   });
   const rowExcl = new Set();
   items.forEach(it => {
-    if (!it || !it.section_is_optional || it.bom_section_id == null) return;
+    if (!it || it.bom_section_id == null) return;
     const bid = it.bom_id != null ? it.bom_id : it.id;
     if (bid == null) return;
     if (enabled.has(+it.bom_section_id) && it.excluded) rowExcl.add(+bid);
@@ -2419,7 +2424,10 @@ function buildEditReplay(savedItems) {
     if (b == null || it.excluded) return;
     if (it.formula != null)    formulaOverrides[String(b)] = it.formula;
     if (it.unit_price != null) savedPrices[String(b)]      = it.unit_price;
-    if (it.section_is_optional && it.bom_section_id != null) optionalEnabled.add(+it.bom_section_id);
+    // v1.42 — every included section rides the enabled set (not just save-time
+    // optional ones) so sections that BECAME optional since the save replay
+    // included, mirroring restoreOptionalSectionsFromResult.
+    if (it.bom_section_id != null) optionalEnabled.add(+it.bom_section_id);
   });
   return { userExcluded, formulaOverrides, savedPrices, optionalEnabled: [...optionalEnabled] };
 }

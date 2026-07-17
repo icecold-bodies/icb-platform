@@ -20,7 +20,7 @@ from ..services import (
     _compute_mounting_cleat_cost,
     _resolve_bom_section, _resolve_body_option_group, _resolve_body_option_subgroup,
     archive_trailer_template_binding,
-    get_section_snapshot,
+    get_section_snapshot, section_effective_optional,
 )
 from ..templates_config import templates
 
@@ -674,8 +674,10 @@ async def link_section_to_body_option(tt_id: int, request: Request, db: Session 
 @router.get("/api/bom-sections")
 async def list_bom_sections(db: Session = Depends(get_db)):
     rows = db.query(BOMSection).order_by(BOMSection.sort_order, BOMSection.name).all()
+    # is_optional is the EFFECTIVE value (stored flag OR the OPTIONAL-name-prefix
+    # rule, v1.42) — the calculators and the Body Templates styling read this.
     return [{"id": r.id, "name": r.name, "multiplier": r.multiplier or 1.0,
-             "is_optional": bool(r.is_optional)} for r in rows]
+             "is_optional": section_effective_optional(r.name, r.is_optional)} for r in rows]
 
 
 @router.post("/api/bom-sections")
@@ -689,7 +691,8 @@ async def create_bom_section(request: Request, db: Session = Depends(get_db)):
     if existing:
         return {"id": existing.id, "name": existing.name,
                 "multiplier": existing.multiplier or 1.0,
-                "is_optional": bool(existing.is_optional), "created": False}
+                "is_optional": section_effective_optional(existing.name, existing.is_optional),
+                "created": False}
     last = db.query(BOMSection).order_by(BOMSection.sort_order.desc()).first()
     sort_order = (last.sort_order + 1) if last else 0
     row = BOMSection(name=name, sort_order=sort_order,
@@ -699,7 +702,8 @@ async def create_bom_section(request: Request, db: Session = Depends(get_db)):
     db.commit()
     return {"id": row.id, "name": row.name,
             "multiplier": row.multiplier or 1.0,
-            "is_optional": bool(row.is_optional), "created": True}
+            "is_optional": section_effective_optional(row.name, row.is_optional),
+            "created": True}
 
 
 @router.put("/api/bom-sections/{section_id}")
@@ -729,7 +733,7 @@ async def update_bom_section(section_id: int, request: Request, db: Session = De
             )
     db.commit()
     return {"ok": True, "name": row.name, "multiplier": row.multiplier,
-            "is_optional": bool(row.is_optional)}
+            "is_optional": section_effective_optional(row.name, row.is_optional)}
 
 
 # ─── Body Option Groups ───────────────────────────────────────────────────────

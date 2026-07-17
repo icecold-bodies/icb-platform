@@ -20,7 +20,6 @@ import {
   MessageSquare,
   MapPin,
   CalendarDays,
-  Percent,
   Banknote,
   Package,
 } from 'lucide-react'
@@ -165,7 +164,6 @@ export function CostingDetail() {
               <InfoField icon={<User size={13} strokeWidth={2.5} />} label="Customer" value={c.customer_name} />
               <InfoField icon={<Truck size={13} strokeWidth={2.5} />} label="Body type" value={c.body_type} />
               <InfoField icon={<MapPin size={13} strokeWidth={2.5} />} label="Site" value={c.site} />
-              <InfoField icon={<Percent size={13} strokeWidth={2.5} />} label="Markup" value={`${c.markup_pct}%`} />
             </div>
 
             <div className="space-y-4 lg:border-l lg:border-line lg:px-6">

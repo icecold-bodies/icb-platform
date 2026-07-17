@@ -402,7 +402,7 @@ export function PreJobCardModal({
                   </button>
                 </div>
                 {!canCreate && (
-                  <p className="mt-2 text-right text-xs text-muted">Creating Pre-Job Cards needs the sales role (§0.3).</p>
+                  <p className="mt-2 text-right text-xs text-muted">Creating Pre-Job Cards needs the Sales or Full Cost Access role (§0.3).</p>
                 )}
               </div>
             )

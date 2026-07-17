@@ -6642,3 +6642,427 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// v1.42 — Paste body options + dims from Excel (Calculator 1 only)
+// ═══════════════════════════════════════════════════════════════════════════
+// Nadie's flow: copy the settings block in the GRP costings workbook (Excel
+// puts TSV on the clipboard), paste into the modal, review the preview, Apply.
+// Application routes through the SAME primitives the manual gestures use —
+// bodyOptionSelections writes + _applyInsulationCopyZero for pair switches
+// (the exact sequence both the flat panel's radio handler and the v2 draft
+// tree's bound-flag handler run), the /api/bom variable_value PUT + _pinBodyVar
+// for thickness, and the renderer's own door-type control for DRD/SRD — so the
+// result is indistinguishable from hand-clicking on BOTH renderers. Nothing in
+// this section modifies existing handler logic.
+
+const _XP_DIM_FIELDS = { LENGTH: 'f-length', WIDTH: 'f-width', HEIGHT: 'f-height' };
+let _xpApplying = false;   // one apply at a time — the preview keeps Apply disabled while set
+
+function _xpNum(cell) {
+  const t = String(cell == null ? '' : cell).trim().replace(',', '.');
+  return /^-?\d+(?:\.\d+)?$/.test(t) ? parseFloat(t) : null;
+}
+
+function _xpMm(v) { return `${Math.round(v * 1000)} mm`; }
+
+// TSV → [{label, numerics[], yn}] — never throws on malformed input.
+function parseExcelPaste(text) {
+  const rows = [];
+  String(text || '').split(/\r?\n/).forEach(line => {
+    if (!line.trim()) return;
+    const cells = line.split('\t');
+    const labelIdx = cells.findIndex(c => c && c.trim());
+    if (labelIdx < 0) return;
+    const label = cells[labelIdx].trim().toUpperCase();
+    const rest = cells.slice(labelIdx + 1);
+    const numerics = rest.map(_xpNum).filter(v => v != null);
+    const yn = rest.map(c => String(c == null ? '' : c).trim().toUpperCase())
+                   .find(c => c === 'Y' || c === 'N') || null;
+    rows.push({ label, numerics, yn });
+  });
+  return rows;
+}
+
+// Is there a rendered control for this row in the active panel (either renderer)?
+function _xpRowRendered(id) {
+  const bid = String(id);
+  if (document.querySelector(`#body-options-list input[data-bom-id='${bid}']`)) return true;
+  return [...document.querySelectorAll('#body-options-list [data-draft-flag-mids]')]
+    .some(el => (el.dataset.draftFlagMids || '').split(',').includes(bid));
+}
+
+// Door token from a CONTROL label. The v2 folder labels read "DRD DOORS" /
+// "SRD DOORS", which _doorFromSelectorName (exact-name / DOUBLE / SINGLE) does
+// not match — a word-boundary token check covers both vocabularies.
+function _xpDoorFromLabel(text) {
+  const n = (text || '').toUpperCase();
+  if (/\bDRD\b/.test(n)) return 'DRD';
+  if (/\bSRD\b/.test(n)) return 'SRD';
+  return _doorFromSelectorName(text);
+}
+
+// Parsed rows → an apply plan against the CURRENT trailer's body-option rows.
+// Pure read: builds actions, skips, and error chips; applies nothing.
+function buildExcelPastePlan(rows) {
+  const plan = { tid: document.getElementById('trailer-select')?.value || '',
+                 dims: [], door: null, pairs: [], radios: [], ticks: [],
+                 skipped: [], errors: [], anything: false };
+  const opts = (bomData || []).filter(r => r.is_body_option && r.material_name);
+  const byName = {};
+  opts.forEach(r => {
+    const k = r.material_name.trim().toUpperCase();
+    (byName[k] = byName[k] || []).push(r);
+  });
+
+  // A settings block never repeats a label — a duplicate is a stray copy; the
+  // LAST line wins everywhere (preview and apply agree by construction).
+  const byLabel = new Map();
+  rows.forEach(r => byLabel.set(r.label, r));
+
+  const pairRecs = {};    // gkey → {group, sides:{EPS:{row,yn,val}, PU:{...}}}
+  const radioRecs = {};   // gkey → {group, sub, options:[{row,yn,label}]} — non-pair mutex subgroups
+  [...byLabel.values()].forEach(rw => {
+    if (rw.label in _XP_DIM_FIELDS) {
+      const v = rw.numerics.length ? rw.numerics[0] : null;   // FIRST numeric = internal size; second (cutting size) ignored
+      if (v == null) plan.skipped.push({ label: rw.label, why: 'no numeric value — skipped' });
+      else if (v <= 0 || v > 100) plan.skipped.push({ label: rw.label, why: `value ${v} out of range — skipped` });
+      else plan.dims.push({ label: rw.label, field: _XP_DIM_FIELDS[rw.label], value: v });
+      return;
+    }
+    const matches = byName[rw.label];
+    if (!matches) { plan.skipped.push({ label: rw.label, why: 'not recognised — skipped' }); return; }
+    // A trailer can carry duplicate-named masters (v2 hides legacy copies) —
+    // prefer the row that is a real EPS/PU pair member, then a rendered one.
+    const row = matches.find(r => _insulationPairFor(r.id))
+             || matches.find(r => _xpRowRendered(r.id))
+             || matches[0];
+    const pair = _insulationPairFor(row.id);
+    if (pair) {
+      const gkey = _boSubgroupKey(row);
+      const side = (row.material_name || '').toUpperCase().includes('EPS') ? 'EPS' : 'PU';
+      // Pasted thickness: 0 means "keep current" (copy-zero governs); negatives /
+      // absurd magnitudes never reach the shared template (manual bv-edit parity).
+      let val = rw.numerics.length ? rw.numerics[0] : null;
+      if (val != null && (val < 0 || val >= 1)) {
+        plan.skipped.push({ label: rw.label, why: `thickness ${val} out of range — selection applied, thickness kept` });
+        val = null;
+      }
+      if (val === 0) val = null;
+      const rec = (pairRecs[gkey] = pairRecs[gkey] || { gkey, group: row.body_option_group, sides: {} });
+      rec.sides[side] = { row, yn: rw.yn, val };
+      return;
+    }
+    // Door-type selector / master rows (material_name = the group, or a
+    // DOUBLE/SINGLE selector) must never take the tick path — the door is
+    // driven via the renderer's own control, keyed off the pair Y rows.
+    if (_DRDSR_TOGGLE_GROUPS.includes(row.body_option_group) || _doorFromSelectorName(row.material_name)) {
+      plan.skipped.push({ label: rw.label, why: 'door-type row — the door follows the DRD/SRD insulation Y' });
+      return;
+    }
+    if (rw.yn == null) { plan.skipped.push({ label: rw.label, why: 'no Y/N cell — skipped' }); return; }
+    // Non-pair rows inside a mutex subgroup (radio semantics in both renderers)
+    // must not be applied as independent ticks — collect and resolve per group.
+    const gkey = _boSubgroupKey(row);
+    const sub = row.body_option_subgroup || '';
+    const siblings = sub ? opts.filter(r => _boSubgroupKey(r) === gkey) : [];
+    if (sub && siblings.length > 1) {
+      const rec = (radioRecs[gkey] = radioRecs[gkey] || { gkey, group: row.body_option_group, sub, options: [] });
+      rec.options.push({ row, yn: rw.yn, label: rw.label });
+      return;
+    }
+    plan.ticks.push({ label: rw.label, rows: matches, on: rw.yn === 'Y' });
+  });
+
+  // Resolve each EPS/PU pair: the Y side wins; both-Y = data error (chip +
+  // exclude, everything else still applies); both-N / no-Y = untouched.
+  const doorActions = [];
+  Object.values(pairRecs).forEach(rec => {
+    const yes = ['EPS', 'PU'].filter(s => rec.sides[s] && rec.sides[s].yn === 'Y');
+    const isDoor = _DRDSR_TOGGLE_GROUPS.includes(rec.group);
+    if (yes.length === 2) { plan.errors.push({ label: `${rec.group} insulation`, why: 'both EPS and PU marked Y — group skipped' }); return; }
+    if (yes.length === 0) { plan.skipped.push({ label: `${rec.group} insulation`, why: 'no Y side — left unchanged' }); return; }
+    const chosen = rec.sides[yes[0]];
+    const action = { group: rec.group, side: yes[0], row: chosen.row, thickness: chosen.val };
+    if (isDoor) doorActions.push(action); else plan.pairs.push(action);
+  });
+
+  // Non-pair mutex subgroups: exactly one Y selects it; several Y = data error.
+  Object.values(radioRecs).forEach(rec => {
+    const yes = rec.options.filter(o => o.yn === 'Y');
+    if (yes.length > 1) { plan.errors.push({ label: `${rec.group} · ${rec.sub}`, why: 'more than one option marked Y — group skipped' }); return; }
+    if (!yes.length) { plan.skipped.push({ label: `${rec.group} · ${rec.sub}`, why: 'no Y option — left unchanged' }); return; }
+    plan.radios.push({ label: yes[0].label, row: yes[0].row, gkey: rec.gkey });
+  });
+
+  // Door type follows the pairs: Y in exactly one of DRD/SRD selects that door;
+  // Y in both is a data error — skip BOTH door groups, apply the rest.
+  if (doorActions.length === 2) {
+    plan.errors.push({ label: 'Door type', why: 'Y in BOTH DRD and SRD — door groups skipped' });
+  } else if (doorActions.length === 1) {
+    plan.door = doorActions[0];
+  }
+
+  plan.anything = !!(plan.dims.length || plan.pairs.length || plan.radios.length || plan.ticks.length || plan.door);
+  return plan;
+}
+
+// ── Apply primitives (shared by both renderers) ─────────────────────────────
+
+function _xpIsV2Panel() {
+  return !!document.querySelector('#body-options-list [data-draft-folder], #body-options-list [data-draft-flag-mids]');
+}
+
+function _xpWaitFor(cond, ms) {
+  return new Promise(res => {
+    const t0 = Date.now();
+    (function poll() {
+      let ok = false;
+      try { ok = !!cond(); } catch (_) {}
+      if (ok) return res(true);
+      if (Date.now() - t0 > ms) return res(false);
+      setTimeout(poll, 60);
+    })();
+  });
+}
+
+// Make `grp` (DRD|SRD) the quoted rear door via the active renderer's own door
+// control. Returns true when the door verifiably switched — the caller must
+// not write door-pair thickness after a false. The v2 click handler is async
+// fire-and-forget, so after the store-level settle we allow a short grace for
+// its awaited carry-PUT chain to drain before our own writes on the same rows.
+async function _xpEnsureDoor(grp) {
+  if (drdSrdEnabled[grp] && _selectedRearDoor() === grp) return true;
+  if (!_xpIsV2Panel()) {
+    await onDrdSrdToggle(grp, true);   // flat pill handler — fully self-contained + awaited
+    return true;
+  }
+  const controls = [
+    ...document.querySelectorAll('#body-options-list input[data-draft-folder]'),
+    ...document.querySelectorAll('#body-options-list input[data-draft-cat], #body-options-list input[data-draft-cat-masterless]'),
+  ];
+  const doorInput = controls.find(el => _xpDoorFromLabel(el.closest('label')?.textContent || '') === grp);
+  if (!doorInput) {
+    toast(`Door type could not be switched to ${grp} automatically — pick it by hand`, 'warn');
+    return false;
+  }
+  if (!doorInput.checked) doorInput.click();
+  const okDoor = await _xpWaitFor(() => drdSrdEnabled[grp] && _selectedRearDoor() === grp, 4000);
+  await _xpWaitFor(() => {
+    const p = _doorInsulationPair(grp);
+    return !p || (Number(p.eps.variable_value) || 0) > 0 || (Number(p.pu.variable_value) || 0) > 0;
+  }, 4000);
+  await new Promise(r => setTimeout(r, 400));   // grace: carry PUTs are sequential-awaited inside the handler
+  if (!okDoor) toast(`Door type did not settle on ${grp} — check the door selection`, 'warn');
+  return okDoor;
+}
+
+// Select one side of an EPS/PU pair — the exact store-write + copy-zero
+// sequence both renderers' own radio handlers run (the flat handler adds a
+// switch-ALL-pairs confirmation modal; per-pair "No" semantics are what a
+// paste wants, which is also precisely what the v2 tree handler does).
+async function _xpSelectPairSide(row) {
+  const gkey = _boSubgroupKey(row);
+  bomData.forEach(it => {
+    if (it.is_body_option && _boSubgroupKey(it) === gkey) bodyOptionSelections[String(it.id)] = false;
+  });
+  bodyOptionSelections[String(row.id)] = true;
+  await _applyInsulationCopyZero(String(row.id));
+  // Pin BOTH sides regardless of whether copy-zero acted — when the template
+  // already matches, copy-zero no-ops and pins nothing, but an in-edit paste
+  // still needs the pin refreshed or the recompute replays the SAVED values
+  // (the N9936 frozen-figure mechanism, v1.42.1).
+  const pair = _insulationPairFor(String(row.id));
+  if (pair) {
+    const other = String(pair.eps.id) === String(row.id) ? pair.pu : pair.eps;
+    _pinBodyVar(row, Number(row.variable_value) || 0);
+    _pinBodyVar(other, 0);
+  }
+}
+
+// Pasted thickness (metres) onto a selected row — same PUT as the manual
+// bv-edit blur, plus the _pinBodyVar the carry/copy paths do (v1.42.1).
+// Pin FIRST and unconditionally: the pin must reflect the pasted value even
+// when the shared template already holds it (edit-mode parity).
+async function _xpSetThickness(row, v) {
+  _pinBodyVar(row, v);
+  if (row.variable_value != null && Math.abs(Number(row.variable_value) - v) < 1e-9) return false;
+  await api('PUT', `/api/bom/${row.id}`, { variable_value: v });
+  row.variable_value = v;
+  return true;
+}
+
+// Non-pair mutex subgroup (radio semantics): clear the group, select the Y row —
+// the same store shape both renderers' radio handlers write; the shared tail
+// re-render syncs the controls.
+function _xpSelectRadio(action) {
+  bomData.forEach(it => {
+    if (it.is_body_option && _boSubgroupKey(it) === action.gkey) bodyOptionSelections[String(it.id)] = false;
+  });
+  bodyOptionSelections[String(action.row.id)] = true;
+}
+
+// Independent tickbox (floor type / kick plates / any non-pair option).
+// Flat panel: route through onBodyOptToggleChange (couplings + warning modal
+// behave exactly as manual clicks). v2 tree: the bound-flag checkbox handler
+// is a plain store write — replicated here; the shared tail re-renders.
+function _xpSetTick(tick) {
+  tick.rows.forEach(row => {
+    const bid = String(row.id);
+    if (!!bodyOptionSelections[bid] === tick.on) return;
+    if (!_xpIsV2Panel()) {
+      const el = document.querySelector(`#body-options-list input[type="checkbox"][data-bom-id="${bid}"]`);
+      if (el) { el.checked = tick.on; onBodyOptToggleChange(el); return; }
+      onBodyOptToggleChange({ dataset: { bomId: bid }, checked: tick.on });
+      return;
+    }
+    bodyOptionSelections[bid] = tick.on;
+  });
+}
+
+// ── Orchestration ────────────────────────────────────────────────────────────
+// Order: dims → door type → insulation pairs (incl. the door's pair) → mutex
+// radios → tickboxes → the shared render/save/recalc tail — so the rear-door
+// carry sees the final door selection before any pasted pair thickness lands.
+// The tail runs even when a PUT fails mid-way (finally) so the panel, the
+// localStorage stores and the template never end up rendering different states.
+async function applyExcelPastePlan(plan) {
+  if (plan.tid !== (document.getElementById('trailer-select')?.value || '')) {
+    toast('Body type changed since the paste — nothing applied', 'warn');
+    return 0;
+  }
+  let applied = 0, templateWrites = 0, failure = null;
+  try {
+    plan.dims.forEach(d => {
+      const el = document.getElementById(d.field);
+      if (!el) return;
+      el.value = String(d.value);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      applied++;
+    });
+
+    let doorOk = true;
+    if (plan.door) doorOk = await _xpEnsureDoor(plan.door.group);
+
+    // Skip the door's own pair when the door never switched — writing its
+    // thickness would land on a non-quoted door's rows.
+    const pairActions = plan.door && doorOk ? [...plan.pairs, plan.door] : plan.pairs;
+    for (const a of pairActions) {
+      await _xpSelectPairSide(a.row);
+      if (a.thickness != null && (await _xpSetThickness(a.row, a.thickness))) templateWrites++;
+      applied++;
+    }
+
+    plan.radios.forEach(r => { _xpSelectRadio(r); applied++; });
+
+    // Kick plates AFTER floor types so explicit Y/N wins the flat-panel
+    // rice-grain auto-tick coupling; close its advisory modal if it opened.
+    const ticks = [...plan.ticks].sort((x, y) =>
+      (x.label.includes('KICK') ? 1 : 0) - (y.label.includes('KICK') ? 1 : 0));
+    ticks.forEach(t => { _xpSetTick(t); applied++; });
+    closeModal('modal-kickplate-warning');
+  } catch (e) {
+    failure = e;
+  }
+
+  saveBodyOptSel();
+  renderBodyOptions(bomData);
+  refreshBomDisplay();
+  scheduleCalc();
+  if (failure) throw failure;
+  if (templateWrites) toast(`Body Template updated for ${templateWrites} material${templateWrites === 1 ? '' : 's'}`, 'info');
+  toast(`Applied ${applied} options + dims from Excel`, 'success');
+  return applied;
+}
+
+// ── Modal + preview ──────────────────────────────────────────────────────────
+
+function _xpCurrentPlan() {
+  const txt = document.getElementById('excel-paste-input')?.value || '';
+  return buildExcelPastePlan(parseExcelPaste(txt));
+}
+
+function _xpRenderPreview() {
+  if (_xpApplying) return;   // keep Apply disabled + preview frozen mid-apply
+  const box = document.getElementById('excel-paste-preview');
+  const applyBtn = document.getElementById('excel-paste-apply');
+  if (!box || !applyBtn) return;
+  const txt = document.getElementById('excel-paste-input')?.value || '';
+  const noTrailer = !(bomData || []).some(r => r.is_body_option);
+  if (!txt.trim()) { box.innerHTML = ''; applyBtn.disabled = true; return; }
+
+  const plan = _xpCurrentPlan();
+  const line = (kind, label, detail, color) =>
+    `<div data-xp-row="${kind}" data-xp-label="${escHtml(label)}" style="display:flex;justify-content:space-between;gap:12px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--border)">
+       <span style="color:var(--text)">${escHtml(label)}</span>
+       <span style="color:${color || 'var(--text-dim)'};text-align:right">${detail}</span>
+     </div>`;
+
+  let html = '';
+  if (noTrailer) {
+    html += `<div data-xp-row="warn" style="font-size:11px;color:var(--orange);padding:4px 6px">Select a body type first — nothing to match against.</div>`;
+  }
+  plan.dims.forEach(d => { html += line('dim', d.label, `${d.value}`, 'var(--blue)'); });
+  if (plan.door) html += line('door', 'Door type', `${escHtml(plan.door.group)} · ${escHtml(plan.door.side)}${plan.door.thickness != null ? ' ' + _xpMm(plan.door.thickness) : ''}`, 'var(--blue)');
+  plan.pairs.forEach(p => { html += line('pair', `${p.group} insulation`, `${escHtml(p.side)}${p.thickness != null ? ' ' + _xpMm(p.thickness) : ' (keep current thickness)'}`, 'var(--blue)'); });
+  plan.radios.forEach(r => { html += line('radio', r.label, '&#10003; selected (group radio)', '#56b08a'); });
+  plan.ticks.forEach(t => { html += line('tick', t.label, t.on ? '&#10003; selected' : '&#10007; deselected', t.on ? '#56b08a' : 'var(--text-dim)'); });
+  plan.errors.forEach(e => {
+    html += `<div data-xp-row="error" data-xp-label="${escHtml(e.label)}" style="display:flex;align-items:center;gap:6px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--border)">
+       <span style="background:#2a0d0d;border:1px solid #b03030;color:#ff6b6b;border-radius:10px;padding:1px 8px;font-weight:700;font-size:9px;letter-spacing:.5px">DATA ERROR</span>
+       <span style="color:var(--text)">${escHtml(e.label)}</span><span style="color:var(--text-dim)">${escHtml(e.why)}</span>
+     </div>`;
+  });
+  plan.skipped.forEach(s => { html += line('skip', s.label, escHtml(s.why)); });
+  if (!html) html = `<div data-xp-row="empty" style="font-size:11px;color:var(--text-dim);padding:4px 6px">Nothing recognised in the pasted text.</div>`;
+
+  const head = `<div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">Preview — nothing is applied until you click Apply.</div>`;
+  box.innerHTML = head + html;
+  const tname = document.querySelector('#trailer-select option:checked')?.textContent?.trim() || '';
+  const tline = document.getElementById('excel-paste-trailer');
+  if (tline) tline.textContent = tname ? `Body type: ${tname}` : 'No body type selected';
+  applyBtn.disabled = !(plan.anything && !noTrailer);
+}
+
+function openExcelPasteModal() {
+  const inp = document.getElementById('excel-paste-input');
+  const box = document.getElementById('excel-paste-preview');
+  if (inp) inp.value = '';
+  if (box) box.innerHTML = '';
+  const applyBtn = document.getElementById('excel-paste-apply');
+  if (applyBtn) applyBtn.disabled = true;
+  const tname = document.querySelector('#trailer-select option:checked')?.textContent?.trim() || '';
+  const tline = document.getElementById('excel-paste-trailer');
+  if (tline) tline.textContent = tname ? `Body type: ${tname}` : 'No body type selected';
+  openModal('modal-excel-paste');
+  if (inp) inp.focus();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('excel-paste-input');
+  const applyBtn = document.getElementById('excel-paste-apply');
+  if (!inp || !applyBtn) return;   // page variant without the modal
+  // 'input' fires after paste, drop, and typing alike — one parse path for all.
+  inp.addEventListener('input', _xpRenderPreview);
+  inp.addEventListener('paste', () => setTimeout(_xpRenderPreview, 0));
+  applyBtn.addEventListener('click', async () => {
+    if (_xpApplying) return;
+    _xpApplying = true;
+    applyBtn.disabled = true;
+    try {
+      // Re-parse at click time — the textarea is the single source of truth
+      // (guards against a body-type change while the modal sat open).
+      const plan = _xpCurrentPlan();
+      if (plan.anything) {
+        await applyExcelPastePlan(plan);
+        closeModal('modal-excel-paste');
+      }
+    } catch (e) {
+      toast('Excel paste failed: ' + e.message, 'error');
+    } finally {
+      _xpApplying = false;
+      _xpRenderPreview();   // re-enable Apply per current textarea content
+    }
+  });
+});

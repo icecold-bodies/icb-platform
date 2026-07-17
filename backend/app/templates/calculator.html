@@ -142,8 +142,13 @@
 
       <!-- ── Body Options (populated from draft / Excel import when present) ── -->
       <div id="body-options-section" style="display:none;border-top:1px solid var(--border);margin:12px 0 0;padding-top:12px">
-        <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
-          color:var(--text-dim);margin-bottom:10px">Body Options</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
+            color:var(--text-dim)">Body Options</span>
+          <!-- v1.42 — Nadie's Excel paste: sits OUTSIDE #body-options-list so it survives every re-render -->
+          <button id="excel-paste-btn" class="btn btn-outline btn-sm" type="button"
+            style="font-size:9px;padding:2px 8px;letter-spacing:.5px" onclick="openExcelPasteModal()">⧉ Paste from Excel</button>
+        </div>
         <div id="body-options-list"></div>
       </div>
 
@@ -548,6 +553,27 @@
     <div class="modal-footer" style="justify-content:flex-end">
       <button class="btn btn-primary" style="min-width:80px"
         onclick="closeModal('modal-kickplate-warning')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- v1.42 — Paste body options + dims from Excel (see calculator.js Excel-paste section) -->
+<div class="modal-backdrop hidden" id="modal-excel-paste">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <span class="modal-title">⧉ Paste body settings from Excel</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-excel-paste')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="excel-paste-trailer" style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px"></div>
+      <textarea id="excel-paste-input" rows="6" spellcheck="false"
+        placeholder="Copy the settings block in the costings workbook (labels + thickness + Y/N columns), then Ctrl+V here"
+        style="width:100%;resize:vertical;background:var(--bg-input);color:var(--text);border:1px dashed var(--border);border-radius:6px;padding:8px;font-family:var(--font-mono);font-size:11px;line-height:1.5"></textarea>
+      <div id="excel-paste-preview" style="margin-top:10px;max-height:300px;overflow:auto"></div>
+    </div>
+    <div class="modal-footer" style="gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal('modal-excel-paste')">Cancel</button>
+      <button class="btn btn-primary" id="excel-paste-apply" disabled>Apply</button>
     </div>
   </div>
 </div>
@@ -1165,7 +1191,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
-<script defer src="/static/js/calculator.js?v=137"></script>
+<script defer src="/static/js/calculator.js?v=138"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

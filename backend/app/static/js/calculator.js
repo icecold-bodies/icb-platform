@@ -5068,14 +5068,19 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     const verLabel    = result.version && result.version > 1 ? ` · Rev${result.version}` : '';
     const wasEditing  = !!_pendingApproveBase?.edit_record_id;
     if (wasEditing) {
-      // Keep editing the saved record so a follow-up Save overwrites the right
-      // revision (overwrite → same id; new_version → the freshly created one).
-      editingRecordId    = result.record_id;
-      editingVersion     = result.version || editingVersion;
-      editingQuoteNumber = result.quote_number || editingQuoteNumber;
-      showEditBanner({ customer_id: result.customer_id ?? _pendingApproveBase.customer_id });
       const verbed = versionAction === 'overwrite' ? 'Overwrote' : 'Saved new revision';
-      toast(`${verbed} ${editingQuoteNumber || ('#'+result.record_id)}${custName}${verLabel}`, 'success');
+      toast(`${verbed} ${result.quote_number || ('#'+result.record_id)}${custName}${verLabel}`, 'success');
+      // v1.42 (Michael 17 Jul) — the edit is committed: drop the edit chrome
+      // (banner + "Cancel edit") instead of staying in edit mode. A further
+      // save goes through the normal duplicate/version-action flow; reloading
+      // stays a clean calculator because the ?edit= query is scrubbed too.
+      editingRecordId    = null;
+      editingQuoteNumber = null;
+      editingVersion     = 1;
+      editReplay         = null;
+      editBodyVarOverrides = null;
+      document.getElementById('edit-mode-banner')?.classList.add('hidden');
+      try { history.replaceState(null, '', _skinnify(window.location.pathname)); } catch(_) {}
     } else {
       toast(`Costing approved${custName}${verLabel} — saved as #${result.record_id}`, 'success');
     }

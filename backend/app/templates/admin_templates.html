@@ -521,6 +521,37 @@
 </div>
 
 <!-- ── Link Section to Body Option Modal ─────────────────────────── -->
+<!-- v1.42 — Edit Section modal (rename + optional flag + delete; pencil on section headers) -->
+<div class="modal-backdrop hidden" id="modal-edit-section">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">Edit Section</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-edit-section')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Section name</label>
+        <input class="form-control" id="es-name" oninput="_esSyncOptionalLock()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="es-optional" style="width:13px;height:13px;accent-color:var(--red,#e35d6a)">
+          Optional (opt-in) — lines excluded from costing totals until the user enables them
+        </label>
+        <div id="es-optional-note" style="font-size:11px;color:var(--text-dim);margin-top:4px;min-height:14px"></div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between;gap:10px">
+      <button class="btn btn-outline" id="es-delete" style="color:var(--red,#e35d6a);border-color:var(--red,#e35d6a)"
+        onclick="deleteSectionFromModal()">Delete section</button>
+      <span style="display:flex;gap:10px">
+        <button class="btn btn-outline" onclick="closeModal('modal-edit-section')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSectionFromModal()">Save</button>
+      </span>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop hidden" id="modal-link-section-to-option">
   <div class="modal" style="max-width:560px">
     <div class="modal-header">
@@ -675,7 +706,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/admin_templates.js?v=15"></script>
+<script src="/static/js/admin_templates.js?v=16"></script>
 <script src="/static/js/driver.js.iife.js"></script>
 <script>
 (function () {

@@ -14,6 +14,15 @@ import {
   Lock,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
+  User,
+  UserCheck,
+  MessageSquare,
+  MapPin,
+  CalendarDays,
+  Percent,
+  Banknote,
+  Package,
 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { apiGet } from '../../lib/api'
@@ -23,7 +32,7 @@ import { Toast } from '../../components/ui/overlays'
 import { Tooltip } from '../../components/ui/Tooltip'
 import { zar, dmy, hhmm } from '../../lib/format'
 // v1.39.1 backport (Item 5+7): demoBom/demoBomTotal removed — the BOM is now fetched live (see LiveBom below).
-import { styleForStatus, StatusPillCosting } from './statusPalette'
+import { styleForStatus, prettyStatus, StatusPillCosting } from './statusPalette'
 import { PreJobCardModal } from './PreJobCardModal'
 import { RepairPhasePanel } from './RepairPhasePanel'
 import { PreJobSignoffModal } from './PreJobSignoffModal'
@@ -133,39 +142,72 @@ export function CostingDetail() {
       </div>
 
       <div className="mb-4 grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <SectionTitle>Configuration</SectionTitle>
-          <div className="flex flex-col gap-4 lg:flex-row">
-            <div className="flex-1">
-              <dl className="grid grid-cols-2 gap-3 text-sm">
-                <Row label="Customer" value={c.customer_name} />
-                {c.contact_name ? <Row label="Attention" value={c.contact_name} /> : null}
-                <Row label="Body type" value={c.body_type} />
-                <Row label="Quote type" value={c.quote_type} />
-                <Row label="Site" value={c.site} />
-                <Row
-                  label="Chassis"
-                  value={c.requires_chassis ? (c.chassis_supplied_by === 'in-house' ? 'In-house' : 'Customer supplied') : 'Not required'}
-                  icon={c.requires_chassis ? <Truck size={13} className="text-muted" /> : undefined}
-                />
-                <Row label="Created by" value={c.created_by} />
-                <Row label="Created" value={`${dmy(c.created_at)} ${hhmm(c.created_at)}`} />
-                <Row label="Markup" value={`${c.markup_pct}%`} />
-              </dl>
+        {/* v1.42 (Michael 17 Jul) — "Quotation / Configuration Overview": header band with icon
+            tile + status badge, icon-labelled fields in divided columns, Body options as a
+            one-per-line checklist. Plain div (not Card) so the header band can bleed edge-to-edge
+            (Card's built-in p-4 can't be unset — Tailwind orders p-0 before p-4). */}
+        <div className="overflow-hidden rounded-lg border border-line bg-white shadow-sm transition-shadow duration-200 hover:shadow-md lg:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <ClipboardList size={20} />
+              </div>
+              <div>
+                <h2 className="text-[15px] font-bold leading-tight text-body">Quotation / Configuration Overview</h2>
+                <p className="mt-0.5 text-xs text-muted">Summary of customer, build type and body options</p>
+              </div>
+            </div>
+            <StatusBadgeSoft status={c.status} />
+          </div>
 
+          <div className="grid gap-x-6 gap-y-5 px-5 py-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-0">
+            <div className="space-y-4 lg:pr-6">
+              <InfoField icon={<User size={13} strokeWidth={2.5} />} label="Customer" value={c.customer_name} />
+              <InfoField icon={<Truck size={13} strokeWidth={2.5} />} label="Body type" value={c.body_type} />
+              <InfoField icon={<MapPin size={13} strokeWidth={2.5} />} label="Site" value={c.site} />
+              <InfoField icon={<Percent size={13} strokeWidth={2.5} />} label="Markup" value={`${c.markup_pct}%`} />
+            </div>
+
+            <div className="space-y-4 lg:border-l lg:border-line lg:px-6">
+              {c.contact_name && (
+                <InfoField accent="amber" icon={<UserCheck size={13} strokeWidth={2.5} />} label="Attention" value={c.contact_name} />
+              )}
+              <InfoField accent="amber" icon={<MessageSquare size={13} strokeWidth={2.5} />} label="Quote type" value={c.quote_type} />
+              <InfoField
+                accent="amber"
+                icon={<Truck size={13} strokeWidth={2.5} />}
+                label="Chassis"
+                value={c.requires_chassis ? (c.chassis_supplied_by === 'in-house' ? 'In-house' : 'Customer supplied') : 'Not required'}
+              />
+              <InfoField
+                accent="amber"
+                icon={<CalendarDays size={13} strokeWidth={2.5} />}
+                label="Created"
+                value={`${dmy(c.created_at)} ${hhmm(c.created_at)}`}
+                sub={`by ${c.created_by}`}
+              />
+            </div>
+
+            <BodyOptionsPanel calculationId={c.calculation_id ?? null} mode={mode} />
+          </div>
+
+          {((c.extras_list && c.extras_list.length > 0) || (c.quote_type === 'Repair' && c.repair_scope)) && (
+            <div className="space-y-4 border-t border-line px-5 py-4">
               {c.extras_list && c.extras_list.length > 0 && (
-                <div className="mt-4">
-                  <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Extras ({c.extras_count})</div>
+                <div>
+                  <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
+                    <Package size={13} strokeWidth={2.5} /> Extras ({c.extras_count})
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
                     {c.extras_list.map((x) => (
-                      <span key={x} className="rounded-full bg-surface-alt px-2 py-0.5 text-xs">{x}</span>
+                      <span key={x} className="rounded-full border border-line bg-surface-alt px-2.5 py-0.5 text-xs font-medium text-body">{x}</span>
                     ))}
                   </div>
                 </div>
               )}
 
               {c.quote_type === 'Repair' && c.repair_scope && (
-                <div className="mt-4 rounded-md border border-[#7E22CE]/30 bg-[#7E22CE]/5 p-3">
+                <div className="rounded-md border border-[#7E22CE]/30 bg-[#7E22CE]/5 p-3">
                   <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#7E22CE]">Repair scope</div>
                   <p className="text-sm text-body">{c.repair_scope}</p>
                   {c.repair_phase_entry && (
@@ -174,37 +216,45 @@ export function CostingDetail() {
                 </div>
               )}
             </div>
+          )}
+        </div>
 
-            <BodyOptionsPanel calculationId={c.calculation_id ?? null} mode={mode} />
+        <div className="overflow-hidden rounded-lg border border-line bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
+          <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-status-green/10 text-status-green">
+              <Banknote size={20} />
+            </div>
+            <div>
+              <h2 className="text-[15px] font-bold leading-tight text-body">Cost Summary</h2>
+              <p className="mt-0.5 text-xs text-muted">Manufacturing cost & selling price build-up</p>
+            </div>
           </div>
-        </Card>
-
-        <Card>
-          <SectionTitle>Cost summary</SectionTitle>
-          {/* v1.39.1 (Michael) — full cost review as per the /results report: manufacturing cost, cost/m²,
-              margin, ratio, discount, net + SELLING PRICE. Live rows read the saved_result (the costing-object
-              c.cost_zar/markup_pct are 0 — never populated from the calc); mock rows keep the legacy fallback. */}
-          <CostSummary
-            calculationId={c.calculation_id ?? null}
-            mode={mode}
-            fallback={
-              <dl className="space-y-2 text-sm">
-                <TotalRow label="Cost" value={c.cost_zar} />
-                {(c.discount_amount ?? 0) > 0 ? (
-                  <>
-                    <TotalRow label="Before discount" value={c.gross_selling_zar ?? c.selling_zar} muted />
-                    <TotalRow label="Discount" valueText={`- ${zar(c.discount_amount ?? 0)}`} muted />
-                    <TotalRow label="Net total" value={c.selling_zar} highlight />
-                  </>
-                ) : (
-                  <TotalRow label="Selling price" value={c.selling_zar} highlight />
-                )}
-                <TotalRow label="Gross profit" value={c.gross_profit_zar} muted />
-                <TotalRow label="Markup" valueText={`${c.markup_pct}%`} muted />
-              </dl>
-            }
-          />
-        </Card>
+          <div className="px-5 py-4">
+            {/* v1.39.1 (Michael) — full cost review as per the /results report: manufacturing cost, cost/m²,
+                margin, ratio, discount, net + SELLING PRICE. Live rows read the saved_result (the costing-object
+                c.cost_zar/markup_pct are 0 — never populated from the calc); mock rows keep the legacy fallback. */}
+            <CostSummary
+              calculationId={c.calculation_id ?? null}
+              mode={mode}
+              fallback={
+                <dl className="space-y-2 text-sm">
+                  <TotalRow label="Cost" value={c.cost_zar} />
+                  {(c.discount_amount ?? 0) > 0 ? (
+                    <>
+                      <TotalRow label="Before discount" value={c.gross_selling_zar ?? c.selling_zar} muted />
+                      <TotalRow label="Discount" valueText={`- ${zar(c.discount_amount ?? 0)}`} muted />
+                      <TotalRow label="Net total" value={c.selling_zar} highlight />
+                    </>
+                  ) : (
+                    <TotalRow label="Selling price" value={c.selling_zar} highlight />
+                  )}
+                  <TotalRow label="Gross profit" value={c.gross_profit_zar} muted />
+                  <TotalRow label="Markup" valueText={`${c.markup_pct}%`} muted />
+                </dl>
+              }
+            />
+          </div>
+        </div>
       </div>
 
       {prejobCard ? (
@@ -523,12 +573,47 @@ function SignoffCheck({
   )
 }
 
-function Row({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
+// v1.42 QCO — icon-labelled field for the Quotation/Configuration Overview card.
+// Accent alternates per column (blue = identity/build, amber = commercial/provenance)
+// to mirror the ratified reference design.
+function InfoField({
+  icon,
+  label,
+  value,
+  sub,
+  accent = 'blue',
+}: {
+  icon: ReactNode
+  label: string
+  value: ReactNode
+  sub?: string
+  accent?: 'blue' | 'amber'
+}) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
-      <dd className="flex items-center gap-1 text-body">{value} {icon}</dd>
+      <div className={`mb-1 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${accent === 'amber' ? 'text-status-amber' : 'text-primary'}`}>
+        {icon}
+        {label}
+      </div>
+      <div className="text-sm font-semibold leading-snug text-body">{value}</div>
+      {sub && <div className="mt-0.5 text-xs text-muted">{sub}</div>}
     </div>
+  )
+}
+
+// Soft-tinted status badge (10% bg / 25% border of the status hex) for the card
+// header band — the reference design's "Active" pill. The page h1 keeps the solid
+// StatusPillCosting (incl. the Planning pulse); this one stays static.
+function StatusBadgeSoft({ status }: { status: string }) {
+  const s = styleForStatus(status)
+  return (
+    <span
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold"
+      style={{ backgroundColor: `${s.hex}1A`, borderColor: `${s.hex}40`, color: s.hex }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: s.hex }} />
+      {prettyStatus(status)}
+    </span>
   )
 }
 
@@ -645,23 +730,43 @@ function BodyOptionsPanel({ calculationId, mode }: { calculationId: number | nul
 
   if (mode !== 'live' || calculationId == null || err || data === undefined) return null
 
-  const panelsLine = data?.panels.length
-    ? data.panels.map((p) => `${titleCase(p.location)} — ${p.insulation} ${mm(p.thickness_m)}`).join(' · ')
-    : null
+  // v1.42 QCO — one checklist row per component (rear door / front / sides / roof /
+  // floor / floor type) so each reads at a glance; replaces the compacted " · " line.
+  // Row text stays byte-identical to the v1.42.0 format — the journey asserts on it.
+  const CheckRow = ({ label, detail }: { label: string; detail: string }) => (
+    <li className="flex items-start gap-2 animate-fadeIn">
+      <CheckCircle2 size={15} className="mt-[3px] shrink-0 text-primary" />
+      <span>
+        <span className="font-semibold">{label}</span>
+        {` — ${detail}`}
+      </span>
+    </li>
+  )
 
   return (
-    <div data-testid="body-options-panel" className="w-full shrink-0 border-t border-border pt-3 lg:mt-0 lg:w-64 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
-      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Body options</div>
+    <div data-testid="body-options-panel" className="lg:border-l lg:border-line lg:pl-6">
+      <div className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
+        <Wrench size={13} strokeWidth={2.5} />
+        Body options
+      </div>
       {data === null ? (
-        <p data-testid="body-options-not-recorded" className="text-xs text-muted">Body options not recorded on this costing.</p>
+        <p data-testid="body-options-not-recorded" className="flex items-start gap-2 text-xs text-muted">
+          <Circle size={13} className="mt-0.5 shrink-0" />
+          Body options not recorded on this costing.
+        </p>
       ) : (
-        <div className="space-y-1 text-sm text-body">
+        <ul className="space-y-2 text-sm text-body">
           {data.rear_door && (
-            <p>Rear door — {data.rear_door.door_type} · {data.rear_door.insulation} {mm(data.rear_door.thickness_m)}</p>
+            <CheckRow
+              label="Rear door"
+              detail={`${data.rear_door.door_type} · ${data.rear_door.insulation} ${mm(data.rear_door.thickness_m)}`}
+            />
           )}
-          {panelsLine && <p>{panelsLine}</p>}
-          {data.floor_type && <p>Floor type — {data.floor_type}</p>}
-        </div>
+          {data.panels.map((p) => (
+            <CheckRow key={p.location} label={titleCase(p.location)} detail={`${p.insulation} ${mm(p.thickness_m)}`} />
+          ))}
+          {data.floor_type && <CheckRow label="Floor type" detail={data.floor_type} />}
+        </ul>
       )}
     </div>
   )

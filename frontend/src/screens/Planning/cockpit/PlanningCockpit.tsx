@@ -168,19 +168,35 @@ function CockpitSkeleton() {
 }
 
 // Cockpit duplicates only the LIVE board; offline/mock demos keep using the original board.
+// v1.43 (Michael 20 Jul) — the mode LATCHES on one failed bootstrap fetch (a service
+// restart mid-session or an expired session both land here), so give the user a Retry
+// that re-runs the board fetch in place instead of requiring a full page reload.
 function CockpitMockNotice() {
+  const { refresh } = usePlanning()
+  const [retrying, setRetrying] = useState(false)
+  const retry = async () => {
+    setRetrying(true)
+    try { await refresh() } finally { setRetrying(false) }
+  }
   return (
     <div className="p-6">
       <div className="mb-1 text-[11px] text-muted">MES › Planning › Cockpit (beta)</div>
       <h1 className="mb-3 text-xl font-bold text-body">Planning Cockpit</h1>
       <Card className="max-w-xl">
         <div className="text-sm text-body">
-          The Cockpit runs on live planning data and the API isn’t reachable right now (offline / demo
-          fallback mode). Use the classic board instead — it renders the bundled demo data.
+          The Cockpit runs on live planning data and the last attempt to reach the API failed — this
+          happens when the server restarted mid-session or the session expired. Retry below, or use
+          the classic board (it renders the bundled demo data).
         </div>
-        <Link to="/plan" className="mt-3 inline-flex rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-dark">
-          Open the Plan page
-        </Link>
+        <div className="mt-3 flex gap-2">
+          <button onClick={() => void retry()} disabled={retrying}
+            className="inline-flex rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50">
+            {retrying ? 'Retrying…' : 'Retry live data'}
+          </button>
+          <Link to="/plan" className="inline-flex rounded-md border border-line px-3 py-1.5 text-sm font-semibold text-body hover:bg-surface-alt">
+            Open the Plan page
+          </Link>
+        </div>
       </Card>
     </div>
   )

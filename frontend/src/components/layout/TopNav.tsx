@@ -14,11 +14,7 @@ import {
   User,
   Crown,
   ShieldCheck,
-  Package,
-  ListChecks,
   LogOut,
-  CalendarClock,
-  ClipboardCheck,
   Building2,
   Truck,
   AlertTriangle,
@@ -59,10 +55,13 @@ const NAV_LINKS: NavEntry[] = [
   // the `perm` fields: '/materials' + '/materials?tab=forecast' → 'materials.view',
   // '/materials/suggestions' → 'materials.raise_pr', '/stores/reconciliation' →
   // 'materials.count'.
-  { to: '/materials',                label: 'Materials',      icon: Package,         k: 'nav.materials_dashboard' },
-  { to: '/materials/suggestions',    label: 'Suggestions',    icon: ListChecks,      k: 'nav.materials_suggestions' },
-  { to: '/materials?tab=forecast',   label: 'Forecast',       icon: CalendarClock,   k: 'nav.materials_forecast' },
-  { to: '/stores/reconciliation',    label: 'Reconciliation', icon: ClipboardCheck,  k: 'nav.stores_reconciliation' },
+  // 20 Jul (Michael) — the four Materials/Stores entries are HIDDEN for now (module
+  // not in day-to-day use yet). Routes stay live for direct URLs; only the menu is
+  // trimmed. Restore point: uncomment these four lines + their icon imports above.
+  // { to: '/materials',                label: 'Materials',      icon: Package,         k: 'nav.materials_dashboard' },
+  // { to: '/materials/suggestions',    label: 'Suggestions',    icon: ListChecks,      k: 'nav.materials_suggestions' },
+  // { to: '/materials?tab=forecast',   label: 'Forecast',       icon: CalendarClock,   k: 'nav.materials_forecast' },
+  // { to: '/stores/reconciliation',    label: 'Reconciliation', icon: ClipboardCheck,  k: 'nav.stores_reconciliation' },
   // WO v4.28 — Chassis lifecycle module (viewable by any authenticated user).
   { to: '/chassis',          label: 'Chassis',      icon: Truck,         k: 'nav.chassis' },
   { to: '/tablet/vacuum',    label: 'Shop Floor',   icon: Tablet,        k: 'nav.tablet_vacuum',        perm: 'tablet.signoff' },

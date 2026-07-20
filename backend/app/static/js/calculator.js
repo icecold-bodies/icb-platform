@@ -555,12 +555,51 @@ function _selectedRearDoor() {
   return on.length === 1 ? on[0] : null;
 }
 
+// v1.43 — release a flipped pair's rows from the per-trailer rowExcl store so
+// server gating re-derives them on the next calc (see the call site in
+// _applyInsulationCopyZero). The store maps to user_excluded_bom_ids (a FORCE
+// exclusion); non-optional rows in it are never legitimate user unticks, so
+// dropping them only un-pins — the server's condition/link gating still decides
+// actual inclusion. Deliberately does NOT touch editReplay.userExcluded: replay
+// mode (legacy snapshot-less records, dev-only — prod has always saved
+// snapshots) computes with include_all_items, where gating is bypassed and a
+// release would over-include the pair's OTHER side; those records keep the
+// frozen-replay semantics they have had since v1.39.9.
+function _releaseFlippedPairRows(pair) {
+  const grp = (pair.eps.body_option_group || '').trim().toUpperCase();
+  const names = [pair.eps.material_name, pair.pu.material_name]
+    .filter(Boolean).map(n => n.trim().toUpperCase());
+  const tied = new Set();
+  (bomData || []).forEach(r => {
+    if (!r || r.is_body_option) return;
+    const sec = (r.bom_section || '').trim().toUpperCase();
+    if (sec.startsWith('OPTIONAL')) return;   // opt-in sections keep their user unticks
+    const linked = (r.body_option_linked || '').trim().toUpperCase();
+    if ((grp && sec === grp) || (linked && names.includes(linked))) tied.add(+r.id);
+  });
+  if (!tied.size) return;
+  const tidVal = document.getElementById('trailer-select')?.value;
+  if (window.OptionalSections && tidVal) {
+    const excl = window.OptionalSections.loadRowExcl(+tidVal, 'c1');
+    let changed = false;
+    [...excl].forEach(id => { if (tied.has(+id)) { excl.delete(id); changed = true; } });
+    if (changed) window.OptionalSections.saveRowExcl(+tidVal, 'c1', excl);
+  }
+}
+
 // Copy-on-switch: when an insulation radio is newly selected, carry the
 // sibling's thickness onto the selected row and zero the sibling. Persists
 // both to the body template via PUT /api/bom (same flow as manual bv-edit).
 async function _applyInsulationCopyZero(selectedMasterId) {
   const pair = _insulationPairFor(selectedMasterId);
   if (!pair) return;
+  // v1.43 — a deliberate in-edit flip hands the pair's rows back to the server's
+  // own gating. Two force-exclusion stores can otherwise pin the newly-selected
+  // side's material lines as "Excluded by user" (N9950-class report, 20 Jul):
+  // the edit-replay freeze on snapshot-less records, and the per-trailer rowExcl
+  // store. Release every BOM row in the pair's section or linked to either
+  // master — conditions/gating re-derive their inclusion on the next calc.
+  _releaseFlippedPairRows(pair);
   // Only thickness-bearing pairs participate.
   if (pair.eps.variable_value == null && pair.pu.variable_value == null) return;
   const selected = String(pair.eps.id) === String(selectedMasterId) ? pair.eps : pair.pu;
@@ -2391,9 +2430,19 @@ function restoreOptionalSectionsFromResult(tid, items) {
       enabled.add(+it.bom_section_id);
     }
   });
+  // v1.43 — the rowExcl store maps to user_excluded_bom_ids (a FORCE exclusion),
+  // so it may only ever hold rows from OPTIONAL-behaving sections. The v1.42
+  // relaxation swept condition-excluded rows from NORMAL sections in here too;
+  // those exclusions are DYNAMIC (server gating re-derives them on every calc)
+  // and force-pinning them froze radio flips as "Excluded by user" (N9950-class
+  // report, 20 Jul). Optional-behaving = save-time flag OR the OPTIONAL name
+  // prefix (covers sections that became optional-by-name after the save).
   const rowExcl = new Set();
   items.forEach(it => {
     if (!it || it.bom_section_id == null) return;
+    const _optish = it.section_is_optional
+      || (it.bom_section || '').trim().toUpperCase().startsWith('OPTIONAL');
+    if (!_optish) return;
     const bid = it.bom_id != null ? it.bom_id : it.id;
     if (bid == null) return;
     if (enabled.has(+it.bom_section_id) && it.excluded) rowExcl.add(+bid);
@@ -5235,6 +5284,24 @@ function renderBOMWithCosts(items, bomRef) {
     ? window.OptionalSections.loadEnabled(tidNum) : new Set();
   const _optRowExcl = (window.OptionalSections && tidNum)
     ? window.OptionalSections.loadRowExcl(tidNum, 'c1') : new Set();
+  // v1.43 self-heal — the row-exclusion store is ONLY for per-row unticks inside
+  // OPTIONAL sections. A v1.42 edit-reopen briefly swept condition-excluded rows
+  // from NORMAL sections in here too (they then rode user_excluded_bom_ids and
+  // stuck as "Excluded by user" across radio flips — the N9950-class report,
+  // 20 Jul). Drop any stored id whose item's section is not optional; persists
+  // so a polluted browser heals itself on the next calc.
+  if (_optRowExcl.size && window.OptionalSections && tidNum) {
+    const _optByBid = {};
+    items.forEach(it => {
+      const b = it && (it.bom_id != null ? it.bom_id : it.id);
+      if (b != null) _optByBid[+b] = !!it.section_is_optional;
+    });
+    let _healed = false;
+    [..._optRowExcl].forEach(bid => {
+      if (_optByBid[bid] === false) { _optRowExcl.delete(bid); _healed = true; }
+    });
+    if (_healed) window.OptionalSections.saveRowExcl(tidNum, 'c1', _optRowExcl);
+  }
 
   let gIdx = 0;
   for (const [cat, its] of sortedEntries) {

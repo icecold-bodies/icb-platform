@@ -557,6 +557,31 @@
   </div>
 </div>
 
+<!-- v1.43 — Side doors selected on an explosive body: offer rear-door removal -->
+<div class="modal-backdrop hidden" id="modal-side-doors">
+  <div class="modal" style="max-width:430px">
+    <div class="modal-header">
+      <span class="modal-title" style="color:var(--orange)">Side doors selected</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-side-doors')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text);line-height:1.6">
+        This body now includes <strong>side doors</strong>. Remove the rear doors
+        (<span style="font-family:var(--font-mono);font-size:11px">DRD / SRD + DOOR FITTINGS</span>)
+        from the calculation?
+      </p>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:6px">
+        Keeping both is fine — some clients take side doors <em>and</em> rear doors.
+        You can change this any time via the DOOR TYPE selector.
+      </p>
+    </div>
+    <div class="modal-footer" style="gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal('modal-side-doors')">Keep both</button>
+      <button class="btn btn-primary" onclick="removeRearDoorsFromPrompt()">Remove rear doors</button>
+    </div>
+  </div>
+</div>
+
 <!-- v1.42 — Paste body options + dims from Excel (see calculator.js Excel-paste section) -->
 <div class="modal-backdrop hidden" id="modal-excel-paste">
   <div class="modal" style="max-width:580px">
@@ -1191,7 +1216,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
-<script defer src="/static/js/calculator.js?v=141"></script>
+<script defer src="/static/js/calculator.js?v=142"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

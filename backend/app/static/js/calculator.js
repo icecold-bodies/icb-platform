@@ -4295,6 +4295,7 @@ function renderBodyOptions(bomItems) {
   _enforceInsulationInvariant();
   _enforceRearDoorInvariant();
   validateInsulationPairs();
+  _updateNoDoorsWarning();   // v1.43 — no-doors amber guard (both renderers)
 }
 
 // ── WO v1.39.10 — the GENERAL insulation invariant (Michael, 2 Jul) ─────────
@@ -5197,6 +5198,8 @@ window.toggleOptionalSectionCalc1 = function (cb) {
   let ids = [];
   try { ids = JSON.parse(decodeURIComponent(cb.dataset.bomIds || '[]')); } catch (_) { ids = []; }
   window.OptionalSections.toggleSection(tid, 'c1', sectionId, ids, !cb.checked);
+  // v1.43 — enabling a section that carries a side-doors item offers rear-door removal.
+  if (window.OptionalSections.loadEnabled(tid).has(+sectionId)) _maybeOfferRearDoorRemoval(ids);
   _rerenderBOMLocal();
   if (typeof scheduleCalc === 'function') scheduleCalc();
   else if (typeof calculate === 'function') calculate();
@@ -5213,6 +5216,7 @@ window.toggleOptionalRowCalc1 = function (bomId, excluded, sectionId) {
   let ids = [];
   try { ids = JSON.parse(decodeURIComponent(hdrTick?.dataset?.bomIds || '[]')); } catch (_) { ids = []; }
   window.OptionalSections.toggleRow(tid, 'c1', sectionId, ids, +bomId, !!excluded);
+  if (!excluded) _maybeOfferRearDoorRemoval([+bomId]);   // v1.43 — row just included
   _rerenderBOMLocal();
   if (typeof scheduleCalc === 'function') scheduleCalc();
   else if (typeof calculate === 'function') calculate();
@@ -5226,6 +5230,7 @@ window.bulkOptionalRowsCalc1 = function (ev, sectionId, idsAttr, selectAll) {
   let ids = [];
   try { ids = JSON.parse(decodeURIComponent(idsAttr || '[]')); } catch (_) { ids = []; }
   window.OptionalSections.bulkRows(+tidVal, 'c1', sectionId, ids, !!selectAll);
+  if (selectAll) _maybeOfferRearDoorRemoval(ids);   // v1.43 — bulk include
   _rerenderBOMLocal();
   if (typeof scheduleCalc === 'function') scheduleCalc();
   else if (typeof calculate === 'function') calculate();
@@ -5240,6 +5245,7 @@ window.setOptionalSectionCalc1 = function (ev, sectionId, idsAttr, enable) {
   let ids = [];
   try { ids = JSON.parse(decodeURIComponent(idsAttr || '[]')); } catch (_) { ids = []; }
   window.OptionalSections.toggleSection(+tidVal, 'c1', +sectionId, ids, !!enable);
+  if (enable) _maybeOfferRearDoorRemoval(ids);   // v1.43 — section enabled via badge
   _rerenderBOMLocal();
   if (typeof scheduleCalc === 'function') scheduleCalc();
   else if (typeof calculate === 'function') calculate();
@@ -5621,6 +5627,7 @@ function renderBOMWithCosts(items, bomRef) {
   const lbl = document.getElementById('bom-collapse-lbl');
   if (lbl) lbl.style.display = 'flex';
   _calcSyncCheckbox();
+  _updateNoDoorsWarning();   // v1.43 — re-evaluate after every calc (side-doors inclusion may have changed)
 }
 
 function renderSummary(result) {
@@ -7146,3 +7153,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// v1.43 — NO REAR DOORS (side doors only) support
+// ═══════════════════════════════════════════════════════════════════════════
+// The option itself is per-trailer configurator DATA — a childless radio
+// folder in the DOOR TYPE group (scripts/add_no_rear_doors_option.py adds it
+// to the explosive bodies). Selecting it turns both door folders off and the
+// existing draft machinery excludes the DRD/SRD sections + fittings. This
+// section adds only the two UX affordances Michael specified (20 Jul):
+//   1. taking a side-doors extra OFFERS rear-door removal (never automatic);
+//   2. a body with no rear doors AND no side doors gets an amber warning
+//      (warn-but-allow).
+// Both are capability-keyed on the rendered option, so bodies without it
+// (everything non-explosive) are completely untouched.
+
+function _noRearDoorsControl() {
+  return [...document.querySelectorAll('#body-options-list input[data-draft-folder]')]
+    .find(el => (el.closest('label')?.textContent || '').toUpperCase().includes('NO REAR DOORS')) || null;
+}
+
+// Called by the optional-section handlers with the bom ids their action just
+// INCLUDED. Fires the offer only when: the trailer has the option, a rear door
+// is currently quoted, and one of the included rows is a side-doors item.
+function _maybeOfferRearDoorRemoval(candidateIds) {
+  const nrd = _noRearDoorsControl();
+  if (!nrd || nrd.checked) return;
+  if (!_selectedRearDoor()) return;
+  const isSideDoor = (candidateIds || []).some(id => {
+    const r = (bomData || []).find(x => +x.id === +id);
+    return r && (r.material_name || '').toUpperCase().includes('SIDE DOOR');
+  });
+  if (isSideDoor) openModal('modal-side-doors');
+}
+
+function removeRearDoorsFromPrompt() {
+  closeModal('modal-side-doors');
+  const nrd = _noRearDoorsControl();
+  if (!nrd) return;
+  if (!nrd.checked) nrd.click();   // the real gesture — folder handler runs the full sync
+  toast('Rear doors removed — DOOR TYPE set to NO REAR DOORS', 'success');
+}
+
+// Amber no-doors guard (warn-but-allow): shown while NO REAR DOORS is selected
+// and no included line is a side-doors item. Re-evaluated after every panel
+// render and every calc.
+function _updateNoDoorsWarning() {
+  const section = document.getElementById('body-options-section');
+  if (!section) return;
+  const existing = document.getElementById('no-doors-warn');
+  const nrd = _noRearDoorsControl();
+  const items = (typeof lastResult !== 'undefined' && lastResult && lastResult.items) || [];
+  const hasSideDoors = items.some(it =>
+    it && !it.excluded && (it.material || '').toUpperCase().includes('SIDE DOOR'));
+  const show = !!nrd && nrd.checked && !hasSideDoors;
+  if (!show) { if (existing) existing.remove(); return; }
+  if (existing) return;
+  const warn = document.createElement('div');
+  warn.id = 'no-doors-warn';
+  warn.style.cssText = 'margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:.5px;'
+    + 'color:#f0a500;background:#2a1c0d;border:1px solid #b07800;border-radius:3px;padding:4px 8px';
+  warn.textContent = '⚠ No doors quoted — no rear doors selected and no side-doors extra included';
+  section.insertBefore(warn, document.getElementById('body-options-list'));
+}

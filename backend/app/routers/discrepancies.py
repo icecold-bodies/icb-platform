@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from ..database import User, get_db
-from ..deps import require_permission, require_user
+from ..deps import require_permission
+from ..integration_auth import require_user_or_integration  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..schemas.discrepancies import DiscrepancyListItem, ResolveRequest
 from ..services import discrepancies as svc
 
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/api/discrepancies", tags=["discrepancies"])
 def list_discrepancies(
     resolved: Optional[bool] = Query(None, description="Filter by resolved true/false"),
     db: Session = Depends(get_db),
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_or_integration),
 ):
     """List discrepancies (newest first), optionally filtered by resolved state."""
     return svc.list_discrepancies(db, resolved=resolved)

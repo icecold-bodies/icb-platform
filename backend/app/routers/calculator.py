@@ -14,6 +14,7 @@ from ..database import (
     CalculationRecord, Customer, CustomerContact, Formula, GlobalVariable,
 )
 from ..deps import get_current_user, user_can
+from ..integration_auth import integration_identity_if_bearer  # v1.43 — GET /api/calculations/{id} token read (ADR 0038)
 from ..services import (
     _bom_load_options,
     _compute_skin_formula_cost, _compute_taping_block_cost, _compute_floor_plate_cost,
@@ -1280,7 +1281,10 @@ async def api_delete_calculation(record_id: int, request: Request, db: Session =
 
 @router.get("/api/calculations/{record_id}")
 async def api_get_calculation(record_id: int, request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request, db)
+    # v1.43 (ADR 0038): allowlisted for ERP token reads (Pack §4 — full costing detail).
+    # The bearer branch must run BEFORE get_current_user, whose chokepoint guard
+    # 403s any bearer request that reaches it. Session behaviour is unchanged.
+    user = integration_identity_if_bearer(request) or get_current_user(request, db)
     if not user:
         raise HTTPException(status_code=401)
     rec = db.query(CalculationRecord).filter_by(id=record_id).first()

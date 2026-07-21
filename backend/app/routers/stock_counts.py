@@ -7,7 +7,8 @@ from fastapi import status as http_status
 from sqlalchemy.orm import Session
 
 from ..database import Branch, User, get_db
-from ..deps import active_branch, require_permission, require_user
+from ..deps import active_branch, require_permission
+from ..integration_auth import require_user_or_integration  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..schemas.discrepancies import DiscrepancyListItem
 from ..schemas.stock_counts import (
     CountStatus, RaiseDiscrepancyRequest, RecordCountRequest, StockCountListItem,
@@ -24,7 +25,7 @@ def list_stock_counts(
     counted_since: Optional[date] = Query(None, description="Only counts on/after this date"),
     branch: Optional[Branch] = Depends(active_branch),
     db: Session = Depends(get_db),
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_or_integration),
 ):
     """List cycle counts (newest first), filterable by status / branch / date.
     branch_id defaults to the session's active branch when omitted (WO v4.16)."""

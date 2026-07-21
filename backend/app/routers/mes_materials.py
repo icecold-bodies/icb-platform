@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from ..database import User, get_db
-from ..deps import require_user
+from ..integration_auth import require_user_or_integration  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..schemas.materials import MaterialDetail, MaterialListItem
 from ..services import materials as svc
 
@@ -27,14 +27,14 @@ def list_materials(
     low_stock: bool = Query(False, description="Only items with no free stock (free <= 0)"),
     branch_id: Optional[int] = Query(None, description="Accepted but no-op: stock is not branch-scoped (v4.16)"),
     db: Session = Depends(get_db),
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_or_integration),
 ):
     """Materials catalogue joined to current stock position (+ cross-schema costing price)."""
     return svc.list_materials(db, dept=dept, abc_class=abc_class, low_stock=low_stock, branch_id=branch_id)
 
 
 @router.get("/{sap_code}", response_model=MaterialDetail)
-def get_material(sap_code: str, db: Session = Depends(get_db), user: User = Depends(require_user)):
+def get_material(sap_code: str, db: Session = Depends(get_db), user: User = Depends(require_user_or_integration)):
     """Catalogue + current stock + recent (last 5) stock counts for one material."""
     try:
         return svc.get_material(db, sap_code)

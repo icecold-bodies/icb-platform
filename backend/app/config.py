@@ -51,6 +51,12 @@ class Settings(BaseSettings):
     SAP_ENABLED: bool = False
     SAP_BASE_URL: str = ""
 
+    # ── Inbound integration tokens (v1.43 ERP enablement; ADR 0038) ──
+    # Comma-separated token=name pairs, e.g. "abc123=erp". Grants GET-only access
+    # to the integration allowlist (Pack §4). Empty/missing = feature off: every
+    # bearer-token request is rejected and session auth is untouched.
+    INTEGRATION_API_TOKENS: str = ""
+
     # ── Branch defaults ──
     DEFAULT_BRANCH_CODE: str = "JHB"
 

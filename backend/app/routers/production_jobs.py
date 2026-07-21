@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from ..database import Branch, User, get_db
 from ..deps import active_branch, require_permission, require_user, user_can
+from ..integration_auth import require_user_or_integration  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..models.mes import AssemblyBay
 from ..schemas.production_jobs import (
     PlanningAckRequest, PreJobSignoffRequest, ProductionJobDetail,
@@ -44,7 +45,7 @@ def list_production_jobs(
     offset: int = Query(0, ge=0),
     branch: Optional[Branch] = Depends(active_branch),
     db: Session = Depends(get_db),
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_or_integration),
 ):
     """List production jobs (compact), filterable by status / branch / accepted date.
     branch_id defaults to the session's active branch when omitted (WO v4.16)."""
@@ -86,7 +87,7 @@ def list_in_progress_jobs(
     branch_id: Optional[int] = Query(None, description="Override the session's active branch"),
     branch: Optional[Branch] = Depends(active_branch),
     db: Session = Depends(get_db),
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_or_integration),
 ):
     """In-flight jobs (status planning / in_production — §0.6) + chassis/bay context for the
     Production Dashboard (WO v4.32). Read-only."""
@@ -108,7 +109,7 @@ def production_kpis(
     branch_id: Optional[int] = Query(None, description="Override the session's active branch"),
     branch: Optional[Branch] = Depends(active_branch),
     db: Session = Depends(get_db),
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_or_integration),
 ):
     """WO v4.32 §0.4/§0.6 — the Production Dashboard metric values. ONE computation
     (compute_production_kpis — §0.5 parity-by-construction; Management Dashboard v4.33+ becomes
@@ -121,14 +122,14 @@ def production_kpis(
 
 
 @router.get("/unlinked")
-def list_unlinked_jobs(db: Session = Depends(get_db), user: User = Depends(require_user)):
+def list_unlinked_jobs(db: Session = Depends(get_db), user: User = Depends(require_user_or_integration)):
     """WO v4.36a §0.6 — production jobs with no chassis linked yet, for the Add-Chassis job dropdown.
     Registered BEFORE /{job_id} so 'unlinked' isn't parsed as a job id."""
     return svc.list_unlinked_jobs(db)
 
 
 @router.get("/{job_id}/chassis-prefill")
-def chassis_prefill(job_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
+def chassis_prefill(job_id: int, db: Session = Depends(get_db), user: User = Depends(require_user_or_integration)):
     """WO v4.36a §3.5b — Add-Chassis modal prefill when a job is selected (customer + anything captured
     upstream at Pre-Job/Planning-Ack). Each field is null unless captured."""
     try:
@@ -138,7 +139,7 @@ def chassis_prefill(job_id: int, db: Session = Depends(get_db), user: User = Dep
 
 
 @router.get("/{job_id}", response_model=ProductionJobDetail)
-def get_production_job(job_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
+def get_production_job(job_id: int, db: Session = Depends(get_db), user: User = Depends(require_user_or_integration)):
     """Full detail for one job + WO v4.31 §3.2 read-only enrichment: current BOM lines, chassis
     (latest VCL photos/checklist/notes), and bay context. All additive + read-only (no write paths)."""
     try:
@@ -291,7 +292,7 @@ def clear_panels_arrived(job_id: int, db: Session = Depends(get_db),
 
 
 @router.get("/{job_id}/timeline", response_model=list[TimelineEvent])
-def production_job_timeline(job_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
+def production_job_timeline(job_id: int, db: Session = Depends(get_db), user: User = Depends(require_user_or_integration)):
     """Derived lifecycle timeline (from the job's timestamp columns), oldest-first."""
     try:
         return svc.build_timeline(db, job_id)

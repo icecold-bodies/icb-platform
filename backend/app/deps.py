@@ -57,6 +57,14 @@ def _sess_touch(db, row) -> None:
 # ── Auth helpers ──────────────────────────────────────────────────────────────
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> Optional[User]:
+    # v1.43 ERP enablement (ADR 0038): a request presenting a Bearer token never falls
+    # through to session auth. Allowlisted GET endpoints resolve the token BEFORE this
+    # runs (integration_auth.require_user_or_integration), so reaching here with one
+    # means the endpoint is session-only → 401 (bad token) / 403 (valid token). Late
+    # import keeps deps ↔ integration_auth acyclic (house idiom, cf. active_branch).
+    if "authorization" in request.headers:
+        from .integration_auth import reject_integration_bearer
+        reject_integration_bearer(request)
     sid = request.cookies.get("session_id")
     row = _sess_get(db, sid)
     if not row:

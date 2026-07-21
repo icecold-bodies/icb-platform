@@ -127,8 +127,12 @@ def install_request_logger(app: FastAPI) -> None:
             return response
         sid = request.cookies.get("session_id", "")
         sid_short = (sid[:8] + "…") if sid else "-"
+        # v1.43 ERP enablement (ADR 0038): integration-token requests carry the
+        # integration NAME (never the token) stamped by integration_auth.
+        integ = getattr(request.state, "integration_name", "")
         _req_log.info(
             f"{request.method} {path} status={status} ms={elapsed_ms} sid={sid_short}"
+            + (f" integ={integ}" if integ else "")
         )
         return response
 

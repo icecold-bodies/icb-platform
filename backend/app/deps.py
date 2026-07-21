@@ -59,9 +59,10 @@ def _sess_touch(db, row) -> None:
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> Optional[User]:
     # v1.43 ERP enablement (ADR 0038): a request presenting a Bearer token never falls
     # through to session auth. Allowlisted GET endpoints resolve the token BEFORE this
-    # runs (integration_auth.require_user_or_integration), so reaching here with one
-    # means the endpoint is session-only → 401 (bad token) / 403 (valid token). Late
-    # import keeps deps ↔ integration_auth acyclic (house idiom, cf. active_branch).
+    # runs (require_user's @integration_readable branch, or the inline
+    # integration_identity_if_bearer idiom), so reaching here with one means the
+    # endpoint is session-only → 401 (bad token) / 403 (valid token). Late import
+    # keeps deps ↔ integration_auth acyclic (house idiom, cf. active_branch).
     if "authorization" in request.headers:
         from .integration_auth import reject_integration_bearer
         reject_integration_bearer(request)
@@ -74,6 +75,17 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> Optiona
 
 
 def require_user(request: Request, db: Session = Depends(get_db)) -> User:
+    # v1.43 (ADR 0038): GET endpoints marked @integration_readable accept a valid
+    # integration token as an alternative to the session. Handlers deliberately keep
+    # Depends(require_user) so app.dependency_overrides[require_user] — the house
+    # test idiom — still covers every marked route; the marker rides the routed
+    # endpoint (request.scope), not the dependency. All other bearer cases fall
+    # through to get_current_user, whose guard raises the right 401/403.
+    if "authorization" in request.headers:
+        from .integration_auth import identity_for_marked_route
+        ident = identity_for_marked_route(request)
+        if ident is not None:
+            return ident
     user = get_current_user(request, db)
     if not user:
         if request.url.path.startswith("/api/") or "application/json" in request.headers.get("accept", ""):

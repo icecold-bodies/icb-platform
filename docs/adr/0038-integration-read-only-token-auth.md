@@ -24,10 +24,15 @@ journal (written by every floor transition since v1.41.0) had no read endpoint a
    env change + restart. Comparison is `secrets.compare_digest` across ALL configured
    pairs (no early break); the presented value is never logged or echoed.
 2. **The allowlist IS the opt-in — no path table.** An endpoint grants token access by
-   swapping `Depends(require_user)` for `integration_auth.require_user_or_integration`
-   (or, in the one legacy inline-auth case — `GET /api/calculations/{id}` — calling
-   `integration_identity_if_bearer` before `get_current_user`). Grep for
-   `require_user_or_integration` to enumerate the live allowlist. No middleware auth.
+   adding the `@integration_readable` marker under its `@router.get(...)` (or, in the one
+   legacy inline-auth case — `GET /api/calculations/{id}` — calling
+   `integration_identity_if_bearer` before `get_current_user`). Handlers deliberately KEEP
+   `Depends(require_user)`: the house test idiom overrides `require_user` via
+   `app.dependency_overrides`, and a wrapper dependency silently detaches every marked
+   route from those overrides (the first CI run proved it — dozens of existing suites
+   401'd). `require_user` consults the marker on the routed endpoint
+   (`request.scope["endpoint"]`) before session resolution. Grep `@integration_readable`
+   to enumerate the live allowlist. No middleware auth.
 3. **Deny-by-default at the session chokepoint.** `deps.get_current_user` calls
    `reject_integration_bearer` first: a bearer-presenting request NEVER falls through to
    session auth — 401 for an unmatched token, 403 for a valid token on anything that
@@ -63,5 +68,5 @@ journal (written by every floor transition since v1.41.0) had no read endpoint a
   follow-ups on the same seam.
 - `icb_sap` stays exactly per ADR 0013 (read-only from app code; the ERP loader replaces
   the ETL as sole writer) — this ADR adds the *outbound* read surface only.
-- New writes must NEVER take `require_user_or_integration`; the dependency hard-403s
-  non-GET methods as a belt, but the review rule stands: writes stay session-gated.
+- New writes must NEVER carry `@integration_readable`; the resolver hard-ignores non-GET
+  methods as a belt, but the review rule stands: writes stay session-gated.

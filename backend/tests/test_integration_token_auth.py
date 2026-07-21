@@ -15,6 +15,11 @@ chokepoint guard:
 Runs against icb_test (conftest db-guard). Session rows use the raw-Cookie-header
 idiom (httpx's jar won't match the dot-less 'testserver' host) with zzerp-* ids,
 cleaned up after each test.
+
+Design note locked by regression here: allowlisted handlers KEEP Depends(require_user)
+and opt in via the @integration_readable endpoint marker — the first CI run proved a
+wrapper dependency detaches marked routes from the house
+app.dependency_overrides[require_user] idiom (dozens of suites 401'd).
 """
 import pytest
 
@@ -178,6 +183,28 @@ def test_feature_off_all_bearer_requests_401(client, tokens_off):
         r = client.get(path, headers=_bearer(TOKEN))
         assert r.status_code == 401, f"{path} -> {r.status_code}"
         assert TOKEN not in r.text
+
+
+# ── House test-override compatibility (the first CI run's lesson) ────────────
+
+def test_dependency_override_of_require_user_still_covers_marked_routes(client):
+    """Marked GET routes MUST stay overridable via
+    app.dependency_overrides[require_user] — the idiom every existing API suite
+    uses. This is the regression that reshaped the design from a wrapper
+    dependency to the @integration_readable endpoint marker."""
+    import app.main as app_mod
+    from app.database import SessionLocal, User
+    from app.deps import require_user
+    with SessionLocal() as db:
+        admin = db.query(User).filter_by(username="admin").first()
+    app_mod.app.dependency_overrides[require_user] = lambda: admin
+    try:
+        for path in ("/api/chassis-records/bays/assembly", "/api/mes-materials",
+                     "/api/production-jobs", "/api/floor-events"):
+            r = client.get(path)
+            assert r.status_code == 200, f"{path} -> {r.status_code}: {r.text[:120]}"
+    finally:
+        app_mod.app.dependency_overrides.pop(require_user, None)
 
 
 # ── Parser hygiene ───────────────────────────────────────────────────────────

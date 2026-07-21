@@ -13,7 +13,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..integration_auth import require_user_or_integration
+from ..deps import require_user
+from ..integration_auth import integration_readable
 from ..models.mes import FloorEvent
 from .plan import get_floor_state
 
@@ -21,14 +22,16 @@ router = APIRouter(prefix="/api", tags=["floor-read"])
 
 
 @router.get("/floor/state")
+@integration_readable
 def floor_state(db: Session = Depends(get_db),
-                user=Depends(require_user_or_integration)):
+                user=Depends(require_user)):
     """The same document `/api/plan/floor-state` serves (delegates to the plan
     handler — one source of truth for the payload; the SPA path stays as-is)."""
     return get_floor_state(db=db, user=user)
 
 
 @router.get("/floor-events")
+@integration_readable
 def list_floor_events(
     since_id: int = Query(0, ge=0, description="Only events with id > since_id; "
                           "page forward by passing the previous response's last_id"),
@@ -36,7 +39,7 @@ def list_floor_events(
     event_type: Optional[str] = Query(None, description="Filter to one event type"),
     limit: int = Query(200, ge=1, le=1000),
     db: Session = Depends(get_db),
-    user=Depends(require_user_or_integration),
+    user=Depends(require_user),
 ):
     """The floor journal, ascending id — the incremental-pull shape (start at
     since_id=0, store last_id, repeat). Each event: actor, timestamps, from/to

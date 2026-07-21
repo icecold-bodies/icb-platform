@@ -4,14 +4,21 @@ External systems (first consumer: the ICB ERP, Marnus — see
 docs/handoffs/ERP_MES_INTEGRATION_PACK_v1.0.md §2/§4) may read an allowlisted set
 of GET endpoints with `Authorization: Bearer {token}` instead of a browser session.
 
-Design (WO-ratified shape):
+Design (WO-ratified shape, adjusted post-CI to the house test-override contract):
   * Tokens live in the env key `INTEGRATION_API_TOKENS` — comma-separated
     ``token=name`` pairs (e.g. ``abc123=erp``). Empty/missing = feature off:
     every bearer-presenting request is rejected and session auth is untouched.
-  * The allowlist is the OPT-IN ITSELF: an endpoint grants token access by taking
-    `Depends(require_user_or_integration)` (or calling
-    `integration_identity_if_bearer` in the legacy inline-auth idiom) instead of
-    `Depends(require_user)`. There is no path table to drift from the routes.
+  * The allowlist is the OPT-IN ITSELF: an endpoint grants token access by adding
+    the `@integration_readable` marker under its `@router.get(...)` (or, in the
+    one legacy inline-auth case, calling `integration_identity_if_bearer` before
+    `get_current_user`). Grep `@integration_readable` to enumerate the surface.
+    There is no path table to drift from the routes.
+  * Handlers KEEP `Depends(require_user)` — deliberately. The house rule (see
+    `deps.require_perm`) is that tests override `require_user` via
+    `app.dependency_overrides[require_user]`; a wrapper dependency would silently
+    detach every marked route from those overrides (exactly the CI breakage that
+    reshaped this module). `require_user` consults `identity_for_marked_route`
+    first; the marker on `request.scope["endpoint"]` carries the opt-in.
   * Everything else stays session-only, enforced at the single session chokepoint:
     `deps.get_current_user` calls `reject_integration_bearer` first, so ANY route
     that resolves a session (require_user / require_admin / require_perm chains and
@@ -28,11 +35,9 @@ Design (WO-ratified shape):
 import secrets
 from typing import Optional
 
-from fastapi import Depends, HTTPException, Request
-from sqlalchemy.orm import Session
+from fastapi import HTTPException, Request
 
 from .config import settings
-from .database import get_db
 
 # Parsed-pairs memo keyed on the raw env string, so a per-request parse is a dict
 # hit and tests that monkeypatch `settings.INTEGRATION_API_TOKENS` still take effect.
@@ -81,6 +86,15 @@ class IntegrationIdentity:
         return f"<IntegrationIdentity {self.integration_name}>"
 
 
+def integration_readable(fn):
+    """Marker for GET handlers on the integration read allowlist (Pack §4). Place
+    UNDER the `@router.get(...)` line so the registered endpoint carries the mark.
+    `require_user` honours it via `identity_for_marked_route`; non-GET handlers
+    must never carry it (the resolver hard-ignores non-GET as a belt)."""
+    fn._integration_readable = True
+    return fn
+
+
 def _presented_bearer(request: Request) -> Optional[str]:
     """The Bearer credential on the request, or None. Non-Bearer Authorization
     schemes are ignored (not this feature's claim)."""
@@ -106,7 +120,7 @@ def integration_identity_if_bearer(request: Request) -> Optional[IntegrationIden
     """Allowlist-side resolver: None when no Bearer token is presented (caller
     falls through to session auth); an IntegrationIdentity when a configured token
     matches. 401 for an unmatched token, 403 if a matched token arrives on a
-    non-GET (belt — only GET handlers opt in)."""
+    non-GET (belt — only GET endpoints are ever allowlisted)."""
     presented = _presented_bearer(request)
     if presented is None:
         return None
@@ -122,23 +136,32 @@ def integration_identity_if_bearer(request: Request) -> Optional[IntegrationIden
     return IntegrationIdentity(name)
 
 
-def require_user_or_integration(request: Request, db: Session = Depends(get_db)):
-    """THE opt-in dependency for allowlisted GET endpoints (Pack §4): a valid
-    integration token resolves to the synthetic read-only identity; no token falls
-    through to the byte-identical session path (`require_user`)."""
-    identity = integration_identity_if_bearer(request)
-    if identity is not None:
-        return identity
-    from .deps import require_user
-    return require_user(request, db)
+def identity_for_marked_route(request: Request) -> Optional[IntegrationIdentity]:
+    """`require_user`'s accept branch: an IntegrationIdentity ONLY when a Bearer
+    token is presented AND the routed endpoint carries the `@integration_readable`
+    mark AND the method is GET AND the token matches. In every other bearer case
+    return None — the request then falls into `get_current_user`, whose
+    `reject_integration_bearer` guard raises the correct 401/403."""
+    presented = _presented_bearer(request)
+    if presented is None:
+        return None
+    endpoint = request.scope.get("endpoint")
+    if not getattr(endpoint, "_integration_readable", False) or request.method != "GET":
+        return None
+    name = _match(presented)
+    if name is None:
+        return None
+    request.state.integration_name = name
+    return IntegrationIdentity(name)
 
 
 def reject_integration_bearer(request: Request) -> None:
     """Session-chokepoint guard (called first by `deps.get_current_user`): a
     bearer-presenting request must never fall through to session auth. No-op when
-    no Bearer token is presented. Allowlisted handlers resolve the token BEFORE
-    get_current_user runs, so reaching this with a valid token means the endpoint
-    did not opt in → 403; an unmatched token → 401."""
+    no Bearer token is presented. Allowlisted endpoints resolve the token BEFORE
+    get_current_user runs (`identity_for_marked_route` in require_user, or the
+    inline `integration_identity_if_bearer` idiom), so reaching this with a valid
+    token means the endpoint did not opt in → 403; an unmatched token → 401."""
     presented = _presented_bearer(request)
     if presented is None:
         return

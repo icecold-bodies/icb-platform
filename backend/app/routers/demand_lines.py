@@ -9,7 +9,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from ..database import User, get_db
-from ..integration_auth import require_user_or_integration  # v1.43 — GET-only ERP token reads (ADR 0038)
+from ..deps import require_user
+from ..integration_auth import integration_readable  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..schemas.demand_lines import DemandLineItem, DemandRollup
 from ..services import demand_lines as svc
 
@@ -17,13 +18,14 @@ router = APIRouter(prefix="/api/demand-lines", tags=["demand-lines"])
 
 
 @router.get("", response_model=List[Union[DemandRollup, DemandLineItem]])
+@integration_readable
 def list_demand_lines(
     sap_code: Optional[str] = Query(None, description="Filter by SAP code"),
     week_bucket: Optional[str] = Query(None, description="Filter by ISO week bucket e.g. 2026-W23"),
     group_by: Optional[str] = Query(None, pattern="^(week|sap)$",
                                     description="Rollup mode: 'week' (per sap×week) or 'sap' (per sap)"),
     db: Session = Depends(get_db),
-    user: User = Depends(require_user_or_integration),
+    user: User = Depends(require_user),
 ):
     """Raw demand lines, or an aggregated rollup when group_by is set."""
     if group_by:

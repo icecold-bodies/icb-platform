@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from ..database import User, get_db
 from ..deps import require_user
+from ..integration_auth import integration_readable  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..schemas.materials import MaterialDetail, MaterialListItem
 from ..services import materials as svc
 
@@ -21,6 +22,7 @@ router = APIRouter(prefix="/api/mes-materials", tags=["mes-materials"])
 
 
 @router.get("", response_model=list[MaterialListItem])
+@integration_readable
 def list_materials(
     dept: Optional[str] = Query(None, description="Filter by department (vacuum|panelshop|assy|paint)"),
     abc_class: Optional[str] = Query(None, description="Filter by ABC class (A|B|C)"),
@@ -34,6 +36,7 @@ def list_materials(
 
 
 @router.get("/{sap_code}", response_model=MaterialDetail)
+@integration_readable
 def get_material(sap_code: str, db: Session = Depends(get_db), user: User = Depends(require_user)):
     """Catalogue + current stock + recent (last 5) stock counts for one material."""
     try:

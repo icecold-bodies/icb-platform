@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from ..database import Branch, User, get_db
 from ..deps import active_branch, require_permission, require_user
+from ..integration_auth import integration_readable  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..schemas.discrepancies import DiscrepancyListItem
 from ..schemas.stock_counts import (
     CountStatus, RaiseDiscrepancyRequest, RecordCountRequest, StockCountListItem,
@@ -18,6 +19,7 @@ router = APIRouter(prefix="/api/stock-counts", tags=["stock-counts"])
 
 
 @router.get("", response_model=list[StockCountListItem])
+@integration_readable
 def list_stock_counts(
     status: Optional[CountStatus] = Query(None, description="confirmed | discrepancy | pending"),
     branch_id: Optional[int] = Query(None, description="Filter to one branch"),

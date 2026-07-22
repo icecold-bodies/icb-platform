@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..database import User, get_db
 from ..deps import require_permission, require_user
+from ..integration_auth import integration_readable  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..schemas.discrepancies import DiscrepancyListItem, ResolveRequest
 from ..services import discrepancies as svc
 
@@ -13,6 +14,7 @@ router = APIRouter(prefix="/api/discrepancies", tags=["discrepancies"])
 
 
 @router.get("", response_model=list[DiscrepancyListItem])
+@integration_readable
 def list_discrepancies(
     resolved: Optional[bool] = Query(None, description="Filter by resolved true/false"),
     db: Session = Depends(get_db),

@@ -1,7 +1,8 @@
 """WO v4.28 §3.3 — chassis lifecycle API (/api/chassis-records). Thin router → services.chassis.
 
 Distinct from the existing /api/chassis (catalogue) and /api/chassis-register (v4.22 raw archive).
-Reads are require_user; mutations gate on the v4.28 permission keys (chassis.create/update/vcl/dcl).
+Reads are require_user (+ @integration_readable: ERP token read-only since v1.43 — ADR 0038);
+mutations gate on the v4.28 permission keys (chassis.create/update/vcl/dcl).
 """
 from typing import List, Optional
 
@@ -11,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from ..database import User, get_db
 from ..deps import require_permission, require_user
+from ..integration_auth import integration_readable  # v1.43 — GET-only ERP token reads (ADR 0038)
 from ..schemas.chassis import (
     AssemblyAssignRequest, AwaitingQaOut, BayAdvanceStageRequest, BayOut, BodyAttachedRequest,
     ChassisCreateResult, ChassisEventCapture, ChassisEventOut, ChassisModelOut, ChassisPhotoOut,
@@ -23,6 +25,7 @@ router = APIRouter(prefix="/api/chassis-records", tags=["chassis"])
 
 
 @router.get("", response_model=List[ChassisRecordOut])
+@integration_readable
 def list_records(q: Optional[str] = Query(None), status: Optional[str] = Query(None),
                  limit: int = Query(50, le=200), offset: int = Query(0, ge=0),
                  db: Session = Depends(get_db), user: User = Depends(require_user)):
@@ -30,6 +33,7 @@ def list_records(q: Optional[str] = Query(None), status: Optional[str] = Query(N
 
 
 @router.get("/checklists")
+@integration_readable
 def checklists(user: User = Depends(require_user)):
     """VCL/DCL checklist templates (DATA, not UI-hard-coded — Workshop-refine placeholder, v4.28)."""
     return svc.CHASSIS_CHECKLIST_TEMPLATES
@@ -38,6 +42,7 @@ def checklists(user: User = Depends(require_user)):
 # WO v4.34 §3.7 — literal path, MUST precede the /{record_id} catch-all below (FastAPI matches in
 # declaration order; after it, "models" would 422 as a failed int-parse of record_id).
 @router.get("/models", response_model=List[ChassisModelOut])
+@integration_readable
 def chassis_models(db: Session = Depends(get_db), user: User = Depends(require_user)):
     """The chassis-type DDM (active rows) feeding the make/model dropdowns. Read-only (admin CRUD v4.35)."""
     return svc.list_chassis_models(db)
@@ -45,6 +50,7 @@ def chassis_models(db: Session = Depends(get_db), user: User = Depends(require_u
 
 # 0033 — literal path, MUST precede /{record_id} (same declaration-order rule as /models above).
 @router.get("/type-images", response_model=List[ChassisTypeImageOut])
+@integration_readable
 def type_images(user: User = Depends(require_user)):
     """The chassis-type picture library (PNGs under static/chassis-types) feeding the detail-page
     picker. The same files back the planned chassis_models.image_file DDM auto-link."""
@@ -52,6 +58,7 @@ def type_images(user: User = Depends(require_user)):
 
 
 @router.get("/bays/assembly", response_model=List[BayOut])
+@integration_readable
 def bays_assembly(db: Session = Depends(get_db), user: User = Depends(require_user)):
     """WO v4.31 §0.3 — the 5 inside assembly bays (Planning Board assembly lane).
     WO v4.32 §0.4 extends the response with per-bay utilisation (occupant chassis/job + since,
@@ -70,12 +77,14 @@ def advance_bay_build_stage(bay_id: int, payload: BayAdvanceStageRequest,
 
 
 @router.get("/bays/parking", response_model=List[BayOut])
+@integration_readable
 def bays_parking(db: Session = Depends(get_db), user: User = Depends(require_user)):
     """WO v4.31 §0.3 — the ~24 outside parking bays (Planning Board parking lane)."""
     return svc.list_parking_bays(db)
 
 
 @router.get("/awaiting-qa", response_model=List[AwaitingQaOut])
+@integration_readable
 def awaiting_qa(db: Session = Depends(get_db), user: User = Depends(require_user)):
     """WO v4.36a.1 §0.7 — chassis currently in the Awaiting-QA queue (status='awaiting_qa'), feeding the
     Planning Board AWAITING QA zone. Read-only; any authenticated user (the zone is informational)."""
@@ -83,6 +92,7 @@ def awaiting_qa(db: Session = Depends(get_db), user: User = Depends(require_user
 
 
 @router.get("/photos/{photo_id}")
+@integration_readable
 def serve_photo(photo_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
     photo, path = svc.get_photo_file(db, photo_id)
     return FileResponse(path, media_type=photo.content_type or "application/octet-stream",
@@ -90,6 +100,7 @@ def serve_photo(photo_id: int, db: Session = Depends(get_db), user: User = Depen
 
 
 @router.get("/{record_id}", response_model=ChassisRecordDetail)
+@integration_readable
 def get_record(record_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
     return svc.get_detail(db, record_id)
 

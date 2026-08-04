@@ -530,6 +530,38 @@ async function _carryRearDoorThickness(newGrp, oldGrp) {
   }
 }
 
+// v1.44.1 — rear-door invariant on LOAD (Michael 4 Aug): only the selected
+// door (DRD/SRD) may carry insulation thickness; the inactive door's EPS/PU
+// must be 0 or they keep leaking into the {SRD …}/{DRD …} formula deductions
+// (under-quoting the active door's panels). The toggle path already enforces
+// this on every switch — this heals templates that were saved before the
+// invariant, once, when the body is opened. Writes only when dirty; ambiguous
+// door state (no selector checked, no solely-enabled gate) → no-op, never
+// guess. Deliberately does NOT touch editBodyVarOverrides: a reopened quote
+// keeps reproducing its saved figures via the pins + drift banner.
+async function _zeroInactiveRearDoorInsulation() {
+  const active = _selectedRearDoor();
+  if (!active) return false;
+  let healed = false;
+  for (const grp of _DRDSR_TOGGLE_GROUPS) {
+    if (grp === active) continue;
+    const pair = _doorInsulationPair(grp);
+    if (!pair) continue;
+    let grpHealed = false;
+    for (const row of [pair.eps, pair.pu]) {
+      if ((Number(row.variable_value) || 0) === 0) continue;
+      row.variable_value = 0;
+      grpHealed = true;
+      try { await api('PUT', `/api/bom/${row.id}`, { variable_value: 0 }); } catch (e) { /* non-fatal */ }
+    }
+    if (grpHealed) {
+      healed = true;
+      try { toast(`${grp} insulation zeroed — only ${active} doors are quoted  ·  Body Template updated`, 'success'); } catch (e) {}
+    }
+  }
+  return healed;
+}
+
 // Map a door-type SELECTOR's name/label to its rear-door group. Matches the
 // door-type radio ("DRD"/"SRD") or the folder label ("DOUBLE/SINGLE DOORS"),
 // but NOT the insulation rows ("DRD EPS", "SRD PU") or door fittings.
@@ -2806,6 +2838,12 @@ async function loadBOM(options = {}) {
       _serverDraftCache[tid] = (_d && _d.draft) || null;
     } catch(_) { _serverDraftCache[tid] = undefined; }
     renderBodyOptions(bomData);
+    // v1.44.1 — enforce the rear-door invariant on load (see the function's
+    // header comment). Runs after renderBodyOptions so bodyOptionSelections is
+    // fully seeded for flat AND v2 bodies; awaited so the template writes land
+    // before the debounced auto-calc reads them server-side. Re-render when a
+    // heal actually changed values so the (0.000 m) spans show immediately.
+    if (await _zeroInactiveRearDoorInsulation()) renderBodyOptions(bomData);
     refreshBomDisplay();
     scheduleCalc();  // auto-calculate once BOM is loaded
   } catch(e) {

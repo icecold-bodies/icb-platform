@@ -52,6 +52,7 @@
       <div style="display:flex;gap:6px;align-items:center" id="bom-actions">
         <button class="btn btn-outline btn-sm hidden" id="btn-rename" onclick="renameTrailer()">Rename</button>
         <button class="btn btn-outline btn-sm hidden" id="btn-dup" onclick="duplicateTrailer()">Duplicate</button>
+        <button class="btn btn-outline btn-sm hidden" id="btn-toggle-active" onclick="toggleTrailerActive()">Set Inactive</button>
         <button class="btn btn-danger btn-sm hidden" id="btn-del" onclick="deleteTrailer()">Delete Type</button>
         <button class="btn btn-outline btn-sm" id="btn-mark-radio" onclick="markSelectedBOMRadio()"
           title="Make the selected rows mutually-exclusive radio choices on the calculator"
@@ -706,7 +707,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/admin_templates.js?v=16"></script>
+<script src="/static/js/admin_templates.js?v=17"></script>
 <script src="/static/js/driver.js.iife.js"></script>
 <script>
 (function () {

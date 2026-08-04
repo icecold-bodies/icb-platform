@@ -56,6 +56,45 @@ async def export_excel(
                 except Exception:
                     pass
 
+    ctx = {
+        "result": result,
+        "dims": dims,
+        "title": ("REPAIR QUOTE  —  TRAILER MANUFACTURING COST REPORT"
+                  if is_repair else "TRAILER MANUFACTURING COST REPORT"),
+        "title_color": "E02424" if is_repair else "58A6FF",
+        "subtitle": f"{trailer_name}  |  Report #{record_id}  |  {rec.created_at.strftime('%d %B %Y')}",
+        "customer_name": customer_name,
+        "highlight": bool(highlight),
+        "override_materials": override_materials,
+        "recently_updated_mats": recently_updated_mats,
+    }
+    buf = _build_costing_workbook(ctx)
+
+    username = rec.user.username if rec.user else "unknown"
+    filename = f"Costing_{trailer_name.replace(' ', '_')}_{record_id}_{username}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _build_costing_workbook(ctx: dict):
+    """Render the costing workbook and return it as a BytesIO ready to stream.
+
+    ctx keys: result (already exclusion-stripped), dims, title, title_color,
+    subtitle, customer_name (empty string → no Client row), highlight,
+    override_materials, recently_updated_mats.
+
+    Shared by GET /results/{id}/export/excel and POST /api/export/excel-preview —
+    a layout change here affects BOTH; the saved-record export is regression-locked
+    (normalized-hash test in tests/test_excel_preview_and_trailer_active.py)."""
+    result = ctx["result"]
+    dims = ctx["dims"]
+    highlight = ctx["highlight"]
+    override_materials = ctx["override_materials"]
+    recently_updated_mats = ctx["recently_updated_mats"]
+
     import openpyxl
     import io
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -87,21 +126,20 @@ async def export_excel(
 
     ws.merge_cells("A1:I1")
     t = ws["A1"]
-    t.value = ("REPAIR QUOTE  —  TRAILER MANUFACTURING COST REPORT"
-               if is_repair else "TRAILER MANUFACTURING COST REPORT")
-    t.font = Font(bold=True, size=14, name="Calibri",
-                  color="E02424" if is_repair else "58A6FF")
+    t.value = ctx["title"]
+    t.font = Font(bold=True, size=14, name="Calibri", color=ctx["title_color"])
     t.fill = PatternFill("solid", fgColor="0D1117")
     t.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 28
 
     ws.merge_cells("A2:I2")
     s = ws["A2"]
-    s.value = f"{trailer_name}  |  Report #{record_id}  |  {rec.created_at.strftime('%d %B %Y')}"
+    s.value = ctx["subtitle"]
     s.font = Font(size=11, color="8B949E", name="Calibri")
     s.fill = PatternFill("solid", fgColor="161B22")
     s.alignment = Alignment(horizontal="center")
 
+    customer_name = ctx["customer_name"]
     if customer_name:
         ws.merge_cells("A3:I3")
         c3 = ws["A3"]
@@ -109,26 +147,50 @@ async def export_excel(
         c3.font = Font(bold=True, size=11, color="0D1117", name="Calibri")
         c3.alignment = Alignment(horizontal="center")
 
-    ws["A4"] = "DIMENSIONS"
-    ws["A4"].font = Font(bold=True, color="388BFD", name="Calibri")
-    dim_row1 = [
-        ("Length (m)", dims.get("length")),
-        ("Width (m)", dims.get("width")),
-        ("Height (m)", dims.get("height")),
-        ("Num Axles", dims.get("num_axles")),
-    ]
-    dim_row2 = [
-        ("Num Doors", dims.get("num_doors")),
-        ("Insulation Thickness (m)", dims.get("insulation_thickness")),
-    ]
-    for i, (lbl, val) in enumerate(dim_row1):
-        ws.cell(row=5, column=i * 2 + 1, value=lbl).font = Font(color="444444", name="Calibri")
-        ws.cell(row=5, column=i * 2 + 2, value=val).font = Font(bold=True, color="000000", name="Calibri")
-    for i, (lbl, val) in enumerate(dim_row2):
-        ws.cell(row=6, column=i * 2 + 1, value=lbl).font = Font(color="444444", name="Calibri")
-        ws.cell(row=6, column=i * 2 + 2, value=val).font = Font(bold=True, color="000000", name="Calibri")
+    spec_options = ctx.get("spec_options")
+    if spec_options is None:
+        # Saved-record layout — regression-locked byte-identical; do not touch.
+        ws["A4"] = "DIMENSIONS"
+        ws["A4"].font = Font(bold=True, color="388BFD", name="Calibri")
+        dim_row1 = [
+            ("Length (m)", dims.get("length")),
+            ("Width (m)", dims.get("width")),
+            ("Height (m)", dims.get("height")),
+            ("Num Axles", dims.get("num_axles")),
+        ]
+        dim_row2 = [
+            ("Num Doors", dims.get("num_doors")),
+            ("Insulation Thickness (m)", dims.get("insulation_thickness")),
+        ]
+        for i, (lbl, val) in enumerate(dim_row1):
+            ws.cell(row=5, column=i * 2 + 1, value=lbl).font = Font(color="444444", name="Calibri")
+            ws.cell(row=5, column=i * 2 + 2, value=val).font = Font(bold=True, color="000000", name="Calibri")
+        for i, (lbl, val) in enumerate(dim_row2):
+            ws.cell(row=6, column=i * 2 + 1, value=lbl).font = Font(color="444444", name="Calibri")
+            ws.cell(row=6, column=i * 2 + 2, value=val).font = Font(bold=True, color="000000", name="Calibri")
+        table_start = 8
+    else:
+        # Preview spec block (Michael 4 Aug): Length/Width/Height + the SELECTED
+        # body options, mirroring the calculator's Body Options panel — one
+        # option per row, so the table header shifts down dynamically.
+        ws["A4"] = "DIMENSIONS & BODY OPTIONS"
+        ws["A4"].font = Font(bold=True, color="388BFD", name="Calibri")
+        dim_pairs = [
+            ("Length (m)", dims.get("length")),
+            ("Width (m)", dims.get("width")),
+            ("Height (m)", dims.get("height")),
+        ]
+        for i, (lbl, val) in enumerate(dim_pairs):
+            ws.cell(row=5, column=i * 2 + 1, value=lbl).font = Font(color="444444", name="Calibri")
+            ws.cell(row=5, column=i * 2 + 2, value=val).font = Font(bold=True, color="000000", name="Calibri")
+        opt_row = 6
+        for lbl, val in spec_options:
+            ws.cell(row=opt_row, column=1, value=lbl).font = Font(color="444444", name="Calibri")
+            ws.cell(row=opt_row, column=2, value=val).font = Font(bold=True, color="000000", name="Calibri")
+            opt_row += 1
+        table_start = opt_row + 1
 
-    row = 8
+    row = table_start
     cols = ["Category", "Material", "SAP Code", "Formula", "Quantity", "Unit", "Unit Price (R)", "Waste %", "Line Cost (R)"]
     for c, col in enumerate(cols, 1):
         cell = ws.cell(row=row, column=c, value=col)
@@ -407,8 +469,16 @@ async def export_excel(
             for r in range(first, last + 1):
                 ws.row_dimensions[r].outline_level = 1   # detail rows only; never hidden
         if sec.get("kind") == "body":
-            tot = ws.cell(row=header, column=9,
-                          value=(f"=SUM(I{first}:I{last})" if not empty else 0))
+            # Preview mode writes computed literal totals: =SUM has no cached
+            # value in openpyxl output, so an Excel that doesn't auto-recalc
+            # shows the header total blank (Michael 4 Aug). Saved-record mode
+            # keeps the formula (regression-locked byte-identical).
+            sec_totals = ctx.get("section_totals")
+            if sec_totals is not None:
+                tot_value = 0 if empty else round(float(sec_totals.get(sec.get("cat"), 0.0)), 2)
+            else:
+                tot_value = f"=SUM(I{first}:I{last})" if not empty else 0
+            tot = ws.cell(row=header, column=9, value=tot_value)
             tot.font = Font(bold=True,
                             color=("F85149" if sec.get("optional") else "58A6FF"),
                             name="Calibri")
@@ -420,9 +490,143 @@ async def export_excel(
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
+    return buf
 
-    username = rec.user.username if rec.user else "unknown"
-    filename = f"Costing_{trailer_name.replace(' ', '_')}_{record_id}_{username}.xlsx"
+
+@router.post("/api/export/excel-preview")
+async def export_excel_preview(request: Request, db: Session = Depends(get_db)):
+    """Excel of the LIVE, not-yet-approved calculator result (v1.44 F1).
+
+    Body: {result: <POST /api/calculate response>, dims: {...},
+           trailer_type_id: int|null, trailer_name: str|null}.
+    Same builder/layout as the saved-record export, but headed
+    "Testing — {body type}", with NO quote/report number and NO customer block.
+    Nothing is written to the DB and no quote number is consumed."""
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401)
+    if not user_can(user, "export.excel", db):
+        raise HTTPException(status_code=403, detail="Permission denied: export.excel")
+
+    body = await request.json()
+    result = body.get("result")
+    items = result.get("items") if isinstance(result, dict) else None
+    if not isinstance(items, list) or not items:
+        raise HTTPException(status_code=400,
+                            detail="No calculated result to preview — calculate first")
+    dims = body.get("dims")
+    if not isinstance(dims, dict):
+        dims = {}
+
+    # Prefer the DB name (works for inactive body types too — edit sessions);
+    # the client-supplied label is only a fallback for the heading.
+    trailer_name = ""
+    tt = None
+    tt_id = body.get("trailer_type_id")
+    if tt_id is not None:
+        try:
+            tt = db.query(TrailerType).filter_by(id=int(tt_id)).first()
+        except (TypeError, ValueError):
+            tt = None
+        if tt:
+            trailer_name = tt.name
+    if not trailer_name:
+        trailer_name = str(body.get("trailer_name") or "").strip() or "Body Type"
+
+    result = strip_excluded_items(result)  # match saved-export semantics
+
+    bom_rows = []
+    if tt is not None:
+        from ..database import BillOfMaterial
+        bom_rows = (db.query(BillOfMaterial)
+                    .filter_by(trailer_type_id=tt.id).all())
+
+    # Michael 4 Aug: line items in the SAME order as the costings page. Mirrors
+    # renderBOMWithCosts/sortedGroupEntries — sheet mode (the default): each
+    # item keyed by its BOM row's sort_order (joined on bom_id, falling back to
+    # its result position), sections ordered by the lowest key they contain;
+    # alpha mode (the user toggle): sections A–Z, items by material name.
+    items_live = list(result.get("items", []))
+    if items_live:
+        mode = str(body.get("bom_sort_mode") or "sheet").lower()
+        if mode == "alpha":
+            items_live.sort(key=lambda it: ((it.get("category") or "Uncategorised"),
+                                            str(it.get("material") or "")))
+        else:
+            so_by_bom = {r.id: r.sort_order for r in bom_rows
+                         if r.sort_order is not None}
+            keys: dict[int, float] = {}
+            for idx, it in enumerate(items_live):
+                bid = it.get("bom_id")
+                keys[id(it)] = so_by_bom.get(bid, idx) if bid is not None else idx
+            cat_first: dict[str, float] = {}
+            for it in items_live:
+                cat = it.get("category") or "Uncategorised"
+                k = keys[id(it)]
+                if cat not in cat_first or k < cat_first[cat]:
+                    cat_first[cat] = k
+            items_live.sort(key=lambda it: (
+                cat_first[it.get("category") or "Uncategorised"], keys[id(it)]))
+        result = dict(result)
+        result["items"] = items_live
+
+    # Michael 4 Aug: the preview's spec block shows Length/Width/Height plus the
+    # SELECTED body options (door type + panel insulation + floor type), exactly
+    # like the calculator's Body Options panel — not the generic axles/doors
+    # dims grid. Derivation reuses the canonical read-only decoder the costing
+    # detail page uses; nothing renders when nothing is derivable.
+    spec_options: list[tuple[str, str]] = []
+    if bom_rows:
+        from .calculator import _derive_body_options_display
+        input_state = {
+            "body_option_selections": body.get("body_option_selections") or {},
+            "ui_snapshot": {"drd_srd": body.get("drd_srd") or {}},
+        }
+        derived = _derive_body_options_display(
+            bom_rows, input_state, (result.get("body_variables") or {}))
+        if derived:
+            rd = derived.get("rear_door")
+            if rd:
+                spec_options.append((
+                    "DOOR TYPE",
+                    f"{rd['door_type']} — {rd['insulation']} ({rd['thickness_m']:.3f} m)"))
+            for p in derived.get("panels") or []:
+                label = "FLOOR INSULATION" if p["location"] == "FLOOR" else p["location"]
+                spec_options.append(
+                    (label, f"{p['insulation']} ({p['thickness_m']:.3f} m)"))
+            if derived.get("floor_type"):
+                spec_options.append(("FLOOR TYPE", derived["floor_type"]))
+
+    # Literal per-section totals (Michael 4 Aug): =SUM formulas carry no cached
+    # value, so an Excel that doesn't auto-recalc shows them blank. The preview
+    # writes computed numbers instead, summed from the stripped items so the
+    # header total always equals the visible rows.
+    section_totals: dict[str, float] = {}
+    for it in result.get("items", []):
+        try:
+            section_totals[it["category"]] = (
+                section_totals.get(it["category"], 0.0) + float(it.get("line_cost") or 0))
+        except (KeyError, TypeError, ValueError):
+            continue
+
+    today = datetime.now()
+    ctx = {
+        "result": result,
+        "dims": dims,
+        "title": f"Testing — {trailer_name}",
+        "title_color": "58A6FF",
+        "subtitle": f"{trailer_name}  |  {today.strftime('%d %B %Y')}",
+        "customer_name": "",
+        "highlight": False,
+        "override_materials": set(),
+        "recently_updated_mats": set(),
+        "spec_options": spec_options,     # switches the dims block to spec mode
+        "section_totals": section_totals,  # literal totals instead of =SUM
+    }
+    buf = _build_costing_workbook(ctx)
+
+    safe_name = "".join(ch for ch in trailer_name if ch not in '\\/:*?"<>|\r\n').strip() or "Body Type"
+    filename = f"Testing - {safe_name} - {today.strftime('%Y-%m-%d')}.xlsx"
     return StreamingResponse(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

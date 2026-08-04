@@ -12,6 +12,13 @@ function setTTView(view) {
   renderTrailerList(Object.values(trailerMap));
 }
 
+// v1.44 F2 — Inactive templates stay listed here (admin surface) but are hidden
+// from the calculators' Body Type dropdowns for NEW costings.
+const TT_INACTIVE_BADGE = '<span style="font-size:9px;font-weight:700;letter-spacing:.5px;'
+  + 'color:var(--text-dim);border:1px solid var(--border);border-radius:3px;'
+  + 'padding:1px 5px;margin-left:6px;white-space:nowrap;vertical-align:middle">Inactive</span>';
+const _ttInactive = t => t.is_active === false;
+
 function renderTrailerList(tts) {
   const list = document.getElementById('trailer-list');
   if (!tts.length) {
@@ -24,12 +31,12 @@ function renderTrailerList(tts) {
     list.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${
       tts.map(t => `
         <div class="tt-tile" id="tt-${t.id}" onclick="selectTrailer(${t.id})"
-          style="padding:10px 6px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--bg-panel);text-align:center">
+          style="padding:10px 6px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--bg-panel);text-align:center${_ttInactive(t) ? ';opacity:.5' : ''}">
           <div style="width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;
             font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 6px">
             ${escHtml(t.name.trim()[0].toUpperCase())}
           </div>
-          <div style="font-size:11px;font-weight:600;line-height:1.3;word-break:break-word">${escHtml(t.name)}</div>
+          <div style="font-size:11px;font-weight:600;line-height:1.3;word-break:break-word">${escHtml(t.name)}${_ttInactive(t) ? TT_INACTIVE_BADGE : ''}</div>
           ${t.markup_percentage != null ? `<div style="font-size:10px;color:var(--text-dim);margin-top:2px">${(t.markup_percentage*100).toFixed(0)}% markup</div>` : ''}
         </div>`).join('')
     }</div>`;
@@ -44,9 +51,9 @@ function renderTrailerList(tts) {
       </thead>
       <tbody>${
         tts.map(t => `
-          <tr class="tt-details-row" id="tt-${t.id}" onclick="selectTrailer(${t.id})" style="cursor:pointer;border-bottom:1px solid var(--border)">
+          <tr class="tt-details-row" id="tt-${t.id}" onclick="selectTrailer(${t.id})" style="cursor:pointer;border-bottom:1px solid var(--border)${_ttInactive(t) ? ';opacity:.5' : ''}">
             <td style="padding:8px 10px">
-              <div style="font-weight:600;font-size:12px">${escHtml(t.name)}</div>
+              <div style="font-weight:600;font-size:12px">${escHtml(t.name)}${_ttInactive(t) ? TT_INACTIVE_BADGE : ''}</div>
               ${t.description ? `<div style="color:var(--text-dim);font-size:10px">${escHtml(t.description)}</div>` : ''}
             </td>
             <td style="padding:8px;text-align:right;color:var(--text-dim)">${
@@ -59,10 +66,10 @@ function renderTrailerList(tts) {
     // List view (default)
     list.style.padding = '8px';
     list.innerHTML = tts.map(t => `
-      <div class="part-item" id="tt-${t.id}" onclick="selectTrailer(${t.id})">
+      <div class="part-item" id="tt-${t.id}" onclick="selectTrailer(${t.id})"${_ttInactive(t) ? ' style="opacity:.5"' : ''}>
         <span class="part-dot"></span>
         <div>
-          <div style="font-size:13px">${escHtml(t.name)}</div>
+          <div style="font-size:13px">${escHtml(t.name)}${_ttInactive(t) ? TT_INACTIVE_BADGE : ''}</div>
           <div style="font-size:10px;color:var(--text-dim)">${escHtml(t.description||'')}</div>
         </div>
       </div>`).join('');
@@ -85,10 +92,14 @@ async function loadAllMats() {
 // ── Load trailer types ─────────────────────────────────
 async function loadTrailers() {
   try {
-    const tts = await api('GET', '/api/trailers');
+    // include_inactive=1 (admin-gated): this page manages ALL templates —
+    // Inactive ones are greyed + badged; the calculators never see them.
+    const tts = await api('GET', '/api/trailers?include_inactive=1');
     trailerMap = {};
     tts.forEach(t => trailerMap[t.id] = t);
-    document.getElementById('tt-count').textContent = tts.length;
+    const nInactive = tts.filter(_ttInactive).length;
+    document.getElementById('tt-count').textContent =
+      nInactive ? `${tts.length} · ${nInactive} inactive` : tts.length;
     renderTrailerList(tts);
     // Auto-select whichever trailer the user last focused on the calculator
     // (or here). Only on initial load, when nothing is selected yet.
@@ -111,8 +122,9 @@ function selectTrailer(id) {
   try { sessionStorage.setItem('focusedTrailerId', String(id)); } catch(_) {}
   const t = trailerMap[id];
   document.getElementById('bom-title').textContent = t ? t.name : 'Trailer';
-  ['btn-rename','btn-dup','btn-del','btn-add-bom','btn-bom-sort','btn-collapse-all'].forEach(b =>
+  ['btn-rename','btn-dup','btn-del','btn-add-bom','btn-bom-sort','btn-collapse-all','btn-toggle-active'].forEach(b =>
     document.getElementById(b).classList.remove('hidden'));
+  _syncToggleActiveBtn(t);
 
   // Populate default dimension fields
   const bar = document.getElementById('dims-bar');
@@ -128,6 +140,46 @@ function selectTrailer(id) {
   document.getElementById('dims-saved').style.opacity = '0';
 
   loadBOM(id);
+}
+
+// v1.44 F2 — Active ⇄ Inactive toggle. Inactive = hidden from the Body Type
+// dropdown for NEW costings on BOTH calculators; existing costings, pending
+// edits and ?edit= reopens still work (calculator.js adds the "(inactive)"
+// option back for that session). Persisted via PUT /api/trailers is_active —
+// no migration, next calculator load reflects it.
+function _syncToggleActiveBtn(t) {
+  const btn = document.getElementById('btn-toggle-active');
+  if (!btn || !t) return;
+  const active = t.is_active !== false;
+  btn.textContent = active ? 'Set Inactive' : 'Set Active';
+  btn.title = active
+    ? 'Hide this body type from the Body Type dropdown for NEW costings'
+    : 'Show this body type again in the Body Type dropdown for new costings';
+}
+
+async function toggleTrailerActive() {
+  if (!currentTTId) return;
+  const t = trailerMap[currentTTId];
+  if (!t) return;
+  const makingInactive = t.is_active !== false;
+  const ok = await confirmModal(
+    makingInactive
+      ? `“${t.name}” will disappear from the Body Type dropdown for NEW costings on both calculators. Existing costings and pending edits still open (shown “(inactive)”).`
+      : `“${t.name}” will appear again in the Body Type dropdown for new costings.`,
+    { title: makingInactive ? 'Set Inactive?' : 'Set Active?',
+      okText: makingInactive ? 'Set Inactive' : 'Set Active',
+      danger: makingInactive });
+  if (!ok) return;
+  try {
+    await api('PUT', `/api/trailers/${currentTTId}`, { is_active: !makingInactive });
+    t.is_active = !makingInactive;
+    renderTrailerList(Object.values(trailerMap));
+    document.getElementById(`tt-${currentTTId}`)?.classList.add('selected');
+    _syncToggleActiveBtn(t);
+    toast(makingInactive
+      ? `“${t.name}” set Inactive — hidden from new-costing dropdowns`
+      : `“${t.name}” set Active`, 'success');
+  } catch (e) { toast(e.message, 'error'); }
 }
 
 async function saveConfiguratorV2() {

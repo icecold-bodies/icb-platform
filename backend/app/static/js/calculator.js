@@ -474,6 +474,23 @@ function _pinBodyVar(row, v) {
 const DEFAULT_REAR_DOOR_THICKNESS_M = 0.06;
 
 // The EPS/PU insulation pair under a DRD/SRD door group, or null.
+// v1.44.2 — a row is an insulation-pair member when its group+subgroup set is
+// a structural EPS/PU pair (_insulationPairFor's identity rule). Used to render
+// the thickness span even when variable_value is NULL: a pair row with no
+// value must show a loud, editable (0.000 m) — NULL used to hide the span, the
+// red both-zero warning AND the click-to-edit target (Michael 4 Aug).
+function _isInsulationPairMember(row) {
+  return !!(row && row.is_body_option && _insulationPairFor(row.id));
+}
+
+// NOTE (v1.44.2 discovery): panel-pair alignment on load needs NO new
+// machinery — _enforceInsulationInvariant() (v1.39.10) already carries a
+// stranded sibling value onto the selected side at the renderBodyOptions
+// chokepoint, for every pair, on every render, in both renderers. Only two
+// gaps existed: the NON-quoted rear door (v1.44.1's load guard) and
+// never-seeded NULL pairs, which the invariant deliberately skips — those are
+// made loud + editable by _isInsulationPairMember-driven rendering instead.
+
 function _doorInsulationPair(grp) {
   const sibs = bomData.filter(r => r.is_body_option
     && r.body_option_group === grp
@@ -2843,6 +2860,8 @@ async function loadBOM(options = {}) {
     // fully seeded for flat AND v2 bodies; awaited so the template writes land
     // before the debounced auto-calc reads them server-side. Re-render when a
     // heal actually changed values so the (0.000 m) spans show immediately.
+    // (Panel pairs need no equivalent here — _enforceInsulationInvariant
+    // already aligns them inside every renderBodyOptions pass.)
     if (await _zeroInactiveRearDoorInsulation()) renderBodyOptions(bomData);
     refreshBomDisplay();
     scheduleCalc();  // auto-calculate once BOM is loaded
@@ -3616,12 +3635,15 @@ function renderBodyOptionsFromDraft(draft, tid) {
   function bvEditSpan(mids) {
     for (const mid of mids) {
       const row = bomData.find(r => r.id === mid);
-      if (row && row.variable_value != null) {
+      // v1.44.2 — EPS/PU pair rows render the span even when variable_value is
+      // NULL (shown as 0.000): a missing thickness must be loud + editable,
+      // never invisible. Non-pair rows keep the null-hides-span behaviour.
+      if (row && (row.variable_value != null || _isInsulationPairMember(row))) {
         const nm = escHtml(row.material_name || '');
         return ` <span class="bv-edit" data-bom-id="${row.id}" data-name="${nm}"` +
           ` style="color:#58a6ff;font-size:10px;cursor:pointer;border-bottom:1px dotted #388bfd"` +
           ` title="Click to edit — referenced in formulas as {${nm}}"` +
-          ` onclick="event.preventDefault();event.stopPropagation();editBodyVariable(this)">(${Number(row.variable_value).toFixed(3)} m)</span>`;
+          ` onclick="event.preventDefault();event.stopPropagation();editBodyVariable(this)">(${Number(row.variable_value || 0).toFixed(3)} m)</span>`;
       }
     }
     return '';
@@ -4585,11 +4607,13 @@ function _renderBodyOptionsInner(bomItems) {
   function optLabel(it, inputHtml, extraLabelStyle) {
     // Body-option rows are now Body Variables — show their metric value, not a price.
     // The value is click-to-edit; saves via PUT /api/bom/{id}.
-    const tail = it.variable_value != null
+    // v1.44.2 — EPS/PU pair rows render the span even when variable_value is
+    // NULL (shown as 0.000): missing thickness must be loud + editable.
+    const tail = (it.variable_value != null || _isInsulationPairMember(it))
       ? ` <span class="bv-edit" data-bom-id="${it.id}" data-name="${escHtml(it.material_name)}"
           style="color:#58a6ff;font-size:10px;cursor:pointer;border-bottom:1px dotted #388bfd"
           title="Click to edit — referenced in formulas as {${escHtml(it.material_name)}}"
-          onclick="event.preventDefault();event.stopPropagation();editBodyVariable(this)">(${Number(it.variable_value).toFixed(3)} m)</span>`
+          onclick="event.preventDefault();event.stopPropagation();editBodyVariable(this)">(${Number(it.variable_value || 0).toFixed(3)} m)</span>`
       : (it.price > 0 ? ` <span style="color:var(--text-dim);font-size:10px">(${fmt(it.price)})</span>` : '');
     return `<label style="${lblStyle}${extraLabelStyle || ''}">${inputHtml}<span>${escHtml(it.material_name)}${tail}</span></label>`;
   }

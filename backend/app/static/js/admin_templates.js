@@ -1141,7 +1141,13 @@ function renderBOM(items) {
         <td style="padding:8px 12px;text-align:right;font-family:var(--font-mono);font-size:12px"
             title="${it.is_body_option ? 'Body variable — not a price. Reference in formulas as {' + escHtml(it.material_name) + '}' : ''}">
           ${it.is_body_option
-            ? `<span style="color:#58a6ff">${it.variable_value != null ? Number(it.variable_value).toFixed(3) : '—'} m</span>`
+            ? (it.variable_value != null
+                ? `<span style="color:#58a6ff">${Number(it.variable_value).toFixed(3)} m</span>`
+                : (_adminIsInsulationPairMember(it)
+                    ? `<button onclick="event.stopPropagation();openEditBOM(${it.id})"
+                        title="This EPS/PU pair row has no thickness — the calculator cannot quote it. Click to set."
+                        style="background:#3a1a1a;color:#ff6b6b;border:1px solid #f44336;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.3px">no thickness set</button>`
+                    : `<span style="color:#58a6ff">— m</span>`))
             : `R ${Number(it.price).toFixed(2)}`}
         </td>
         <td style="padding:8px 12px;white-space:nowrap;display:flex;gap:4px">
@@ -1478,6 +1484,23 @@ function insertVariableToken(token, value) {
   inp.focus();
 }
 
+// v1.44.2 — structural insulation pair membership: same group+subgroup set
+// containing exactly one EPS row and one PU row (mirrors calculator.js
+// _insulationPairFor). Pair rows must always carry a thickness value — NULL
+// hides the value everywhere (calculator span, red both-zero warning, the
+// click-to-edit target), which is how EXPLOSIVE 2.7 TO 4.8 shipped invisible
+// FLOOR insulation (Michael 4 Aug).
+function _adminIsInsulationPairMember(it) {
+  if (!it || !it.is_body_option) return false;
+  const key = (it.body_option_group || '') + '|' + (it.body_option_subgroup || '');
+  const sibs = (_cachedBOM || []).filter(r => r.is_body_option
+    && ((r.body_option_group || '') + '|' + (r.body_option_subgroup || '')) === key);
+  if (sibs.length !== 2) return false;
+  const eps = sibs.find(r => /EPS/i.test(r.material_name || ''));
+  const pu  = sibs.find(r => /PU/i.test(r.material_name || '') && !/EPS/i.test(r.material_name || ''));
+  return !!(eps && pu && eps.id !== pu.id);
+}
+
 async function openEditBOM(id, opts = {}) {
   // Use cached BOM if available, otherwise fetch
   try {
@@ -1606,7 +1629,13 @@ async function saveBOMItem() {
   // body-option (Body Variable) rows, so it is gated on the row's status.
   if (_editBomIsOption) {
     const vRaw = document.getElementById('edit-bom-variable-value-input').value;
-    body.variable_value = vRaw === '' ? null : (parseFloat(vRaw) || 0);
+    // v1.44.2 — an EMPTY thickness on an EPS/PU pair row used to save NULL,
+    // which hides the value everywhere (no calculator span, no red both-zero
+    // warning, no click-to-edit target). Pair rows now save 0.0 instead —
+    // loud and editable. Non-pair body options (plain flags) keep NULL.
+    const _row = (_cachedBOM || []).find(x => String(x.id) === String(id));
+    const _pairEmpty = _adminIsInsulationPairMember(_row) ? 0 : null;
+    body.variable_value = vRaw === '' ? _pairEmpty : (parseFloat(vRaw) || 0);
   }
   const skinOn = document.getElementById('edit-bom-skin-toggle').checked;
   body.skin_formula_id     = skinOn ? (parseInt(document.getElementById('edit-bom-skin-formula-id').value) || null) : null;

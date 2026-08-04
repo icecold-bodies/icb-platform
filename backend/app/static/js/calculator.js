@@ -2226,6 +2226,23 @@ async function editCalculation(recordId) {
     const payload = await api('GET', `/api/calculations/${recordId}`);
     if (!payload.trailer_type_id) throw new Error('Stored calculation has no trailer type');
 
+    // v1.44 F2 — an Inactive body type is hidden from the dropdown (NEW costings
+    // only). Reopening a costing that references one must still work: fetch the
+    // single trailer (served even when inactive) and add it to the dropdown +
+    // defaults map for THIS session, labelled "(inactive)". Covers both the
+    // pending-edit path and the non-pending copy fallback below.
+    const _selEl = document.getElementById('trailer-select');
+    if (_selEl && ![..._selEl.options].some(o => String(o.value) === String(payload.trailer_type_id))) {
+      try {
+        const tRow = await api('GET', `/api/trailers/${payload.trailer_type_id}`);
+        const opt = document.createElement('option');
+        opt.value = String(tRow.id);
+        opt.textContent = tRow.is_active ? tRow.name : `${tRow.name} (inactive)`;
+        _selEl.appendChild(opt);
+        trailerDefaults[tRow.id] = tRow;
+      } catch (_) { /* option stays missing — unchanged failure surface */ }
+    }
+
     const status = payload.status || 'pending';
     if (status !== 'pending') {
       // Not editable — degrade gracefully to a copy so the user still gets a
@@ -7216,3 +7233,59 @@ function _updateNoDoorsWarning() {
   warn.textContent = '⚠ No doors quoted — no rear doors selected and no side-doors extra included';
   section.insertBefore(warn, document.getElementById('body-options-list'));
 }
+
+// ─── v1.44 F1: "Preview in Excel" (pre-approval test artifact) ───────────────
+// The MES embed header (frontend LiveCalculator.tsx) posts {type:'mes:excel-preview'}
+// into this iframe; the reply is a POST of the LIVE result to
+// /api/export/excel-preview and a client-side download of the returned stream.
+// READS lastResult / lastCalcPayload only — never mutates calculator state,
+// never touches the approve/save path, and consumes no quote number.
+async function downloadExcelPreview() {
+  if (typeof lastResult === 'undefined' || !lastResult || !lastCalcPayload) {
+    toast('Calculate first', 'error');
+    return;
+  }
+  const tid = lastCalcPayload.trailer_type_id;
+  const selOpt = document.getElementById('trailer-select')?.selectedOptions?.[0];
+  const tname = (trailerDefaults[tid] && trailerDefaults[tid].name)
+                || (selOpt ? selOpt.textContent.replace(/\s*\(inactive\)\s*$/, '').trim() : '')
+                || 'Body Type';
+  try {
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const r = await fetch('/api/export/excel-preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      body: JSON.stringify({
+        result: lastResult,
+        dims: lastCalcPayload.dimensions || {},
+        trailer_type_id: tid,
+        trailer_name: tname,
+      }),
+    });
+    if (!r.ok) {
+      let msg = `HTTP ${r.status}`;
+      try { msg = (await r.json()).detail || msg; } catch (_) {}
+      toast('Excel preview failed: ' + msg, 'error');
+      return;
+    }
+    const blob = await r.blob();
+    const d = new Date();
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Testing - ${tname} - ${dateStr}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Excel preview downloaded', 'success');
+  } catch (e) {
+    toast('Excel preview failed: ' + e.message, 'error');
+  }
+}
+
+window.addEventListener('message', (e) => {
+  if (e.origin !== window.location.origin) return;
+  if (e.data && e.data.type === 'mes:excel-preview') downloadExcelPreview();
+});

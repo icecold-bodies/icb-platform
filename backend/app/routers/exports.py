@@ -56,6 +56,45 @@ async def export_excel(
                 except Exception:
                     pass
 
+    ctx = {
+        "result": result,
+        "dims": dims,
+        "title": ("REPAIR QUOTE  —  TRAILER MANUFACTURING COST REPORT"
+                  if is_repair else "TRAILER MANUFACTURING COST REPORT"),
+        "title_color": "E02424" if is_repair else "58A6FF",
+        "subtitle": f"{trailer_name}  |  Report #{record_id}  |  {rec.created_at.strftime('%d %B %Y')}",
+        "customer_name": customer_name,
+        "highlight": bool(highlight),
+        "override_materials": override_materials,
+        "recently_updated_mats": recently_updated_mats,
+    }
+    buf = _build_costing_workbook(ctx)
+
+    username = rec.user.username if rec.user else "unknown"
+    filename = f"Costing_{trailer_name.replace(' ', '_')}_{record_id}_{username}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _build_costing_workbook(ctx: dict):
+    """Render the costing workbook and return it as a BytesIO ready to stream.
+
+    ctx keys: result (already exclusion-stripped), dims, title, title_color,
+    subtitle, customer_name (empty string → no Client row), highlight,
+    override_materials, recently_updated_mats.
+
+    Shared by GET /results/{id}/export/excel and POST /api/export/excel-preview —
+    a layout change here affects BOTH; the saved-record export is regression-locked
+    (normalized-hash test in tests/test_excel_preview_and_trailer_active.py)."""
+    result = ctx["result"]
+    dims = ctx["dims"]
+    highlight = ctx["highlight"]
+    override_materials = ctx["override_materials"]
+    recently_updated_mats = ctx["recently_updated_mats"]
+
     import openpyxl
     import io
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -87,21 +126,20 @@ async def export_excel(
 
     ws.merge_cells("A1:I1")
     t = ws["A1"]
-    t.value = ("REPAIR QUOTE  —  TRAILER MANUFACTURING COST REPORT"
-               if is_repair else "TRAILER MANUFACTURING COST REPORT")
-    t.font = Font(bold=True, size=14, name="Calibri",
-                  color="E02424" if is_repair else "58A6FF")
+    t.value = ctx["title"]
+    t.font = Font(bold=True, size=14, name="Calibri", color=ctx["title_color"])
     t.fill = PatternFill("solid", fgColor="0D1117")
     t.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 28
 
     ws.merge_cells("A2:I2")
     s = ws["A2"]
-    s.value = f"{trailer_name}  |  Report #{record_id}  |  {rec.created_at.strftime('%d %B %Y')}"
+    s.value = ctx["subtitle"]
     s.font = Font(size=11, color="8B949E", name="Calibri")
     s.fill = PatternFill("solid", fgColor="161B22")
     s.alignment = Alignment(horizontal="center")
 
+    customer_name = ctx["customer_name"]
     if customer_name:
         ws.merge_cells("A3:I3")
         c3 = ws["A3"]
@@ -420,9 +458,65 @@ async def export_excel(
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
+    return buf
 
-    username = rec.user.username if rec.user else "unknown"
-    filename = f"Costing_{trailer_name.replace(' ', '_')}_{record_id}_{username}.xlsx"
+
+@router.post("/api/export/excel-preview")
+async def export_excel_preview(request: Request, db: Session = Depends(get_db)):
+    """Excel of the LIVE, not-yet-approved calculator result (v1.44 F1).
+
+    Body: {result: <POST /api/calculate response>, dims: {...},
+           trailer_type_id: int|null, trailer_name: str|null}.
+    Same builder/layout as the saved-record export, but headed
+    "Testing — {body type}", with NO quote/report number and NO customer block.
+    Nothing is written to the DB and no quote number is consumed."""
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401)
+    if not user_can(user, "export.excel", db):
+        raise HTTPException(status_code=403, detail="Permission denied: export.excel")
+
+    body = await request.json()
+    result = body.get("result")
+    items = result.get("items") if isinstance(result, dict) else None
+    if not isinstance(items, list) or not items:
+        raise HTTPException(status_code=400,
+                            detail="No calculated result to preview — calculate first")
+    dims = body.get("dims")
+    if not isinstance(dims, dict):
+        dims = {}
+
+    # Prefer the DB name (works for inactive body types too — edit sessions);
+    # the client-supplied label is only a fallback for the heading.
+    trailer_name = ""
+    tt_id = body.get("trailer_type_id")
+    if tt_id is not None:
+        try:
+            tt = db.query(TrailerType).filter_by(id=int(tt_id)).first()
+        except (TypeError, ValueError):
+            tt = None
+        if tt:
+            trailer_name = tt.name
+    if not trailer_name:
+        trailer_name = str(body.get("trailer_name") or "").strip() or "Body Type"
+
+    result = strip_excluded_items(result)  # match saved-export semantics
+    today = datetime.now()
+    ctx = {
+        "result": result,
+        "dims": dims,
+        "title": f"Testing — {trailer_name}",
+        "title_color": "58A6FF",
+        "subtitle": f"{trailer_name}  |  {today.strftime('%d %B %Y')}",
+        "customer_name": "",
+        "highlight": False,
+        "override_materials": set(),
+        "recently_updated_mats": set(),
+    }
+    buf = _build_costing_workbook(ctx)
+
+    safe_name = "".join(ch for ch in trailer_name if ch not in '\\/:*?"<>|\r\n').strip() or "Body Type"
+    filename = f"Testing - {safe_name} - {today.strftime('%Y-%m-%d')}.xlsx"
     return StreamingResponse(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

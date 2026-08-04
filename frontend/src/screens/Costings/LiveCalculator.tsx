@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ExternalLink, RadioTower, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
+import { ExternalLink, FileSpreadsheet, RadioTower, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { CostingsDashboard } from './CostingsDashboard'
 
@@ -23,6 +23,11 @@ const TARGET_URL = '/mes/calculator'
  */
 export function LiveCalculator() {
   const [reloadKey, setReloadKey] = useState(0)
+  // v1.44 F1 — "Preview in Excel": ask the embedded calculator for its LIVE
+  // (not-yet-approved) result; calculator.js answers the message by POSTing
+  // /api/export/excel-preview itself and triggering the download (or toasting
+  // "Calculate first" when nothing has been calculated). Same-origin iframe.
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
   // CostingsProvider attempts a dev-mode auto-login on mount; wait for it to
   // finish (mode flips off 'loading') before mounting the iframe so the
   // session cookie is in place when /calculator loads.
@@ -65,6 +70,16 @@ export function LiveCalculator() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() =>
+              iframeRef.current?.contentWindow?.postMessage({ type: 'mes:excel-preview' }, window.location.origin)
+            }
+            disabled={mode === 'loading'}
+            title="Download the current, not-yet-approved costing as an Excel test workbook"
+            className="flex items-center gap-1 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-body hover:bg-surface-alt disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <FileSpreadsheet size={13} /> Preview in Excel
+          </button>
+          <button
             onClick={() => setReloadKey((k) => k + 1)}
             title="Reload"
             className="flex items-center gap-1 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-body hover:bg-surface-alt"
@@ -90,6 +105,7 @@ export function LiveCalculator() {
       ) : (
         <iframe
           key={reloadKey}
+          ref={iframeRef}
           src={iframeSrc}
           title="Calculator (live costing app)"
           className="flex-1 w-full border-0 bg-white"

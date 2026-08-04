@@ -29,16 +29,45 @@ router = APIRouter()
 
 # ─── Trailer Types ────────────────────────────────────────────────────────────
 
+def _trailer_row(t: TrailerType) -> dict:
+    return {"id": t.id, "name": t.name, "description": t.description or "",
+            "default_length":    t.default_length,
+            "default_width":     t.default_width,
+            "default_height":    t.default_height,
+            "markup_percentage": t.markup_percentage or 0.0,
+            "protect_overrides": bool(t.protect_overrides),
+            "configurator_v2":   bool(t.configurator_v2),
+            "is_active":         bool(t.is_active)}
+
+
 @router.get("/api/trailers")
-async def get_trailers(db: Session = Depends(get_db)):
-    tts = db.query(TrailerType).filter_by(is_active=True).order_by(TrailerType.name).all()
-    return [{"id": t.id, "name": t.name, "description": t.description or "",
-             "default_length":    t.default_length,
-             "default_width":     t.default_width,
-             "default_height":    t.default_height,
-             "markup_percentage": t.markup_percentage or 0.0,
-             "protect_overrides": bool(t.protect_overrides),
-             "configurator_v2":   bool(t.configurator_v2)} for t in tts]
+async def get_trailers(request: Request, db: Session = Depends(get_db),
+                       include_inactive: int = 0):
+    """Body-type list. Default: active only — the calculators' dropdown source,
+    so an Inactive template disappears from NEW costings (v1.44 F2). With
+    include_inactive=1 (admin only — Admin / Trailer Templates) every template
+    is returned EXCEPT soft-deleted ones, which DELETE marks by renaming to
+    "… [deleted-{id}]" on top of is_active=False."""
+    q = db.query(TrailerType)
+    if include_inactive:
+        require_admin(request, db)
+        q = q.filter(~TrailerType.name.like("%[deleted-%"))
+    else:
+        q = q.filter_by(is_active=True)
+    tts = q.order_by(TrailerType.name).all()
+    return [_trailer_row(t) for t in tts]
+
+
+@router.get("/api/trailers/{tt_id}")
+async def get_trailer(tt_id: int, request: Request, db: Session = Depends(get_db)):
+    """Single body type, returned even when inactive — the calculator's ?edit=
+    reopen uses this to restore a costing whose body type has since been set
+    Inactive (rendered "(inactive)" in the dropdown for that session only)."""
+    require_user(request, db)
+    tt = db.query(TrailerType).filter_by(id=tt_id).first()
+    if not tt:
+        raise HTTPException(status_code=404)
+    return _trailer_row(tt)
 
 
 @router.post("/api/trailers")
@@ -48,9 +77,16 @@ async def create_trailer(request: Request, db: Session = Depends(get_db)):
     name = body.get("name", "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Name is required")
-    existing = db.query(TrailerType).filter_by(is_active=True, name=name).first()
+    # Clash-check ALL rows, not just active ones (v1.44 F2): an Inactive template
+    # still owns its name — re-activating it must never collide with a newer
+    # same-name template. Soft-deleted rows never clash (renamed "[deleted-…]").
+    existing = db.query(TrailerType).filter_by(name=name).first()
     if existing:
-        raise HTTPException(status_code=400, detail=f'A trailer type named "{name}" already exists')
+        detail = (f'A trailer type named "{name}" already exists but is Inactive — '
+                  f're-activate it on Admin / Trailer Templates instead'
+                  if not existing.is_active else
+                  f'A trailer type named "{name}" already exists')
+        raise HTTPException(status_code=400, detail=detail)
     tt = TrailerType(name=name, description=body.get("description", ""))
     db.add(tt)
     db.commit()
@@ -67,8 +103,8 @@ async def update_trailer(tt_id: int, request: Request, db: Session = Depends(get
         raise HTTPException(status_code=404)
     new_name = body.get("name", "").strip()
     if new_name and new_name != tt.name:
+        # Same widened clash-check as create: Inactive templates keep their name.
         existing = db.query(TrailerType).filter(
-            TrailerType.is_active == True,
             TrailerType.name == new_name,
             TrailerType.id != tt_id
         ).first()

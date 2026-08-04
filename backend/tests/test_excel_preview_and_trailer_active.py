@@ -214,6 +214,126 @@ def test_preview_returns_testing_workbook(client, admin_headers, seeded):
     assert ws["A3"].value in (None, "")
     assert "TEST FLOOR SHEET" in flat and "TEST AXLE" in flat
     assert "EXCLUDED EXTRA" not in flat          # strip_excluded_items on preview too
+    # Preview spec block (Michael 4 Aug): L/W/H only — no axles/doors/insulation grid.
+    assert ws["A4"].value == "DIMENSIONS & BODY OPTIONS"
+    assert "Num Axles" not in flat and "Num Doors" not in flat
+    assert "Insulation Thickness (m)" not in flat
+
+
+@pytest.fixture(scope="module")
+def optioned(app_mod):
+    """Trailer with body-option pairs + floor type + plain rows whose
+    sort_orders REVERSE the result-item order — proves the spec block and the
+    on-screen (sheet) ordering + literal section totals."""
+    from app.database import BillOfMaterial, Material, SessionLocal, TrailerType
+    name = f"V144 OPTIONED BODY {uuid.uuid4().hex[:6]}"
+    with SessionLocal() as db:
+        tt = TrailerType(name=name)
+        db.add(tt)
+        db.flush()
+
+        def _mat(mname):
+            m = Material(name=mname, unit_of_measure="ea", price_per_unit=10.0)
+            db.add(m)
+            db.flush()
+            return m
+
+        def _row(mname, **kw):
+            r = BillOfMaterial(trailer_type_id=tt.id, material_id=_mat(mname).id,
+                               formula_expression="1", waste_percentage=0, **kw)
+            db.add(r)
+            db.flush()
+            return r
+
+        front_eps = _row(f"{name} FRONT EPS", is_body_option=True,
+                         body_option_group="FRONT", body_option_subgroup="INSULATION",
+                         variable_value=0.06)
+        front_pu = _row(f"{name} FRONT PU", is_body_option=True,
+                        body_option_group="FRONT", body_option_subgroup="INSULATION",
+                        variable_value=0.0)
+        drd_eps = _row(f"{name} DRD EPS", is_body_option=True,
+                       body_option_group="DRD", body_option_subgroup="INSULATION",
+                       variable_value=0.05)
+        drd_pu = _row(f"{name} DRD PU", is_body_option=True,
+                      body_option_group="DRD", body_option_subgroup="INSULATION",
+                      variable_value=0.0)
+        rice = _row(f"{name} RICE GRAIN FLOOR", is_body_option=True,
+                    body_option_group="FLOOR")
+        # Plain rows: sheet order says ZLATE (sort 1) before AEARLY (sort 2) —
+        # the OPPOSITE of both alphabetical and the result-item order below.
+        zlate = _row(f"{name} ZLATE MAT", bom_section="ZLATE", sort_order=1)
+        aearly = _row(f"{name} AEARLY MAT", bom_section="AEARLY", sort_order=2)
+        db.commit()
+        ids = {"tt_id": tt.id, "name": name,
+               "front_eps": front_eps.id, "drd_eps": drd_eps.id, "rice": rice.id,
+               "zlate": zlate.id, "aearly": aearly.id}
+    yield ids
+    with SessionLocal() as db:
+        from sqlalchemy import text
+        db.execute(text(
+            "DELETE FROM icb_costings.bill_of_materials WHERE trailer_type_id = :t"),
+            {"t": ids["tt_id"]})
+        db.execute(text(
+            "DELETE FROM icb_costings.materials WHERE name LIKE :m"), {"m": f"{name}%"})
+        db.execute(text(
+            "DELETE FROM icb_costings.trailer_types WHERE id = :t"), {"t": ids["tt_id"]})
+        db.commit()
+
+
+def test_preview_spec_block_totals_and_screen_order(client, admin_headers, optioned):
+    """Michael 4 Aug adjustments: (1) spec block = L/W/H + selected body options,
+    (2) literal numeric section totals on header rows, (3) items in the costings
+    page's sheet order (BOM sort_order, not result order)."""
+    n = optioned["name"]
+    result = {
+        # Result order = AEARLY first; sheet order must flip it to ZLATE first.
+        "items": [
+            {"category": "AEARLY", "material": f"{n} AEARLY MAT", "material_code": "",
+             "formula": "1", "quantity": 1.0, "unit": "ea", "unit_price": 10.0,
+             "waste_pct": 0, "line_cost": 111.0, "bom_id": optioned["aearly"],
+             "last_updated": None},
+            {"category": "ZLATE", "material": f"{n} ZLATE MAT", "material_code": "",
+             "formula": "1", "quantity": 1.0, "unit": "ea", "unit_price": 10.0,
+             "waste_pct": 0, "line_cost": 222.5, "bom_id": optioned["zlate"],
+             "last_updated": None},
+        ],
+        "category_totals": {"AEARLY": 111.0, "ZLATE": 222.5},
+        "grand_total": 333.5,
+        "body_variables": {f"{n} FRONT EPS": 0.06, f"{n} FRONT PU": 0.0,
+                           f"{n} DRD EPS": 0.05, f"{n} DRD PU": 0.0},
+    }
+    sel = {str(optioned["front_eps"]): True, str(optioned["drd_eps"]): True,
+           str(optioned["rice"]): True}
+    r = client.post("/api/export/excel-preview", headers=admin_headers,
+                    json={"result": result, "dims": {"length": 6.0, "width": 2.4,
+                                                     "height": 2.4, "num_axles": 3},
+                          "trailer_type_id": optioned["tt_id"],
+                          "body_option_selections": sel,
+                          "drd_srd": {"DRD": True},
+                          "bom_sort_mode": "sheet"})
+    assert r.status_code == 200, r.text
+    ws, flat = _sheet_flat_text(r.content)
+
+    # (1) spec block: L/W/H + the selected options; no axles even though sent.
+    assert ws["A4"].value == "DIMENSIONS & BODY OPTIONS"
+    assert ws["A5"].value == "Length (m)" and ws["E5"].value == "Height (m)"
+    assert "Num Axles" not in flat
+    spec_pairs = {ws.cell(row=r_, column=1).value: ws.cell(row=r_, column=2).value
+                  for r_ in range(6, 10)}
+    assert spec_pairs.get("DOOR TYPE") == "DRD — EPS (0.050 m)"
+    assert spec_pairs.get("FRONT") == "EPS (0.060 m)"
+    assert spec_pairs.get("FLOOR TYPE") == f"{n} RICE GRAIN FLOOR"
+
+    # (3) sheet order: ZLATE's section header row precedes AEARLY's.
+    col_a = [ws.cell(row=r_, column=1).value or "" for r_ in range(1, ws.max_row + 1)]
+    assert col_a.index("ZLATE") < col_a.index("AEARLY")
+
+    # (2) literal numeric totals on the section header rows (no =SUM text).
+    z_hdr = col_a.index("ZLATE") + 1
+    a_hdr = col_a.index("AEARLY") + 1
+    assert ws.cell(row=z_hdr, column=9).value == 222.5
+    assert ws.cell(row=a_hdr, column=9).value == 111.0
+    assert "=SUM" not in flat
 
 
 def test_preview_writes_nothing(client, admin_headers, seeded):

@@ -7260,6 +7260,13 @@ async function downloadExcelPreview() {
         dims: lastCalcPayload.dimensions || {},
         trailer_type_id: tid,
         trailer_name: tname,
+        // Spec block + on-screen ordering (Michael 4 Aug) — all read-only state:
+        // the selections that produced lastResult, the door radio state, and the
+        // BOM sort mode so the sheet lists items exactly as the page shows them.
+        body_option_selections: lastCalcPayload.body_option_selections
+          || ((typeof bodyOptionSelections !== 'undefined' && bodyOptionSelections) || undefined),
+        drd_srd: (typeof drdSrdEnabled !== 'undefined' && drdSrdEnabled) || undefined,
+        bom_sort_mode: (typeof getBomSortMode === 'function' ? getBomSortMode() : 'sheet'),
       }),
     });
     if (!r.ok) {

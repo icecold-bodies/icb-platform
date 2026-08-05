@@ -1991,10 +1991,19 @@ function App() {
     delete next.nodes[nodeId];
   }
 
-  function deleteNode(nodeId) {
+  async function deleteNode(nodeId) {
     const node = draft.nodes[nodeId];
     if (!node) return;
-    const ok = window.confirm(`Delete "${node.label}" and everything inside it?`);
+    // v1.44.3 — confirmModal, NOT window.confirm: this page also runs inside
+    // the /mes-app/costings/new calculator iframe, whose sandbox has no
+    // allow-modals — a native confirm() there is silently blocked and returns
+    // false, so the X buttons did nothing (Michael 5 Aug). The in-page modal
+    // (base.html + app.js) works in both contexts; two other call sites in
+    // this file were already migrated for the same reason.
+    const ok = await window.confirmModal(
+      `Delete "${node.label}" and everything inside it?`,
+      { title: 'Delete node', okText: 'Delete', danger: true }
+    );
     if (!ok) return;
     commit(next => {
       removeNodeRecursive(next, nodeId);
@@ -2138,8 +2147,12 @@ function App() {
     });
   }
 
-  function clearDraft() {
-    const ok = window.confirm('Clear the current left-panel layout for this body type?');
+  async function clearDraft() {
+    // v1.44.3 — same iframe-sandbox fix as deleteNode above.
+    const ok = await window.confirmModal(
+      'Clear the current left-panel layout for this body type?',
+      { title: 'Clear layout', okText: 'Clear', danger: true }
+    );
     if (!ok) return;
     setTimeline({ past: [], present: createEmptyDraft(), future: [] });
     setCollapsed({});

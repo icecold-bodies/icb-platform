@@ -71,7 +71,8 @@
             <select id="trailer-select" onchange="loadBOM()">
               <option value="">— Select —</option>
               {% for t in trailers %}
-              <option value="{{ t.id }}">{{ t.name }}</option>
+              {% set orig = original_template_name(t.name, t.description) %}
+              <option value="{{ t.id }}"{% if orig %} title="Previously: {{ orig }}"{% endif %}>{{ t.name }}</option>
               {% endfor %}
             </select>
           </div>

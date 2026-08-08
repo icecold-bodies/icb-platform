@@ -171,6 +171,14 @@ def _render_xlsx(ctx: dict):
         ws.row_dimensions[row].height = 22 if is_total else 18
         row += 1
 
+    if ctx.get("zero_rule_note"):
+        ws.merge_cells(f"A{row}:I{row}")
+        zc = ws.cell(row=row, column=1, value=ctx["zero_rule_note"])
+        zc.font = Font(bold=True, color="E02424", name="Calibri", size=11)
+        zc.alignment = Alignment(horizontal="right", vertical="center")
+        ws.row_dimensions[row].height = 18
+        row += 1
+
     # 6 — line items, only when "with line items" was picked
     sections: list[dict] = []
     if ctx["include_items"]:
@@ -489,6 +497,10 @@ def _render_docx(ctx: dict):
         cell_text(cells[1], f"R {money(pr['amount'])}", bold=True, right=True,
                   size=11 if is_total else 10, color=(ACCENT if is_total else None))
 
+    if ctx.get("zero_rule_note"):
+        _zp = para(ctx["zero_rule_note"], bold=True, size=10, color=RED, space_after=4)
+        _zp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
     if ctx["include_items"]:
         para(space_after=8)
         para("LINE ITEMS", bold=True, size=10, color=ACCENT)
@@ -581,7 +593,7 @@ def _render_pdf(ctx: dict) -> bytes:
     from reportlab.lib.units import mm
     from reportlab.lib import colors
     from reportlab.lib.styles import ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.enums import TA_CENTER, TA_RIGHT
     from reportlab.pdfgen import canvas
     from reportlab.platypus import (
         PageBreak, SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
@@ -764,11 +776,21 @@ def _render_pdf(ctx: dict) -> bytes:
     summary_tbl.setStyle(TableStyle(s_style))
     cover_tail.append(summary_tbl)
 
+    # The 3.2 m zero-rule notice belongs to the cover too — it explains the
+    # totals directly above it, so it is measured and placed with them.
+    if ctx.get("zero_rule_note"):
+        cover_tail.append(Spacer(1, 2 * mm))
+        cover_tail.append(Paragraph(
+            escape(str(ctx["zero_rule_note"])),
+            ParagraphStyle("zero_rule", fontName="Helvetica-Bold", fontSize=10,
+                           leading=12, alignment=TA_RIGHT,
+                           textColor=colors.HexColor("#E02424"))))
+
     # Does the whole cover fit on page 1? Measure rather than assume: a single
     # column of categories is the ratified look, so keep it whenever it fits
-    # (every real body today — the widest is 11 categories, the single-column
-    # ceiling is 13) and only pair them up two-per-row when it genuinely would
-    # not, which keeps even a 25-category body's summary on page 1.
+    # (every real body today — the widest is 11 categories) and only pair them
+    # up two-per-row when it genuinely would not, which keeps even a
+    # 25-category body's summary on page 1.
     def _stack_height(flowables) -> float:
         total = 0.0
         for f in flowables:

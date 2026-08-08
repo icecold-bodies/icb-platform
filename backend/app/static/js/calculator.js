@@ -5343,6 +5343,29 @@ window.setOptionalSectionCalc1 = function (ev, sectionId, idsAttr, enable) {
   else if (typeof calculate === 'function') calculate();
 };
 
+// ── Length-pinned zero-rule detection (3.2 m plywood+glue) ──────────────────
+// scripts/rules/apply_32m_plywood_glue_zero.py appends a data-driven guard of
+// this exact shape to bill_of_materials formulas. Detection keys off the calc
+// RESULT only (formula text + geometry length) — no template or material
+// names hardcoded — so any guarded row on any body lights the notice up, and
+// it appears/disappears in the same recompute cycle as everything else.
+const ZERO_RULE_GUARD_RE = /\*\s*\(0 if abs\(length - ([0-9]*\.?[0-9]+)\) < 1e-9 else 1\)/;
+function zeroRuleInfo(result) {
+  const out = { active: false, length: null, cats: [], bomIds: new Set() };
+  const L = +(result && result.geometry && result.geometry.length);
+  if (!isFinite(L)) return out;
+  ((result && result.items) || []).forEach(it => {
+    const m = ZERO_RULE_GUARD_RE.exec(String(it.formula || ''));
+    if (!m || Math.abs(L - parseFloat(m[1])) >= 1e-9) return;
+    out.active = true;
+    out.length = m[1];
+    if (it.bom_id != null) out.bomIds.add(+it.bom_id);
+    const cat = it.category || '';
+    if (cat && !out.cats.includes(cat)) out.cats.push(cat);
+  });
+  return out;
+}
+
 function renderBOMWithCosts(items, bomRef) {
   const area = document.getElementById('bom-area');
   if (!items.length) return;
@@ -5350,6 +5373,7 @@ function renderBOMWithCosts(items, bomRef) {
   const tidVal = document.getElementById('trailer-select')?.value;
   const tidNum = tidVal ? +tidVal : 0;
   const showHiddenSet = _loadShowHidden(tidNum);
+  const _zeroRule = zeroRuleInfo(typeof lastResult !== 'undefined' ? lastResult : null);
 
   const groups = {};
   const firstIdx = {};
@@ -5592,7 +5616,11 @@ function renderBOMWithCosts(items, bomRef) {
               style="cursor:pointer;width:13px;height:13px;vertical-align:middle;margin-right:6px;accent-color:var(--red,#e35d6a)">`
         : '';
       const _optStyle = _rowOptional && (!_rowIncluded) ? 'text-decoration:line-through;opacity:.5;' : '';
-      html += `<tr class="calc-grp-row${skinName ? ' bom-skin-row' : ''}${tapingName ? ' bom-taping-row' : ''}${floorName ? ' bom-floor-row' : ''}${cleatName ? ' bom-cleat-row' : ''}${it.excluded ? ' bom-excluded-row' : ''}${_rowOptional ? ' opt-sec-row' : ''}" data-cat-group="${gid}"
+      // Length-pinned zero rule: this row's guard fired — its R0,00 line
+      // total renders bold red (Default 7b) while the rule is active.
+      const _ruleZeroed = _zeroRule.active && it.bom_id != null && _zeroRule.bomIds.has(+it.bom_id);
+      const _ruleZeroTip = _ruleZeroed ? ` title="${escHtml(_zeroRule.length)} m rule: costed at R0,00"` : '';
+      html += `<tr class="calc-grp-row${skinName ? ' bom-skin-row' : ''}${tapingName ? ' bom-taping-row' : ''}${floorName ? ' bom-floor-row' : ''}${cleatName ? ' bom-cleat-row' : ''}${it.excluded ? ' bom-excluded-row' : ''}${_rowOptional ? ' opt-sec-row' : ''}${_ruleZeroed ? ' zero-rule-row' : ''}" data-cat-group="${gid}"
           data-material-id="${mid}"
           data-bom-id="${bomRowId}"
           data-formula="${escHtml(bomFormula)}"
@@ -5609,7 +5637,7 @@ function renderBOMWithCosts(items, bomRef) {
         </td>
         <td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${it.formula_error ? '#e53935' : 'var(--text-dim)'};white-space:nowrap">${it.formula_error ? '— err —' : fmtNum(it.quantity,3) + ' ' + it.unit}</td>
         <td ${priceCell} style="padding:5px 8px;text-align:right;font-family:var(--font-mono);white-space:nowrap">${unitPrice}</td>
-        <td class="calc-line-cost" style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${isOv ? 'var(--red)' : 'var(--text-head)'};font-weight:600;white-space:nowrap">${it.excluded ? '<span style="color:var(--text-dim)">—</span>' : lineCost}</td>
+        <td class="calc-line-cost"${_ruleZeroTip} style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:${_ruleZeroed ? '#e53935' : (isOv ? 'var(--red)' : 'var(--text-head)')};font-weight:${_ruleZeroed ? 700 : 600};white-space:nowrap">${it.excluded ? '<span style="color:var(--text-dim)">—</span>' : lineCost}</td>
       </tr>`;
     });
   }
@@ -5756,6 +5784,16 @@ function renderSummary(result) {
         letter-spacing:.05em;padding:3px 0 5px;border-bottom:1px dashed var(--border);margin-bottom:4px">
       ½ ONE SIDE VIEW — click elsewhere to reset
     </div>`;
+  }
+  // Length-pinned zero-rule banner (ratified copy — Default 7a). Re-derived on
+  // every recompute, so it appears/disappears live with length + body changes.
+  const _zeroRuleSummary = zeroRuleInfo(result);
+  if (_zeroRuleSummary.active) {
+    html += `<div class="zero-rule-banner" style="color:#e53935;font-weight:700;font-size:11px;line-height:1.45;
+        border:1px solid #e53935;border-radius:6px;background:rgba(229,57,53,.08);
+        padding:6px 9px;margin-bottom:7px">${escHtml(_zeroRuleSummary.length)} m rule active:
+      4MM PF PLYWOOD + GLUE LINE are costed at R0,00 on
+      ${_zeroRuleSummary.cats.map(escHtml).join(' and ')} for this body.</div>`;
   }
   if (hasFullCostAccess) {
     for (const [cat, total] of Object.entries(displayTotals)) {

@@ -49,7 +49,8 @@
             <select id="trailer-select" onchange="loadBOM()">
               <option value="">— Select —</option>
               {% for t in trailers %}
-              <option value="{{ t.id }}">{{ t.name }}</option>
+              {% set orig = original_template_name(t.name, t.description) %}
+              <option value="{{ t.id }}"{% if orig %} title="Previously: {{ orig }}"{% endif %}>{{ t.name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -1044,7 +1045,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
-<script defer src="/static/js/calculator2.js?v=123"></script>
+<script defer src="/static/js/calculator2.js?v=124"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

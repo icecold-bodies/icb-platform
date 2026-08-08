@@ -29,7 +29,7 @@ import { RepairPhasePanel } from './RepairPhasePanel'
 import { AcceptModal } from './AcceptModal'
 import { DeclineModal } from './DeclineModal'
 import { BottleneckIndicator } from './BottleneckIndicator'
-import { zarShort, dmy } from '../../lib/format'
+import { zarShort, dmy, lengthSuffix } from '../../lib/format'
 import { Spinner } from '../../components/ui/feedback'
 
 // WO v4.31 §3.3 (§0.6/§0.13) — ONE component, two embed contexts: full-page on /costings (default),
@@ -273,7 +273,7 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
                     {c.contact_name ?? ''}
                   </td>
                   <td className="px-3 py-2">
-                    <span>{c.body_type.replace(/\s*\(REPAIR\)$/i, '')}</span>
+                    <span>{c.body_type.replace(/\s*\(REPAIR\)$/i, '')}{lengthSuffix(c.body_length)}</span>
                     {c.requires_chassis && (
                       <Tooltip text="Requires chassis">
                         <span className="ml-1 inline-flex">

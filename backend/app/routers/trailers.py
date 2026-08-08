@@ -10,7 +10,7 @@ from ..database import (
     get_db,
     TrailerType, BillOfMaterial, Material, MaterialCategory,
     BOMSection, BodyOptionGroup, BodyOptionSubgroup,
-    TrailerRatio,
+    TrailerRatio, BomOverrideHistory,
     ConfiguratorSnapshot, ConfiguratorDraft, ConfiguratorDraftSnapshot,
 )  # Material is used by the configurator move-section endpoint
 from ..deps import get_current_user, require_admin, require_user, user_can
@@ -312,9 +312,17 @@ async def update_bom_item(bom_id: int, request: Request, db: Session = Depends(g
     body = await request.json()
     # variable_value (insulation thickness in metres) may be written by any
     # logged-in user so that switching an insulation radio persists for everyone.
-    # All other BOM fields (price, formula, group, section…) remain admin-only.
+    # A price-only body (unit_price_override) is the costings-page "save permanent
+    # price" path — gated on costings.price_master_edit (seeded {admin, full})
+    # rather than the admin role, so Internal Sales can maintain prices.
+    # All other BOM fields (formula, group, section…) remain admin-only.
     if set(body.keys()) <= {"variable_value"}:
         require_user(request, db)
+    elif set(body.keys()) <= {"unit_price_override"}:
+        user = require_user(request, db)
+        if not user_can(user, "costings.price_master_edit", db):
+            raise HTTPException(status_code=403,
+                                detail="Permission denied: costings.price_master_edit")
     else:
         require_admin(request, db)
     row = db.query(BillOfMaterial).filter_by(id=bom_id).first()
@@ -355,7 +363,24 @@ async def update_bom_item(bom_id: int, request: Request, db: Session = Depends(g
         row.variable_value = float(v) if v is not None and v != "" else None
     if "unit_price_override" in body:
         v = body["unit_price_override"]
-        row.unit_price_override = float(v) if v is not None and v != "" else None
+        _new_override = float(v) if v is not None and v != "" else None
+        if _new_override != row.unit_price_override:
+            # Single-row audit: permanent price saves/clears were bulk-audited
+            # only; each change now journals its own 1-row batch so the admin
+            # history (and batch undo) sees it regardless of who saved.
+            _now = datetime.now(timezone.utc)
+            db.add(BomOverrideHistory(
+                bom_id=row.id,
+                material_id=row.material_id,
+                trailer_type_id=row.trailer_type_id,
+                trailer_type_name=row.trailer_type.name if row.trailer_type else "",
+                material_name=row.material.name if row.material else "",
+                old_price=row.unit_price_override,
+                new_price=_new_override,
+                changed_at=_now,
+                batch_at=_now,
+            ))
+        row.unit_price_override = _new_override
     if "skin_formula_id" in body:
         row.skin_formula_id = int(body["skin_formula_id"]) if body["skin_formula_id"] else None
     if "skin_formula_region" in body:

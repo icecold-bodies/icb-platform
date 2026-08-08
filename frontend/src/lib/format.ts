@@ -58,6 +58,13 @@ export function hoursToHm(hours: number): string {
   return `${h}h ${String(m).padStart(2, '0')}m`
 }
 
+// v1.44 R6 — "{body type} ({length} m)" suffix: one decimal where needed
+// ("7.5 m", "13.6 m", "8 m"); empty when the costing has no recorded length.
+export function lengthSuffix(len: number | null | undefined): string {
+  if (len == null || !isFinite(len) || len <= 0) return ''
+  return ` (${Math.round(len * 10) / 10} m)`
+}
+
 // Display a purchase-requisition number consistently as PR-{seq} (WO v4.19 §0.6).
 // The backend bulk-raise returns SAP-style numerics (e.g. "4500123456"); the
 // mockup renders PR-{seq}. Idempotent — leaves an already-prefixed value alone.

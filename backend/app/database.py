@@ -1075,6 +1075,7 @@ PERMISSION_CATALOGUE = [
     # ── Exports / printing ──────────────────────────────────────────────────
     ("export.excel",      "Download cost breakdown as Excel",                  "exports", {"admin", "full"}),
     ("export.pdf",        "Download cost breakdown as PDF",                    "exports", {"admin", "full"}),
+    ("export.word",       "Download cost breakdown as Word",                   "exports", {"admin", "full"}),
     ("quote.generate",    "Generate customer quote PDF for a costing",         "exports", {"admin", "full", "user"}),
     # ── Menu / page access ──────────────────────────────────────────────────
     ("menu.calculator",   "Access the costing calculator",                     "menu",    {"admin", "full", "user"}),
@@ -1094,6 +1095,11 @@ PERMISSION_CATALOGUE = [
     ("dashboard.approval_rate","View Approval Rate stats card on dashboard",  "data",    {"admin", "full"}),
     # ── Inline recipe editing ────────────────────────────────────────────────
     ("recipes.edit_inline",   "Edit skin formula / taping block prices directly from the calculator", "admin", {"admin"}),
+    # v1.44 R1 (Nadie) — permanent BOM price saves from the costing calculator's
+    # section-price modal (PUT /api/bom/{id}, price-only body). Granted to 'full'
+    # so Internal Sales can maintain prices; every other admin-gated surface
+    # stays admin-only. Admin passes via the code-level wildcard as usual.
+    ("costings.price_master_edit", "Save permanent BOM price changes from the costing calculator", "admin", {"admin", "full"}),
     # ── MES permission keys (v1.40.1) ────────────────────────────────────────
     # Mirrors the data inserts of migrations 0005 / 0013 / 0016 / 0017 / 0028
     # VERBATIM (names, descriptions, grants). Those migrations seed migrated DBs,

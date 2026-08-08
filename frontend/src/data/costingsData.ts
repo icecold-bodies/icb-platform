@@ -93,6 +93,7 @@ export interface Costing {
   customer_name: string
   contact_name?: string            // customer-contacts WO — attention-of snapshot (0035)
   body_type: string
+  body_length?: number | null      // v1.44 R6 — entered length (m) for "({length} m)" displays
   body_category: string
   quote_type: 'New Build' | 'Repair'
   requires_chassis: boolean
@@ -331,6 +332,7 @@ export interface LiveCalculation {
   id: number
   quote_number: string | null
   trailer: string
+  body_length?: number | null      // v1.44 R6 — entered length (m)
   customer: string
   contact_name?: string | null     // customer-contacts WO — attention-of snapshot (0035)
   user: string
@@ -375,6 +377,7 @@ export function liveToCosting(r: LiveCalculation): Costing {
     customer_name: r.customer || '—',
     contact_name: r.contact_name ?? undefined,
     body_type: r.trailer || '—',
+    body_length: r.body_length ?? null,
     body_category: '',
     quote_type: r.is_repair ? 'Repair' : 'New Build',
     requires_chassis: true,

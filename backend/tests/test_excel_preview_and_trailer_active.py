@@ -1,17 +1,16 @@
 """v1.44 — "Preview in Excel" (pre-approval) + Trailer template Active/Inactive flag.
 
 Covers:
-  1. POST /api/export/excel-preview — valid xlsx, "Testing — {body type}" heading,
-     NO report/quote number, NO customer block, excluded rows stripped, nothing
-     written to the DB, and the 400 / 401 / 403 guards.
-  2. GET /results/{id}/export/excel — REGRESSION-LOCKED: the context-dict builder
-     refactor must keep the saved-record export byte-identical. The lock is a
-     normalized hash: sha256 over the zip entries' *decompressed* contents in
-     sorted name order, excluding docProps/core.xml (openpyxl stamps save-time
-     created/modified timestamps there), so it is stable across runs, platforms
-     and zlib builds. The constant below was captured from the post-refactor
-     builder, which was itself proven byte-identical to the PRE-refactor route
-     on live dev records (1642 + 1639, both highlight modes — see the PR body).
+  1. POST /api/export/excel-preview — valid xlsx, "Testing — {body} ({len} m)"
+     heading, NO report/quote number, excluded rows stripped, nothing written to
+     the DB, and the 400 / 401 / 403 guards.
+  2. GET /results/{id}/export/excel — structural layout assertions. The v1.44
+     byte-hash REGRESSION LOCK was RETIRED in the preview-formats lane: the
+     ratified R2 layout deliberately changes the saved export (quote-number
+     heading with body length, client line always present, category totals above
+     the summary, no cost per m²), so byte-stability is waived by design and the
+     lock is replaced with content assertions (+ test_preview_formats.py for the
+     new multi-ratio/format surface).
   3. /api/trailers Active/Inactive surface: default list stays active-only (the
      calculators' dropdown source); include_inactive=1 is admin-gated and hides
      soft-deleted "[deleted-…]" rows; GET /api/trailers/{id} serves inactive rows
@@ -22,11 +21,9 @@ Sessions are real UserSession rows sent via a raw Cookie header — the routes
 under test use inline get_current_user / require_admin chokepoints, which
 dependency_overrides never reach (banked pattern).
 """
-import hashlib
 import io
 import json
 import uuid
-import zipfile
 from datetime import datetime
 
 import pytest
@@ -59,6 +56,7 @@ RESULT_FIXTURE = {
     "grand_total": 1837.5,
     "profit_margin": 20,
     "profit_amount": 367.5,
+    "ratio_value": 0.55,
     "ratio_amount": 1002.27,
     "ratio_label": "55%",
     "selling_price": 3341.0,
@@ -69,23 +67,6 @@ RESULT_FIXTURE = {
 }
 DIMS_FIXTURE = {"length": 7.5, "width": 2.5, "height": 2.6, "num_axles": 2,
                 "num_doors": 2, "insulation_thickness": 0.1}
-
-# Captured from the deterministic record above (see module docstring for why
-# this is trustworthy). If openpyxl is ever bumped from ==3.1.5 this constant
-# may legitimately change — re-capture it in the same PR as the bump.
-REGRESSION_NHASH = "8c4b307812bc9102c9c6e2d0e5cae1b43124b15ebed6aeaa4e593bc0e4a780a8"
-
-
-def normalized_xlsx_hash(xlsx_bytes: bytes) -> str:
-    zf = zipfile.ZipFile(io.BytesIO(xlsx_bytes))
-    h = hashlib.sha256()
-    for name in sorted(zf.namelist()):
-        if name == "docProps/core.xml":
-            continue
-        h.update(name.encode())
-        h.update(b"\x00")
-        h.update(zf.read(name))
-    return h.hexdigest()
 
 
 def _sheet_flat_text(xlsx_bytes: bytes):
@@ -185,18 +166,53 @@ def _record_count() -> int:
         return db.query(CalculationRecord).count()
 
 
-# ── 1. saved-record export regression lock ────────────────────────────────────
-def test_saved_export_regression_hash(client, admin_headers, seeded):
+# ── 1. saved-record export — ratified R2 layout ───────────────────────────────
+def test_saved_export_r2_layout(client, admin_headers, seeded):
     r = client.get(f"/results/{seeded['rec_id']}/export/excel", headers=admin_headers)
     assert r.status_code == 200, r.text
     ws, flat = _sheet_flat_text(r.content)
-    assert ws["A1"].value == "TRAILER MANUFACTURING COST REPORT"
+    # Heading: "{quote number} — {body} ({length} m)" — no quote number on the
+    # fixture, so the "#{id}" fallback; no "Testing" on approved.
+    assert ws["A1"].value == f"#{seeded['rec_id']} — {FIXED_TT_NAME} (7.5 m)"
+    assert "Testing" not in (ws["A1"].value or "")
     assert f"Report #{seeded['rec_id']}" in (ws["A2"].value or "")
     assert "15 January 2026" in (ws["A2"].value or "")
+    # Client line is always present (placeholder when the record has no customer).
+    assert ws["A3"].value == "Client:  — no client selected —"
     assert "EXCLUDED EXTRA" not in flat          # strip_excluded_items on saved path
-    assert normalized_xlsx_hash(r.content) == REGRESSION_NHASH, (
-        "saved-record Excel export changed byte-wise — if this is deliberate, "
-        "re-capture REGRESSION_NHASH in the same change")
+    # R2 order: category totals ABOVE the price summary and the line items
+    # ("Category" is the items table's header row).
+    col_a = [ws.cell(row=r_, column=1).value for r_ in range(1, ws.max_row + 1)]
+    assert col_a.index("CATEGORY TOTALS") < col_a.index("PRICE SUMMARY") < col_a.index("Category")
+    # No cost per m² anywhere in the document (R2.5).
+    assert "Cost per m²" not in flat and "cost_per_sqm" not in flat
+    # Bare legacy URL keeps full content: line items + chassis present.
+    assert "TEST FLOOR SHEET" in flat and "TEST AXLE" in flat
+    # Saved-ratio default: margin + ratio rows and the canonical-formula total.
+    from app.routers.calculator import _apply_chassis_and_margin
+    expect = _apply_chassis_and_margin(
+        {"grand_total": RESULT_FIXTURE["grand_total"]},
+        {"profit_margin": RESULT_FIXTURE["profit_margin"], "ratio_value": 0.55}, None)
+    assert "Margin (20%)" in flat and "Ratio (55%)" in flat and "TOTAL COST" in flat
+    col_i = [ws.cell(row=r_, column=9).value for r_ in range(1, ws.max_row + 1)]
+    assert expect["selling_price"] in col_i
+
+
+def test_saved_export_totals_only_and_multi_ratio(client, admin_headers, seeded):
+    r = client.get(
+        f"/results/{seeded['rec_id']}/export/excel?detail=totals&ratios=0.35,0.65",
+        headers=admin_headers)
+    assert r.status_code == 200, r.text
+    ws, flat = _sheet_flat_text(r.content)
+    assert "TEST FLOOR SHEET" not in flat        # no line items on totals-only
+    assert "TOTAL COST @ 35%" in flat and "TOTAL COST @ 65%" in flat
+    from app.routers.calculator import _apply_chassis_and_margin
+    col_i = [ws.cell(row=r_, column=9).value for r_ in range(1, ws.max_row + 1)]
+    for rv in (0.35, 0.65):
+        expect = _apply_chassis_and_margin(
+            {"grand_total": RESULT_FIXTURE["grand_total"]},
+            {"profit_margin": RESULT_FIXTURE["profit_margin"], "ratio_value": rv}, None)
+        assert expect["selling_price"] in col_i
 
 
 # ── 2. excel-preview endpoint ─────────────────────────────────────────────────
@@ -209,9 +225,10 @@ def test_preview_returns_testing_workbook(client, admin_headers, seeded):
     disp = r.headers.get("content-disposition", "")
     assert f"Testing - {FIXED_TT_NAME} - " in disp and disp.endswith('.xlsx"')
     ws, flat = _sheet_flat_text(r.content)
-    assert ws["A1"].value == f"Testing — {FIXED_TT_NAME}"   # DB name wins
-    assert "Report #" not in flat and "Client:" not in flat
-    assert ws["A3"].value in (None, "")
+    assert ws["A1"].value == f"Testing — {FIXED_TT_NAME} (7.5 m)"   # DB name wins
+    assert "Report #" not in flat
+    # R2.2 — the client line is always present; no customer → placeholder.
+    assert ws["A3"].value == "Client:  — no client selected —"
     assert "TEST FLOOR SHEET" in flat and "TEST AXLE" in flat
     assert "EXCLUDED EXTRA" not in flat          # strip_excluded_items on preview too
     # Preview spec block (Michael 4 Aug): L/W/H only — no axles/doors/insulation grid.
@@ -324,13 +341,16 @@ def test_preview_spec_block_totals_and_screen_order(client, admin_headers, optio
     assert spec_pairs.get("FRONT") == "EPS (0.060 m)"
     assert spec_pairs.get("FLOOR TYPE") == f"{n} RICE GRAIN FLOOR"
 
-    # (3) sheet order: ZLATE's section header row precedes AEARLY's.
+    # (3) sheet order: ZLATE's section header row precedes AEARLY's. The cat
+    # names also appear in the CATEGORY TOTALS block (which now sits ABOVE the
+    # items, R2.4), so search only after the items table's header row.
     col_a = [ws.cell(row=r_, column=1).value or "" for r_ in range(1, ws.max_row + 1)]
-    assert col_a.index("ZLATE") < col_a.index("AEARLY")
+    items_hdr = col_a.index("Category")
+    assert col_a.index("ZLATE", items_hdr) < col_a.index("AEARLY", items_hdr)
 
     # (2) literal numeric totals on the section header rows (no =SUM text).
-    z_hdr = col_a.index("ZLATE") + 1
-    a_hdr = col_a.index("AEARLY") + 1
+    z_hdr = col_a.index("ZLATE", items_hdr) + 1
+    a_hdr = col_a.index("AEARLY", items_hdr) + 1
     assert ws.cell(row=z_hdr, column=9).value == 222.5
     assert ws.cell(row=a_hdr, column=9).value == 111.0
     assert "=SUM" not in flat

@@ -2061,11 +2061,25 @@ function updateTopbarTitle(bodyName) {
   if (!el) return;
   const def = el.dataset.default || el.textContent;
   if (bodyName) {
-    el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName)}</span>`;
+    // v1.44 R6 — the banner carries the ENTERED length live: "NAME (7.5 m)".
+    // bodyName is remembered so the f-length input listener can re-render.
+    el.dataset.bodyName = bodyName;
+    const len = parseFloat(document.getElementById('f-length')?.value);
+    const lenTxt = (!isNaN(len) && len > 0) ? ` (${Math.round(len * 10) / 10} m)` : '';
+    el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName + lenTxt)}</span>`;
   } else {
+    delete el.dataset.bodyName;
     el.textContent = def;
   }
 }
+
+// v1.44 R6 — keep the topbar banner's "({length} m)" live while typing.
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('f-length')?.addEventListener('input', () => {
+    const el = document.getElementById('topbar-title');
+    if (el && el.dataset.bodyName) updateTopbarTitle(el.dataset.bodyName);
+  });
+});
 
 async function loadBOM(options = {}) {
   const preserveInputs = !!options.preserveInputs;
@@ -2119,6 +2133,9 @@ async function loadBOM(options = {}) {
     if (t.markup_percentage != null && t.markup_percentage > 0)
       document.getElementById('f-margin').value = (t.markup_percentage * 100).toFixed(1);
     updateGeo();
+    // v1.44 R6 — the banner rendered before the default length landed;
+    // programmatic .value writes fire no input event, so refresh it here.
+    updateTopbarTitle(sel.selectedOptions[0]?.text);
   }
 
   area.innerHTML = '<div style="padding:20px;text-align:center"><span class="spinner"></span></div>';

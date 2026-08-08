@@ -35,11 +35,10 @@
 {% endblock %}
 {% block topbar_actions %}
   <a href="/calculator?from={{ record.id }}" class="btn btn-outline btn-sm no-print" title="Re-open with same dimensions in calculator">⧉ Duplicate</a>
-  {% if user_can(user, 'export.excel') %}
-  <button class="btn btn-success btn-sm no-print" id="excel-export-btn" onclick="openExcelExportModal()">⬇ Export Excel</button>
-  {% endif %}
-  {% if user_can(user, 'export.pdf') %}
-  <a href="/results/{{ record.id }}/export/pdf"   class="btn btn-danger  btn-sm no-print" onclick="onExport(this,'Generating PDF…')">📄 Export PDF</a>
+  {# v1.44 R5b — ONE Export button for all three formats; the options dialog
+     picks format + detail + ratios (Excel keeps its highlight option). #}
+  {% if user_can(user, 'export.excel') or user_can(user, 'export.word') or user_can(user, 'export.pdf') %}
+  <button class="btn btn-success btn-sm no-print" id="excel-export-btn" onclick="openExportModal()">⬇ Export</button>
   {% endif %}
   {% if user_can(user, 'quote.generate') %}
     {% if report_template %}
@@ -475,76 +474,61 @@
     </table>
   </div>
 </div>
-<!-- ── Excel Export Decision Modal ─────────────────────────────────────── -->
-<div class="modal-backdrop hidden no-print" id="modal-excel-export">
-  <div class="modal" style="max-width:460px">
+<!-- ── Export Options Modal (v1.44 R3/R5b: format + detail + ratios) ────── -->
+<div class="modal-backdrop hidden no-print" id="modal-export-options"
+     data-can-excel="{{ 1 if user_can(user, 'export.excel') else 0 }}"
+     data-can-word="{{ 1 if user_can(user, 'export.word') else 0 }}"
+     data-can-pdf="{{ 1 if user_can(user, 'export.pdf') else 0 }}">
+  <div class="modal" style="max-width:480px">
     <div class="modal-header">
-      <span class="modal-title">⬇ Export to Excel</span>
-      <button class="btn btn-icon" onclick="closeModal('modal-excel-export')">✕</button>
+      <span class="modal-title">⬇ Export costing document</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-export-options')">✕</button>
     </div>
     <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.5">
+        Pick a format and what to include. Each ticked ratio gets its own
+        “TOTAL COST @ ratio” line — totals are never combined across ratios.
+      </p>
 
-      <!-- Step 1: highlight question -->
-      <div id="excel-step-1">
-        <p style="font-size:14px;color:var(--text);margin-bottom:18px;line-height:1.6">
-          Do you want <strong>price changes to be highlighted</strong> in the Excel sheet?
-        </p>
-        <div style="display:flex;flex-direction:column;gap:10px">
-
-          <button class="btn btn-primary" style="justify-content:flex-start;gap:12px;padding:12px 16px;text-align:left"
-                  onclick="showExcelHighlightPreview()">
-            <span style="font-size:18px">🎨</span>
-            <div>
-              <div style="font-weight:700">Yes — highlight price changes</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px">Colour-code overridden and recently updated prices</div>
-            </div>
-          </button>
-
-          <button class="btn btn-outline" style="justify-content:flex-start;gap:12px;padding:12px 16px;text-align:left"
-                  onclick="doExcelExport(false)">
-            <span style="font-size:18px">📄</span>
-            <div>
-              <div style="font-weight:700">No — export as-is</div>
-              <div style="font-size:11px;color:var(--text-dim);margin-top:2px">Standard export, no colour coding</div>
-            </div>
-          </button>
-
-        </div>
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">Format</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn btn-outline exp-fmt-btn" id="exp-fmt-excel" onclick="_expSetFormat('excel')" style="flex:1;justify-content:center">📊 Excel</button>
+        <button class="btn btn-outline exp-fmt-btn" id="exp-fmt-word"  onclick="_expSetFormat('word')"  style="flex:1;justify-content:center">📝 Word</button>
+        <button class="btn btn-outline exp-fmt-btn" id="exp-fmt-pdf"   onclick="_expSetFormat('pdf')"   style="flex:1;justify-content:center">📄 PDF</button>
       </div>
 
-      <!-- Step 2: colour legend preview -->
-      <div id="excel-step-2" style="display:none">
-        <p style="font-size:13px;color:var(--text-dim);margin-bottom:14px">The following colour coding will be applied to the <strong>Unit Price</strong> column:</p>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
-          <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;
-            background:rgba(56,139,253,.08);border:1px solid rgba(56,139,253,.3);border-radius:var(--radius)">
-            <span style="font-family:var(--font-mono);font-weight:700;font-size:16px;color:#388BFD;min-width:80px">R 123.45</span>
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--blue-hi)">Blue — permanently updated</div>
-              <div style="font-size:11px;color:var(--text-dim);margin-top:2px">Price was changed in the material database within the last 7 days</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;
-            background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.3);border-radius:var(--radius)">
-            <span style="font-family:var(--font-mono);font-weight:700;font-size:16px;color:#F85149;min-width:80px">R 99.00</span>
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--red)">Red — quote-only override</div>
-              <div style="font-size:11px;color:var(--text-dim);margin-top:2px">Price was manually changed for this quote only — not saved to database</div>
-            </div>
-          </div>
-        </div>
-        <p style="font-size:11px;color:var(--text-dim);margin-bottom:16px">
-          A <strong>Legend</strong> tab will also be included in the workbook.
-        </p>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-outline" style="flex:1" onclick="showExcelStep1()">← Back</button>
-          <button class="btn btn-success" id="excel-confirm-btn" style="flex:2;justify-content:center" onclick="doExcelExport(true)">
-            <span id="excel-confirm-spin" class="spinner spinner-sm" style="display:none"></span>
-            ⬇ Export with highlights
-          </button>
-        </div>
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">Detail</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="radio" name="exp-detail" value="totals" checked> Categories + totals
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="radio" name="exp-detail" value="items"> Categories, totals + line items
+        </label>
       </div>
 
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">
+        Ratios <span style="text-transform:none;letter-spacing:0">(one TOTAL COST line each)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px 10px;max-height:150px;overflow-y:auto;
+                  border:1px solid var(--border);border-radius:var(--radius);padding:8px;margin-bottom:16px">
+        {% for rv, rl in ratio_options %}
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;font-family:var(--font-mono)">
+          <input type="checkbox" class="exp-ratio" value="{{ rv }}"
+                 {% if result.ratio_value is defined and result.ratio_value == rv %}checked{% endif %}> {{ rl }}
+        </label>
+        {% endfor %}
+      </div>
+
+      <label id="exp-highlight-row" style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:16px">
+        <input type="checkbox" id="exp-highlight">
+        🎨 Highlight price changes <span style="font-size:11px;color:var(--text-dim)">(Excel only — colour-codes overridden + recently updated prices, adds a Legend tab)</span>
+      </label>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="closeModal('modal-export-options')">Cancel</button>
+        <button class="btn btn-success" id="exp-confirm-btn" style="flex:2;justify-content:center" onclick="doExportDownload()">⬇ Export</button>
+      </div>
     </div>
   </div>
 </div>
@@ -553,27 +537,40 @@
 
 {% block scripts %}
 <script>
-// ── Excel export decision tree ────────────────────────────────────────────────
-const EXCEL_BASE_URL = '/results/{{ record.id }}/export/excel';
+// ── Export options dialog (v1.44 R3/R5b: format + detail + ratios) ───────────
+const EXPORT_BASE_URL = '/results/{{ record.id }}/export/';
+let _expFormat = 'excel';
 
-function openExcelExportModal() {
-  showExcelStep1();
-  document.getElementById('modal-excel-export').classList.remove('hidden');
+function _expCan(fmt) {
+  return document.getElementById('modal-export-options').dataset['can' + fmt.charAt(0).toUpperCase() + fmt.slice(1)] === '1';
 }
 
-function showExcelStep1() {
-  document.getElementById('excel-step-1').style.display = '';
-  document.getElementById('excel-step-2').style.display = 'none';
+function _expSetFormat(fmt) {
+  if (!_expCan(fmt)) return;
+  _expFormat = fmt;
+  for (const f of ['excel', 'word', 'pdf']) {
+    const b = document.getElementById('exp-fmt-' + f);
+    b.classList.toggle('btn-primary', f === fmt);
+    b.classList.toggle('btn-outline', f !== fmt);
+    b.style.opacity = _expCan(f) ? '' : '.4';
+    b.style.cursor = _expCan(f) ? '' : 'not-allowed';
+    b.title = _expCan(f) ? '' : 'You do not have permission for this format';
+  }
+  // Highlight is an Excel-only feature.
+  document.getElementById('exp-highlight-row').style.display = fmt === 'excel' ? '' : 'none';
 }
 
-function showExcelHighlightPreview() {
-  document.getElementById('excel-step-1').style.display = 'none';
-  document.getElementById('excel-step-2').style.display = '';
+function openExportModal() {
+  document.getElementById('modal-export-options').classList.remove('hidden');
+  _expSetFormat(_expCan('excel') ? 'excel' : (_expCan('word') ? 'word' : 'pdf'));
 }
 
-function doExcelExport(highlight) {
-  closeModal('modal-excel-export');
-  const url = EXCEL_BASE_URL + (highlight ? '?highlight=1' : '');
+function doExportDownload() {
+  closeModal('modal-export-options');
+  const detail = document.querySelector('input[name="exp-detail"]:checked')?.value || 'totals';
+  const ratios = [...document.querySelectorAll('.exp-ratio:checked')].map(c => c.value).join(',');
+  let url = EXPORT_BASE_URL + _expFormat + '?detail=' + detail + '&ratios=' + encodeURIComponent(ratios);
+  if (_expFormat === 'excel' && document.getElementById('exp-highlight').checked) url += '&highlight=1';
   // Show brief loading state on the export button
   const btn = document.getElementById('excel-export-btn');
   const orig = btn.innerHTML;

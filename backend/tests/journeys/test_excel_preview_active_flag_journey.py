@@ -1,12 +1,15 @@
-"""v1.44 §3.4 — "Preview in Excel" (pre-approval) + trailer Active/Inactive flag.
+"""v1.44 §3.4 — live Preview (Excel via options dialog) + trailer Active/Inactive flag.
 
-Journey 1 (preview): /mes-app/costings/new → the embed header shows the new
-"Preview in Excel" button LEFT of Reload → clicking BEFORE any calculation
-toasts "Calculate first" inside the calculator iframe → select the staged body
-type + nudge a dim (live-calc) → click again → a real download lands, named
-"Testing - {body} - {yyyy-mm-dd}.xlsx", whose sheet is headed
-"Testing — {body}" with NO Report#/quote/customer — and the calculations table
-gained no row (the preview consumes nothing).
+Journey 1 (preview): /mes-app/costings/new → the embed header's "Preview"
+button (v1.44 preview-formats: the single Excel button became a format dialog)
+→ clicking BEFORE any calculation opens the options dialog with the confirm
+DISABLED + a "Nothing calculated yet" note → select the staged body type +
+nudge a dim (live-calc) → Preview again → pick "line items" → confirm → a real
+download lands, named "Testing - {body} - {yyyy-mm-dd}.xlsx", whose sheet is
+headed "Testing — {body} ({length} m)" with NO Report#/quote number and the
+"— no client selected —" placeholder — and the calculations table gained no
+row (the preview consumes nothing). Word/PDF/multi-ratio journeys live in
+test_preview_formats_journey.py.
 
 Journey 2 (active flag): Admin / Trailer Templates → select the staged body →
 "Set Inactive" (confirm modal) → badge appears; a FRESH /calculator load omits
@@ -15,8 +18,8 @@ now-inactive body STILL WORKS (fallback option labelled "(inactive)"); "Set
 Active" again → the dropdown has it back.
 
 Selector policy: calculator + admin pages are Jinja (element IDs); the embed
-header button is queried by role+name. No wait_for_function anywhere (CSP has
-no unsafe-eval). Marker J144XP; purge at setup AND teardown.
+header + dialog use data-testid. No wait_for_function anywhere (CSP has no
+unsafe-eval). Marker J144XP; purge at setup AND teardown.
 """
 from __future__ import annotations
 
@@ -92,34 +95,24 @@ def _record_count() -> int:
         return db.query(CalculationRecord).count()
 
 
-def _click_until_toast(page: Page, button, frame, text: str, attempts: int = 6) -> None:
-    """postMessage is one-shot: if the iframe's listener isn't registered yet the
-    click is silently lost. Re-click (bounded) until the calculator toasts."""
-    toast = frame.locator("#toast-container .toast-msg", has_text=text)
-    for _ in range(attempts):
-        button.click()
-        try:
-            expect(toast.first).to_be_visible(timeout=2_500)
-            return
-        except AssertionError:
-            continue
-    raise AssertionError(f"toast {text!r} never appeared after {attempts} clicks")
-
-
-def test_preview_in_excel_download(page: Page, live_server: str, staged, tmp_path) -> None:
+def test_preview_dialog_excel_download(page: Page, live_server: str, staged, tmp_path) -> None:
     ids = staged
     admin_session(page, base=live_server)   # base= matters under MES_BASE (banked)
     page.goto("/mes-app/costings/new")
 
-    btn = page.get_by_role("button", name="Preview in Excel")
+    btn = page.get_by_test_id("preview-btn")
     expect(btn).to_be_visible(timeout=T)
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
     shot(page, "01-button-in-header", journey=JOURNEY)
 
-    # ── Nothing calculated yet → "Calculate first", no download ──────────────
-    _click_until_toast(page, btn, frame, "Calculate first")
-    shot(page, "02-calculate-first-toast", journey=JOURNEY)
+    # ── Nothing calculated yet → dialog opens with confirm DISABLED ──────────
+    btn.click()
+    expect(page.get_by_test_id("export-confirm")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("export-confirm")).to_be_disabled()
+    expect(page.get_by_text("Nothing calculated yet")).to_be_visible()
+    shot(page, "02-calculate-first-note", journey=JOURNEY)
+    page.get_by_role("button", name="Cancel").click()
 
     # ── Calculate: pick the staged body; a dim nudge fires the live recalc ───
     frame.locator("#trailer-select").select_option(str(ids["trailer"]))
@@ -127,8 +120,13 @@ def test_preview_in_excel_download(page: Page, live_server: str, staged, tmp_pat
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
 
     before = _record_count()
+    btn.click()
+    expect(page.get_by_test_id("export-confirm")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("export-confirm")).to_be_enabled(timeout=T)
+    # Excel is the default format; include the line items so the sheet carries them.
+    page.get_by_test_id("export-detail-items").check()
     with page.expect_download(timeout=T) as dl_info:
-        btn.click()
+        page.get_by_test_id("export-confirm").click()
     download = dl_info.value
     today = _dt.date.today().strftime("%Y-%m-%d")
     assert download.suggested_filename == f"Testing - {ids['name']} - {today}.xlsx", \
@@ -139,9 +137,10 @@ def test_preview_in_excel_download(page: Page, live_server: str, staged, tmp_pat
     import openpyxl
     wb = openpyxl.load_workbook(io.BytesIO(target.read_bytes()))
     ws = wb.active
-    assert ws["A1"].value == f"Testing — {ids['name']}"
+    assert ws["A1"].value == f"Testing — {ids['name']} (6.5 m)"
     flat = "|".join(str(c.value) for row in ws.iter_rows() for c in row if c.value is not None)
-    assert "Report #" not in flat and "Client:" not in flat
+    assert "Report #" not in flat
+    assert "Client:  — no client selected —" in flat     # R2.2 placeholder
     assert f"{MARK} PANEL SHEET" in flat
 
     assert _record_count() == before, "preview must write NOTHING to the DB"

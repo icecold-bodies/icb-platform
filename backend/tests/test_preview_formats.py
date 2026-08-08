@@ -441,6 +441,32 @@ def test_pdf_cover_holds_for_a_long_category_list(client, admin_headers):
     assert "TOTALCOST@35%" in flat and "TOTALCOST@55%" in flat
 
 
+def test_pdf_zero_rule_note_rides_the_cover(client, admin_headers):
+    """#116's 3.2 m notice explains the totals directly above it, so it must
+    stay on page 1 with them — not follow the line items onto page 2."""
+    from io import BytesIO
+
+    from app.routers.exports import _render_pdf
+    from app.services.document_context import build_doc_ctx
+    from pypdf import PdfReader
+
+    note = "3.2 m RULE APPLIED — PLYWOOD + GLUE AT R0,00"
+    cats = [f"CATEGORY {i:02d}" for i in range(11)]
+    items = [{"category": c, "material": f"MAT {c}", "material_code": "",
+              "formula": "1", "quantity": 1.0, "unit": "ea", "unit_price": 100.0,
+              "waste_pct": 0, "line_cost": 100.0} for c in cats for _ in range(4)]
+    ctx = build_doc_ctx(
+        mode="preview", heading="Testing — ZERO RULE BODY (3.2 m)",
+        sub="ZERO RULE BODY", client_name="", spec_pairs=[("Length (m)", 3.2)],
+        spec_options=[], ratios=[0.35, 0.55], detail="items", db=None,
+        result={"items": items, "category_totals": {c: 400.0 for c in cats},
+                "grand_total": 4400.0, "profit_margin": 5})
+    ctx["zero_rule_note"] = note
+    p1 = (PdfReader(BytesIO(_render_pdf(ctx))).pages[0].extract_text() or "").replace("\n", " ")
+    assert "Materials Cost" in p1 and p1.count("TOTAL COST") == 2
+    assert "R0,00" in p1, "the 3.2 m notice must stay on the cover page"
+
+
 def test_pdf_totals_only_is_a_single_page(client, admin_headers):
     r = client.post("/api/export/preview", headers=admin_headers,
                     json=_wide_payload(11, (0.55,), detail="totals"))

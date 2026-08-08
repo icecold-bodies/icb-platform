@@ -1102,11 +1102,15 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
     # shell can iframe this page in-app (View button, 3 Jul — the user was stranded on the legacy
     # page with no MES nav). No param → the live template, bit-for-bit pristine (WO v4.7 constraint).
     _tmpl = "results_mes.html" if request.query_params.get("skin") == "mes" else "results.html"
+    from ..services.document_context import RATIO_OPTIONS
     return templates.TemplateResponse(_tmpl, {
         "request": request, "user": user,
         "record": rec, "dims": dims, "result": result,
         "result_items": result.get("items", []),
         "trailer": tt,
+        # v1.44 R3 — the export options dialog's ratio checkbox list (canonical
+        # single source; the calculator selects are parity-tested against it).
+        "ratio_options": RATIO_OPTIONS,
         "overrides_by_name":        overrides_by_name,
         "override_reasons_by_name": override_reasons_by_name,
         "recently_updated":  recently_updated,
@@ -1150,6 +1154,14 @@ async def api_list_calculations(
         if r.result_json:
             try: rd = json.loads(r.result_json)
             except Exception: pass
+        # v1.44 R6 — the entered length rides along so every body-type display
+        # can append "({length} m)" (dashboard rows, detail card, doc headers).
+        _len = None
+        if r.dimensions_json:
+            try:
+                _len = json.loads(r.dimensions_json).get("length")
+            except Exception:
+                pass
         # Headline total = net (after discount). Prefer the column, then result_json,
         # then fall back to the pre-discount selling price / grand total for legacy rows.
         _net = r.net_total if getattr(r, "net_total", None) is not None else rd.get("net_total")
@@ -1174,6 +1186,7 @@ async def api_list_calculations(
             "id": r.id,
             "quote_number": r.quote_number or None,
             "trailer":  r.trailer_type.name if r.trailer_type else "—",
+            "body_length": (float(_len) if _len not in (None, "", 0) else None),
             "customer": r.customer.name if r.customer else "—",
             "contact_name": getattr(r, "contact_name", None),   # attention-of snapshot (0035)
             "user":     r.user.username if r.user else "—",

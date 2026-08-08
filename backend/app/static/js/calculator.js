@@ -2201,6 +2201,10 @@ async function submitContactAdd() {
 function applyCalculationInputs(payload) {
   const dims = payload.dimensions || {};
   document.getElementById('f-length').value = dims.length ?? document.getElementById('f-length').value;
+  // v1.44 R6 — keep the banner's "({length} m)" in sync on edit-replay
+  // (programmatic .value writes fire no input event).
+  const _tt = document.getElementById('topbar-title');
+  if (_tt && _tt.dataset.bodyName) queueMicrotask(() => updateTopbarTitle(_tt.dataset.bodyName));
   document.getElementById('f-width').value = dims.width ?? document.getElementById('f-width').value;
   document.getElementById('f-height').value = dims.height ?? document.getElementById('f-height').value;
   document.getElementById('f-floor-thick').value = dims.floor_thickness ?? document.getElementById('f-floor-thick').value;
@@ -2767,8 +2771,14 @@ function updateTopbarTitle(bodyName) {
   if (!el) return;
   const def = el.dataset.default || el.textContent;
   if (bodyName) {
-    el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName)}</span>`;
+    // v1.44 R6 — the banner carries the ENTERED length live: "NAME (7.5 m)".
+    // bodyName is remembered so the f-length input listener can re-render.
+    el.dataset.bodyName = bodyName;
+    const len = parseFloat(document.getElementById('f-length')?.value);
+    const lenTxt = (!isNaN(len) && len > 0) ? ` (${Math.round(len * 10) / 10} m)` : '';
+    el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName + lenTxt)}</span>`;
   } else {
+    delete el.dataset.bodyName;
     el.textContent = def;
   }
 }
@@ -2828,6 +2838,9 @@ async function loadBOM(options = {}) {
     if (t.markup_percentage != null && t.markup_percentage > 0)
       document.getElementById('f-margin').value = (t.markup_percentage * 100).toFixed(1);
     updateGeo();
+    // v1.44 R6 — the banner rendered before the default length landed;
+    // programmatic .value writes fire no input event, so refresh it here.
+    updateTopbarTitle(sel.selectedOptions[0]?.text);
   }
 
   area.innerHTML = '<div style="padding:20px;text-align:center"><span class="spinner"></span></div>';
@@ -7296,45 +7309,88 @@ function _updateNoDoorsWarning() {
   section.insertBefore(warn, document.getElementById('body-options-list'));
 }
 
-// ─── v1.44 F1: "Preview in Excel" (pre-approval test artifact) ───────────────
-// The MES embed header (frontend LiveCalculator.tsx) posts {type:'mes:excel-preview'}
-// into this iframe; the reply is a POST of the LIVE result to
-// /api/export/excel-preview and a client-side download of the returned stream.
-// READS lastResult / lastCalcPayload only — never mutates calculator state,
-// never touches the approve/save path, and consumes no quote number.
-async function downloadExcelPreview() {
+// ─── v1.44: live Preview in Excel / Word / PDF (pre-approval test artifact) ──
+// The MES embed header (frontend LiveCalculator.tsx) drives this over
+// postMessage: it first asks for the dialog state ({type:'mes:export-options?'}
+// → reply carries the page's ratio dropdown + selected ratio + customer), then
+// confirms with {type:'mes:export-preview', format, detail, ratios}. The reply
+// is a POST of the LIVE result to /api/export/preview and a client-side
+// download of the returned stream. READS lastResult / lastCalcPayload only —
+// never mutates calculator state, never touches the approve/save path, and
+// consumes no quote number. {type:'mes:excel-preview'} stays as the v1.44 F1
+// alias (plain Excel, full line items, page ratio).
+const _EXPORT_EXTS = { excel: 'xlsx', word: 'docx', pdf: 'pdf' };
+
+function _previewTrailerName() {
+  const tid = lastCalcPayload ? lastCalcPayload.trailer_type_id : null;
+  const selOpt = document.getElementById('trailer-select')?.selectedOptions?.[0];
+  return (tid != null && trailerDefaults[tid] && trailerDefaults[tid].name)
+      || (selOpt ? selOpt.textContent.replace(/\s*\(inactive\)\s*$/, '').trim() : '')
+      || 'Body Type';
+}
+
+function _selectedCustomerName() {
+  const cust = document.getElementById('cust-select');
+  return cust && cust.value ? (cust.selectedOptions[0]?.text || '').trim() : '';
+}
+
+function _exportOptionsState() {
+  // Ratio list read straight from the page's #f-ratio select — the single
+  // source (parity-locked against services.document_context.RATIO_OPTIONS).
+  const sel = document.getElementById('f-ratio');
+  const ratios = [];
+  if (sel) {
+    for (const o of sel.options) {
+      if (o.value) ratios.push({ value: parseFloat(o.value), label: o.text });
+    }
+  }
+  return {
+    type: 'mes:export-options',
+    ratios,
+    selected: sel && sel.value ? parseFloat(sel.value) : null,
+    customerName: _selectedCustomerName(),
+    hasResult: !(typeof lastResult === 'undefined' || !lastResult || !lastCalcPayload),
+  };
+}
+
+async function downloadPreview(opts) {
+  opts = opts || {};
+  const format = _EXPORT_EXTS[opts.format] ? opts.format : 'excel';
   if (typeof lastResult === 'undefined' || !lastResult || !lastCalcPayload) {
     toast('Calculate first', 'error');
     return;
   }
   const tid = lastCalcPayload.trailer_type_id;
-  const selOpt = document.getElementById('trailer-select')?.selectedOptions?.[0];
-  const tname = (trailerDefaults[tid] && trailerDefaults[tid].name)
-                || (selOpt ? selOpt.textContent.replace(/\s*\(inactive\)\s*$/, '').trim() : '')
-                || 'Body Type';
+  const tname = _previewTrailerName();
   try {
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const r = await fetch('/api/export/excel-preview', {
+    const payload = {
+      result: lastResult,
+      dims: lastCalcPayload.dimensions || {},
+      trailer_type_id: tid,
+      trailer_name: tname,
+      format,
+      // Spec block + on-screen ordering (Michael 4 Aug) — all read-only state:
+      // the selections that produced lastResult, the door radio state, and the
+      // BOM sort mode so the sheet lists items exactly as the page shows them.
+      body_option_selections: lastCalcPayload.body_option_selections
+        || ((typeof bodyOptionSelections !== 'undefined' && bodyOptionSelections) || undefined),
+      drd_srd: (typeof drdSrdEnabled !== 'undefined' && drdSrdEnabled) || undefined,
+      bom_sort_mode: (typeof getBomSortMode === 'function' ? getBomSortMode() : 'sheet'),
+      // R2.2 — the client line mirrors the page's customer picker live.
+      customer_name: _selectedCustomerName(),
+    };
+    if (opts.detail) payload.detail = opts.detail;
+    if (Array.isArray(opts.ratios)) payload.ratios = opts.ratios;
+    const r = await fetch('/api/export/preview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-      body: JSON.stringify({
-        result: lastResult,
-        dims: lastCalcPayload.dimensions || {},
-        trailer_type_id: tid,
-        trailer_name: tname,
-        // Spec block + on-screen ordering (Michael 4 Aug) — all read-only state:
-        // the selections that produced lastResult, the door radio state, and the
-        // BOM sort mode so the sheet lists items exactly as the page shows them.
-        body_option_selections: lastCalcPayload.body_option_selections
-          || ((typeof bodyOptionSelections !== 'undefined' && bodyOptionSelections) || undefined),
-        drd_srd: (typeof drdSrdEnabled !== 'undefined' && drdSrdEnabled) || undefined,
-        bom_sort_mode: (typeof getBomSortMode === 'function' ? getBomSortMode() : 'sheet'),
-      }),
+      body: JSON.stringify(payload),
     });
     if (!r.ok) {
       let msg = `HTTP ${r.status}`;
       try { msg = (await r.json()).detail || msg; } catch (_) {}
-      toast('Excel preview failed: ' + msg, 'error');
+      toast('Preview failed: ' + msg, 'error');
       return;
     }
     const blob = await r.blob();
@@ -7343,18 +7399,29 @@ async function downloadExcelPreview() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Testing - ${tname} - ${dateStr}.xlsx`;
+    a.download = `Testing - ${tname} - ${dateStr}.${_EXPORT_EXTS[format]}`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
-    toast('Excel preview downloaded', 'success');
+    toast('Preview downloaded', 'success');
   } catch (e) {
-    toast('Excel preview failed: ' + e.message, 'error');
+    toast('Preview failed: ' + e.message, 'error');
   }
 }
 
 window.addEventListener('message', (e) => {
   if (e.origin !== window.location.origin) return;
-  if (e.data && e.data.type === 'mes:excel-preview') downloadExcelPreview();
+  const t = e.data && e.data.type;
+  if (t === 'mes:excel-preview') downloadPreview({ format: 'excel' });      // v1.44 F1 alias
+  else if (t === 'mes:export-preview') downloadPreview(e.data);
+  else if (t === 'mes:export-options?' && e.source) {
+    e.source.postMessage(_exportOptionsState(), window.location.origin);
+  }
+});
+
+// v1.44 R6 — keep the topbar banner's "({length} m)" live while typing.
+document.getElementById('f-length')?.addEventListener('input', () => {
+  const el = document.getElementById('topbar-title');
+  if (el && el.dataset.bodyName) updateTopbarTitle(el.dataset.bodyName);
 });

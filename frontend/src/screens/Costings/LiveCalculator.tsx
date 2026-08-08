@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { ExternalLink, FileSpreadsheet, RadioTower, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { CostingsDashboard } from './CostingsDashboard'
+import { ExportOptionsModal, type RatioOpt } from './ExportOptionsModal'
 
 // WO v4.7 — point at the MES-skin fork (/mes/calculator) instead of /calculator.
 // The live /calculator route now serves the original dark-Icecold styling and
@@ -23,11 +24,18 @@ const TARGET_URL = '/mes/calculator'
  */
 export function LiveCalculator() {
   const [reloadKey, setReloadKey] = useState(0)
-  // v1.44 F1 — "Preview in Excel": ask the embedded calculator for its LIVE
-  // (not-yet-approved) result; calculator.js answers the message by POSTing
-  // /api/export/excel-preview itself and triggering the download (or toasting
-  // "Calculate first" when nothing has been calculated). Same-origin iframe.
+  // v1.44 — "Preview" (Excel / Word / PDF with the options dialog, R3–R5):
+  // the button first asks the embedded calculator for the dialog state
+  // ({type:'mes:export-options?'} → 'mes:export-options' reply with the page's
+  // ratio list + selected ratio + whether a result exists), then confirms with
+  // {type:'mes:export-preview', format, detail, ratios}; calculator.js POSTs
+  // /api/export/preview itself and triggers the download. Same-origin iframe.
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const [exportOpen, setExportOpen] = useState(false)
+  const [dialog, setDialog] = useState<{
+    ratios: RatioOpt[]; selected: number | null; hasResult: boolean
+  } | null>(null)
+  const openTimer = useRef<number | null>(null)
   // CostingsProvider attempts a dev-mode auto-login on mount; wait for it to
   // finish (mode flips off 'loading') before mounting the iframe so the
   // session cookie is in place when /calculator loads.
@@ -42,10 +50,27 @@ export function LiveCalculator() {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return
       if (e.data?.type === 'mes:costing-saved') void refresh()
+      if (e.data?.type === 'mes:export-options') {
+        if (openTimer.current != null) { window.clearTimeout(openTimer.current); openTimer.current = null }
+        setDialog({ ratios: e.data.ratios ?? [], selected: e.data.selected ?? null,
+                    hasResult: !!e.data.hasResult })
+        setExportOpen(true)
+      }
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
   }, [refresh])
+
+  const openPreviewDialog = () => {
+    iframeRef.current?.contentWindow?.postMessage({ type: 'mes:export-options?' }, window.location.origin)
+    // Fallback: a stale-cached calculator.js has no responder — open anyway
+    // with the fallback ratio list after a short grace period.
+    openTimer.current = window.setTimeout(() => {
+      openTimer.current = null
+      setDialog(null)
+      setExportOpen(true)
+    }, 600)
+  }
 
   // v1.39.1 backport (Item 1b): thread a dashboard "Edit" deep-link (/costings/new?edit=<calculation_id>)
   // onto the iframe src so the legacy calculator (calculator.js:2112 reads ?edit=) reopens that calculation
@@ -70,14 +95,13 @@ export function LiveCalculator() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() =>
-              iframeRef.current?.contentWindow?.postMessage({ type: 'mes:excel-preview' }, window.location.origin)
-            }
+            onClick={openPreviewDialog}
             disabled={mode === 'loading'}
-            title="Download the current, not-yet-approved costing as an Excel test workbook"
+            data-testid="preview-btn"
+            title="Download the current, not-yet-approved costing as an Excel / Word / PDF test document"
             className="flex items-center gap-1 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-body hover:bg-surface-alt disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <FileSpreadsheet size={13} /> Preview in Excel
+            <FileSpreadsheet size={13} /> Preview
           </button>
           <button
             onClick={() => setReloadKey((k) => k + 1)}
@@ -132,6 +156,22 @@ export function LiveCalculator() {
     <div className="border-t border-line">
       <CostingsDashboard embedded />
     </div>
+
+    <ExportOptionsModal
+      open={exportOpen}
+      verb="Preview"
+      ratioOptions={dialog?.ratios ?? []}
+      defaultRatio={dialog?.selected ?? null}
+      disabledNote={dialog && !dialog.hasResult
+        ? 'Nothing calculated yet — run Calculate in the wizard first, then Preview.'
+        : undefined}
+      onClose={() => setExportOpen(false)}
+      onConfirm={(sel) => {
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: 'mes:export-preview', ...sel }, window.location.origin)
+        setExportOpen(false)
+      }}
+    />
     </>
   )
 }

@@ -29,7 +29,8 @@ import { useAppData } from '../../store/AppDataContext'
 import { Card, SectionTitle, StatusPill } from '../../components/ui/primitives'
 import { Toast } from '../../components/ui/overlays'
 import { Tooltip } from '../../components/ui/Tooltip'
-import { zar, dmy, hhmm } from '../../lib/format'
+import { zar, dmy, hhmm, lengthSuffix } from '../../lib/format'
+import { ExportOptionsModal } from './ExportOptionsModal'
 // v1.39.1 backport (Item 5+7): demoBom/demoBomTotal removed — the BOM is now fetched live (see LiveBom below).
 import { styleForStatus, prettyStatus, StatusPillCosting } from './statusPalette'
 import { PreJobCardModal } from './PreJobCardModal'
@@ -49,6 +50,9 @@ export function CostingDetail() {
   const [repairOpen, setRepairOpen] = useState(false)
   const [signoffRole, setSignoffRole] = useState<'sales' | 'production' | null>(null)
   const [chassisReceivedDate, setChassisReceivedDate] = useState('')
+  // v1.44 R5b — Export (Excel/Word/PDF) with the shared options dialog.
+  const [exportOpen, setExportOpen] = useState(false)
+  const [savedRatio, setSavedRatio] = useState<number | null>(null)
 
   const c = costings.find((x) => x.quote_number === decodeURIComponent(quote))
   // §0.21 — the live Pre-Job Card summary rides on the costing (CostingsContext merges
@@ -108,7 +112,7 @@ export function CostingDetail() {
               />
             )}
           </h1>
-          <p className="text-sm text-muted">{c.customer_name} · {c.body_type}</p>
+          <p className="text-sm text-muted">{c.customer_name} · {c.body_type}{lengthSuffix(c.body_length)}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {canPreJob && c.status === 'Accepted' && (
@@ -127,6 +131,27 @@ export function CostingDetail() {
               <Wrench size={14} /> Schedule into MES
             </button>
           )}
+          <button
+            data-testid="export-open-btn"
+            onClick={async () => {
+              if (!c.calculation_id) {
+                setToast('Export is available on live (saved) costings only')
+                return
+              }
+              // R3b default: the ratio saved on this costing pre-ticks the dialog.
+              try {
+                const r = await apiGet<{ saved_result?: { ratio_value?: number | null } }>(
+                  `/api/calculations/${c.calculation_id}`)
+                setSavedRatio(r.saved_result?.ratio_value ?? null)
+              } catch {
+                setSavedRatio(null)
+              }
+              setExportOpen(true)
+            }}
+            className="flex items-center gap-1 rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-body hover:bg-surface-alt"
+          >
+            <Package size={14} /> Export
+          </button>
           <button
             onClick={() =>
               c.calculation_id
@@ -162,7 +187,7 @@ export function CostingDetail() {
           <div className="grid gap-x-6 gap-y-5 px-5 py-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-0">
             <div className="space-y-4 lg:pr-6">
               <InfoField icon={<User size={13} strokeWidth={2.5} />} label="Customer" value={c.customer_name} />
-              <InfoField icon={<Truck size={13} strokeWidth={2.5} />} label="Body type" value={c.body_type} />
+              <InfoField icon={<Truck size={13} strokeWidth={2.5} />} label="Body type" value={`${c.body_type}${lengthSuffix(c.body_length)}`} />
               <InfoField icon={<MapPin size={13} strokeWidth={2.5} />} label="Site" value={c.site} />
             </div>
 
@@ -411,6 +436,24 @@ export function CostingDetail() {
           await scheduleRepairPhases(target.quote_number, phases)
           setRepairOpen(false)
           setToast(`Repair plan inserted into MES (${phases.length} phase${phases.length === 1 ? '' : 's'})`)
+        }}
+      />
+
+      <ExportOptionsModal
+        open={exportOpen}
+        verb="Export"
+        ratioOptions={[]}
+        defaultRatio={savedRatio}
+        onClose={() => setExportOpen(false)}
+        onConfirm={({ format, detail, ratios }) => {
+          // Same-page download via a transient anchor (no popup tab): the GET
+          // responds with Content-Disposition attachment.
+          const a = document.createElement('a')
+          a.href = `/results/${c.calculation_id}/export/${format}?detail=${detail}&ratios=${ratios.join(',')}`
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+          setExportOpen(false)
         }}
       />
 

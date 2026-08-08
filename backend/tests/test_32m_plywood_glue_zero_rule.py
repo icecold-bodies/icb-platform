@@ -154,6 +154,59 @@ def test_apply_is_idempotent_and_guard_zeroes_at_exactly_3_2(staged):
         assert (qty == 0.0) is expect_zero, f"L={length}: qty={qty}"
 
 
+def test_note_reaches_all_three_document_renderers():
+    """build_doc_ctx carries zero_rule_note, and each of the three renderers
+    (xlsx / docx / pdf) emits it — so the red line can't silently go missing
+    from one format. Absent note ⇒ byte-identical-shaped document (no row)."""
+    import io
+    import zipfile
+
+    import openpyxl
+
+    from app.routers.exports import _render_docx, _render_pdf, _render_xlsx
+    from app.services.document_context import build_doc_ctx
+
+    note = "3.2 m rule applied: plywood + glue at R0,00 (FRONT, SIDES)"
+    guard = "(1) * (0 if abs(length - 3.2) < 1e-9 else 1)"
+    def item(cat, mat):
+        return {"category": cat, "material": mat, "material_code": "",
+                "formula": guard, "quantity": 0, "unit": "m²",
+                "unit_price": 71.48, "waste_pct": 0, "line_cost": 0}
+
+    result = {
+        "items": [item("FRONT", "4MM PF PLYWOOD"), item("FRONT", "GLUE LINE"),
+                  item("SIDES", "4MM PF PLYWOOD"), item("SIDES", "GLUE LINE")],
+        "category_totals": {"FRONT": 0.0, "SIDES": 0.0}, "grand_total": 100.0,
+        "geometry": {"length": 3.2},
+    }
+    common = dict(mode="preview", heading="Testing — X", sub="", client_name="",
+                  spec_pairs=[("Length", "3.2 m")], spec_options=[],
+                  ratios=[0.55], detail="items", generated_at="08 Aug 2026")
+    ctx = build_doc_ctx(result=result, **common)
+    assert ctx["zero_rule_note"] == note
+
+    off = dict(result, geometry={"length": 3.5})
+    ctx_off = build_doc_ctx(result=off, **common)
+    assert ctx_off["zero_rule_note"] is None
+
+    vals = [c.value for row in openpyxl.load_workbook(
+        io.BytesIO(_render_xlsx(ctx).getvalue())).active.iter_rows() for c in row]
+    assert note in vals
+    vals_off = [c.value for row in openpyxl.load_workbook(
+        io.BytesIO(_render_xlsx(ctx_off).getvalue())).active.iter_rows() for c in row]
+    assert note not in vals_off
+
+    def docx_xml(buf):
+        with zipfile.ZipFile(io.BytesIO(buf.getvalue())) as z:
+            return z.read("word/document.xml").decode("utf-8", "ignore")
+    assert note in docx_xml(_render_docx(ctx))
+    assert note not in docx_xml(_render_docx(ctx_off))
+
+    pdf_on, pdf_off = _render_pdf(ctx), _render_pdf(ctx_off)
+    assert pdf_on[:4] == b"%PDF" and pdf_off[:4] == b"%PDF"
+    assert len(pdf_on) > len(pdf_off)   # the extra red line is rendered
+
+
 def test_api_calculate_zeroes_rows_visible_at_3_2(staged, app_mod):
     """End-to-end: guarded template through POST /api/calculate — the four
     rows stay IN the response with qty 0 / line 0 at 3.2 m and cost normally

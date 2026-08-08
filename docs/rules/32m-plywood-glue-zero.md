@@ -10,7 +10,8 @@
   **R0,00** — the rows stay visible with qty 0, never hidden;
 - the user is told the rule is active: a bold red banner on the costing page,
   the four affected line totals in bold red, and one bold red line under the
-  price summary on Excel/PDF previews and exports.
+  price summary on every document format (Excel, Word, PDF — preview and
+  approved export alike).
 
 Doors (DRD/SRD), FLOOR (12MM ply) and OPTIONAL EXTRAS plywood are
 deliberately **out of scope**.
@@ -27,8 +28,11 @@ Each of the 8 pinned `bill_of_materials` rows carries a formula guard:
 the **quantity** at exactly 3.2 and the zero flows everywhere quantities do:
 both calculators, previews, exports, and newly saved costings. No engine or
 unit-price change. The red notices key off the guard text in the calc result
-(`calculator.js` + `app.services.zero_rule_note`) — data-driven, no template
-or material names hardcoded in the detection.
+— data-driven, no template or material names hardcoded in the detection.
+Detection lives in two places only: `zeroRuleInfo()` in `calculator.js` for
+the on-screen banner and row styling, and `app.services.zero_rule_note()`,
+which `build_doc_ctx` puts on the shared document context so all three
+renderers (xlsx / docx / pdf) draw the same line from one source.
 
 Costings **saved before** the guard keep their stored figures (edit-pin
 machinery owns those); re-opening an old 3.2 m quote in edit mode shows the

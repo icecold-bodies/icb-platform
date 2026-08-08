@@ -559,7 +559,22 @@ def _render_docx(ctx: dict):
 
 def _render_pdf(ctx: dict) -> bytes:
     """Render the shared doc ctx as a PDF (bytes) via ReportLab (A4 landscape,
-    numbered footer). Same document order as the xlsx/docx renderers."""
+    numbered footer). Same document order as the xlsx/docx renderers.
+
+    Page 1 is a COVER: heading, client, dimensions & body options, category
+    totals and the price summary (Michael 8 Aug — the summary used to flow onto
+    page 2 whenever the category list was long, and on a short one the line
+    items crowded in underneath it). Two things hold that shape:
+      * the cover block is compact — body options pair up two per row (the same
+        multi-column language the dimensions row above already uses) and the
+        paddings are tight — so the whole cover fits one page for a realistic
+        body (measured: ~14 categories at A4 landscape);
+      * the line items always start on a fresh page.
+    A KeepTogether around the totals+summary pair was tried and rejected: past
+    the fitting limit it relocates BOTH tables to page 2 and leaves page 1
+    nearly empty. Letting the category table split naturally is the better
+    failure mode — the summary still follows immediately after it.
+    """
     from xml.sax.saxutils import escape
 
     from reportlab.lib.pagesizes import A4, landscape
@@ -569,7 +584,7 @@ def _render_pdf(ctx: dict) -> bytes:
     from reportlab.lib.enums import TA_CENTER
     from reportlab.pdfgen import canvas
     from reportlab.platypus import (
-        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+        PageBreak, SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
     )
 
     def _fmt2(v):
@@ -607,8 +622,8 @@ def _render_pdf(ctx: dict) -> bytes:
     title_tbl = Table([[Paragraph(escape(ctx["heading"]), title_style)]], colWidths=[avail_w])
     title_tbl.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#0D1117")),
-        ("TOPPADDING", (0, 0), (-1, -1), 6 * mm),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6 * mm),
+        ("TOPPADDING", (0, 0), (-1, -1), 3.5 * mm),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5 * mm),
     ]))
     elements.append(title_tbl)
 
@@ -619,10 +634,10 @@ def _render_pdf(ctx: dict) -> bytes:
         ("BOTTOMPADDING", (0, 0), (-1, -1), 2 * mm),
     ]))
     elements.append(sub_tbl)
-    elements.append(Spacer(1, 4 * mm))
+    elements.append(Spacer(1, 2.5 * mm))
 
     elements.append(Paragraph("Client: " + escape(str(ctx["client_name"])), client_style))
-    elements.append(Spacer(1, 4 * mm))
+    elements.append(Spacer(1, 2.5 * mm))
 
     # Dimensions + body options
     elements.append(Paragraph(
@@ -644,42 +659,76 @@ def _render_pdf(ctx: dict) -> bytes:
         dim_tbl.setStyle(TableStyle(style))
         elements.append(dim_tbl)
     if ctx["spec_options"]:
-        orows = [[str(lbl), Paragraph(escape(str(val)), body)] for lbl, val in ctx["spec_options"]]
-        opt_tbl = Table(orows, colWidths=[avail_w * 0.14, avail_w * 0.5])
+        # Two option pairs per row — same multi-column shape as the dimensions
+        # row above, and it halves the cover's tallest fixed block.
+        opts = list(ctx["spec_options"])
+        orows = []
+        for i in range(0, len(opts), 2):
+            chunk = opts[i:i + 2]
+            row = []
+            for lbl, val in chunk:
+                row += [str(lbl), Paragraph(escape(str(val)), body)]
+            if len(chunk) == 1:
+                row += ["", ""]
+            orows.append(row)
+        opt_tbl = Table(orows, colWidths=[avail_w * 0.13, avail_w * 0.30] * 2)
         opt_tbl.setStyle(TableStyle([
             ("FONTSIZE", (0, 0), (-1, -1), 9),
             ("TEXTCOLOR", (0, 0), (0, -1), colors.HexColor("#555555")),
-            ("TOPPADDING", (0, 0), (-1, -1), 0.8 * mm),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 0.8 * mm),
+            ("TEXTCOLOR", (2, 0), (2, -1), colors.HexColor("#555555")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("TOPPADDING", (0, 0), (-1, -1), 0.5 * mm),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 0.5 * mm),
         ]))
         elements.append(opt_tbl)
-    elements.append(Spacer(1, 4 * mm))
+    elements.append(Spacer(1, 2.5 * mm))
 
-    # Category totals — above the price summary and any line items (R2.4)
-    if ctx["category_totals"]:
-        ct_data = [["Category", "Subtotal (R)"]]
-        ct_optional = []
-        for cat, total, is_opt in ctx["category_totals"]:
-            ct_data.append([str(cat), _fmt2(total)])
-            if is_opt:
-                ct_optional.append(len(ct_data) - 1)
-        ct_tbl = Table(ct_data, colWidths=[avail_w * 0.45, avail_w * 0.15])
-        ct_style = [
+    # Category totals — above the price summary and any line items (R2.4).
+    # Built through a factory so the same block can be re-laid-out two-up when
+    # a long category list would otherwise push the summary off page 1.
+    def _category_totals_table(columns: int):
+        head = ["Category", "Subtotal (R)"] * columns
+        rows = [head]
+        red_cells = []          # (row, col-block) pairs for optional sections
+        entries = list(ctx["category_totals"])
+        per_col = -(-len(entries) // columns)        # ceil
+        cols = [entries[i * per_col:(i + 1) * per_col] for i in range(columns)]
+        for r in range(per_col):
+            row = []
+            for c in range(columns):
+                if r < len(cols[c]):
+                    cat, total, is_opt = cols[c][r]
+                    row += [str(cat), _fmt2(total)]
+                    if is_opt:
+                        red_cells.append((len(rows), c))
+                else:
+                    row += ["", ""]
+            rows.append(row)
+        widths = []
+        for _ in range(columns):
+            widths += [avail_w * (0.45 / columns), avail_w * (0.15 / columns)]
+        tbl = Table(rows, colWidths=widths)
+        style = [
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1C2333")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#E6EDF3")),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("ALIGN", (1, 0), (1, -1), "RIGHT"),
-            ("FONTNAME", (1, 1), (1, -1), "Helvetica-Bold"),
             ("LINEBELOW", (0, 1), (-1, -1), 0.3, colors.HexColor("#D0D7DE")),
-            ("TOPPADDING", (0, 0), (-1, -1), 1.2 * mm),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 1.2 * mm),
+            ("TOPPADDING", (0, 0), (-1, -1), 0.7 * mm),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 0.7 * mm),
         ]
-        for r in ct_optional:
-            ct_style.append(("TEXTCOLOR", (0, r), (-1, r), RED))
-        ct_tbl.setStyle(TableStyle(ct_style))
-        elements.append(ct_tbl)
-        elements.append(Spacer(1, 4 * mm))
+        for c in range(columns):
+            style.append(("ALIGN", (c * 2 + 1, 0), (c * 2 + 1, -1), "RIGHT"))
+            style.append(("FONTNAME", (c * 2 + 1, 1), (c * 2 + 1, -1), "Helvetica-Bold"))
+        for r, c in red_cells:
+            style.append(("TEXTCOLOR", (c * 2, r), (c * 2 + 1, r), RED))
+        tbl.setStyle(TableStyle(style))
+        return tbl
+
+    cover_tail: list = []
+    if ctx["category_totals"]:
+        cover_tail.append(_category_totals_table(1))
+        cover_tail.append(Spacer(1, 2.5 * mm))
 
     # Price summary
     sdata = []
@@ -699,8 +748,8 @@ def _render_pdf(ctx: dict) -> bytes:
         ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), 10),
         ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D0D7DE")),
-        ("TOPPADDING", (0, 0), (-1, -1), 2 * mm),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 2 * mm),
+        ("TOPPADDING", (0, 0), (-1, -1), 1.4 * mm),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.4 * mm),
     ]
     for i in range(len(sdata)):
         if i in grand_rows:
@@ -713,11 +762,31 @@ def _render_pdf(ctx: dict) -> bytes:
             s_style.append(("TEXTCOLOR", (0, i), (0, i), colors.HexColor("#C9D1D9")))
             s_style.append(("TEXTCOLOR", (1, i), (1, i), BLUE))
     summary_tbl.setStyle(TableStyle(s_style))
-    elements.append(summary_tbl)
+    cover_tail.append(summary_tbl)
 
-    # Line items (grouped by category) — only when requested
+    # Does the whole cover fit on page 1? Measure rather than assume: a single
+    # column of categories is the ratified look, so keep it whenever it fits
+    # (every real body today — the widest is 11 categories, the single-column
+    # ceiling is 13) and only pair them up two-per-row when it genuinely would
+    # not, which keeps even a 25-category body's summary on page 1.
+    def _stack_height(flowables) -> float:
+        total = 0.0
+        for f in flowables:
+            try:
+                total += f.wrap(avail_w, avail_h)[1]
+            except Exception:
+                return float("inf")     # unmeasurable → treat as overflowing
+        return total
+
+    avail_h = page_h - 12 * mm - 14 * mm         # matches the doc template below
+    if ctx["category_totals"] and _stack_height(elements + cover_tail) > avail_h:
+        cover_tail[0] = _category_totals_table(2)
+    elements.extend(cover_tail)
+
+    # Line items (grouped by category) — only when requested, and always from a
+    # fresh page so page 1 stays the cover.
     if ctx["include_items"] and ctx["items"]:
-        elements.append(Spacer(1, 5 * mm))
+        elements.append(PageBreak())
         bom_pct = [0.11, 0.26, 0.09, 0.19, 0.07, 0.05, 0.08, 0.06, 0.09]
         bom_w = [avail_w * p for p in bom_pct]
         header = ["Category", "Material", "SAP Code", "Formula", "Quantity",

@@ -388,6 +388,94 @@ def test_pdf_preview_generates(client, admin_headers):
     assert r.headers["content-disposition"].endswith('.pdf"')
 
 
+# ── PDF page-1 cover (Michael 8 Aug: the summary spilled onto page 2) ──────────
+def _pdf_pages(pdf_bytes: bytes):
+    from pypdf import PdfReader
+    return [(p.extract_text() or "") for p in PdfReader(io.BytesIO(pdf_bytes)).pages]
+
+
+def _wide_payload(n_cats: int, ratios, detail="items"):
+    """A body with n_cats DISTINCT categories (category_totals is a dict — repeat
+    a name and the count silently collapses) and matching line items."""
+    cats = [f"CATEGORY {i:02d}" for i in range(n_cats)]
+    items = [{"category": c, "material": f"MAT {c}", "material_code": "",
+              "formula": "1", "quantity": 1.0, "unit": "ea", "unit_price": 100.0,
+              "waste_pct": 0, "line_cost": 100.0, "last_updated": None}
+             for c in cats for _ in range(3)]
+    result = dict(RESULT_FIXTURE)
+    result["items"] = items
+    result["category_totals"] = {c: 300.0 for c in cats}
+    return _preview_payload(format="pdf", detail=detail, ratios=list(ratios),
+                            result=result)
+
+
+def test_pdf_page_one_carries_the_whole_cover(client, admin_headers):
+    """Heading, client, category totals AND every TOTAL COST line land on page
+    1; the line items start on page 2 (they used to share page 1 on a short
+    body and push the summary off it on a long one)."""
+    r = client.post("/api/export/preview", headers=admin_headers,
+                    json=_wide_payload(11, (0.35, 0.45, 0.55)))
+    assert r.status_code == 200, r.text
+    pages = _pdf_pages(r.content)
+    assert len(pages) >= 2
+    p1 = pages[0]
+    assert FIXED_TT_NAME in p1 and "Client:" in p1
+    assert "Subtotal (R)" in p1                     # category totals block
+    assert "Materials Cost" in p1
+    for lbl in ("TOTAL COST @ 35%", "TOTAL COST @ 45%", "TOTAL COST @ 55%"):
+        assert lbl in p1.replace("\n", " ") or lbl.replace(" ", "") in p1.replace("\n", "").replace(" ", "")
+    assert "Unit Price (R)" not in p1               # items never share the cover
+    assert "Unit Price (R)" in pages[1]             # …they start on page 2
+
+
+def test_pdf_cover_holds_for_a_long_category_list(client, admin_headers):
+    """Well past the single-column ceiling the categories lay out two-up rather
+    than pushing the summary to page 2."""
+    r = client.post("/api/export/preview", headers=admin_headers,
+                    json=_wide_payload(24, (0.35, 0.55)))
+    assert r.status_code == 200, r.text
+    p1 = _pdf_pages(r.content)[0]
+    assert "Subtotal (R)" in p1 and "Materials Cost" in p1
+    assert "CATEGORY 00" in p1 and "CATEGORY 23" in p1   # every category on page 1
+    flat = p1.replace("\n", " ").replace(" ", "")
+    assert "TOTALCOST@35%" in flat and "TOTALCOST@55%" in flat
+
+
+def test_pdf_zero_rule_note_rides_the_cover(client, admin_headers):
+    """#116's 3.2 m notice explains the totals directly above it, so it must
+    stay on page 1 with them — not follow the line items onto page 2."""
+    from io import BytesIO
+
+    from app.routers.exports import _render_pdf
+    from app.services.document_context import build_doc_ctx
+    from pypdf import PdfReader
+
+    note = "3.2 m RULE APPLIED — PLYWOOD + GLUE AT R0,00"
+    cats = [f"CATEGORY {i:02d}" for i in range(11)]
+    items = [{"category": c, "material": f"MAT {c}", "material_code": "",
+              "formula": "1", "quantity": 1.0, "unit": "ea", "unit_price": 100.0,
+              "waste_pct": 0, "line_cost": 100.0} for c in cats for _ in range(4)]
+    ctx = build_doc_ctx(
+        mode="preview", heading="Testing — ZERO RULE BODY (3.2 m)",
+        sub="ZERO RULE BODY", client_name="", spec_pairs=[("Length (m)", 3.2)],
+        spec_options=[], ratios=[0.35, 0.55], detail="items", db=None,
+        result={"items": items, "category_totals": {c: 400.0 for c in cats},
+                "grand_total": 4400.0, "profit_margin": 5})
+    ctx["zero_rule_note"] = note
+    p1 = (PdfReader(BytesIO(_render_pdf(ctx))).pages[0].extract_text() or "").replace("\n", " ")
+    assert "Materials Cost" in p1 and p1.count("TOTAL COST") == 2
+    assert "R0,00" in p1, "the 3.2 m notice must stay on the cover page"
+
+
+def test_pdf_totals_only_is_a_single_page(client, admin_headers):
+    r = client.post("/api/export/preview", headers=admin_headers,
+                    json=_wide_payload(11, (0.55,), detail="totals"))
+    assert r.status_code == 200, r.text
+    pages = _pdf_pages(r.content)
+    assert len(pages) == 1, f"totals-only should be one page, got {len(pages)}"
+    assert "Materials Cost" in pages[0] and "MAT CATEGORY 00" not in pages[0]
+
+
 def test_preview_bad_format_rejected(client, admin_headers):
     r = client.post("/api/export/preview", headers=admin_headers,
                     json=_preview_payload(format="csv"))

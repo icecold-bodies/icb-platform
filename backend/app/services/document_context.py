@@ -33,6 +33,8 @@ RATIO_OPTIONS: list[tuple[float, str]] = [
     (0.7, "70%"),
 ]
 
+from . import zero_rule_note
+
 VALID_DETAILS = ("totals", "items")
 VALID_FORMATS = ("excel", "word", "pdf")
 
@@ -95,6 +97,7 @@ def build_price_rows(result: dict, ratios: list[float], db=None) -> list[dict]:
     "add" (green + line), "total" (emphasised band).
     """
     from ..routers.calculator import _apply_chassis_and_margin  # late: routers→services one-way otherwise
+
 
     rows: list[dict] = []
     grand = float(result.get("grand_total") or 0)
@@ -204,6 +207,11 @@ def build_doc_ctx(*, mode: str, heading: str, sub: str, client_name: str,
         "spec_options": spec_options,
         "category_totals": cat_totals,
         "price_rows": build_price_rows(result, ratios, db),
+        # Length-pinned zero rule (e.g. 3.2 m plywood+glue): one bold red line
+        # under the price summary in every format. None when no guarded row
+        # matches this result's length — the renderers then emit nothing, so
+        # unaffected documents stay byte-identical.
+        "zero_rule_note": zero_rule_note(result),
         "include_items": include_items,
         "items": items if include_items else [],
         "optional_cats": optional_cats,

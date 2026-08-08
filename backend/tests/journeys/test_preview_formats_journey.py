@@ -171,6 +171,10 @@ def test_preview_dialog_word_two_ratios(page: Page, live_server: str, staged, tm
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
     frame.locator("#trailer-select").select_option(str(ids["trailer"]))
+    # Wait for the BOM to load BEFORE nudging a dim: the live-calc silently
+    # no-ops while bomData is empty, so a fill that races the async BOM fetch
+    # never calculates and the approve button stays disabled (Windows CI loss).
+    expect(frame.locator("[data-material-id]").first).to_be_visible(timeout=30_000)
     frame.locator("#f-length").fill("6.5")
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
 

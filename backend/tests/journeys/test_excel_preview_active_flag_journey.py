@@ -116,6 +116,9 @@ def test_preview_dialog_excel_download(page: Page, live_server: str, staged, tmp
 
     # ── Calculate: pick the staged body; a dim nudge fires the live recalc ───
     frame.locator("#trailer-select").select_option(str(ids["trailer"]))
+    # BOM must be loaded before the nudge — the live-calc silently no-ops on an
+    # empty bomData, and a fill that races the fetch never enables Approve.
+    expect(frame.locator("[data-material-id]").first).to_be_visible(timeout=30_000)
     frame.locator("#f-length").fill("6.5")
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
 

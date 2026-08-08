@@ -125,6 +125,25 @@ def _docx_text(docx_bytes: bytes) -> str:
     return "|".join(parts)
 
 
+def _select_trailer_and_wait_bom(page: Page, frame, trailer_id: str,
+                                 attempts: int = 4) -> None:
+    """select_option is one-shot: while the embed is still settling (autologin
+    refresh, slow CI runner) the change→loadBOM→fetch chain can be lost and no
+    BOM row ever renders (two distinct windows-latest reds). Re-select
+    (bounded) until a row is visible — the _click_until_toast precedent. A real
+    rows-never-render bug still fails after the attempts are exhausted."""
+    row = frame.locator("[data-material-id]").first
+    for _ in range(attempts):
+        frame.locator("#trailer-select").select_option(trailer_id)
+        try:
+            expect(row).to_be_visible(timeout=8_000)
+            return
+        except AssertionError:
+            continue
+    shot(page, "zz-bom-never-rendered", journey=JOURNEY)   # failure trace for CI
+    raise AssertionError(f"BOM rows never rendered after {attempts} selects")
+
+
 # ── 1. R1: full-role permanent price save with audit ──────────────────────────
 def test_full_role_price_save_from_costings_page(page: Page, live_server: str, staged) -> None:
     ids = staged
@@ -133,10 +152,9 @@ def test_full_role_price_save_from_costings_page(page: Page, live_server: str, s
 
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
-    frame.locator("#trailer-select").select_option(str(ids["trailer"]))
+    _select_trailer_and_wait_bom(page, frame, str(ids["trailer"]))
 
     row = frame.locator("[data-material-id]").first
-    expect(row).to_be_visible(timeout=30_000)
     row.click(button="right")
     frame.locator(".ctx-menu-item", has_text="Edit permanently (this section)").click()
 
@@ -170,11 +188,10 @@ def test_preview_dialog_word_two_ratios(page: Page, live_server: str, staged, tm
 
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
-    frame.locator("#trailer-select").select_option(str(ids["trailer"]))
-    # Wait for the BOM to load BEFORE nudging a dim: the live-calc silently
-    # no-ops while bomData is empty, so a fill that races the async BOM fetch
-    # never calculates and the approve button stays disabled (Windows CI loss).
-    expect(frame.locator("[data-material-id]").first).to_be_visible(timeout=30_000)
+    # BOM must be loaded BEFORE nudging a dim: the live-calc silently no-ops
+    # while bomData is empty, so a fill that races the fetch never calculates
+    # and Approve stays disabled (windows-latest red #1).
+    _select_trailer_and_wait_bom(page, frame, str(ids["trailer"]))
     frame.locator("#f-length").fill("6.5")
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
 

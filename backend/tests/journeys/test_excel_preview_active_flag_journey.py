@@ -115,10 +115,18 @@ def test_preview_dialog_excel_download(page: Page, live_server: str, staged, tmp
     page.get_by_role("button", name="Cancel").click()
 
     # ── Calculate: pick the staged body; a dim nudge fires the live recalc ───
-    frame.locator("#trailer-select").select_option(str(ids["trailer"]))
-    # BOM must be loaded before the nudge — the live-calc silently no-ops on an
-    # empty bomData, and a fill that races the fetch never enables Approve.
-    expect(frame.locator("[data-material-id]").first).to_be_visible(timeout=30_000)
+    # select_option is one-shot and loadBOM's fetch can be lost while the embed
+    # settles on a slow runner; re-select (bounded) until a BOM row renders,
+    # THEN nudge — the live-calc silently no-ops on an empty bomData.
+    bom_row = frame.locator("[data-material-id]").first
+    for _attempt in range(4):
+        frame.locator("#trailer-select").select_option(str(ids["trailer"]))
+        try:
+            expect(bom_row).to_be_visible(timeout=8_000)
+            break
+        except AssertionError:
+            if _attempt == 3:
+                raise
     frame.locator("#f-length").fill("6.5")
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
 

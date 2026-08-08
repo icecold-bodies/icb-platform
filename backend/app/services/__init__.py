@@ -1,5 +1,6 @@
 """Cross-router business logic helpers: BOM loading, cost computation, serialization."""
 
+import re
 from collections import namedtuple
 
 from sqlalchemy.orm import joinedload, selectinload
@@ -165,6 +166,44 @@ def strip_excluded_items(result):
     out = dict(result)
     out["items"] = [it for it in items if not it.get("excluded")]
     return out
+
+
+# ── Length-pinned zero-rule detection ────────────────────────────────────────
+# scripts/rules/apply_32m_plywood_glue_zero.py appends a data-driven guard of
+# this exact shape to bill_of_materials formulas. Detection is purely off the
+# result payload (formula text + geometry length) — no template or material
+# names — so any row carrying such a guard, on any body, lights up the notice.
+ZERO_RULE_GUARD_RE = re.compile(
+    r"\*\s*\(0 if abs\(length - ([0-9]*\.?[0-9]+)\) < 1e-9 else 1\)")
+
+
+def zero_rule_note(result):
+    """One-line red notice when a length-pinned zero rule is active in `result`.
+
+    Returns the ratified export line, e.g.
+    ``"3.2 m rule applied: plywood + glue at R0,00 (FRONT, SIDES)"``,
+    or None when no guarded row matches the result's length. Works on saved
+    result_json and live preview results alike (both carry items[].formula
+    and geometry.length)."""
+    if not isinstance(result, dict):
+        return None
+    try:
+        length = float((result.get("geometry") or {}).get("length"))
+    except (TypeError, ValueError):
+        return None
+    pinned = None
+    cats = []
+    for it in result.get("items") or []:
+        m = ZERO_RULE_GUARD_RE.search(str(it.get("formula") or ""))
+        if not m or abs(length - float(m.group(1))) >= 1e-9:
+            continue
+        pinned = m.group(1)
+        cat = it.get("category") or ""
+        if cat and cat not in cats:
+            cats.append(cat)
+    if pinned is None:
+        return None
+    return f"{pinned} m rule applied: plywood + glue at R0,00 ({', '.join(cats)})"
 
 
 # ── BOM eager-load helper ─────────────────────────────────────────────────────

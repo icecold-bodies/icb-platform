@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db, CalculationRecord, TrailerType
 from ..deps import get_current_user, user_can
-from ..services import resolve_report_template, strip_excluded_items
+from ..services import resolve_report_template, strip_excluded_items, zero_rule_note
 
 router = APIRouter()
 
@@ -390,6 +390,18 @@ def _build_costing_workbook(ctx: dict):
         ws.row_dimensions[row].height = 22 if is_grand else 18
         row += 1
 
+    # Length-pinned zero rule (e.g. 3.2 m plywood+glue): one bold red line
+    # under the price summary. Conditional — absent results leave the sheet
+    # byte-identical, keeping the preview/export regression hash intact.
+    _zero_note = zero_rule_note(result)
+    if _zero_note:
+        ws.merge_cells(f"A{row}:I{row}")
+        zc = ws.cell(row=row, column=1, value=_zero_note)
+        zc.font = Font(bold=True, color="E02424", name="Calibri", size=11)
+        zc.alignment = Alignment(horizontal="right", vertical="center")
+        ws.row_dimensions[row].height = 18
+        row += 1
+
     widths = [14, 42, 18, 32, 12, 8, 14, 9, 14]
     for i, w in enumerate(widths, 1):
         ws.column_dimensions[get_column_letter(i)].width = w
@@ -650,7 +662,7 @@ def _cost_breakdown_pdf_reportlab(ctx: dict) -> bytes:
     from reportlab.lib.units import mm
     from reportlab.lib import colors
     from reportlab.lib.styles import ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.enums import TA_CENTER, TA_RIGHT
     from reportlab.pdfgen import canvas
     from reportlab.platypus import (
         SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
@@ -940,6 +952,17 @@ def _cost_breakdown_pdf_reportlab(ctx: dict) -> bytes:
     elements.append(Spacer(1, 5 * mm))
     elements.append(summary_tbl)
 
+    # Length-pinned zero rule: one bold red line under the price summary,
+    # mirroring the Excel builder and cost_breakdown.html.
+    if ctx.get("zero_rule_note"):
+        elements.append(Spacer(1, 2 * mm))
+        elements.append(Paragraph(
+            escape(str(ctx["zero_rule_note"])),
+            ParagraphStyle(
+                "zero_rule", fontName="Helvetica-Bold", fontSize=10, leading=12,
+                alignment=TA_RIGHT, textColor=colors.HexColor("#E02424")),
+        ))
+
     # --- Footer (Generated … / Page X of Y) ------------------------------
     gen_text = "Generated " + str(ctx.get("generated_at") or "")
     foot_left_x = left_margin
@@ -1034,6 +1057,7 @@ async def export_pdf(record_id: int, request: Request, db: Session = Depends(get
         "discount_input": result.get("discount_input"),
         "discount_amount": result.get("discount_amount", 0),
         "net_total": result.get("net_total"),
+        "zero_rule_note": zero_rule_note(result),
     }
 
     try:

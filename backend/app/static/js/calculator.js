@@ -2659,6 +2659,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Attention picker (programmatic selections go through setCustomer instead).
   document.getElementById('cust-select')?.addEventListener('change', onCustomerChanged);
 
+  // v1.45 — resolve this user's validated-reference capabilities once, so the
+  // mark action is shown only to someone who could actually use it.
+  _vrefLoadCaps();
+
   window.addEventListener('beforeunload', saveLastSession);
 
   const params = new URLSearchParams(location.search);
@@ -2877,6 +2881,13 @@ async function loadBOM(options = {}) {
     // already aligns them inside every renderBodyOptions pass.)
     if (await _zeroInactiveRearDoorInsulation()) renderBodyOptions(bomData);
     refreshBomDisplay();
+    // v1.45 — the paired references dropdown follows the selected body type.
+    // A plain body-type switch also drops any "loaded from reference" note.
+    if (!preserveInputs) {
+      const _n = document.getElementById('vref-recalled-note');
+      if (_n) _n.textContent = '';
+    }
+    refreshValidatedReferences();
     scheduleCalc();  // auto-calculate once BOM is loaded
   } catch(e) {
     area.innerHTML = `<div style="color:var(--red);padding:20px">${e.message}</div>`;
@@ -5073,6 +5084,11 @@ async function runCalc() {
     document.getElementById('approve-btn').disabled = false;
     status.textContent = '';
     saveLastSession();
+    // v1.45 — the mark action needs a computed result; the drift verdict is
+    // recomputed on every pass. Both are display-only and never block the calc.
+    const _vrefBtn = document.getElementById('vref-mark-btn');
+    if (_vrefBtn) _vrefBtn.disabled = false;
+    checkValidatedReferenceDrift();
     // Scroll back to a specific BOM row if requested (e.g. after formula edit)
     if (_scrollToBomId) {
       const target = document.querySelector(`[data-bom-id="${_scrollToBomId}"]`);
@@ -6023,6 +6039,365 @@ function printResults() {
 
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══ v1.45 — VALIDATED REFERENCES ═══════════════════════════════════════════
+// Nadie marks a costing that balanced with her Excel as a validated reference;
+// she recalls one as a starting point from the paired dropdown under Body Type;
+// and after every recompute, a costing whose configuration EXACTLY matches an
+// active reference gets a quiet green tick (within tolerance) or a red drift
+// warning (beyond it).
+//
+// Deliberately unrelated to the admin "BOM Snapshots" feature — no shared
+// names, routes or wording. Everything here is additive: nothing in the
+// approve/save path, the edit pins, or verifyEditBalance is touched.
+//
+// ⚠ CLASS TRAP (banked): native confirm/prompt/alert die SILENTLY inside the
+// calculator embed iframe. Every dialog below goes through app.js's
+// promptModal / confirmModal / alertModal.
+
+let _vrefCaps       = null;   // { tolerance_pct, can_manage, can_tune } — fetched once
+let _vrefsForTrailer = [];    // active references for the body type on screen
+let _vrefMatchSeq   = 0;      // guards the banner against out-of-order match replies
+
+async function _vrefLoadCaps() {
+  if (_vrefCaps) return _vrefCaps;
+  try {
+    _vrefCaps = await api('GET', '/api/validated-references/settings');
+  } catch (_) {
+    // Non-fatal: an older/permission-less environment simply gets no feature.
+    _vrefCaps = { tolerance_pct: 2, can_manage: false, can_tune: false };
+  }
+  const markBtn = document.getElementById('vref-mark-btn');
+  if (markBtn) markBtn.style.display = _vrefCaps.can_manage ? '' : 'none';
+  return _vrefCaps;
+}
+
+function _vrefDims(ref) {
+  const d = (ref && ref.dims) || {};
+  const parts = [d.length, d.width, d.height].filter(v => v != null);
+  return parts.length === 3 ? parts.join(' × ') + ' m' : '';
+}
+
+function _vrefDate(iso) {
+  if (!iso) return '';
+  const dt = new Date(iso);
+  return isNaN(dt) ? '' : dt.toLocaleDateString(undefined,
+    { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/** Fill the paired dropdown for the selected body type. Hidden entirely when
+ *  that body type has no active references — Nadie only sees it where it means
+ *  something. */
+async function refreshValidatedReferences() {
+  const wrap = document.getElementById('vref-picker-wrap');
+  const sel  = document.getElementById('vref-select');
+  if (!wrap || !sel) return;
+  const tid = document.getElementById('trailer-select')?.value;
+  if (!tid) { wrap.style.display = 'none'; _vrefsForTrailer = []; return; }
+  try {
+    _vrefsForTrailer = await api('GET', `/api/validated-references?trailer_type_id=${+tid}`);
+  } catch (_) {
+    _vrefsForTrailer = [];
+  }
+  if (!_vrefsForTrailer.length) { wrap.style.display = 'none'; return; }
+  const label = document.getElementById('vref-picker-label');
+  if (label) label.textContent = `Validated references (${_vrefsForTrailer.length})`;
+  sel.innerHTML = '<option value="">— Start from a validated reference —</option>' +
+    _vrefsForTrailer.map(r => {
+      const bits = [r.label, _vrefDims(r), _vrefDate(r.created_at)].filter(Boolean);
+      return `<option value="${r.id}">${escHtml(bits.join(' · '))}</option>`;
+    }).join('');
+  sel.value = '';
+  wrap.style.display = '';
+}
+
+/** Recall: load a reference's full configuration as a COPY.
+ *
+ *  Mirrors editCalculation's faithful hydration (pre-seed the per-trailer
+ *  stores → loadBOM({preserveInputs}) → hard-restore the configurator drafts →
+ *  pin the saved body variables) but DELIBERATELY never sets editingRecordId /
+ *  editingQuoteNumber / the edit banner, so the reference's own record can
+ *  never be edited or overwritten — a reference is read-only by definition.
+ *
+ *  The steps are duplicated rather than factored out of editCalculation on
+ *  purpose: that block is N9936 / v1.39.10 edit-pin territory and is on this
+ *  work order's do-not-touch list. The journey asserts the recalled totals
+ *  reproduce the reference exactly, which is what keeps the two honest. */
+async function recallValidatedReference(refId) {
+  const sel = document.getElementById('vref-select');
+  if (!refId) return;
+  const ref = _vrefsForTrailer.find(r => String(r.id) === String(refId));
+  if (sel) sel.value = '';
+  if (!ref) return;
+
+  const doneLoading = showLoadingOverlay(`Loading validated reference “${ref.label}”…`);
+  try {
+    const payload = await api('GET', `/api/calculations/${ref.calculation_id}`);
+    if (!payload.trailer_type_id) throw new Error('Reference costing has no body type');
+    const snap  = payload.ui_snapshot || {};
+    const saved = payload.saved_result || null;
+    const tid   = +payload.trailer_type_id;
+
+    clearOverrideSession();   // a recalled reference starts from clean prices
+    document.getElementById('trailer-select').value = payload.trailer_type_id;
+
+    // 1) Pre-seed the per-trailer stores BEFORE loadBOM so preserveInputs keeps
+    //    the reference's selections instead of the body type's current defaults.
+    try {
+      const bos = snap.body_option_selections || payload.body_option_selections;
+      if (bos) localStorage.setItem(`body_opt_sel_${tid}`, JSON.stringify(bos));
+      if (snap.drd_srd) localStorage.setItem(`drd_srd_${tid}`, JSON.stringify(snap.drd_srd));
+    } catch (_) {}
+    if (window.OptionalSections) {
+      window.OptionalSections.saveEnabled(tid,
+        new Set((snap.optional_sections_enabled || payload.optional_sections_enabled || [])
+          .map(Number).filter(Number.isFinite)));
+      window.OptionalSections.saveRowExcl(tid, 'c1',
+        new Set((snap.optional_row_excl || payload.user_excluded_bom_ids || [])
+          .map(Number).filter(Number.isFinite)));
+    }
+    bodyOptionSelections = { ...(snap.body_option_selections || payload.body_option_selections || {}) };
+    drdSrdEnabled        = { ...(snap.drd_srd || {}) };
+
+    await loadBOM({ preserveInputs: true });
+    applyCalculationInputs(payload);          // dims, margin, customer, body options
+
+    // 2) Hard-restore the configurator draft stores AFTER loadBOM's one-time
+    //    seed, and pin the trailer so runCalc's payload build uses these exact
+    //    values — they drive excluded_categories + flag_overrides server-side.
+    _draftFlagStateTrailer = tid;
+    if (snap.draft_flag_state)       draftFlagState          = { ...snap.draft_flag_state };
+    else if (payload.flag_overrides) Object.assign(draftFlagState, payload.flag_overrides);
+    if (snap.draft_category_radio)   draftCategoryRadioState = { ...snap.draft_category_radio };
+    if (snap.draft_masterless_cat)   draftMasterlessCatState = { ...snap.draft_masterless_cat };
+    if (snap.draft_folder)           draftFolderState        = { ...snap.draft_folder };
+    if (snap.body_option_selections) bodyOptionSelections    = { ...snap.body_option_selections };
+    if (snap.drd_srd)                drdSrdEnabled           = { ...snap.drd_srd };
+    // v1.39.10 pin: reproduce the reference's EPS/PU thicknesses regardless of
+    // later global copy-on-switches.
+    editBodyVarOverrides = (saved && saved.body_variables && Object.keys(saved.body_variables).length)
+      ? { ...saved.body_variables } : null;
+
+    // 3) Price overrides ride along so the recalled load balances with the
+    //    reference; the user is free to clear them.
+    if (snap.price_overrides && Object.keys(snap.price_overrides).length) {
+      priceOverrides = JSON.parse(JSON.stringify(snap.price_overrides));
+    } else {
+      rebuildOverridesFromSaved(payload.overrides, payload.override_reasons);
+    }
+    saveOverridesToSession();
+
+    restoreEditRatio(payload.ratio_value, snap.ratio);
+    await restoreChassisSelection(snap.chassis || payload.chassis);
+    restoreOptionalSectionsFromResult(tid, saved && saved.items);
+
+    try { renderBodyOptions(bomData); } catch (_) {}
+    refreshBomDisplay();
+
+    // COPY semantics: no binding to the reference's record. Saving from here
+    // creates a brand-new costing through the normal flow.
+    editingRecordId    = null;
+    editingVersion     = 1;
+    editingQuoteNumber = null;
+    editReplay         = null;
+    lastRecordId       = null;
+
+    await runCalc();
+
+    const note = document.getElementById('vref-recalled-note');
+    if (note) note.textContent = `Loaded from reference “${ref.label}”`;
+    await refreshValidatedReferences();
+    toast(`Loaded from validated reference “${ref.label}”`, 'info');
+  } catch (e) {
+    toast('Failed to load the validated reference: ' + e.message, 'error');
+  } finally {
+    doneLoading();
+  }
+}
+
+/** Mark the costing on screen as a validated reference.
+ *
+ *  A reference must point at a SAVED record — no shadow copies. An unsaved
+ *  costing is offered the normal save flow instead of being silently copied. */
+async function markAsValidatedReference() {
+  const caps = await _vrefLoadCaps();
+  if (!caps.can_manage) return;
+  if (!lastResult) { toast('Cost the body first, then mark it', 'warn'); return; }
+
+  const recordId = editingRecordId || lastRecordId;
+  if (!recordId) {
+    // confirm-message is rendered with textContent, so keep it to one sentence.
+    const go = await confirmModal(
+      'A validated reference has to point at a saved costing. Save this costing now, then mark it?',
+      { okText: 'Approve & Save Costing', title: 'Save first' });
+    if (go) approveCosting();
+    return;
+  }
+
+  const tName = document.getElementById('trailer-select')?.selectedOptions?.[0]?.text || '';
+  const d = getDims();
+  const suggested = [tName, [d.length, d.width, d.height].filter(v => v != null).join('x')]
+    .filter(Boolean).join(' ');
+  const label = await promptModal('Name this validated reference:', suggested,
+                                  { title: 'Mark as validated reference' });
+  if (label === null) return;
+  if (!String(label).trim()) { toast('A name is required', 'warn'); return; }
+
+  const btn = document.getElementById('vref-mark-btn');
+  const spin = document.getElementById('vref-mark-spin');
+  if (btn) btn.disabled = true;
+  if (spin) spin.style.display = '';
+  try {
+    const ref = await api('POST', '/api/validated-references',
+                          { calculation_id: +recordId, label: String(label).trim() });
+    toast(`Marked as validated reference “${ref.label}”`, 'success');
+    await refreshValidatedReferences();
+    await checkValidatedReferenceDrift();
+  } catch (e) {
+    toast('Could not mark this costing: ' + e.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (spin) spin.style.display = 'none';
+  }
+}
+
+/** After every recompute: match the live configuration against the active
+ *  references and render the verdict. Exact match + within tolerance → a quiet
+ *  green tick; exact match + beyond tolerance → the red drift warning with the
+ *  categories that moved; no match → nothing at all.
+ *
+ *  This is a display hint only. It never writes, never blocks, and any failure
+ *  simply clears the banner. */
+async function checkValidatedReferenceDrift() {
+  const banner = document.getElementById('vref-banner');
+  if (!banner) return;
+  if (!lastResult || !lastCalcPayload) { banner.innerHTML = ''; return; }
+  // Rapid recomputes (typing in a dimension, re-selecting a body type) leave
+  // several match calls in flight at once, and their responses can land out of
+  // order — a stale "no match" arriving last would silently blank a live
+  // warning. Only the newest call is allowed to paint.
+  const seq = ++_vrefMatchSeq;
+  try {
+    const verdict = await api('POST', '/api/validated-references/match', {
+      trailer_type_id:           lastCalcPayload.trailer_type_id,
+      dimensions:                lastCalcPayload.dimensions,
+      body_option_selections:    lastCalcPayload.body_option_selections || {},
+      excluded_categories:       lastCalcPayload.excluded_categories || [],
+      flag_overrides:            lastCalcPayload.flag_overrides || {},
+      user_excluded_bom_ids:     lastCalcPayload.user_excluded_bom_ids || [],
+      optional_sections_enabled: lastCalcPayload.optional_sections_enabled || [],
+      body_variables:            lastResult.body_variables || {},
+      grand_total:               lastResult.grand_total,
+      category_totals:           lastResult.category_totals || {},
+    });
+    if (seq !== _vrefMatchSeq) return;            // superseded — leave the DOM alone
+    if (!verdict.matched) { banner.innerHTML = ''; return; }
+    const ref = verdict.reference;
+    const c   = verdict.comparison;
+    if (c.within_tolerance) {
+      banner.innerHTML =
+        `<span data-testid="vref-tick" style="color:#4ade80">✓ Matches validated reference ` +
+        `“${escHtml(ref.label)}”${ref.created_at ? ' (' + escHtml(_vrefDate(ref.created_at)) + ')' : ''}` +
+        `</span>`;
+      return;
+    }
+    const sign  = c.delta >= 0 ? '+' : '−';
+    const moved = (c.category_deltas || []).map(d => {
+      const s = d.delta >= 0 ? '+' : '−';
+      return `${escHtml(d.category)} ${s}${fmt(Math.abs(d.delta))}`;
+    }).join(', ');
+    banner.innerHTML =
+      `<span data-testid="vref-warning" style="color:#ffb340">⚠ This configuration was validated as ` +
+      `“${escHtml(ref.label)}”${ref.created_at ? ' on ' + escHtml(_vrefDate(ref.created_at)) : ''} ` +
+      `at ${fmt(c.reference_total)}. Current cost ${fmt(c.live_total)} ` +
+      `(${sign}${Math.abs(c.delta_pct).toFixed(1)}%, tolerance ${c.tolerance_pct}%).` +
+      (moved ? `<br>Categories moved: ${moved}.` : '') +
+      `</span>`;
+  } catch (_) {
+    if (seq === _vrefMatchSeq) banner.innerHTML = '';
+  }
+}
+
+// ── Manage list (§8 smallest surface: list + soft retire, + admin tolerance) ──
+
+async function openValidatedRefsManager() {
+  openModal('modal-validated-refs');
+  await _vrefRenderManager();
+}
+
+async function _vrefRenderManager() {
+  const caps = await _vrefLoadCaps();
+  const list = document.getElementById('vref-manage-list');
+  const tid  = document.getElementById('trailer-select')?.value;
+  if (list) list.innerHTML = '<div style="color:var(--text-dim)">Loading…</div>';
+
+  const tolWrap = document.getElementById('vref-tolerance-wrap');
+  if (tolWrap) tolWrap.style.display = caps.can_tune ? '' : 'none';
+  const tolInput = document.getElementById('vref-tolerance');
+  if (tolInput) tolInput.value = caps.tolerance_pct;
+
+  let rows = [];
+  try {
+    rows = await api('GET', `/api/validated-references?trailer_type_id=${+tid}&include_retired=true`);
+  } catch (e) {
+    if (list) list.innerHTML = `<div style="color:var(--red)">${escHtml(e.message)}</div>`;
+    return;
+  }
+  if (!list) return;
+  if (!rows.length) {
+    list.innerHTML = '<div style="color:var(--text-dim)">This body type has no validated references yet.</div>';
+    return;
+  }
+  list.innerHTML = rows.map(r => {
+    const meta = [_vrefDims(r), _vrefDate(r.created_at), r.created_by, r.quote_number]
+      .filter(Boolean).map(escHtml).join(' · ');
+    const retire = (caps.can_manage && r.active)
+      ? `<button class="btn btn-outline btn-sm" data-testid="vref-retire-${r.id}"
+                 onclick="retireValidatedReference(${r.id})">Retire</button>`
+      : (r.active ? '' : '<span style="font-size:11px;color:var(--text-dim)">Retired</span>');
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;
+                 padding:8px 0;border-bottom:1px solid var(--border);
+                 ${r.active ? '' : 'opacity:.55'}">
+              <div>
+                <div style="font-weight:600">★ ${escHtml(r.label)}</div>
+                <div style="font-size:11px;color:var(--text-dim)">${meta}</div>
+              </div>
+              <div>${retire}</div>
+            </div>`;
+  }).join('');
+}
+
+async function retireValidatedReference(refId) {
+  const ok = await confirmModal(
+    'Retire this validated reference? It stops matching and leaves the dropdown — ' +
+    'the costing itself is untouched, and the reference is kept for the record.',
+    { okText: 'Retire', title: 'Retire validated reference' });
+  if (!ok) return;
+  try {
+    await api('POST', `/api/validated-references/${refId}/retire`);
+    toast('Validated reference retired', 'info');
+    await _vrefRenderManager();
+    await refreshValidatedReferences();
+    await checkValidatedReferenceDrift();
+  } catch (e) {
+    toast('Could not retire it: ' + e.message, 'error');
+  }
+}
+
+async function saveValidatedRefTolerance() {
+  const input = document.getElementById('vref-tolerance');
+  const note  = document.getElementById('vref-tolerance-note');
+  const pct   = parseFloat(input?.value);
+  if (isNaN(pct) || pct < 0) { if (note) note.textContent = 'Enter a number ≥ 0'; return; }
+  try {
+    const saved = await api('PUT', '/api/validated-references/settings', { tolerance_pct: pct });
+    if (_vrefCaps) _vrefCaps.tolerance_pct = saved.tolerance_pct;
+    if (note) note.textContent = 'Saved';
+    await checkValidatedReferenceDrift();
+  } catch (e) {
+    if (note) note.textContent = e.message;
+  }
 }
 
 // ── Chassis add-on ─────────────────────────────────────────────────────────

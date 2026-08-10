@@ -77,6 +77,23 @@
             </select>
           </div>
 
+          <!-- v1.45 Validated references (Nadie) — a PAIRED dropdown directly
+               below Body Type, shown only when the selected body type has
+               active references. (A submenu inside the body-type select is not
+               possible on a native <select>; this is the ratified placement.)
+               Unrelated to the admin "BOM Snapshots" feature. -->
+          <div class="form-group" id="vref-picker-wrap" style="display:none">
+            <label class="form-label" id="vref-picker-label" for="vref-select">Validated references</label>
+            <select id="vref-select" onchange="recallValidatedReference(this.value)">
+              <option value="">— Start from a validated reference —</option>
+            </select>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
+              <span id="vref-recalled-note" style="font-size:11px;color:var(--text-dim)"></span>
+              <a href="#" id="vref-manage-link" onclick="openValidatedRefsManager();return false;"
+                 style="font-size:11px;color:var(--text-dim);text-decoration:underline">Manage</a>
+            </div>
+          </div>
+
           <div class="form-group">
             <label class="form-label">Length (m)</label>
             <input class="form-control" type="number" id="f-length" value="13.6" step="0.1" min="0.1"/>
@@ -330,10 +347,21 @@
         <div class="grand-total-sub" id="grand-total-sub"></div>
       </div>
       <div id="calc-status" style="text-align:center;font-size:11px;color:var(--text-dim);min-height:14px;margin-top:4px"></div>
+      <!-- v1.45 — drift verdict against a matching validated reference. Styled
+           on verifyEditBalance's balance banner (that function is untouched). -->
+      <div id="vref-banner" style="font-size:12px;margin-top:6px;line-height:1.45"></div>
       <button class="btn btn-primary" id="approve-btn" onclick="approveCosting()"
         disabled style="width:100%;margin-top:6px;font-size:13px;padding:8px 14px">
         <span id="approve-spin" class="spinner" style="display:none"></span>
         ✓ Approve &amp; Save Costing
+      </button>
+      <!-- v1.45 — mark the computed costing as a validated reference. Enabled
+           only when a computed result exists; gated on
+           costings.validated_refs_manage (hidden entirely without it). -->
+      <button class="btn btn-outline btn-sm" id="vref-mark-btn" onclick="markAsValidatedReference()"
+        disabled style="width:100%;margin-top:4px;display:none">
+        <span id="vref-mark-spin" class="spinner" style="display:none"></span>
+        ★ Mark as validated reference
       </button>
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="btn btn-outline btn-sm" style="flex:1" onclick="printResults()" id="print-btn" disabled>
@@ -508,6 +536,39 @@
         onclick="closeModal('modal-no-customer'); _doApprove(null, null);">
         Continue Without Customer
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- v1.45 Validated references — manage list (§8 "smallest surface that works").
+     Lists this body type's references with a soft-Retire per row, plus the
+     admin-only drift-tolerance field. Opened from "Manage" beside the paired
+     dropdown, so it lives exactly where Nadie already is. -->
+<div class="modal-backdrop hidden" id="modal-validated-refs">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header">
+      <span class="modal-title">★ Validated references</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-validated-refs')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="vref-manage-list" style="font-size:13px"></div>
+      <div id="vref-tolerance-wrap" style="display:none;border-top:1px solid var(--border);
+           margin-top:12px;padding-top:12px">
+        <label class="form-label" for="vref-tolerance">Reference tolerance %</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-control" type="number" id="vref-tolerance" step="0.1" min="0"
+                 style="max-width:120px"/>
+          <button class="btn btn-outline btn-sm" onclick="saveValidatedRefTolerance()">Save</button>
+          <span id="vref-tolerance-note" style="font-size:11px;color:var(--text-dim)"></span>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">
+          A live costing that exactly matches a reference warns when its manufacturing
+          cost has moved more than this.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-validated-refs')">Close</button>
     </div>
   </div>
 </div>
@@ -1217,7 +1278,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
-<script defer src="/static/js/calculator.js?v=150"></script>
+<script defer src="/static/js/calculator.js?v=151"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

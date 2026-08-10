@@ -33,9 +33,12 @@ export function LiveCalculator() {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const [exportOpen, setExportOpen] = useState(false)
   const [dialog, setDialog] = useState<{
-    ratios: RatioOpt[]; selected: number | null; hasResult: boolean
+    ratios: RatioOpt[]; selected: number | null; hasResult: boolean; contactEmail?: string
   } | null>(null)
   const openTimer = useRef<number | null>(null)
+  // v1.45 — the iframe owns the calculator state, so it performs the send and
+  // reports back; this bridges that round-trip into the modal's promise.
+  const emailWaiter = useRef<{ resolve: () => void; reject: (e: Error) => void } | null>(null)
   // CostingsProvider attempts a dev-mode auto-login on mount; wait for it to
   // finish (mode flips off 'loading') before mounting the iframe so the
   // session cookie is in place when /calculator loads.
@@ -53,8 +56,15 @@ export function LiveCalculator() {
       if (e.data?.type === 'mes:export-options') {
         if (openTimer.current != null) { window.clearTimeout(openTimer.current); openTimer.current = null }
         setDialog({ ratios: e.data.ratios ?? [], selected: e.data.selected ?? null,
-                    hasResult: !!e.data.hasResult })
+                    hasResult: !!e.data.hasResult, contactEmail: e.data.contactEmail || '' })
         setExportOpen(true)
+      }
+      if (e.data?.type === 'mes:export-email-result') {
+        const w = emailWaiter.current
+        emailWaiter.current = null
+        if (!w) return
+        if (e.data.ok) w.resolve()
+        else w.reject(new Error(e.data.error || 'The email could not be sent.'))
       }
     }
     window.addEventListener('message', onMessage)
@@ -162,6 +172,7 @@ export function LiveCalculator() {
       verb="Preview"
       ratioOptions={dialog?.ratios ?? []}
       defaultRatio={dialog?.selected ?? null}
+      defaultEmail={dialog?.contactEmail ?? ''}
       disabledNote={dialog && !dialog.hasResult
         ? 'Nothing calculated yet — run Calculate in the wizard first, then Preview.'
         : undefined}
@@ -171,6 +182,19 @@ export function LiveCalculator() {
           { type: 'mes:export-preview', ...sel }, window.location.origin)
         setExportOpen(false)
       }}
+      onEmail={(sel) => new Promise<void>((resolve, reject) => {
+        emailWaiter.current = { resolve, reject }
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: 'mes:export-email', ...sel }, window.location.origin)
+        // The reply is the only completion signal — don't hang the button forever
+        // if a stale calculator.js has no responder.
+        window.setTimeout(() => {
+          if (emailWaiter.current) {
+            emailWaiter.current = null
+            reject(new Error('The calculator did not respond — reload the page and try again.'))
+          }
+        }, 30_000)
+      })}
     />
     </>
   )

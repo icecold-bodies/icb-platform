@@ -237,10 +237,37 @@ def test_preview_email_is_framed_as_a_draft(client, admin_headers, outbox):
     assert _attachment(msg).get_filename().endswith(".xlsx")
 
 
-def test_preview_email_matches_the_download_bytes(client, admin_headers, outbox,
-                                                  frozen_clock):
+def _ooxml_digest(blob: bytes) -> str:
+    """Content digest of an OOXML (.docx/.xlsx) package: sha256 over each zip
+    member's NAME + DECOMPRESSED bytes, in sorted order, skipping docProps/core.xml.
+
+    Raw bytes can't be compared directly. python-docx/openpyxl hand each part to
+    zipfile.writestr(name, blob), which stamps the entry with the wall clock at
+    save time (2-second granularity) — so two renders of identical content differ
+    in zip metadata whenever they straddle a bucket. That is what made a naive
+    equality assertion pass locally and fail on the Windows CI leg. core.xml is
+    excluded for the same reason (it carries created/modified). This is the same
+    normalization the v1.44 saved-export lock used.
+    """
+    import hashlib
+    import zipfile
+    zf = zipfile.ZipFile(io.BytesIO(blob))
+    h = hashlib.sha256()
+    for name in sorted(zf.namelist()):
+        if name == "docProps/core.xml":
+            continue
+        h.update(name.encode())
+        h.update(b"\x00")
+        h.update(zf.read(name))
+    return h.hexdigest()
+
+
+def test_preview_email_matches_the_download(client, admin_headers, outbox,
+                                            frozen_clock):
     """The emailed attachment IS the document the user would have downloaded —
-    same renderer, same options, same bytes (clock pinned, see frozen_clock)."""
+    same renderer, same options, same content. The clock is pinned so the
+    "Generated {time}" footer inside the document matches too; the digest then
+    ignores only the zip's own save-time metadata."""
     opts = {"format": "word", "detail": "items", "ratios": [0.35, 0.55]}
     dl = client.post("/api/export/preview", headers=admin_headers,
                      json=_preview_payload(**opts))
@@ -249,7 +276,20 @@ def test_preview_email_matches_the_download_bytes(client, admin_headers, outbox,
                      json=_preview_payload(**opts))
     assert em.status_code == 200, em.text
     attached = _attachment(outbox[0]).get_payload(decode=True)
-    assert attached == dl.content
+    assert _ooxml_digest(attached) == _ooxml_digest(dl.content)
+    # …and the text really is the document, not an empty shell.
+    assert f"Testing — {FIXED_TT_NAME}" in _docx_text(attached)
+
+
+def _docx_text(blob: bytes) -> str:
+    from docx import Document
+    doc = Document(io.BytesIO(blob))
+    parts = [p.text for p in doc.paragraphs]
+    for t in doc.tables:
+        for row in t.rows:
+            for cell in row.cells:
+                parts.append(cell.text)
+    return "|".join(parts)
 
 
 def test_preview_email_writes_nothing(client, admin_headers, outbox):

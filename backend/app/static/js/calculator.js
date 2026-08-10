@@ -6101,6 +6101,15 @@ async function refreshValidatedReferences() {
     _vrefsForTrailer = [];
   }
   if (!_vrefsForTrailer.length) { wrap.style.display = 'none'; return; }
+  // The reference list for this body type has just landed — re-evaluate the
+  // costing on screen against it. Without this, a verdict computed before the
+  // list existed (or one lost to a superseded recompute) would sit stale until
+  // the next recalculation. Guarded on the payload belonging to THIS body type
+  // so a mid-switch stale payload can never paint.
+  if (lastResult && lastCalcPayload &&
+      +lastCalcPayload.trailer_type_id === +tid) {
+    checkValidatedReferenceDrift();
+  }
   const label = document.getElementById('vref-picker-label');
   if (label) label.textContent = `Validated references (${_vrefsForTrailer.length})`;
   sel.innerHTML = '<option value="">— Start from a validated reference —</option>' +

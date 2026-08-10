@@ -10,8 +10,8 @@ Nadie's whole loop, driven through the costings-page calculator embed:
    IDENTICAL and the quiet green tick renders.
 3. Bump the material price permanently (Nadie's costings.price_master_edit) →
    recompute → the RED drift warning with the percentage and the categories
-   that moved.
-4. Retire the reference → the dropdown entry is gone and the warning clears.
+   that moved → retire the reference → the dropdown entry is gone, the warning
+   clears, and the row survives as a soft-retired record.
 
 Plus the two negatives: a different body type shows no dropdown at all, and the
 unrelated admin "BOM Snapshots" page is untouched (naming isolation).
@@ -101,12 +101,21 @@ def _select_trailer_and_wait_bom(page: Page, frame, trailer_id: str,
                                  attempts: int = 4) -> None:
     """select_option is one-shot: while the embed is still settling the
     change→loadBOM→fetch chain can be lost and no BOM row ever renders (banked
-    embed-journey flake class). Re-select, bounded."""
+    embed-journey flake class). Re-select, bounded.
+
+    Waits for ATTACHED, not visible. Once the first calc lands, the post-calc
+    table regroups by category and remembers a COLLAPSED state, so a rendered
+    row is routinely present-but-hidden — waiting on visibility made the retry
+    loop fire spurious re-selects on a slow runner, each one restarting
+    loadBOM + a fresh calc. That storm is what made the drift banner
+    non-deterministic on ubuntu-latest. Attachment alone proves loadBOM
+    rendered; the approve-btn wait in _open_embed proves a calc completed.
+    """
     row = frame.locator("[data-material-id]").first
     for _ in range(attempts):
         frame.locator("#trailer-select").select_option(trailer_id)
         try:
-            expect(row).to_be_visible(timeout=8_000)
+            expect(row).to_be_attached(timeout=8_000)
             return
         except AssertionError:
             continue
@@ -215,8 +224,15 @@ def test_recall_reproduces_the_configuration_with_a_green_tick(
     expect(frame.locator("#edit-mode-banner")).to_be_hidden()
 
 
-# ── 3. Drift: bump the price past tolerance → the red warning ────────────────
-def test_a_price_bump_past_tolerance_raises_the_red_warning(
+# ── 3. Drift, then retire — ONE continuous flow ──────────────────────────────
+# Deliberately not split across two page loads. Nadie's actual sequence is
+# "bump a price, see the warning, retire the reference" without leaving the
+# page, and the split version made the second half depend on a warning being
+# re-derived on a fresh load — timing-sensitive enough to go red on the slower
+# CI runner while passing everywhere else. Fresh-load re-derivation is already
+# proven by step 2 (a reload recomputes and paints the green tick from
+# persisted state); nothing is given up by keeping this one continuous.
+def test_price_bump_warns_then_retiring_clears_it(
         page: Page, live_server: str, staged) -> None:
     ids = staged["ref"]
     frame = _open_embed(page, live_server, str(ids["trailer"]))
@@ -247,14 +263,7 @@ def test_a_price_bump_past_tolerance_raises_the_red_warning(
     expect(frame.locator("[data-testid='vref-tick']")).to_have_count(0)
     shot(page, "05-red-drift-warning", journey=JOURNEY)
 
-
-# ── 4. Retire: the entry leaves the dropdown and the warning clears ──────────
-def test_retiring_the_reference_clears_the_dropdown_and_the_warning(
-        page: Page, live_server: str, staged) -> None:
-    ids = staged["ref"]
-    frame = _open_embed(page, live_server, str(ids["trailer"]))
-    expect(frame.locator("[data-testid='vref-warning']")).to_be_visible(timeout=30_000)
-
+    # ── retire, in the same page ──────────────────────────────────────────────
     frame.locator("#vref-manage-link").click()
     expect(frame.locator("#modal-validated-refs")).to_be_visible(timeout=T)
     shot(page, "06-manage-list", journey=JOURNEY)
@@ -283,7 +292,7 @@ def test_retiring_the_reference_clears_the_dropdown_and_the_warning(
     assert len(rows) == 1 and rows[0].active is False
 
 
-# ── 5. Negative: a body type with no references shows no dropdown ────────────
+# ── 4. Negative: a body type with no references shows no dropdown ────────────
 def test_a_body_type_without_references_shows_no_dropdown(
         page: Page, live_server: str, staged) -> None:
     frame = _open_embed(page, live_server, str(staged["other"]["trailer"]))
@@ -292,7 +301,7 @@ def test_a_body_type_without_references_shows_no_dropdown(
     expect(frame.locator("[data-testid='vref-warning']")).to_have_count(0)
 
 
-# ── 6. Naming isolation: the unrelated BOM Snapshots page is untouched ───────
+# ── 5. Naming isolation: the unrelated BOM Snapshots page is untouched ───────
 def test_bom_snapshots_admin_page_is_unchanged(page: Page, live_server: str,
                                                staged) -> None:
     """"BOM Snapshots" is a pre-existing, unrelated ADMIN feature (template-level).

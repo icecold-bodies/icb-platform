@@ -202,7 +202,7 @@ def _body_text(msg) -> str:
 
 def _preview_payload(**over):
     payload = {"result": RESULT_FIXTURE, "dims": DIMS_FIXTURE,
-               "trailer_name": FIXED_TT_NAME, "to": "buyer@customer.co.za"}
+               "trailer_name": FIXED_TT_NAME, "to": "nadie@icecoldgrp.co.za"}
     payload.update(over)
     return payload
 
@@ -212,10 +212,10 @@ def test_preview_email_attaches_the_document(client, admin_headers, outbox):
     r = client.post("/api/export/preview/email", headers=admin_headers,
                     json=_preview_payload(format="pdf", detail="totals", ratios=[0.5]))
     assert r.status_code == 200, r.text
-    assert r.json()["to"] == "buyer@customer.co.za"
+    assert r.json()["to"] == "nadie@icecoldgrp.co.za"
     assert len(outbox) == 1
     msg = outbox[0]
-    assert msg["To"] == "buyer@customer.co.za"
+    assert msg["To"] == "nadie@icecoldgrp.co.za"
     assert msg["Cc"] == "sender@icecoldgrp.co.za"          # sender copied in
     att = _attachment(msg)
     assert att is not None, "no attachment on the message"
@@ -314,7 +314,7 @@ def test_sender_cc_skipped_when_account_has_no_email(client, full_no_email_heade
 # ── approved email ────────────────────────────────────────────────────────────
 def test_approved_email_is_not_a_draft(client, admin_headers, seeded, outbox):
     r = client.post(f"/results/{seeded['rec_id']}/export/email", headers=admin_headers,
-                    json={"to": "buyer@customer.co.za", "format": "pdf",
+                    json={"to": "nadie@icecoldgrp.co.za", "format": "pdf",
                           "detail": "totals", "ratios": [0.5]})
     assert r.status_code == 200, r.text
     msg = outbox[0]
@@ -328,14 +328,14 @@ def test_approved_email_is_not_a_draft(client, admin_headers, seeded, outbox):
 
 def test_approved_email_defaults_to_pdf(client, admin_headers, seeded, outbox):
     r = client.post(f"/results/{seeded['rec_id']}/export/email", headers=admin_headers,
-                    json={"to": "buyer@customer.co.za"})
+                    json={"to": "nadie@icecoldgrp.co.za"})
     assert r.status_code == 200, r.text
     assert _attachment(outbox[0]).get_filename().endswith(".pdf")
 
 
 def test_approved_email_404_for_unknown_record(client, admin_headers, outbox):
     r = client.post("/results/99999999/export/email", headers=admin_headers,
-                    json={"to": "buyer@customer.co.za"})
+                    json={"to": "nadie@icecoldgrp.co.za"})
     assert r.status_code == 404
 
 
@@ -346,6 +346,99 @@ def test_bad_recipient_rejected(client, admin_headers, outbox, bad):
                     json=_preview_payload(format="pdf", to=bad))
     assert r.status_code == 400, r.text
     assert not outbox, "nothing may be sent when the address is rejected"
+
+
+# ── v1.45.1 internal-only allowlist ───────────────────────────────────────────
+# Michael 10 Aug, after a test send put a customer's priced costing on an outside
+# domain: a costing may only be emailed to an internal mailbox.
+
+@pytest.mark.parametrize("addr", [
+    "nadie@icecoldgrp.co.za",
+    "NADIE@IceColdGrp.CO.ZA",            # case-insensitive
+    "  burt@icecoldgrp.co.za  ",         # trimmed
+    "micger123@gmail.com",               # the BA/owner, listed verbatim
+])
+def test_internal_recipients_allowed(client, admin_headers, outbox, addr):
+    r = client.post("/api/export/preview/email", headers=admin_headers,
+                    json=_preview_payload(format="pdf", to=addr))
+    assert r.status_code == 200, r.text
+    assert len(outbox) == 1
+    assert outbox[0]["To"].strip().lower() == addr.strip().lower()
+
+
+@pytest.mark.parametrize("addr", [
+    "x@y.co.za",                              # the address that caused the incident
+    "buyer@customer.co.za",
+    "mandy@360degreescarriers.co.za",         # a real customer contact
+    "someone@gmail.com",                      # not the listed owner address
+    "finance@noticecoldgrp.co.za",            # endswith() would have waved this through
+    "x@icecoldgrp.co.za.attacker.com",        # …and this
+    "x@sub.icecoldgrp.co.za",                 # sub-domains are NOT inherited
+])
+def test_external_recipients_refused(client, admin_headers, outbox, addr):
+    r = client.post("/api/export/preview/email", headers=admin_headers,
+                    json=_preview_payload(format="pdf", to=addr))
+    assert r.status_code == 403, f"{addr} was not refused: {r.status_code} {r.text[:200]}"
+    assert "internal" in r.json()["detail"].lower()
+    assert not outbox, f"{addr} must not receive anything"
+
+
+def test_approved_email_also_refuses_external(client, admin_headers, seeded, outbox):
+    """The approved path pre-fills from the customer's Attention contact, so it is
+    the likeliest place to send a priced costing outside — same gate."""
+    r = client.post(f"/results/{seeded['rec_id']}/export/email", headers=admin_headers,
+                    json={"to": "attention@customer.co.za", "format": "pdf"})
+    assert r.status_code == 403
+    assert not outbox
+
+
+def test_sender_cc_dropped_when_the_account_is_external(client, outbox, app_mod):
+    """A user whose account carries an outside address must not become a
+    side-channel: the send proceeds, the Cc is dropped."""
+    from app.database import SessionLocal, User, UserSession
+    uname = f"t_ext_{uuid.uuid4().hex[:6]}"
+    with SessionLocal() as db:
+        db.add(User(username=uname, password_hash="x", role="full",
+                    email="someone@outside.example"))
+        db.commit()
+    headers = _session_for(uname)
+    try:
+        r = client.post("/api/export/preview/email", headers=headers,
+                        json=_preview_payload(format="pdf", to="nadie@icecoldgrp.co.za"))
+        assert r.status_code == 200, r.text
+        assert r.json()["cc"] is None
+        assert outbox[0]["Cc"] is None
+    finally:
+        with SessionLocal() as db:
+            db.query(UserSession).filter_by(
+                id=headers["Cookie"].split("session_id=")[1]).delete()
+            db.query(User).filter_by(username=uname).delete()
+            db.commit()
+
+
+def test_empty_allowlist_fails_closed(client, admin_headers, outbox, monkeypatch):
+    """Blanking the config must shut the gate, not open it — the classic
+    misconfiguration that turns a deny-list into an allow-all."""
+    from app.config import settings
+    monkeypatch.setattr(settings, "COSTING_EMAIL_ALLOWED_DOMAINS", "", raising=False)
+    monkeypatch.setattr(settings, "COSTING_EMAIL_ALLOWED_ADDRESSES", "", raising=False)
+    r = client.post("/api/export/preview/email", headers=admin_headers,
+                    json=_preview_payload(format="pdf", to="nadie@icecoldgrp.co.za"))
+    assert r.status_code == 403
+    assert not outbox
+
+
+def test_policy_endpoint_reports_the_rule(client, admin_headers):
+    r = client.get("/api/export/email-policy", headers=admin_headers)
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert "icecoldgrp.co.za" in d["domains"]
+    assert "micger123@gmail.com" in d["addresses"]
+    assert "internal" in d["message"].lower()
+
+
+def test_policy_endpoint_needs_a_session(client):
+    assert client.get("/api/export/email-policy").status_code == 401
 
 
 def test_email_gated_on_the_format_permission(client, planner_headers, outbox):

@@ -48,6 +48,17 @@ class Settings(BaseSettings):
     SMTP_URL: str = ""                        # empty = no email sent (dev mode)
     EMAIL_FROM: str = ""                      # optional From override (real relays, e.g. Gmail);
                                               # empty = derive user@host from SMTP_URL (dev default)
+
+    # ── Costing-document email allowlist (v1.45.1, Michael 10 Aug) ──
+    # A costing carries a customer's full pricing, so that email path may only
+    # reach INTERNAL mailboxes. Deny-by-default: an address is refused unless its
+    # domain is listed in COSTING_EMAIL_ALLOWED_DOMAINS or the whole address
+    # appears in COSTING_EMAIL_ALLOWED_ADDRESSES (both comma-separated).
+    # These FAIL CLOSED — blanking them in the env does not open the gate, it
+    # shuts it entirely; the guard treats an empty allowlist as "allow nothing".
+    COSTING_EMAIL_ALLOWED_DOMAINS: str = "icecoldgrp.co.za"
+    COSTING_EMAIL_ALLOWED_ADDRESSES: str = "micger123@gmail.com"
+
     SAP_ENABLED: bool = False
     SAP_BASE_URL: str = ""
 

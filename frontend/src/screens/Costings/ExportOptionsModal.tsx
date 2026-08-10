@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { FileDown, FileSpreadsheet, FileText, AlertCircle, Mail, CheckCircle2, Loader2 } from 'lucide-react'
+import { FileDown, FileSpreadsheet, FileText, AlertCircle, Mail, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
 import { Modal } from '../../components/ui/overlays'
+import { apiGet } from '../../lib/api'
 
 /**
  * v1.44 R3 — the ONE export-options dialog for both entry points: the live
@@ -35,6 +36,18 @@ export const FALLBACK_RATIOS: RatioOpt[] = [
   { value: 0.65, label: '65%' }, { value: 0.675, label: '67.5%' },
   { value: 0.7, label: '70%' },
 ]
+
+/** v1.45.1 — mirrors GET /api/export/email-policy. Advisory only: the server is
+ *  the enforcement point, this just keeps the dialog from lying to the user. */
+export interface EmailPolicy { domains: string[]; addresses: string[]; message: string }
+
+export function isAllowed(addr: string, p: EmailPolicy | null): boolean {
+  const a = (addr || '').trim().toLowerCase()
+  if (!p || !a.includes('@')) return false
+  if (p.addresses.includes(a)) return true
+  // Exact domain match, never endswith — "@noticecoldgrp.co.za" must not pass.
+  return p.domains.includes(a.slice(a.lastIndexOf('@') + 1))
+}
 
 const FORMATS: { key: ExportFormat; label: string; icon: typeof FileText }[] = [
   { key: 'excel', label: 'Excel', icon: FileSpreadsheet },
@@ -79,6 +92,9 @@ export function ExportOptionsModal({
   const [sending, setSending] = useState(false)
   const [sendErr, setSendErr] = useState('')
   const [sentTo, setSentTo] = useState('')
+  // v1.45.1 — the server decides who may receive a costing; the dialog only
+  // mirrors that rule so it never pre-fills an address that will be refused.
+  const [policy, setPolicy] = useState<EmailPolicy | null>(null)
 
   // Re-arm defaults each time the dialog opens (R3b: default = page's ratio).
   useEffect(() => {
@@ -87,11 +103,22 @@ export function ExportOptionsModal({
     setDetail('totals')
     setTicked(new Set(defaultRatio != null ? [defaultRatio] : []))
     setEmailOpen(false)
-    setTo(defaultEmail ?? '')
     setNote('')
     setSending(false)
     setSendErr('')
     setSentTo('')
+    let alive = true
+    apiGet<EmailPolicy>('/api/export/email-policy')
+      .then((p) => {
+        if (!alive) return
+        setPolicy(p)
+        // Pre-fill ONLY when the costing's contact is itself internal —
+        // otherwise the box starts empty rather than pre-loaded with an address
+        // the server will reject (which is the common case: it's the customer's).
+        setTo(isAllowed(defaultEmail ?? '', p) ? (defaultEmail ?? '') : '')
+      })
+      .catch(() => { if (alive) { setPolicy(null); setTo('') } })
+    return () => { alive = false }
   }, [open, defaultRatio, initialFormat, defaultEmail])
 
   const toggle = (v: number) =>
@@ -187,6 +214,13 @@ export function ExportOptionsModal({
               <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">
                 <Mail size={13} /> Email this document
               </div>
+              {policy && (
+                <p data-testid="export-email-policy"
+                   className="mb-2 flex items-start gap-1.5 rounded-md border border-line bg-white p-2 text-[11px] text-muted">
+                  <ShieldCheck size={13} className="mt-0.5 shrink-0 text-primary" />
+                  {policy.message}
+                </p>
+              )}
               <label className="mb-1 block text-xs text-muted" htmlFor="export-email-to">Send to</label>
               <input
                 id="export-email-to"
@@ -194,9 +228,14 @@ export function ExportOptionsModal({
                 type="email"
                 value={to}
                 onChange={(e) => { setTo(e.target.value); setSendErr(''); setSentTo('') }}
-                placeholder="name@company.co.za"
+                placeholder={policy?.domains?.[0] ? `name@${policy.domains[0]}` : 'name@company.co.za'}
                 className="mb-2 w-full rounded-md border border-line bg-white px-2 py-1.5 text-sm"
               />
+              {to.trim() && policy && !isAllowed(to, policy) && (
+                <p data-testid="export-email-blocked" className="mb-2 text-[11px] text-status-amber">
+                  That address is outside the company — the send will be refused.
+                </p>
+              )}
               <label className="mb-1 block text-xs text-muted" htmlFor="export-email-note">
                 Note (optional)
               </label>

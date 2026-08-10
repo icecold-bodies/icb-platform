@@ -531,9 +531,14 @@
                 style="gap:6px">✉ Email it instead…</button>
         <div id="exp-email-panel" style="display:none;margin-top:10px">
           <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">Email this document</div>
+          {# v1.45.1 — the rule is stated up front; the value is filled in by JS
+             only when the record's contact is itself internal (usually it is the
+             customer's, which the server refuses). #}
+          <div id="exp-email-policy" style="display:none;font-size:11px;color:var(--text-dim);
+               border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;margin-bottom:8px"></div>
           <label class="form-label" for="exp-email-to">Send to</label>
-          <input class="form-control" type="email" id="exp-email-to" placeholder="name@company.co.za"
-                 value="{{ record.contact_email or '' }}" style="margin-bottom:8px">
+          <input class="form-control" type="email" id="exp-email-to" placeholder="name@icecoldgrp.co.za"
+                 data-contact-email="{{ record.contact_email or '' }}" style="margin-bottom:8px">
           <label class="form-label" for="exp-email-note">Note (optional)</label>
           <textarea class="form-control" id="exp-email-note" rows="2"
                     placeholder="Adds a line to the email — the document itself is unchanged."></textarea>
@@ -584,12 +589,41 @@ function openExportModal() {
 }
 
 // v1.45 — email the same document (one recipient, sender Cc'd server-side).
+// v1.45.1 — costings may only reach internal mailboxes; the server enforces it,
+// this just states the rule and avoids pre-filling an address it would refuse.
+let _expPolicy = null;
+
+function _expAddrAllowed(addr) {
+  const a = (addr || '').trim().toLowerCase();
+  if (!_expPolicy || a.indexOf('@') < 0) return false;
+  if (_expPolicy.addresses.indexOf(a) >= 0) return true;
+  return _expPolicy.domains.indexOf(a.slice(a.lastIndexOf('@') + 1)) >= 0;   // exact domain
+}
+
+async function _expLoadPolicy() {
+  const box = document.getElementById('exp-email-policy');
+  const input = document.getElementById('exp-email-to');
+  try {
+    const r = await fetch('/api/export/email-policy', { headers: { 'Accept': 'application/json' } });
+    if (!r.ok) throw new Error('policy unavailable');
+    _expPolicy = await r.json();
+    box.textContent = _expPolicy.message;
+    box.style.display = '';
+    const contact = input.dataset.contactEmail || '';
+    input.value = _expAddrAllowed(contact) ? contact : '';
+  } catch (_) {
+    _expPolicy = null;
+    box.style.display = 'none';
+    input.value = '';
+  }
+}
+
 function _expToggleEmail() {
   const p = document.getElementById('exp-email-panel');
   const shown = p.style.display !== 'none';
   p.style.display = shown ? 'none' : '';
   document.getElementById('exp-email-toggle').style.display = shown ? '' : 'none';
-  if (!shown) document.getElementById('exp-email-to').focus();
+  if (!shown) { _expLoadPolicy(); document.getElementById('exp-email-to').focus(); }
 }
 
 function _expEmailMsg(text, kind) {

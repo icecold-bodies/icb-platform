@@ -1187,6 +1187,43 @@ async def export_excel_preview(request: Request, db: Session = Depends(get_db)):
 _EMAIL_RE = re.compile(r"^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$")
 
 
+def _allowlist() -> tuple[set[str], set[str]]:
+    """(domains, addresses) — both lower-cased. Read per call, not at import, so
+    an env change takes effect on restart without a code path caring."""
+    from ..config import settings
+    def _split(raw):
+        return {p.strip().lower() for p in str(raw or "").split(",") if p.strip()}
+    return (_split(getattr(settings, "COSTING_EMAIL_ALLOWED_DOMAINS", "")),
+            _split(getattr(settings, "COSTING_EMAIL_ALLOWED_ADDRESSES", "")))
+
+
+def _is_internal(addr: str) -> bool:
+    """v1.45.1 — a costing carries a customer's full pricing, so it may only be
+    emailed to an internal mailbox (Michael 10 Aug, after a test send reached an
+    outside domain). Deny-by-default and FAIL CLOSED: an empty allowlist allows
+    nothing at all rather than everything.
+
+    Domain match is on the FULL domain, exactly — not a suffix test. `endswith`
+    would wave through `finance@noticecoldgrp.co.za` and
+    `x@icecoldgrp.co.za.attacker.com`; sub-domains are deliberately not inherited.
+    """
+    addr = (addr or "").strip().lower()
+    if "@" not in addr:
+        return False
+    domains, addresses = _allowlist()
+    if addr in addresses:
+        return True
+    return addr.rsplit("@", 1)[1] in domains
+
+
+def _allowlist_message() -> str:
+    domains, addresses = _allowlist()
+    allowed = sorted(f"@{d}" for d in domains) + sorted(addresses)
+    return ("Costings may only be emailed to internal addresses "
+            f"({', '.join(allowed) or 'none configured'}). "
+            "To send one to a customer, download it and attach it yourself.")
+
+
 def _validated_recipient(raw) -> str:
     to = str(raw or "").strip()
     if not to:
@@ -1194,14 +1231,22 @@ def _validated_recipient(raw) -> str:
     if not _EMAIL_RE.match(to):
         raise HTTPException(status_code=400,
                             detail=f"“{to[:80]}” doesn’t look like an email address.")
+    if not _is_internal(to):
+        # 403, not 400: the address is well-formed, it is simply not permitted.
+        raise HTTPException(status_code=403, detail=_allowlist_message())
     return to
 
 
 def _sender_cc(user) -> str | None:
-    """The sender's own address, when their account has one. Many accounts still
-    carry email='' (the column only landed in migration 0030), so this is a
-    best-effort Cc — never a reason to block the send."""
-    return (getattr(user, "email", "") or "").strip() or None
+    """The sender's own address, when their account has one AND it is internal.
+    Many accounts still carry email='' (the column only landed in migration
+    0030), so this is best-effort — never a reason to block the send. The
+    allowlist applies here too: a user whose account carries an outside address
+    must not become a side-channel for the document."""
+    addr = (getattr(user, "email", "") or "").strip()
+    if not addr or not _is_internal(addr):
+        return None
+    return addr
 
 
 def _email_body(ctx: dict, *, mode: str, sender: str, note: str) -> tuple[str, str]:
@@ -1253,6 +1298,19 @@ def _send_costing_email(*, fmt: str, ctx: dict, stem: str, mode: str,
                             detail=f"The email could not be sent — {e}") from e
     return {"ok": True, "to": to, "cc": cc, "filename": f"{stem}.{ext}",
             "subject": subject}
+
+
+@router.get("/api/export/email-policy")
+async def email_policy(request: Request, db: Session = Depends(get_db)):
+    """The recipient allowlist, so a dialog can state the rule up front and avoid
+    pre-filling an address the server will refuse. Read-only; the server remains
+    the enforcement point — this is only there to keep the UI honest."""
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401)
+    domains, addresses = _allowlist()
+    return {"domains": sorted(domains), "addresses": sorted(addresses),
+            "message": _allowlist_message()}
 
 
 @router.post("/api/export/preview/email")

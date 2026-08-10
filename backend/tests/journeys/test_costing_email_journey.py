@@ -134,7 +134,21 @@ def test_preview_dialog_email_round_trip(page: Page, live_server: str, staged) -
     page.get_by_test_id("export-email-open").click()
     to = page.get_by_test_id("export-email-to")
     expect(to).to_be_visible(timeout=T)
-    expect(to).to_have_value(CONTACT_EMAIL)                 # pre-filled from the contact
+
+    # v1.45.1 — the contact on this costing is the CUSTOMER's, which is external,
+    # so it must NOT be pre-filled and the rule is stated up front.
+    expect(page.get_by_test_id("export-email-policy")).to_be_visible(timeout=T)
+    expect(page.get_by_test_id("export-email-policy")).to_contain_text("internal")
+    expect(to).to_have_value("")
+
+    # Typing an outside address warns before the user commits to sending.
+    to.fill(CONTACT_EMAIL)
+    expect(page.get_by_test_id("export-email-blocked")).to_be_visible(timeout=T)
+    shot(page, "01b-external-address-warned", journey=JOURNEY)
+
+    # An internal one clears the warning.
+    to.fill("nadie@icecoldgrp.co.za")
+    expect(page.get_by_test_id("export-email-blocked")).to_have_count(0)
     page.get_by_test_id("export-email-note").fill("Draft for your review.")
     shot(page, "01-preview-email-panel", journey=JOURNEY)
 
@@ -182,7 +196,13 @@ def test_results_page_export_dialog_has_email(page: Page, live_server: str, stag
     page.locator("#exp-email-toggle").click()
     to = page.locator("#exp-email-to")
     expect(to).to_be_visible(timeout=T)
-    expect(to).to_have_value(CONTACT_EMAIL)                 # snapshot on the record
+    # Same rule on the legacy page: the record's Attention contact is the
+    # customer's, so it is offered as data-contact-email but NOT filled in.
+    expect(page.locator("#exp-email-policy")).to_be_visible(timeout=T)
+    expect(page.locator("#exp-email-policy")).to_contain_text("internal")
+    expect(to).to_have_value("")
+    assert to.get_attribute("data-contact-email") == CONTACT_EMAIL
+    to.fill("burt@icecoldgrp.co.za")
     shot(page, "04-results-email-panel", journey=JOURNEY)
 
     page.locator("#exp-email-send").click()

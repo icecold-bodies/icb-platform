@@ -1167,11 +1167,42 @@ PERMISSION_CATALOGUE = [
 ]
 
 
+# Arbitrary but fixed key for the advisory lock below. The value is meaningless;
+# it only has to be identical in every worker of every process on this database.
+_PERM_BOOTSTRAP_LOCK_KEY = 852_144_001
+
+
 def _bootstrap_permissions():
     """Idempotently seed the Permission catalogue and the default role grants.
-    User-specific overrides are never touched here."""
+    User-specific overrides are never touched here.
+
+    Serialized across workers by a transaction-scoped advisory lock. Prod runs
+    `uvicorn --workers 4` and every worker bootstraps at startup, so the plain
+    read-then-insert below is a race: on 8 Aug 2026 a deploy adding two new keys
+    had two workers pass the "does it exist?" check together, one insert won and
+    the other died on `permissions_name_key`. The loser's WHOLE transaction rolled
+    back — not just the duplicate row but the ROLE GRANTS it had queued — while the
+    app still logged "Application startup complete", so the failure was invisible
+    until someone read the journal. Both tables involved carry unique constraints
+    (permissions.name, uq_role_perm), so both halves could race.
+
+    The lock is held to COMMIT and released automatically, so a crashed worker
+    cannot wedge the others. Whoever gets it first seeds; the rest then read a
+    fully-populated table and no-op. Cost is a few hundred ms of serialization,
+    once, at boot.
+    """
     db = SessionLocal()
     try:
+        # Postgres-only in this monorepo (see requirements.txt), but degrade
+        # gracefully rather than break a future backend: without the lock the
+        # logic is exactly what it was before — correct single-worker, racy
+        # multi-worker — instead of failing outright.
+        try:
+            db.execute(_sa_text("SELECT pg_advisory_xact_lock(:k)"),
+                       {"k": _PERM_BOOTSTRAP_LOCK_KEY})
+        except Exception:  # noqa: BLE001 — non-postgres backend
+            db.rollback()
+
         # 1) Ensure every catalogue entry exists / is up-to-date.
         existing = {p.name: p for p in db.query(Permission).all()}
         catalogue_names = {n for (n, _d, _c, _r) in PERMISSION_CATALOGUE}

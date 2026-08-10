@@ -7387,8 +7387,77 @@ function _exportOptionsState() {
     ratios,
     selected: sel && sel.value ? parseFloat(sel.value) : null,
     customerName: _selectedCustomerName(),
+    // v1.45 — pre-fill the email dialog with the chosen Attention contact.
+    contactEmail: _selectedContactEmail(),
     hasResult: !(typeof lastResult === 'undefined' || !lastResult || !lastCalcPayload),
   };
+}
+
+function _selectedContactEmail() {
+  const id = document.getElementById('contact-select')?.value;
+  if (!id || typeof allContacts === 'undefined' || !Array.isArray(allContacts)) return '';
+  const c = allContacts.find(x => String(x.id) === String(id));
+  return (c && c.email) || '';
+}
+
+// v1.45 — build the same payload the download path posts, so an emailed document
+// is byte-for-byte the one the user would have downloaded.
+function _previewPayload(opts) {
+  const tid = lastCalcPayload.trailer_type_id;
+  const payload = {
+    result: lastResult,
+    dims: lastCalcPayload.dimensions || {},
+    trailer_type_id: tid,
+    trailer_name: _previewTrailerName(),
+    format: _EXPORT_EXTS[opts.format] ? opts.format : 'excel',
+    body_option_selections: lastCalcPayload.body_option_selections
+      || ((typeof bodyOptionSelections !== 'undefined' && bodyOptionSelections) || undefined),
+    drd_srd: (typeof drdSrdEnabled !== 'undefined' && drdSrdEnabled) || undefined,
+    bom_sort_mode: (typeof getBomSortMode === 'function' ? getBomSortMode() : 'sheet'),
+    customer_name: _selectedCustomerName(),
+  };
+  if (opts.detail) payload.detail = opts.detail;
+  if (Array.isArray(opts.ratios)) payload.ratios = opts.ratios;
+  return payload;
+}
+
+async function emailPreview(opts) {
+  // Always answers the parent with mes:export-email-result — the dialog's button
+  // stays in "Sending…" until it hears back.
+  const reply = (ok, error) => {
+    try {
+      window.parent && window.parent !== window && window.parent.postMessage(
+        { type: 'mes:export-email-result', ok, error }, window.location.origin);
+    } catch (_) {}
+  };
+  if (typeof lastResult === 'undefined' || !lastResult || !lastCalcPayload) {
+    reply(false, 'Calculate first — there is nothing to send yet.');
+    return;
+  }
+  try {
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const payload = _previewPayload(opts || {});
+    payload.to = (opts && opts.to) || '';
+    payload.note = (opts && opts.note) || '';
+    const r = await fetch('/api/export/preview/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      let msg = `HTTP ${r.status}`;
+      try { msg = (await r.json()).detail || msg; } catch (_) {}
+      reply(false, msg);
+      toast('Email failed: ' + msg, 'error');
+      return;
+    }
+    const d = await r.json().catch(() => ({}));
+    reply(true, null);
+    toast('Emailed to ' + (d.to || 'recipient'), 'success');
+  } catch (e) {
+    reply(false, e.message || 'The email could not be sent.');
+    toast('Email failed: ' + e.message, 'error');
+  }
 }
 
 async function downloadPreview(opts) {
@@ -7453,6 +7522,7 @@ window.addEventListener('message', (e) => {
   const t = e.data && e.data.type;
   if (t === 'mes:excel-preview') downloadPreview({ format: 'excel' });      // v1.44 F1 alias
   else if (t === 'mes:export-preview') downloadPreview(e.data);
+  else if (t === 'mes:export-email') emailPreview(e.data);                 // v1.45
   else if (t === 'mes:export-options?' && e.source) {
     e.source.postMessage(_exportOptionsState(), window.location.origin);
   }

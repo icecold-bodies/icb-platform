@@ -24,7 +24,7 @@ import {
   Package,
 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
-import { apiGet } from '../../lib/api'
+import { apiGet, apiPost } from '../../lib/api'
 import { useAppData } from '../../store/AppDataContext'
 import { Card, SectionTitle, StatusPill } from '../../components/ui/primitives'
 import { Toast } from '../../components/ui/overlays'
@@ -53,6 +53,8 @@ export function CostingDetail() {
   // v1.44 R5b — Export (Excel/Word/PDF) with the shared options dialog.
   const [exportOpen, setExportOpen] = useState(false)
   const [savedRatio, setSavedRatio] = useState<number | null>(null)
+  // v1.45 — the costing's Attention contact pre-fills the email recipient.
+  const [contactEmail, setContactEmail] = useState('')
 
   const c = costings.find((x) => x.quote_number === decodeURIComponent(quote))
   // §0.21 — the live Pre-Job Card summary rides on the costing (CostingsContext merges
@@ -138,13 +140,17 @@ export function CostingDetail() {
                 setToast('Export is available on live (saved) costings only')
                 return
               }
-              // R3b default: the ratio saved on this costing pre-ticks the dialog.
+              // R3b default: the ratio saved on this costing pre-ticks the dialog;
+              // its Attention contact pre-fills the email recipient (v1.45).
               try {
-                const r = await apiGet<{ saved_result?: { ratio_value?: number | null } }>(
-                  `/api/calculations/${c.calculation_id}`)
+                const r = await apiGet<{
+                  saved_result?: { ratio_value?: number | null }; contact_email?: string | null
+                }>(`/api/calculations/${c.calculation_id}`)
                 setSavedRatio(r.saved_result?.ratio_value ?? null)
+                setContactEmail(r.contact_email ?? '')
               } catch {
                 setSavedRatio(null)
+                setContactEmail('')
               }
               setExportOpen(true)
             }}
@@ -444,6 +450,11 @@ export function CostingDetail() {
         verb="Export"
         ratioOptions={[]}
         defaultRatio={savedRatio}
+        defaultEmail={contactEmail}
+        onEmail={async ({ format, detail, ratios, to, note }) => {
+          await apiPost(`/results/${c.calculation_id}/export/email`,
+                        { format, detail, ratios, to, note })
+        }}
         onClose={() => setExportOpen(false)}
         onConfirm={({ format, detail, ratios }) => {
           // Same-page download via a transient anchor (no popup tab): the GET

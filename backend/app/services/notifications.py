@@ -126,6 +126,56 @@ def send_email_multi(subject: str, body: str, to: list[str],
         return False
 
 
+class EmailNotConfigured(RuntimeError):
+    """SMTP_URL is empty — nothing can be sent (dev default)."""
+
+
+class EmailSendFailed(RuntimeError):
+    """The relay refused or the transport broke. Carries a short, user-safe reason."""
+
+
+def send_document_email(*, subject: str, body: str, to: str, cc: str | None,
+                        attachment: tuple[str, bytes, str]) -> None:
+    """Send ONE document (filename, bytes, mime-subtype) to one recipient, optionally
+    Cc'ing the sender. v1.45 — the costing-document email from the Preview/Export dialog.
+
+    Deliberately NOT best-effort, unlike its siblings above: those fire behind a
+    submit the user already completed, so they log-and-continue. Here the user is
+    sitting in front of the dialog waiting to hear whether it went, so a silent
+    False would read as success. Raises EmailNotConfigured / EmailSendFailed and
+    lets the endpoint turn that into a message on screen.
+    """
+    url = (settings.SMTP_URL or "").strip()
+    recipient = (to or "").strip()
+    if not url:
+        raise EmailNotConfigured(
+            "Email is not configured on this server (no SMTP settings) — "
+            "download the document and send it from your mail client instead.")
+    if not recipient:
+        raise EmailSendFailed("No recipient address was given.")
+
+    filename, blob, subtype = attachment
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = subject[:200]
+        msg["From"] = _sender_from(urlparse(url))
+        msg["To"] = recipient
+        cc_addr = (cc or "").strip()
+        if cc_addr and cc_addr.lower() != recipient.lower():
+            msg["Cc"] = cc_addr
+        msg.set_content(body)
+        msg.add_attachment(blob, maintype="application", subtype=subtype,
+                           filename=filename)
+        _deliver(msg, url)
+    except Exception as e:  # noqa: BLE001
+        # Log the real reason server-side; hand the caller a trimmed one. SMTP errors
+        # can echo the relay's banner, so keep it short rather than verbatim.
+        logger.warning("costing document email failed (to=%s): %s", recipient, str(e)[:300])
+        raise EmailSendFailed(str(e)[:200] or "the mail server rejected the message") from e
+    logger.info("costing document email sent (to=%s, cc=%s, file=%s, bytes=%d)",
+                recipient, (cc or "") or "-", filename, len(blob))
+
+
 def send_whatsapp(body: str, to: str | None = None) -> bool:
     """Send a WhatsApp ping via Twilio. No-op (logs) until TWILIO_* creds are set;
     activates when they are present and the twilio SDK is installed. Never raises."""

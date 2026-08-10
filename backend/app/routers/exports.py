@@ -23,6 +23,7 @@ deliberately omit weasyprint), and routing all environments through ReportLab
 keeps layout parity a property of the code, not of installed native libs.
 """
 import json
+import re
 from datetime import datetime, timezone, timedelta
 from io import BytesIO
 
@@ -1174,6 +1175,119 @@ async def export_excel_preview(request: Request, db: Session = Depends(get_db)):
     """v1.44 F1 route, kept as an alias of /api/export/preview with the format
     pinned to Excel (old clients / cached JS keep working)."""
     return await _export_preview_impl(request, db, force_format="excel")
+
+
+# ── Emailing a costing document (v1.45) ───────────────────────────────────────
+# One recipient, the sender Cc'd where their account carries an address, the
+# rendered document attached in whatever format/detail/ratios the dialog was set
+# to. Ratified with Michael 10 Aug: recipient pre-filled from the costing's
+# Attention contact but freely typed over; PREVIEWS are for internal review, so
+# their body says so in as many words; fixed subject + an optional free-text note.
+
+_EMAIL_RE = re.compile(r"^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$")
+
+
+def _validated_recipient(raw) -> str:
+    to = str(raw or "").strip()
+    if not to:
+        raise HTTPException(status_code=400, detail="Enter an email address to send to.")
+    if not _EMAIL_RE.match(to):
+        raise HTTPException(status_code=400,
+                            detail=f"“{to[:80]}” doesn’t look like an email address.")
+    return to
+
+
+def _sender_cc(user) -> str | None:
+    """The sender's own address, when their account has one. Many accounts still
+    carry email='' (the column only landed in migration 0030), so this is a
+    best-effort Cc — never a reason to block the send."""
+    return (getattr(user, "email", "") or "").strip() or None
+
+
+def _email_body(ctx: dict, *, mode: str, sender: str, note: str) -> tuple[str, str]:
+    """(subject, body). Approved mail is quotation-shaped; preview mail states in
+    the first line that it is an internal draft, so a forwarded copy can't be
+    mistaken for a quote (it is headed "Testing — …" and has no quote number)."""
+    heading = ctx["heading"]
+    client = ctx["client_name"]
+    if mode == "preview":
+        subject = f"DRAFT (not a quotation) — {heading}"
+        opening = ("This is an INTERNAL DRAFT costing for review — it is not a quotation, "
+                   "it carries no quote number, and the figures may still change.")
+    else:
+        subject = f"Costing — {heading}"
+        opening = "Please find the costing attached."
+    lines = [opening, "", f"Body type:  {heading}", f"Client:     {client}"]
+    totals = [r for r in ctx["price_rows"] if r["kind"] == "total"]
+    if totals:
+        lines.append("")
+        for r in totals:
+            lines.append(f"{r['label']}:  R {r['amount']:,.2f}")
+    if note.strip():
+        lines += ["", "-----", note.strip(), "-----"]
+    lines += ["", f"Sent from the ICB MES by {sender}."]
+    return subject, "\n".join(lines)
+
+
+def _send_costing_email(*, fmt: str, ctx: dict, stem: str, mode: str,
+                        user, to_raw, note_raw) -> dict:
+    """Render + send. Shared by the preview and approved email endpoints."""
+    from ..services.notifications import (EmailNotConfigured, EmailSendFailed,
+                                          send_document_email)
+
+    to = _validated_recipient(to_raw)
+    note = str(note_raw or "")
+    ext, media = _FORMAT_MEDIA[fmt]
+    subtype = media.rsplit("/", 1)[-1]          # the long OOXML subtypes ride as-is
+    blob = _render_document(fmt, ctx).getvalue()
+    sender_name = getattr(user, "username", "") or "the ICB MES"
+    subject, body = _email_body(ctx, mode=mode, sender=sender_name, note=note)
+    cc = _sender_cc(user)
+    try:
+        send_document_email(subject=subject, body=body, to=to, cc=cc,
+                            attachment=(f"{stem}.{ext}", blob, subtype))
+    except EmailNotConfigured as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+    except EmailSendFailed as e:
+        raise HTTPException(status_code=502,
+                            detail=f"The email could not be sent — {e}") from e
+    return {"ok": True, "to": to, "cc": cc, "filename": f"{stem}.{ext}",
+            "subject": subject}
+
+
+@router.post("/api/export/preview/email")
+async def email_preview(request: Request, db: Session = Depends(get_db)):
+    """Email the LIVE (not-yet-approved) costing document. Same body as
+    /api/export/preview plus {to, note}. Writes NOTHING to the DB and consumes no
+    quote number — emailing a preview is still a preview."""
+    body = await request.json()
+    fmt = str(body.get("format") or "excel").lower()
+    if fmt not in VALID_FORMATS:
+        raise HTTPException(status_code=400,
+                            detail=f"format must be one of {', '.join(VALID_FORMATS)}")
+    user = _require_export_user(request, db, fmt)
+    ctx, stem = _doc_ctx_for_preview(body, db)
+    return _send_costing_email(fmt=fmt, ctx=ctx, stem=stem, mode="preview",
+                               user=user, to_raw=body.get("to"),
+                               note_raw=body.get("note"))
+
+
+@router.post("/results/{record_id}/export/email")
+async def email_approved(record_id: int, request: Request,
+                         db: Session = Depends(get_db)):
+    """Email an APPROVED costing document. Body: {to, note, format, detail, ratios}."""
+    body = await request.json()
+    fmt = str(body.get("format") or "pdf").lower()
+    if fmt not in VALID_FORMATS:
+        raise HTTPException(status_code=400,
+                            detail=f"format must be one of {', '.join(VALID_FORMATS)}")
+    user = _require_export_user(request, db, fmt)
+    rec = _get_record_or_404(record_id, db)
+    ctx, stem = _doc_ctx_for_record(rec, db, detail=body.get("detail"),
+                                    ratios_raw=body.get("ratios"))
+    return _send_costing_email(fmt=fmt, ctx=ctx, stem=stem, mode="approved",
+                               user=user, to_raw=body.get("to"),
+                               note_raw=body.get("note"))
 
 
 # ── Approved (saved-record) exports ───────────────────────────────────────────

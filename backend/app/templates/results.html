@@ -525,9 +525,27 @@
         🎨 Highlight price changes <span style="font-size:11px;color:var(--text-dim)">(Excel only — colour-codes overridden + recently updated prices, adds a Legend tab)</span>
       </label>
 
+      {# v1.45 — email the same document instead of downloading it. #}
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:14px">
+        <button class="btn btn-outline btn-sm" id="exp-email-toggle" onclick="_expToggleEmail()"
+                style="gap:6px">✉ Email it instead…</button>
+        <div id="exp-email-panel" style="display:none;margin-top:10px">
+          <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px">Email this document</div>
+          <label class="form-label" for="exp-email-to">Send to</label>
+          <input class="form-control" type="email" id="exp-email-to" placeholder="name@company.co.za"
+                 value="{{ record.contact_email or '' }}" style="margin-bottom:8px">
+          <label class="form-label" for="exp-email-note">Note (optional)</label>
+          <textarea class="form-control" id="exp-email-note" rows="2"
+                    placeholder="Adds a line to the email — the document itself is unchanged."></textarea>
+          <div id="exp-email-msg" style="display:none;font-size:12px;margin-top:8px;padding:6px 8px;border-radius:var(--radius)"></div>
+          <button class="btn btn-primary" id="exp-email-send" style="margin-top:8px;gap:6px"
+                  onclick="doExportEmail()">✉ Send email</button>
+        </div>
+      </div>
+
       <div style="display:flex;gap:8px">
         <button class="btn btn-outline" style="flex:1" onclick="closeModal('modal-export-options')">Cancel</button>
-        <button class="btn btn-success" id="exp-confirm-btn" style="flex:2;justify-content:center" onclick="doExportDownload()">⬇ Export</button>
+        <button class="btn btn-success" id="exp-confirm-btn" style="flex:2;justify-content:center" onclick="doExportDownload()">⬇ Download</button>
       </div>
     </div>
   </div>
@@ -563,6 +581,59 @@ function _expSetFormat(fmt) {
 function openExportModal() {
   document.getElementById('modal-export-options').classList.remove('hidden');
   _expSetFormat(_expCan('excel') ? 'excel' : (_expCan('word') ? 'word' : 'pdf'));
+}
+
+// v1.45 — email the same document (one recipient, sender Cc'd server-side).
+function _expToggleEmail() {
+  const p = document.getElementById('exp-email-panel');
+  const shown = p.style.display !== 'none';
+  p.style.display = shown ? 'none' : '';
+  document.getElementById('exp-email-toggle').style.display = shown ? '' : 'none';
+  if (!shown) document.getElementById('exp-email-to').focus();
+}
+
+function _expEmailMsg(text, kind) {
+  const el = document.getElementById('exp-email-msg');
+  el.style.display = '';
+  el.textContent = text;
+  const ok = kind === 'ok';
+  el.style.background = ok ? 'rgba(63,185,80,.08)' : 'rgba(248,81,73,.08)';
+  el.style.border = '1px solid ' + (ok ? 'rgba(63,185,80,.35)' : 'rgba(248,81,73,.35)');
+  el.style.color = ok ? 'var(--green, #3fb950)' : 'var(--red, #f85149)';
+}
+
+async function doExportEmail() {
+  const to = (document.getElementById('exp-email-to').value || '').trim();
+  if (!to) { _expEmailMsg('Enter an email address to send to.', 'err'); return; }
+  const btn = document.getElementById('exp-email-send');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner spinner-sm"></span> Sending…';
+  try {
+    const r = await fetch(EXPORT_BASE_URL + 'email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+      },
+      body: JSON.stringify({
+        format: _expFormat,
+        detail: document.querySelector('input[name="exp-detail"]:checked')?.value || 'totals',
+        ratios: [...document.querySelectorAll('.exp-ratio:checked')].map(c => c.value).join(','),
+        to,
+        note: document.getElementById('exp-email-note').value || ''
+      })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.detail || `HTTP ${r.status}`);
+    _expEmailMsg('Sent to ' + (d.to || to) + '.', 'ok');
+    if (typeof toast === 'function') toast('Costing emailed to ' + (d.to || to), 'success');
+  } catch (e) {
+    _expEmailMsg(e.message || 'The email could not be sent.', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
 }
 
 function doExportDownload() {

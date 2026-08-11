@@ -6278,6 +6278,21 @@ async function markAsValidatedReference() {
     if (saved && selectedTid && +saved.trailer_type_id !== selectedTid) {
       saved = null;                        // bound to a DIFFERENT body type
     }
+    // v1.46.3 — dims are part of a reference's IDENTITY (they feed the
+    // fingerprint), so a length/width/height typed after the save means the
+    // screen shows a different configuration than the bound record. Marking
+    // then would label one costing while pointing at another — Michael hit
+    // exactly this: saved at 5.3, typed 5.6, marked, and the row read
+    // "5.6x2.5x2.4" against a 5.3 record. Same remedy as a body-type switch:
+    // fall into the Save-first flow. Margin/ratio/overrides deliberately do
+    // NOT trigger this — they are not identity.
+    if (saved) {
+      const live = getDims();
+      const rec = saved.dimensions || {};
+      const moved = ['length', 'width', 'height'].some(k =>
+        Math.abs((+live[k] || 0) - (+rec[k] || 0)) > 0.0005);
+      if (moved) saved = null;             // screen dims ≠ the bound record's
+    }
   }
   if (!saved) {
     // confirm-message is rendered with textContent, so keep it to one sentence.

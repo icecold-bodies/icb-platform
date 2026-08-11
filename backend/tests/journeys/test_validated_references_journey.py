@@ -442,6 +442,25 @@ def test_switching_body_type_after_saving_does_not_mis_attach_a_reference(
         assert _ref_count() == before, \
             "an edit binding mis-attached a reference after a body-type switch"
 
+    # ── v1.46.3: changed DIMS are the same hazard as a changed body type ──────
+    # Dims feed the fingerprint, so "saved at 5.3, typed 5.6, marked" labels one
+    # configuration while pointing at another (Michael's mislabelled row:
+    # 'FREEZER MEDIUM 5.6x2.5x2.4' on a 5.3 record). Marking with screen dims
+    # differing from the bound record must fall into the Save-first flow.
+    if pending is not None:
+        page.goto(f"/calculator?edit={pending.id}")
+        expect(page.locator("#approve-btn")).to_be_enabled(timeout=60_000)
+        page.locator("#f-length").fill("9.9")
+        page.wait_for_timeout(3_000)                 # debounce + recompute
+        expect(page.locator("#approve-btn")).to_be_enabled(timeout=60_000)
+        page.locator("#vref-mark-btn").click()
+        expect(page.locator("#modal-confirm")).to_be_visible(timeout=T)
+        expect(page.locator("#confirm-title")).to_have_text("Save first")
+        expect(page.locator("#modal-prompt")).to_be_hidden()
+        page.locator("#confirm-cancel").click()
+        assert _ref_count() == before, \
+            "a reference was written although the screen dims differ from the record"
+
 
 # ── 3. Negative: a body type with no references shows no dropdown ────────────
 def test_a_body_type_without_references_shows_no_dropdown(

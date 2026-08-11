@@ -419,6 +419,29 @@ def test_switching_body_type_after_saving_does_not_mis_attach_a_reference(
     assert _ref_count() == before, \
         "a reference was written despite the body type having changed"
 
+    # ── the SAME hazard through the ?edit= path ───────────────────────────────
+    # Opening a costing for editing binds it just as firmly, and that binding
+    # ALSO survives a body-type switch. The first cut of this fix guarded only
+    # the saved-costing path and left this one open — the deploy check on :8000
+    # caught it, so it is pinned here too.
+    from app.database import CalculationRecord, SessionLocal
+    with SessionLocal() as db:
+        pending = (db.query(CalculationRecord)
+                     .filter_by(trailer_type_id=ref_body["trailer"], status="pending")
+                     .order_by(CalculationRecord.id.desc()).first())
+    if pending is not None:
+        page.goto(f"/calculator?edit={pending.id}")
+        expect(page.locator("#approve-btn")).to_be_enabled(timeout=60_000)
+        _select_trailer_and_wait_bom(page, page, str(other_body["trailer"]))
+        expect(page.locator("#approve-btn")).to_be_enabled(timeout=60_000)
+        page.locator("#vref-mark-btn").click()
+        expect(page.locator("#modal-confirm")).to_be_visible(timeout=T)
+        expect(page.locator("#confirm-title")).to_have_text("Save first")
+        expect(page.locator("#modal-prompt")).to_be_hidden()
+        page.locator("#confirm-cancel").click()
+        assert _ref_count() == before, \
+            "an edit binding mis-attached a reference after a body-type switch"
+
 
 # ── 3. Negative: a body type with no references shows no dropdown ────────────
 def test_a_body_type_without_references_shows_no_dropdown(

@@ -1,16 +1,4 @@
 let lastRecordId = null;
-// v1.46.1 — what lastRecordId actually POINTS AT. "Mark as validated reference"
-// binds to the last SAVED costing, but the panel around it keeps changing: pick
-// a different body type after saving and lastRecordId still names the old
-// costing, so the reference lands on the wrong body (found on :8000 — a
-// reference labelled "FREEZER MEDIUM 5.6x2.5x2.4" written against CHILLER
-// LARGE, which is why its dropdown never appeared under FREEZER MEDIUM).
-// Remembering the saved costing's own identity lets the mark action refuse when
-// the screen has moved on, and lets the label describe the costing it points at
-// rather than whatever is currently typed in the boxes.
-let lastRecordTrailerId = null;
-let lastRecordTrailerName = '';
-let lastRecordDims = null;
 let lastResult = null;
 let lastCalcPayload = null;  // stored for approve
 
@@ -2249,7 +2237,6 @@ async function prefillCalculation(recordId) {
     // edit-ratio restorer so copy matches edit and never falls through to the 55% new-costing default.
     restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
     lastRecordId = null;
-    _clearSavedRecordBinding();
     // v1.46 — Calculator 1's Print / Full Report buttons were removed; Calculator 2
     // still has them and shares this file, so these stay but must tolerate absence.
     _setDisabled('print-btn', true);
@@ -2321,8 +2308,7 @@ async function editCalculation(recordId) {
       await loadBOM({ preserveInputs: true });
       applyCalculationInputs(payload);
       lastRecordId = null;
-      _clearSavedRecordBinding();
-      await runCalc();
+        await runCalc();
       return;
     }
 
@@ -2830,7 +2816,6 @@ async function loadBOM(options = {}) {
     // never appeared. (Print / Full Report read the same id and were equally
     // wrong to keep it.)
     lastRecordId = null;
-    _clearSavedRecordBinding();
     priceOverrides = {};
     bodyOptionSelections = {};
     drdSrdEnabled = {};
@@ -5237,13 +5222,6 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       discount_input: discountKind ? discountInput : null,
     });
     lastRecordId   = result.record_id;
-    // v1.46.1 — pin what that id points at, at save time.
-    lastRecordTrailerId   = +(_pendingApproveBase?.trailer_type_id
-                              || document.getElementById('trailer-select')?.value) || null;
-    lastRecordTrailerName = result.trailer_name
-                            || document.getElementById('trailer-select')?.selectedOptions?.[0]?.text
-                            || '';
-    lastRecordDims        = { ...(_pendingApproveBase?.dimensions || getDims()) };
     lastResult     = result;
     lastBodyVars   = result.body_variables           || {};
     lastFormulaLib = result.formula_library_resolved || {};
@@ -6082,13 +6060,6 @@ function _setDisabled(id, disabled) {
   if (el) el.disabled = disabled;
 }
 
-// v1.46.1 — forget which costing lastRecordId names. Called wherever
-// lastRecordId is cleared, so the two can never drift apart.
-function _clearSavedRecordBinding() {
-  lastRecordTrailerId = null;
-  lastRecordTrailerName = '';
-  lastRecordDims = null;
-}
 
 // ══ v1.45 — VALIDATED REFERENCES ═══════════════════════════════════════════
 // Nadie marks a costing that balanced with her Excel as a validated reference;
@@ -6260,7 +6231,6 @@ async function recallValidatedReference(refId) {
     editingQuoteNumber = null;
     editReplay         = null;
     lastRecordId       = null;
-    _clearSavedRecordBinding();
 
     await runCalc();
 
@@ -6290,15 +6260,26 @@ async function markAsValidatedReference() {
   if (!lastResult) { toast('Cost the body first, then mark it', 'warn'); return; }
 
   const selectedTid = +document.getElementById('trailer-select')?.value || null;
-  let recordId = editingRecordId || lastRecordId;
-  // A saved id from earlier in this session is only usable while the panel is
-  // still showing THAT body type. (editingRecordId is safe: opening a costing
-  // for editing selects its own body type.)
-  if (recordId && !editingRecordId && lastRecordTrailerId
-      && selectedTid && lastRecordTrailerId !== selectedTid) {
-    recordId = null;
+  const recordId = editingRecordId || lastRecordId;
+
+  // Confirm, AGAINST THE SERVER, that the bound costing really is the body type
+  // on screen. Both bindings go stale the same way — a saved id survives a
+  // body-type switch, and so does an edit binding — and client-side bookkeeping
+  // has to be maintained at every site that sets or clears either id. One
+  // authoritative read on a deliberate user action covers every path (save,
+  // ?edit=, a restored session) and cannot drift.
+  let saved = null;
+  if (recordId) {
+    try {
+      saved = await api('GET', `/api/calculations/${recordId}`);
+    } catch (_) {
+      saved = null;                        // unreadable → treat as unsaved
+    }
+    if (saved && selectedTid && +saved.trailer_type_id !== selectedTid) {
+      saved = null;                        // bound to a DIFFERENT body type
+    }
   }
-  if (!recordId) {
+  if (!saved) {
     // confirm-message is rendered with textContent, so keep it to one sentence.
     const go = await confirmModal(
       'A validated reference has to point at a saved costing. Save this costing now, then mark it?',
@@ -6309,10 +6290,8 @@ async function markAsValidatedReference() {
 
   // Describe the costing the reference POINTS AT, not whatever is currently
   // typed into the boxes — those can have moved on since the save.
-  const useSaved = !editingRecordId && lastRecordId === recordId && lastRecordDims;
-  const tName = (useSaved && lastRecordTrailerName)
-    || document.getElementById('trailer-select')?.selectedOptions?.[0]?.text || '';
-  const d = useSaved ? lastRecordDims : getDims();
+  const tName = document.getElementById('trailer-select')?.selectedOptions?.[0]?.text || '';
+  const d = saved.dimensions || getDims();
   const suggested = [tName, [d.length, d.width, d.height].filter(v => v != null).join('x')]
     .filter(Boolean).join(' ');
   const label = await promptModal('Name this validated reference:', suggested,

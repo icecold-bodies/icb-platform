@@ -2237,8 +2237,10 @@ async function prefillCalculation(recordId) {
     // edit-ratio restorer so copy matches edit and never falls through to the 55% new-costing default.
     restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
     lastRecordId = null;
-    document.getElementById('print-btn').disabled = true;
-    document.getElementById('view-btn').disabled = true;
+    // v1.46 — Calculator 1's Print / Full Report buttons were removed; Calculator 2
+    // still has them and shares this file, so these stay but must tolerate absence.
+    _setDisabled('print-btn', true);
+    _setDisabled('view-btn', true);
     await runCalc();
     toast(`Prefilled from calculation #${recordId}`, 'info');
   } catch (e) {
@@ -5219,8 +5221,8 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     lastGlobalVars = result.global_variables         || {};
     _publishHelpContext(result);  // exposes liveResult + body for the AI Help chat
     renderSummary(result);
-    document.getElementById('print-btn').disabled = false;
-    document.getElementById('view-btn').disabled  = false;
+    _setDisabled('print-btn', false);
+    _setDisabled('view-btn', false);
     clearOverrideSession();
     const custName    = result.customer_name ? ` for ${result.customer_name}` : '';
     const verLabel    = result.version && result.version > 1 ? ` · Rev${result.version}` : '';
@@ -5951,10 +5953,13 @@ function renderSummary(result) {
   // Remember the gross total + default sub-line so the discount handlers can
   // refresh the display without a full re-render.
   lastGrossTotal = totalCost;
-  const ratioValFinal = parseFloat(document.getElementById('f-ratio').value);
-  if (!isNaN(ratioValFinal) && ratioValFinal > 0) _defaultSubText = `Selling Price: ${fmt(withMargin / ratioValFinal)}`;
-  else if (result.cost_per_sqm)                   _defaultSubText = `${fmt(result.cost_per_sqm)} / m²`;
-  else                                            _defaultSubText = '';
+  // v1.46 (Michael) — the sub-line under Total Cost is EMPTY by default. It used
+  // to carry "Selling Price: …" (and a "… / m²" fallback), which cost a line in
+  // a panel that was already squashing the category totals; both figures are on
+  // the Cost Summary above. The sub-line now speaks only for a DISCOUNTED total
+  // ("Was X · less Y discount") — see refreshDiscountDisplay — because nothing
+  // else on the panel explains that.
+  _defaultSubText = '';
 
   refreshDiscountDisplay();   // sets grand-total + sub + disc/net rows from the globals
 }
@@ -6039,6 +6044,13 @@ function printResults() {
 
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Enable/disable a control that may not exist on every page sharing this file
+// (v1.46 removed Print / Full Report from Calculator 1; Calculator 2 kept them).
+function _setDisabled(id, disabled) {
+  const el = document.getElementById(id);
+  if (el) el.disabled = disabled;
 }
 
 // ══ v1.45 — VALIDATED REFERENCES ═══════════════════════════════════════════

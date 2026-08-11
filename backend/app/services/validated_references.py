@@ -113,6 +113,19 @@ def canonical_config(trailer_type_id: int, dims: dict | None,
         an EPS body and a PU body hash identically and mis-warn each other.
       - `body_variables` — insulation thicknesses. Cost-determining inputs like
         dims; omitting them turns "80 mm vs 100 mm" into a false drift warning.
+
+    EXTRAS ARE NOT PART OF IDENTITY (Michael, 11 Aug 2026). The optional-EXTRAS
+    selection — `optional_sections_enabled` and the per-row
+    `user_excluded_bom_ids` inside those sections — is held in the BROWSER's
+    localStorage, not on the costing. A reference marked from a costing that had
+    extras enabled therefore never matched a fresh browser (where the set is
+    empty), so the warning only ever fired for whoever happened to share that
+    localStorage state. Dropping both makes identity depend solely on
+    server-side, costing-borne facts.
+
+    The accepted trade-off: two costings of the same body that differ ONLY in
+    their extras now share an identity, so the extras' cost shows up as drift
+    rather than as "no match".
     """
     input_state = input_state or {}
     dims = dims or {}
@@ -123,9 +136,7 @@ def canonical_config(trailer_type_id: int, dims: dict | None,
         "trailer_type_id": int(trailer_type_id),
         "dims": {k: _round(dims.get(k), _DIM_PRECISION) for k in _DIM_KEYS},
         "body_options": _sorted_true_keys(input_state.get("body_option_selections")),
-        "optional_sections": _sorted_ids(input_state.get("optional_sections_enabled")),
         "excluded_categories": _sorted_ids(input_state.get("excluded_categories")),
-        "excluded_bom_ids": _sorted_ids(input_state.get("user_excluded_bom_ids")),
         "flags": _sorted_true_keys(input_state.get("flag_overrides")),
         "body_variables": {str(k): _round(v, _BODYVAR_PRECISION)
                            for k, v in sorted(body_vars.items(), key=lambda kv: str(kv[0]))},

@@ -1,20 +1,26 @@
-"""v1.45 §3.4 — Validated references, end to end (marker J145VR).
+"""v1.45/v1.46 — Validated references, end to end (marker J145VR).
 
-Nadie's whole loop, driven through the costings-page calculator embed:
+Nadie's whole loop in ONE browser session, driven through the costings-page
+calculator embed:
 
-1. Cost a body → Approve & Save → "Mark as validated reference" sits beside
-   Approve & Save, the label prompt is PREFILLED with "{body} {L}x{W}x{H}", and
-   marking it makes the paired dropdown appear under Body Type.
-2. A FRESH calculator on the same body type shows "Validated references (1)";
-   recalling it reproduces the configuration — the manufacturing total is
-   IDENTICAL and the quiet green tick renders.
-3. Bump the material price permanently (Nadie's costings.price_master_edit) →
-   recompute → the RED drift warning with the percentage and the categories
-   that moved → retire the reference → the dropdown entry is gone, the warning
-   clears, and the row survives as a soft-retired record.
+  cost a body → Approve & Save → "Mark as validated reference" sits beside
+  Approve & Save with the label prompt PREFILLED "{body} {L}x{W}x{H}" → the
+  paired dropdown appears under Body Type → reload and recall it: the
+  manufacturing total is IDENTICAL and the quiet green tick renders → bump the
+  material price permanently (Nadie's costings.price_master_edit) → the RED
+  drift warning with the percentage and the categories that moved → retire →
+  the dropdown entry is gone, the verdict clears, and the row survives
+  soft-retired.
 
-Plus the two negatives: a different body type shows no dropdown at all, and the
-unrelated admin "BOM Snapshots" page is untouched (naming isolation).
+Plus the v1.46 density check, and two negatives: a different body type shows no
+dropdown at all, and the unrelated admin "BOM Snapshots" page is untouched
+(naming isolation).
+
+WHY ONE BIG TEST: the loop is inherently stateful, and splitting it across
+pytest tests gave each phase a brand-new browser profile that had to re-derive
+the previous phase's state. That coupling produced two CI-only reds which
+reproduced nowhere else — not on windows-latest, not locally, not at 6x CPU
+throttling. A user reloads a page; they do not get a fresh profile.
 
 Selector policy: Jinja pages by element ID; React by data-testid. No
 wait_for_function (CSP has no unsafe-eval).
@@ -98,7 +104,7 @@ def staged():
 
 
 def _select_trailer_and_wait_bom(page: Page, frame, trailer_id: str,
-                                 attempts: int = 4) -> None:
+                                 attempts: int = 4, expect_length: str = "7.5") -> None:
     """select_option is one-shot: while the embed is still settling the
     change→loadBOM→fetch chain can be lost and no BOM row ever renders (banked
     embed-journey flake class). Re-select, bounded.
@@ -110,17 +116,32 @@ def _select_trailer_and_wait_bom(page: Page, frame, trailer_id: str,
     loadBOM + a fresh calc. That storm is what made the drift banner
     non-deterministic on ubuntu-latest. Attachment alone proves loadBOM
     rendered; the approve-btn wait in _open_embed proves a calc completed.
+
+    A re-select is ALSO how the body's default dimensions get applied. loadBOM
+    only writes them once `trailerDefaults` (fetched from /api/trailers at
+    DOMContentLoaded) has resolved; pick a body before that request lands — easy
+    on a slow runner — and the inputs keep the template's own 13.6 x 2.5 x 2.7,
+    so the costing and the label prefilled from it are built on the wrong dims.
+    Selecting again after the fetch lands fixes it, so both conditions are
+    checked inside the one bounded loop. Reproduced locally with
+    MES_JOURNEY_CPU_THROTTLE=6.
     """
     row = frame.locator("[data-material-id]").first
+    length = frame.locator("#f-length")
+    last = ""
     for _ in range(attempts):
         frame.locator("#trailer-select").select_option(trailer_id)
         try:
             expect(row).to_be_attached(timeout=8_000)
+            expect(length).to_have_value(expect_length, timeout=6_000)
             return
         except AssertionError:
+            last = length.input_value()
             continue
-    shot(page, "zz-bom-never-rendered", journey=JOURNEY)
-    raise AssertionError(f"BOM rows never rendered after {attempts} selects")
+    shot(page, "zz-body-never-settled", journey=JOURNEY)
+    raise AssertionError(
+        f"body did not settle after {attempts} selects "
+        f"(rows attached={row.count()}, length={last!r}, wanted {expect_length!r})")
 
 
 def _open_embed(page: Page, live_server: str, trailer_id: str):
@@ -141,9 +162,75 @@ def _reference_row(trailer_id: int):
                   .filter_by(trailer_type_id=trailer_id, active=True).first())
 
 
-# ── 1. Mark: the action sits beside Approve & Save, prefilled label ───────────
-def test_cost_save_and_mark_as_validated_reference(page: Page, live_server: str,
-                                                   staged) -> None:
+def _verdict(page: Page, frame, expect_state: str, timeout_s: int = 40) -> str:
+    """Wait for the drift banner to settle, then assert WHICH state it reached.
+
+    `expect_state` is 'tick', 'warning' or 'none'. On failure this raises with
+    the banner's ACTUAL text. The previous `expect(tick).to_be_visible()` form
+    failed with only "element(s) not found", which could not distinguish "no
+    match", "verdict flipped to a warning" and "the call never landed" — two
+    CI-only reds were spent on that ambiguity.
+    """
+    banner = frame.locator("#vref-banner")
+    text, actual = "", "none"
+    for _ in range(timeout_s):
+        text = (banner.inner_text() or "").strip()
+        actual = ("tick" if frame.locator("[data-testid='vref-tick']").count()
+                  else "warning" if frame.locator("[data-testid='vref-warning']").count()
+                  else "none")
+        # Poll on the STATE, not merely on "is there any text". The banner keeps
+        # its previous verdict on screen while the next recompute + match are in
+        # flight, so a "has text?" check hands back the stale one — which is
+        # exactly how this helper first failed, reading the pre-bump tick.
+        if actual == expect_state:
+            return text
+        page.wait_for_timeout(1_000)
+    raise AssertionError(
+        f"expected the {expect_state} verdict within {timeout_s}s, got {actual}. "
+        f"Banner said: {text!r}")
+
+
+# ── 0. v1.46 density: captions left, controls right, no dead buttons ─────────
+def test_parameter_panel_is_compact_and_footer_is_trimmed(
+        page: Page, live_server: str, staged) -> None:
+    """Michael, 11 Aug 2026: the parameters block and the summary footer were
+    eating the panel and squashing the category totals. Captions now sit LEFT of
+    their control on one line, and Print / Full Report / the Selling Price line
+    are gone. Asserted on GEOMETRY, not pixel counts — a font change must not
+    fail this, but a regression to the stacked layout must."""
+    ids = staged["ref"]
+    frame = _open_embed(page, live_server, str(ids["trailer"]))
+
+    for field in ("f-length", "f-width", "f-height", "f-margin", "f-ratio"):
+        label = frame.locator(f"#btp-body label[for='{field}']").bounding_box()
+        control = frame.locator(f"#{field}").bounding_box()
+        assert label and control, field
+        # same row (baselines within a line-height) and the control to the RIGHT
+        assert abs(label["y"] - control["y"]) < 14, f"{field}: caption is not on the control's row"
+        assert control["x"] > label["x"], f"{field}: control is not right of its caption"
+
+    # The three things Michael asked to reclaim.
+    expect(frame.locator("#print-btn")).to_have_count(0)
+    expect(frame.locator("#view-btn")).to_have_count(0)
+    assert "Selling Price" not in frame.locator(".panel-footer").last.inner_text()
+
+    # Total Cost caption and amount share one line.
+    cap = frame.locator(".grand-total-inline .grand-total-label").bounding_box()
+    amt = frame.locator(".grand-total-inline .grand-total-amount").bounding_box()
+    assert abs(cap["y"] - amt["y"]) < 20 and amt["x"] > cap["x"], \
+        "Total Cost caption and amount are not on one line"
+    shot(page, "00-compact-parameters", journey=JOURNEY)
+
+
+# ── 1. Nadie's whole loop, in ONE browser session ────────────────────────────
+# mark → reload → recall (green tick) → price bump (red warning) → retire.
+# Deliberately one test: each phase depends on the previous phase's state, and
+# splitting them across pytest tests gave every phase a brand-new browser
+# profile that had to re-derive it. That coupling produced two CI-only reds
+# that reproduced nowhere else (not on Windows, not locally, not even at 6x CPU
+# throttling). One session is also exactly how Nadie works.
+def test_mark_recall_drift_and_retire(page: Page, live_server: str,
+                                      staged) -> None:
     ids = staged["ref"]
     frame = _open_embed(page, live_server, str(ids["trailer"]))
 
@@ -194,17 +281,26 @@ def test_cost_save_and_mark_as_validated_reference(page: Page, live_server: str,
     assert ref.calculation_id and ref.trailer_type_id == ids["trailer"]
 
 
-# ── 2. Recall: fresh calculator → dropdown → identical totals + green tick ────
-def test_recall_reproduces_the_configuration_with_a_green_tick(
-        page: Page, live_server: str, staged) -> None:
-    ids = staged["ref"]
-    frame = _open_embed(page, live_server, str(ids["trailer"]))
+    # ── recall: reload the page, pick the reference, expect the green tick ────
+    # Same browser context on purpose. Splitting this across pytest tests meant
+    # each step started from a BRAND-NEW browser profile and had to re-derive
+    # the previous step's state; that cost two CI-only reds. A user reloads a
+    # page, they do not get a fresh profile — this models what Nadie does and
+    # removes the cross-test coupling entirely. (That a reference marked WITH
+    # extras still matches a genuinely fresh browser is pinned by the unit test
+    # test_a_fresh_browser_matches_a_reference_marked_with_extras, which is a
+    # far tighter place to assert it than a browser journey.)
+    page.goto("/mes-app/costings/new")
+    frame = page.frame_locator(_EMBED)
+    expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
+    _select_trailer_and_wait_bom(page, frame, str(ids["trailer"]))
+    expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
 
     expect(frame.locator("#vref-picker-label")).to_have_text(
         "Validated references (1)", timeout=T)
     baseline = frame.locator("#grand-total").inner_text()
 
-    frame.locator("#vref-select").select_option(label=None, index=1)
+    frame.locator("#vref-select").select_option(index=1)
     expect(frame.locator("#toast-container .toast-msg",
                          has_text="Loaded from validated reference").first
            ).to_be_visible(timeout=30_000)
@@ -213,31 +309,15 @@ def test_recall_reproduces_the_configuration_with_a_green_tick(
 
     # Totals reproduce EXACTLY, and the quiet green tick confirms the match.
     expect(frame.locator("#grand-total")).to_have_text(baseline, timeout=30_000)
-    expect(frame.locator("[data-testid='vref-tick']")).to_be_visible(timeout=30_000)
-    expect(frame.locator("[data-testid='vref-tick']")).to_contain_text(
-        f"{MARK} balanced baseline")
-    expect(frame.locator("[data-testid='vref-warning']")).to_have_count(0)
+    tick = _verdict(page, frame, "tick")
+    assert f"{MARK} balanced baseline" in tick, tick
     shot(page, "04-recalled-green-tick", journey=JOURNEY)
 
     # COPY semantics: recall must never bind to the reference's own record, so
     # no edit chrome appears and the reference costing is left alone.
     expect(frame.locator("#edit-mode-banner")).to_be_hidden()
 
-
-# ── 3. Drift, then retire — ONE continuous flow ──────────────────────────────
-# Deliberately not split across two page loads. Nadie's actual sequence is
-# "bump a price, see the warning, retire the reference" without leaving the
-# page, and the split version made the second half depend on a warning being
-# re-derived on a fresh load — timing-sensitive enough to go red on the slower
-# CI runner while passing everywhere else. Fresh-load re-derivation is already
-# proven by step 2 (a reload recomputes and paints the green tick from
-# persisted state); nothing is given up by keeping this one continuous.
-def test_price_bump_warns_then_retiring_clears_it(
-        page: Page, live_server: str, staged) -> None:
-    ids = staged["ref"]
-    frame = _open_embed(page, live_server, str(ids["trailer"]))
-    expect(frame.locator("[data-testid='vref-tick']")).to_be_visible(timeout=30_000)
-
+    # ── drift: a permanent price bump past tolerance turns the tick red ───────
     # Nadie's permanent BOM price save (costings.price_master_edit): 1000 → 1200
     # is +20%, an order of magnitude past the 2% tolerance.
     # The POST-calc table groups by category and remembers a collapsed state in
@@ -254,13 +334,9 @@ def test_price_bump_warns_then_retiring_clears_it(
     expect(frame.locator("#toast-container .toast-msg",
                          has_text="Section price saved").first).to_be_visible(timeout=T)
 
-    warning = frame.locator("[data-testid='vref-warning']")
-    expect(warning).to_be_visible(timeout=30_000)
-    expect(warning).to_contain_text(f"{MARK} balanced baseline")
-    expect(warning).to_contain_text("+20.0%")
-    expect(warning).to_contain_text("Categories moved")
-    expect(warning).to_contain_text("PANELS")
-    expect(frame.locator("[data-testid='vref-tick']")).to_have_count(0)
+    warning = _verdict(page, frame, "warning")
+    for fragment in (f"{MARK} balanced baseline", "+20.0%", "Categories moved", "PANELS"):
+        assert fragment in warning, f"{fragment!r} missing from: {warning!r}"
     shot(page, "05-red-drift-warning", journey=JOURNEY)
 
     # ── retire, in the same page ──────────────────────────────────────────────
@@ -278,10 +354,9 @@ def test_price_bump_warns_then_retiring_clears_it(
            ).to_be_visible(timeout=T)
     frame.locator("#modal-validated-refs .modal-footer .btn").click()
 
-    # Gone from the dropdown, and no warning survives.
+    # Gone from the dropdown, and no verdict survives.
     expect(frame.locator("#vref-picker-wrap")).to_be_hidden(timeout=T)
-    expect(frame.locator("[data-testid='vref-warning']")).to_have_count(0)
-    expect(frame.locator("[data-testid='vref-tick']")).to_have_count(0)
+    _verdict(page, frame, "none")
     shot(page, "07-retired-no-dropdown", journey=JOURNEY)
 
     # SOFT retire — the row survives for the record.
@@ -292,16 +367,15 @@ def test_price_bump_warns_then_retiring_clears_it(
     assert len(rows) == 1 and rows[0].active is False
 
 
-# ── 4. Negative: a body type with no references shows no dropdown ────────────
+# ── 2. Negative: a body type with no references shows no dropdown ────────────
 def test_a_body_type_without_references_shows_no_dropdown(
         page: Page, live_server: str, staged) -> None:
     frame = _open_embed(page, live_server, str(staged["other"]["trailer"]))
     expect(frame.locator("#vref-picker-wrap")).to_be_hidden(timeout=T)
-    expect(frame.locator("[data-testid='vref-tick']")).to_have_count(0)
-    expect(frame.locator("[data-testid='vref-warning']")).to_have_count(0)
+    _verdict(page, frame, "none")
 
 
-# ── 5. Naming isolation: the unrelated BOM Snapshots page is untouched ───────
+# ── 3. Naming isolation: the unrelated BOM Snapshots page is untouched ───────
 def test_bom_snapshots_admin_page_is_unchanged(page: Page, live_server: str,
                                                staged) -> None:
     """"BOM Snapshots" is a pre-existing, unrelated ADMIN feature (template-level).

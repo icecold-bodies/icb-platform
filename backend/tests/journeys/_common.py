@@ -177,10 +177,21 @@ def browser_context(browser: "Browser", live_server: str) -> "BrowserContext":  
     context.close()
 
 
+# Local repro knob for CI-only reds. The journey suite has now produced several
+# failures that appear ONLY on the slower Linux runner, and "add a wait and push
+# again" is an expensive way to debug. Set MES_JOURNEY_CPU_THROTTLE=6 to make
+# Chromium run ~6x slower via CDP and reproduce that class locally. Off (1x) by
+# default, so CI behaviour is unchanged.
+_CPU_THROTTLE = float(os.environ.get("MES_JOURNEY_CPU_THROTTLE", "1") or 1)
+
+
 @pytest.fixture()
 def page(browser_context: "BrowserContext") -> "Page":  # type: ignore[valid-type]
     page = browser_context.new_page()
     page.set_default_timeout(15_000)
+    if _CPU_THROTTLE > 1:
+        cdp = browser_context.new_cdp_session(page)
+        cdp.send("Emulation.setCPUThrottlingRate", {"rate": _CPU_THROTTLE})
     yield page
 
 

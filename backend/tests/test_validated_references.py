@@ -66,10 +66,10 @@ def test_fingerprint_is_option_order_invariant():
 
 
 def test_fingerprint_ignores_id_types_and_dimension_formatting():
-    """13.6 vs 13.600, and int vs str ids, are the same configuration."""
+    """13.6 vs 13.600 is the same body, and the identity fields that carry ids
+    (body options, excluded categories) are compared as strings either way."""
     variant = dict(BASE_INPUT_STATE,
-                   user_excluded_bom_ids=["41", "17"],
-                   optional_sections_enabled=["13", "14", "15"])
+                   body_option_selections={3292: True, 3293: False, 3294: True})
     dims = {"length": 7.500, "width": 2.5, "height": 2.60}
     assert (config_fingerprint(7, dims, variant)
             == config_fingerprint(7, BASE_DIMS, BASE_INPUT_STATE))
@@ -88,9 +88,7 @@ def test_fingerprint_ignores_price_overrides_margin_and_ratio():
 
 @pytest.mark.parametrize("field,mutation", [
     ("body option",        {"body_option_selections": {"3292": True, "3294": False}}),
-    ("optional sections",  {"optional_sections_enabled": [13, 14]}),
     ("excluded category",  {"excluded_categories": ["SRD"]}),
-    ("excluded bom id",    {"user_excluded_bom_ids": [41]}),
     # The two additions beyond the ratified base list, both proven necessary:
     ("insulation type",    {"flag_overrides": {"DRD PU": True, "FRONT EPS": True}}),
     ("insulation depth",   {"body_variables": {"DRD EPS THICKNESS": 0.10,
@@ -99,6 +97,35 @@ def test_fingerprint_ignores_price_overrides_margin_and_ratio():
 def test_fingerprint_separates_different_configurations(field, mutation):
     assert (config_fingerprint(7, BASE_DIMS, dict(BASE_INPUT_STATE, **mutation))
             != config_fingerprint(7, BASE_DIMS, BASE_INPUT_STATE)), field
+
+
+@pytest.mark.parametrize("field,mutation", [
+    ("optional sections", {"optional_sections_enabled": [13, 14]}),
+    ("no extras at all",  {"optional_sections_enabled": []}),
+    ("excluded bom id",   {"user_excluded_bom_ids": [41]}),
+    ("no row exclusions", {"user_excluded_bom_ids": []}),
+])
+def test_extras_are_not_part_of_identity(field, mutation):
+    """Michael, 11 Aug 2026 — the optional-EXTRAS selection lives in the
+    BROWSER's localStorage, not on the costing, so including it meant a
+    reference never matched a fresh browser. Identity now depends only on
+    server-side, costing-borne facts."""
+    assert (config_fingerprint(7, BASE_DIMS, dict(BASE_INPUT_STATE, **mutation))
+            == config_fingerprint(7, BASE_DIMS, BASE_INPUT_STATE)), field
+
+
+def test_a_fresh_browser_matches_a_reference_marked_with_extras():
+    """The regression this change exists for: the reference was marked from a
+    costing carrying extras 13–23; the fresh browser sends none. Same body,
+    same dims, same options → must still match."""
+    marked_with_extras = dict(BASE_INPUT_STATE,
+                              optional_sections_enabled=list(range(13, 24)),
+                              user_excluded_bom_ids=[41, 17])
+    fresh_browser = dict(BASE_INPUT_STATE,
+                         optional_sections_enabled=[],
+                         user_excluded_bom_ids=[])
+    assert (config_fingerprint(7, BASE_DIMS, marked_with_extras)
+            == config_fingerprint(7, BASE_DIMS, fresh_browser))
 
 
 def test_fingerprint_separates_dims_and_body_type():

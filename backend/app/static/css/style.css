@@ -249,6 +249,41 @@ select { cursor: pointer; }
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 .form-hint { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
 
+/* ── Compact parameter rows (v1.46, Michael) ──────────────────────────────
+   Label LEFT, control RIGHT on one line, instead of label-above-control. Cuts
+   the Body Type Parameters block from two lines per field to one so the whole
+   panel is visible without scrolling up and down.
+
+   Deliberately OPT-IN via .params-compact on a container: `.form-group` is
+   used by every admin page in the app, so this must not become the global
+   default. Anything that genuinely needs the stacked layout inside a compact
+   container (a long label, a wide control) opts out with .stacked.          */
+.params-compact .form-group {
+  display: grid;
+  grid-template-columns: minmax(74px, 44%) 1fr;
+  align-items: center;
+  column-gap: 8px;
+  margin-bottom: 7px;
+}
+.params-compact .form-label { margin-bottom: 0; line-height: 1.2; }
+.params-compact .form-control,
+.params-compact select { padding: 5px 8px; font-size: 13px; }
+/* Hints and validation errors belong under the CONTROL, not the label. */
+.params-compact .form-hint,
+.params-compact .field-error { grid-column: 2; margin-top: 2px; }
+.params-compact .form-group.stacked { display: block; }
+.params-compact .form-group.stacked .form-label { margin-bottom: 4px; }
+.params-compact .form-group.stacked .form-hint,
+.params-compact .form-group.stacked .field-error { grid-column: auto; }
+
+/* Total Cost on ONE line: caption left, amount right (v1.46). */
+.grand-total-display.grand-total-inline {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; text-align: left; padding: 2px 0;
+}
+.grand-total-inline .grand-total-label { margin-bottom: 0; }
+.grand-total-inline .grand-total-amount { font-size: 19px; }
+
 /* ── Buttons ────────────────────────────────────────── */
 .btn {
   display: inline-flex; align-items: center; gap: 6px;

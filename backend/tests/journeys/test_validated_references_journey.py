@@ -141,6 +141,38 @@ def _reference_row(trailer_id: int):
                   .filter_by(trailer_type_id=trailer_id, active=True).first())
 
 
+# ── 0. v1.46 density: captions left, controls right, no dead buttons ─────────
+def test_parameter_panel_is_compact_and_footer_is_trimmed(
+        page: Page, live_server: str, staged) -> None:
+    """Michael, 11 Aug 2026: the parameters block and the summary footer were
+    eating the panel and squashing the category totals. Captions now sit LEFT of
+    their control on one line, and Print / Full Report / the Selling Price line
+    are gone. Asserted on GEOMETRY, not pixel counts — a font change must not
+    fail this, but a regression to the stacked layout must."""
+    ids = staged["ref"]
+    frame = _open_embed(page, live_server, str(ids["trailer"]))
+
+    for field in ("f-length", "f-width", "f-height", "f-margin", "f-ratio"):
+        label = frame.locator(f"#btp-body label[for='{field}']").bounding_box()
+        control = frame.locator(f"#{field}").bounding_box()
+        assert label and control, field
+        # same row (baselines within a line-height) and the control to the RIGHT
+        assert abs(label["y"] - control["y"]) < 14, f"{field}: caption is not on the control's row"
+        assert control["x"] > label["x"], f"{field}: control is not right of its caption"
+
+    # The three things Michael asked to reclaim.
+    expect(frame.locator("#print-btn")).to_have_count(0)
+    expect(frame.locator("#view-btn")).to_have_count(0)
+    assert "Selling Price" not in frame.locator(".panel-footer").last.inner_text()
+
+    # Total Cost caption and amount share one line.
+    cap = frame.locator(".grand-total-inline .grand-total-label").bounding_box()
+    amt = frame.locator(".grand-total-inline .grand-total-amount").bounding_box()
+    assert abs(cap["y"] - amt["y"]) < 20 and amt["x"] > cap["x"], \
+        "Total Cost caption and amount are not on one line"
+    shot(page, "00-compact-parameters", journey=JOURNEY)
+
+
 # ── 1. Mark: the action sits beside Approve & Save, prefilled label ───────────
 def test_cost_save_and_mark_as_validated_reference(page: Page, live_server: str,
                                                    staged) -> None:

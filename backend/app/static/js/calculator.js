@@ -1,4 +1,16 @@
 let lastRecordId = null;
+// v1.46.1 — what lastRecordId actually POINTS AT. "Mark as validated reference"
+// binds to the last SAVED costing, but the panel around it keeps changing: pick
+// a different body type after saving and lastRecordId still names the old
+// costing, so the reference lands on the wrong body (found on :8000 — a
+// reference labelled "FREEZER MEDIUM 5.6x2.5x2.4" written against CHILLER
+// LARGE, which is why its dropdown never appeared under FREEZER MEDIUM).
+// Remembering the saved costing's own identity lets the mark action refuse when
+// the screen has moved on, and lets the label describe the costing it points at
+// rather than whatever is currently typed in the boxes.
+let lastRecordTrailerId = null;
+let lastRecordTrailerName = '';
+let lastRecordDims = null;
 let lastResult = null;
 let lastCalcPayload = null;  // stored for approve
 
@@ -2237,6 +2249,7 @@ async function prefillCalculation(recordId) {
     // edit-ratio restorer so copy matches edit and never falls through to the 55% new-costing default.
     restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
     lastRecordId = null;
+    _clearSavedRecordBinding();
     // v1.46 — Calculator 1's Print / Full Report buttons were removed; Calculator 2
     // still has them and shares this file, so these stay but must tolerate absence.
     _setDisabled('print-btn', true);
@@ -2308,6 +2321,7 @@ async function editCalculation(recordId) {
       await loadBOM({ preserveInputs: true });
       applyCalculationInputs(payload);
       lastRecordId = null;
+      _clearSavedRecordBinding();
       await runCalc();
       return;
     }
@@ -2809,6 +2823,14 @@ async function loadBOM(options = {}) {
   try { sessionStorage.setItem('focusedTrailerId', String(tid)); } catch(_) {}
   // Clear overrides and body option selections when the user picks a different trailer
   if (!preserveInputs) {
+    // v1.46.1 — a fresh body type abandons the costing that was last saved in
+    // this session. Keeping lastRecordId alive across the switch let "Mark as
+    // validated reference" attach a reference to a costing the user had
+    // navigated away from — onto the WRONG body type, where its dropdown then
+    // never appeared. (Print / Full Report read the same id and were equally
+    // wrong to keep it.)
+    lastRecordId = null;
+    _clearSavedRecordBinding();
     priceOverrides = {};
     bodyOptionSelections = {};
     drdSrdEnabled = {};
@@ -5215,6 +5237,13 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       discount_input: discountKind ? discountInput : null,
     });
     lastRecordId   = result.record_id;
+    // v1.46.1 — pin what that id points at, at save time.
+    lastRecordTrailerId   = +(_pendingApproveBase?.trailer_type_id
+                              || document.getElementById('trailer-select')?.value) || null;
+    lastRecordTrailerName = result.trailer_name
+                            || document.getElementById('trailer-select')?.selectedOptions?.[0]?.text
+                            || '';
+    lastRecordDims        = { ...(_pendingApproveBase?.dimensions || getDims()) };
     lastResult     = result;
     lastBodyVars   = result.body_variables           || {};
     lastFormulaLib = result.formula_library_resolved || {};
@@ -6053,6 +6082,14 @@ function _setDisabled(id, disabled) {
   if (el) el.disabled = disabled;
 }
 
+// v1.46.1 — forget which costing lastRecordId names. Called wherever
+// lastRecordId is cleared, so the two can never drift apart.
+function _clearSavedRecordBinding() {
+  lastRecordTrailerId = null;
+  lastRecordTrailerName = '';
+  lastRecordDims = null;
+}
+
 // ══ v1.45 — VALIDATED REFERENCES ═══════════════════════════════════════════
 // Nadie marks a costing that balanced with her Excel as a validated reference;
 // she recalls one as a starting point from the paired dropdown under Body Type;
@@ -6223,6 +6260,7 @@ async function recallValidatedReference(refId) {
     editingQuoteNumber = null;
     editReplay         = null;
     lastRecordId       = null;
+    _clearSavedRecordBinding();
 
     await runCalc();
 
@@ -6240,13 +6278,26 @@ async function recallValidatedReference(refId) {
 /** Mark the costing on screen as a validated reference.
  *
  *  A reference must point at a SAVED record — no shadow copies. An unsaved
- *  costing is offered the normal save flow instead of being silently copied. */
+ *  costing is offered the normal save flow instead of being silently copied.
+ *
+ *  v1.46.1 — the reference must also point at the costing the user is LOOKING
+ *  AT. The binding is verified against the selected body type before writing:
+ *  marking a stale id attached the reference to a different body, so its
+ *  dropdown never appeared where the user expected it. */
 async function markAsValidatedReference() {
   const caps = await _vrefLoadCaps();
   if (!caps.can_manage) return;
   if (!lastResult) { toast('Cost the body first, then mark it', 'warn'); return; }
 
-  const recordId = editingRecordId || lastRecordId;
+  const selectedTid = +document.getElementById('trailer-select')?.value || null;
+  let recordId = editingRecordId || lastRecordId;
+  // A saved id from earlier in this session is only usable while the panel is
+  // still showing THAT body type. (editingRecordId is safe: opening a costing
+  // for editing selects its own body type.)
+  if (recordId && !editingRecordId && lastRecordTrailerId
+      && selectedTid && lastRecordTrailerId !== selectedTid) {
+    recordId = null;
+  }
   if (!recordId) {
     // confirm-message is rendered with textContent, so keep it to one sentence.
     const go = await confirmModal(
@@ -6256,8 +6307,12 @@ async function markAsValidatedReference() {
     return;
   }
 
-  const tName = document.getElementById('trailer-select')?.selectedOptions?.[0]?.text || '';
-  const d = getDims();
+  // Describe the costing the reference POINTS AT, not whatever is currently
+  // typed into the boxes — those can have moved on since the save.
+  const useSaved = !editingRecordId && lastRecordId === recordId && lastRecordDims;
+  const tName = (useSaved && lastRecordTrailerName)
+    || document.getElementById('trailer-select')?.selectedOptions?.[0]?.text || '';
+  const d = useSaved ? lastRecordDims : getDims();
   const suggested = [tName, [d.length, d.width, d.height].filter(v => v != null).join('x')]
     .filter(Boolean).join(' ');
   const label = await promptModal('Name this validated reference:', suggested,

@@ -367,7 +367,60 @@ def test_mark_recall_drift_and_retire(page: Page, live_server: str,
     assert len(rows) == 1 and rows[0].active is False
 
 
-# ── 2. Negative: a body type with no references shows no dropdown ────────────
+# ── 2. The v1.46.1 defect: a mark must bind to the costing ON SCREEN ─────────
+def test_switching_body_type_after_saving_does_not_mis_attach_a_reference(
+        page: Page, live_server: str, staged) -> None:
+    """Found on :8000. Save a costing, then pick a DIFFERENT body type without
+    saving: "Mark as validated reference" still bound to the previous costing,
+    so the reference was written against the wrong body — and its dropdown
+    therefore never appeared under the body the user was looking at. The real
+    row read `label='FREEZER MEDIUM 5.6x2.5x2.4'` on `trailer_type_id=CHILLER
+    LARGE`.
+
+    The mark must now refuse and offer the save flow instead.
+    """
+    ref_body, other_body = staged["ref"], staged["other"]
+
+    def _ref_count() -> int:
+        from app.database import SessionLocal, ValidatedReference
+        with SessionLocal() as db:
+            return db.query(ValidatedReference).filter(
+                ValidatedReference.trailer_type_id.in_(
+                    [ref_body["trailer"], other_body["trailer"]])).count()
+
+    # The earlier test leaves one SOFT-RETIRED row behind, so compare a delta
+    # rather than asserting zero.
+    before = _ref_count()
+    frame = _open_embed(page, live_server, str(ref_body["trailer"]))
+
+    # Save a costing on the FIRST body.
+    frame.locator("#approve-btn").click()
+    try:
+        expect(frame.locator("#modal-no-customer")).to_be_visible(timeout=4_000)
+        frame.locator("#modal-no-customer .btn-outline").click()
+    except AssertionError:
+        pass
+    expect(frame.locator("#toast-container .toast-msg",
+                         has_text="Costing approved").first).to_be_visible(timeout=T)
+
+    # Now switch to a DIFFERENT body type, without saving it.
+    _select_trailer_and_wait_bom(page, frame, str(other_body["trailer"]))
+    expect(frame.locator("#approve-btn")).to_be_enabled(timeout=T)
+
+    # Marking must NOT silently reuse the previous costing: it offers the save
+    # flow (the "Save first" confirm), not the label prompt.
+    frame.locator("#vref-mark-btn").click()
+    expect(frame.locator("#modal-confirm")).to_be_visible(timeout=T)
+    expect(frame.locator("#confirm-title")).to_have_text("Save first")
+    expect(frame.locator("#modal-prompt")).to_be_hidden()
+    frame.locator("#confirm-cancel").click()
+
+    # …and nothing new was written against either body type.
+    assert _ref_count() == before, \
+        "a reference was written despite the body type having changed"
+
+
+# ── 3. Negative: a body type with no references shows no dropdown ────────────
 def test_a_body_type_without_references_shows_no_dropdown(
         page: Page, live_server: str, staged) -> None:
     frame = _open_embed(page, live_server, str(staged["other"]["trailer"]))
@@ -375,7 +428,7 @@ def test_a_body_type_without_references_shows_no_dropdown(
     _verdict(page, frame, "none")
 
 
-# ── 3. Naming isolation: the unrelated BOM Snapshots page is untouched ───────
+# ── 4. Naming isolation: the unrelated BOM Snapshots page is untouched ───────
 def test_bom_snapshots_admin_page_is_unchanged(page: Page, live_server: str,
                                                staged) -> None:
     """"BOM Snapshots" is a pre-existing, unrelated ADMIN feature (template-level).

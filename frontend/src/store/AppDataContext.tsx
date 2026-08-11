@@ -37,6 +37,10 @@ const SERVER_KEYS = new Set<string>([
   'prejob.create',                 // WO v4.33 §0.3 — Internal Sales creates/submits Pre-Job Cards
   'prejob.signoff_sales',          // WO v4.33 — Sales Rep check sign-off (§3.5 page gating)
   'prejob.signoff_planner',        // WO v4.33 — Planner check sign-off (§3.5 page gating)
+  // v1.45 — mark/retire a validated reference. Listed here so live mode reads the
+  // ACTUAL grant instead of falling through the permissive default below, which
+  // would offer Nadie's mark action to every logged-in user.
+  'costings.validated_refs_manage',
 ])
 const KEY_ALIAS: Record<string, string> = {
   'materials.count': 'stores.count',

@@ -935,6 +935,38 @@ class BomSnapshotItem(Base):
     snapshot    = relationship("BomSnapshot", back_populates="items")
 
 
+class ValidatedReference(Base):
+    """A costing Nadie has VALIDATED (balanced against her Excel, or approved).
+
+    Deliberately NOT related to the admin-level BomSnapshot feature above — this
+    is a thin POINTER layer over saved costings (WO v1.45, migration 0039). The
+    costing record already holds dims, body options, overrides and category
+    totals in result_json.input_state (v1.39.9), so nothing is copied here: just
+    the pointer, Nadie's label, and the fingerprint that makes exact-configuration
+    matching a single indexed lookup.
+
+    `active` is a SOFT retire — retired references stop matching and leave the
+    recall dropdown, but the row (and its audit trail) is never deleted.
+    """
+    __tablename__ = "validated_references"
+    id                 = Column(Integer, primary_key=True)
+    calculation_id     = Column(Integer, ForeignKey("calculations.id", ondelete="CASCADE"),
+                                nullable=False)
+    label              = Column(String(120), nullable=False)
+    # Indexes are owned by migration 0039 (ix_validated_refs_fingerprint,
+    # ix_validated_refs_trailer_active, uq_validated_refs_active_calc) — NOT
+    # declared here, so a model-driven create can never add a second, duplicate
+    # index under SQLAlchemy's auto-generated name.
+    config_fingerprint = Column(String(64), nullable=False)
+    trailer_type_id    = Column(Integer, ForeignKey("trailer_types.id"), nullable=False)
+    # Display-name snapshot at write time (ADR 0016 / chassis_records.edited_by_name).
+    created_by         = Column(String(100), nullable=True)
+    created_at         = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    active             = Column(Boolean, nullable=False, default=True)
+    calculation        = relationship("CalculationRecord")
+    trailer_type       = relationship("TrailerType")
+
+
 class HelpRequestLog(Base):
     """One row per AI Help assistant request. Lightweight cost/usage telemetry.
     Captures token usage so admins can see the running cost of the feature.
@@ -1100,6 +1132,11 @@ PERMISSION_CATALOGUE = [
     # so Internal Sales can maintain prices; every other admin-gated surface
     # stays admin-only. Admin passes via the code-level wildcard as usual.
     ("costings.price_master_edit", "Save permanent BOM price changes from the costing calculator", "admin", {"admin", "full"}),
+    # v1.45 (Nadie) — mark a balanced costing as a VALIDATED REFERENCE and retire
+    # one. Follows costings.price_master_edit verbatim: seeded {admin, full} so
+    # Internal Sales owns its own reference library. READING them (the recall
+    # dropdown, the drift warning) needs no key — any costings user gets those.
+    ("costings.validated_refs_manage", "Mark a costing as a validated reference and retire references", "admin", {"admin", "full"}),
     # ── MES permission keys (v1.40.1) ────────────────────────────────────────
     # Mirrors the data inserts of migrations 0005 / 0013 / 0016 / 0017 / 0028
     # VERBATIM (names, descriptions, grants). Those migrations seed migrated DBs,

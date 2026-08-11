@@ -22,6 +22,7 @@ import {
   CalendarDays,
   Banknote,
   Package,
+  Star,
 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { apiGet, apiPost } from '../../lib/api'
@@ -40,6 +41,18 @@ import { BottleneckIndicator } from './BottleneckIndicator'
 import type { Costing, PrejobCardSummary } from '../../data/costingsData'
 import type { Status } from '../../data/types'
 
+// v1.45 — a validated reference is a POINTER at a saved costing (label +
+// fingerprint), never a copy of it. Unrelated to the admin "BOM Snapshots".
+type ValidatedRef = {
+  id: number
+  calculation_id: number
+  label: string
+  created_by: string | null
+  created_at: string | null
+  active: boolean
+  reference_total: number
+}
+
 export function CostingDetail() {
   const { quote = '' } = useParams<{ quote: string }>()
   const nav = useNavigate()
@@ -55,6 +68,12 @@ export function CostingDetail() {
   const [savedRatio, setSavedRatio] = useState<number | null>(null)
   // v1.45 — the costing's Attention contact pre-fills the email recipient.
   const [contactEmail, setContactEmail] = useState('')
+  // v1.45 Validated references — Nadie can mark an ACCEPTED costing she has
+  // balanced against her Excel, and retire the reference again from here. This
+  // is the §8 "costing detail page of the reference costing" surface; the
+  // calculator carries the same action for a costing she has just computed.
+  const [validatedRef, setValidatedRef] = useState<ValidatedRef | null>(null)
+  const [vrefBusy, setVrefBusy] = useState(false)
 
   const c = costings.find((x) => x.quote_number === decodeURIComponent(quote))
   // §0.21 — the live Pre-Job Card summary rides on the costing (CostingsContext merges
@@ -74,6 +93,18 @@ export function CostingDetail() {
   // otherwise loads once at app mount. `refresh` is a stable useCallback (runs once per mount).
   useEffect(() => { void refresh() }, [refresh])
 
+  // v1.45 — is THIS costing already a validated reference? One cheap filtered
+  // read; a failure just leaves the panel in its "not a reference yet" state.
+  const calcId = c?.calculation_id
+  useEffect(() => {
+    if (!calcId) { setValidatedRef(null); return }
+    let cancelled = false
+    void apiGet<ValidatedRef[]>(`/api/validated-references?calculation_id=${calcId}`)
+      .then((rows) => { if (!cancelled) setValidatedRef(rows[0] ?? null) })
+      .catch(() => { if (!cancelled) setValidatedRef(null) })
+    return () => { cancelled = true }
+  }, [calcId])
+
   if (!c) {
     return (
       <div className="p-6">
@@ -89,6 +120,49 @@ export function CostingDetail() {
 
   const style = styleForStatus(c.status)
   const canPreJob = hasPermission('costings.pre_job_card')
+
+  // v1.45 — mark/retire a validated reference (§5, §8). Offered on ACCEPTED
+  // costings only: an accepted costing is one Nadie has stood behind, which is
+  // the same bar as "balanced with my Excel".
+  const canManageRefs = hasPermission('costings.validated_refs_manage')
+  const canMarkRef = canManageRefs && c.status === 'Accepted' && !!c.calculation_id
+
+  async function markValidatedReference() {
+    if (!c || !c.calculation_id) return
+    const suggested = `${c.body_type}${lengthSuffix(c.body_length)}`.trim()
+    // The SPA shell is not the calculator embed iframe, so a native prompt is
+    // safe here — the banked silent-death trap is specific to that iframe.
+    const label = window.prompt('Name this validated reference:', suggested)
+    if (label === null) return
+    if (!label.trim()) { setToast('A name is required'); return }
+    setVrefBusy(true)
+    try {
+      const ref = await apiPost<ValidatedRef>('/api/validated-references', {
+        calculation_id: c.calculation_id, label: label.trim(),
+      })
+      setValidatedRef(ref)
+      setToast(`Marked as validated reference "${ref.label}"`)
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : 'Could not mark this costing')
+    } finally {
+      setVrefBusy(false)
+    }
+  }
+
+  async function retireValidatedReference() {
+    if (!validatedRef) return
+    setVrefBusy(true)
+    try {
+      const ref = await apiPost<ValidatedRef>(
+        `/api/validated-references/${validatedRef.id}/retire`)
+      setValidatedRef(ref)
+      setToast('Validated reference retired')
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : 'Could not retire it')
+    } finally {
+      setVrefBusy(false)
+    }
+  }
 
   return (
     <div className="p-4">
@@ -124,6 +198,36 @@ export function CostingDetail() {
             >
               <Send size={14} /> Send Pre-Job Card
             </button>
+          )}
+          {/* v1.45 — mark this accepted costing as a validated reference, or
+              retire the reference it already is. Hidden without the permission. */}
+          {canMarkRef && !validatedRef?.active && (
+            <button
+              data-testid="vref-mark-btn"
+              disabled={vrefBusy}
+              onClick={() => void markValidatedReference()}
+              className="flex items-center gap-1 rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-body hover:bg-surface-alt disabled:opacity-50"
+            >
+              <Star size={14} /> Mark as validated reference
+            </button>
+          )}
+          {validatedRef?.active && (
+            <span
+              data-testid="vref-badge"
+              className="flex items-center gap-2 rounded-md border border-status-green bg-status-green/10 px-3 py-2 text-sm font-semibold text-status-green"
+            >
+              <Star size={14} /> Validated reference: {validatedRef.label}
+              {canManageRefs && (
+                <button
+                  data-testid="vref-retire-btn"
+                  disabled={vrefBusy}
+                  onClick={() => void retireValidatedReference()}
+                  className="ml-1 text-xs font-normal underline disabled:opacity-50"
+                >
+                  Retire
+                </button>
+              )}
+            </span>
           )}
           {c.status === 'Repair' && (
             <button

@@ -6254,6 +6254,35 @@ async function recallValidatedReference(refId) {
  *  AT. The binding is verified against the selected body type before writing:
  *  marking a stale id attached the reference to a different body, so its
  *  dropdown never appeared where the user expected it. */
+/** Name the ACTUAL reason the Save-first flow fired.
+ *
+ *  All three exits used to share one sentence — "a validated reference has to
+ *  point at a saved costing" — which is true but not the reason in two of them,
+ *  and reads as a bug when the costing plainly HAS been saved. Michael hit the
+ *  dims case (saved at 5.3, typed 5.6, then marked): from the outside the app
+ *  simply refused, with nothing on screen explaining why.
+ *
+ *  #confirm-message is set with textContent and styled `white-space: pre-line`,
+ *  so a second line renders — but no markup, and nothing user-supplied is
+ *  interpolated (dimensions are numbers off the record and the inputs).
+ */
+function _vrefSaveFirstMessage(blockedBy, savedDims) {
+  const trio = d => ['length', 'width', 'height']
+    .map(k => (d && d[k] != null && d[k] !== '') ? d[k] : '—').join(' × ');
+  if (blockedBy === 'dims') {
+    return `This costing was saved at ${trio(savedDims)} m, but the boxes now read `
+         + `${trio(getDims())} m.\n`
+         + 'Dimensions are part of a reference’s identity, so save it at the size '
+         + 'on screen first, then mark it?';
+  }
+  if (blockedBy === 'body') {
+    return 'The costing last saved in this session is for a different body type.\n'
+         + 'Save the one on screen now, then mark it?';
+  }
+  return 'A validated reference has to point at a saved costing.\n'
+       + 'Save this costing now, then mark it?';
+}
+
 async function markAsValidatedReference() {
   const caps = await _vrefLoadCaps();
   if (!caps.can_manage) return;
@@ -6269,6 +6298,8 @@ async function markAsValidatedReference() {
   // authoritative read on a deliberate user action covers every path (save,
   // ?edit=, a restored session) and cannot drift.
   let saved = null;
+  let blockedBy = null;                    // WHY the Save-first flow fired
+  let savedDims = null;                    // the bound record's dims, for the message
   if (recordId) {
     try {
       saved = await api('GET', `/api/calculations/${recordId}`);
@@ -6277,6 +6308,7 @@ async function markAsValidatedReference() {
     }
     if (saved && selectedTid && +saved.trailer_type_id !== selectedTid) {
       saved = null;                        // bound to a DIFFERENT body type
+      blockedBy = 'body';
     }
     // v1.46.3 — dims are part of a reference's IDENTITY (they feed the
     // fingerprint), so a length/width/height typed after the save means the
@@ -6291,14 +6323,16 @@ async function markAsValidatedReference() {
       const rec = saved.dimensions || {};
       const moved = ['length', 'width', 'height'].some(k =>
         Math.abs((+live[k] || 0) - (+rec[k] || 0)) > 0.0005);
-      if (moved) saved = null;             // screen dims ≠ the bound record's
+      if (moved) {
+        savedDims = rec;
+        saved = null;                      // screen dims ≠ the bound record's
+        blockedBy = 'dims';
+      }
     }
   }
   if (!saved) {
-    // confirm-message is rendered with textContent, so keep it to one sentence.
-    const go = await confirmModal(
-      'A validated reference has to point at a saved costing. Save this costing now, then mark it?',
-      { okText: 'Approve & Save Costing', title: 'Save first' });
+    const go = await confirmModal(_vrefSaveFirstMessage(blockedBy, savedDims),
+                                  { okText: 'Approve & Save Costing', title: 'Save first' });
     if (go) approveCosting();
     return;
   }

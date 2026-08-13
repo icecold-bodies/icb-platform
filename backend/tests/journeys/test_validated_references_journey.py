@@ -144,6 +144,51 @@ def _select_trailer_and_wait_bom(page: Page, frame, trailer_id: str,
         f"(rows attached={row.count()}, length={last!r}, wanted {expect_length!r})")
 
 
+def _wait_calc_idle(page: Page, frame, quiet_ms: int = 1_500,
+                    timeout_s: int = 60) -> None:
+    """Block until a calculation has COMPLETED with the values now on screen.
+
+    `expect(#approve-btn).to_be_enabled()` on its own is a LEVEL check and is
+    not enough: loadBOM and every dimension edit go through `scheduleCalc()`'s
+    700 ms debounce, and `runCalc()` disables the button synchronously only
+    once that timer fires. In the gap the button is still enabled from the
+    PREVIOUS calc, so the assertion passes on a stale state — the same trap as
+    the banked "`is-active` passes on a stale process" note.
+
+    That gap is what made this journey red on ubuntu-latest. When
+    `/api/trailers` lands after the first select, the body's defaults are not
+    applied yet, so the first calc runs on the template's 13.6 x 2.5 x 2.7. The
+    retry select then writes 7.5 x 2.5 x 2.6 into the inputs and schedules a
+    fresh calc — but the helper returned the moment the INPUT read 7.5, and
+    approve fired inside the debounce. The record was therefore saved with
+    13.6 while the screen showed 7.5, and v1.46.3's dims guard (dims are
+    reference IDENTITY) correctly refused to mark it and opened the Save-first
+    CONFIRM dialog. `#modal-prompt` never appeared — the CI symptom.
+
+    So: wait for the button to stay enabled across a window LONGER than the
+    debounce. If a calc was pending, the timer fires inside the window and the
+    button goes disabled; if one was in flight it is still disabled at the end
+    of the window. Either way we loop. Only a genuinely idle calculator stays
+    enabled for the whole window, and any calc that ran inside it used the
+    settled values.
+
+    Reproduced and verified by driving the same end-state directly: approve
+    inside the debounce → saved 13.6 vs screen 7.5 → "SAVE FIRST" confirm and
+    no prompt; with this wait → saved 7.5 and the prompt prefilled correctly.
+    """
+    import time
+    approve = frame.locator("#approve-btn")
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        expect(approve).to_be_enabled(timeout=30_000)
+        page.wait_for_timeout(quiet_ms)
+        if approve.is_enabled():
+            return
+    raise AssertionError(
+        f"the calculator never went idle within {timeout_s}s "
+        "(#approve-btn kept flipping back to disabled)")
+
+
 def _open_embed(page: Page, live_server: str, trailer_id: str):
     """Nadie's surface: /mes-app/costings/new with the calculator embed."""
     role_session(page, FULL_USER, base=live_server)
@@ -151,8 +196,47 @@ def _open_embed(page: Page, live_server: str, trailer_id: str):
     frame = page.frame_locator(_EMBED)
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
     _select_trailer_and_wait_bom(page, frame, trailer_id)
-    expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
+    # NOT just `to_be_enabled()` — see _wait_calc_idle for why that passes on
+    # the previous calc's result and what it cost.
+    _wait_calc_idle(page, frame)
     return frame
+
+
+def _why_no_prompt(page: Page, frame) -> str:
+    """Explain a missing label prompt after clicking "Mark as validated reference".
+
+    markAsValidatedReference() has three exits that produce no prompt, and they
+    look identical through `#modal-prompt` alone:
+      * the Save-first CONFIRM — the bound record is unsaved, points at another
+        body type, or its dims differ from the screen (v1.46.1 / v1.46.3);
+      * a toast — no computed result, or the mark POST failed;
+      * nothing at all — the caps call said can_manage is false.
+    """
+    shot(page, "zz-mark-produced-no-prompt", journey=JOURNEY)
+    bits = ["clicking #vref-mark-btn did not open the label prompt."]
+    if frame.locator("#modal-confirm:not(.hidden)").count():
+        title = (frame.locator("#confirm-title").inner_text() or "").strip()
+        body = (frame.locator("#confirm-message").inner_text() or "").strip()
+        bits.append(
+            f"The {title!r} CONFIRM opened instead: {body!r} — the costing the "
+            "mark would bind to is not the one on screen. Usual cause: approve "
+            "ran before a calculation had completed with the settled "
+            "dimensions, so the record holds the previous calc's dims "
+            "(see _wait_calc_idle)."
+        )
+        bits.append(f"Screen dims now: "
+                    f"{frame.locator('#f-length').input_value()}x"
+                    f"{frame.locator('#f-width').input_value()}x"
+                    f"{frame.locator('#f-height').input_value()}")
+    toasts = frame.locator("#toast-container .toast-msg")
+    if toasts.count():
+        seen = [(toasts.nth(i).inner_text() or "").strip() for i in range(toasts.count())]
+        bits.append(f"Toasts on screen: {seen}")
+    if not frame.locator("#vref-mark-btn").is_visible():
+        bits.append("#vref-mark-btn is no longer visible — the caps call "
+                    "(GET /api/validated-references/settings) reported "
+                    "can_manage=false.")
+    return " ".join(bits)
 
 
 def _reference_row(trailer_id: int):
@@ -254,7 +338,13 @@ def test_mark_recall_drift_and_retire(page: Page, live_server: str,
 
     mark.click()
     prompt = frame.locator("#modal-prompt")
-    expect(prompt).to_be_visible(timeout=T)
+    try:
+        expect(prompt).to_be_visible(timeout=T)
+    except AssertionError:
+        # "#modal-prompt never became visible" has three quite different causes
+        # and the bare locator timeout cannot tell them apart — one CI-only red
+        # was spent on exactly that ambiguity. Name the branch instead.
+        raise AssertionError(_why_no_prompt(page, frame)) from None
     # Prefilled "{body type} {L}x{W}x{H}".
     expect(frame.locator("#prompt-input")).to_have_value(
         f"{ids['name']} 7.5x2.5x2.6", timeout=T)

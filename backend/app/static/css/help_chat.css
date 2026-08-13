@@ -1,6 +1,33 @@
 /* ── AI Help Assistant ──────────────────────────────────────────────────── */
 /* Floating launcher button + right-edge sliding chat panel.                 */
 
+/* ── Panel-local theme tokens (v1.46) ─────────────────────────────────────
+ * The help panel paints its OWN dark skin on every page — light MES/admin
+ * pages included. It therefore may NOT read page-level theme variables
+ * (--text-head, --text-dim, --bg-input, --blue, --accent …): those resolve
+ * DARK on the light skins introduced in v1.40.1, which rendered assistant
+ * replies dark-on-dark (invisible). Same defect class as the v1.39.8 theme
+ * leaks.
+ *
+ * Every colour inside the launcher + panel resolves from the tokens below,
+ * whose values are the panel's dark-page appearance as it has always been
+ * (style.css :root). Nothing in here consumes a page variable, so no future
+ * page-theme change can leak in again. Do NOT reintroduce a page-level custom
+ * property anywhere in this file — the Playwright contrast check in
+ * tests/journeys/test_help_chat_contrast_journey.py (and the always-on static
+ * guard tests/test_help_chat_theme_isolation.py) will go red.
+ * ───────────────────────────────────────────────────────────────────────── */
+#help-launcher,
+#help-panel {
+  --help-bg:         #0d1117;  /* panel surface                              */
+  --help-bg-input:   #0d1117;  /* textarea / select field                    */
+  --help-text:       #e6edf3;  /* headings + assistant replies (was --text-head) */
+  --help-text-body:  #c9d1d9;  /* typed input text            (was --text)   */
+  --help-text-dim:   #8b949e;  /* subtitles, tool lines, hints (was --text-dim) */
+  --help-accent:     #388bfd;  /* launcher, user bubble, Send  (was --blue)  */
+  --help-accent-hi:  #58a6ff;  /* action buttons, checkbox     (was --accent) */
+}
+
 #help-launcher {
   position: fixed;
   right: 20px;
@@ -11,8 +38,8 @@
   gap: 8px;
   padding: 10px 16px 10px 14px;
   border-radius: 999px;
-  border: 1px solid var(--border-hi, #388bfd);
-  background: var(--blue, #388bfd);
+  border: 1px solid var(--help-accent);
+  background: var(--help-accent);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -34,7 +61,7 @@
   bottom: 0;
   width: 420px;
   max-width: 92vw;
-  background: var(--bg, #0d1117);
+  background: var(--help-bg);
   border-left: 1px solid rgba(255, 255, 255, .08);
   box-shadow: -8px 0 24px rgba(0, 0, 0, .4);
   z-index: 9100;
@@ -56,19 +83,19 @@
 #help-panel .help-title {
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-head, #e6edf3);
+  color: var(--help-text);
   letter-spacing: .02em;
 }
 #help-panel .help-subtitle {
   font-size: 11px;
-  color: var(--text-dim, #8b949e);
+  color: var(--help-text-dim);
   margin-top: 2px;
 }
 #help-panel .help-header-actions { display: flex; gap: 6px; }
 #help-panel .help-icon-btn {
   background: none;
   border: 1px solid transparent;
-  color: var(--text-dim, #8b949e);
+  color: var(--help-text-dim);
   font-size: 14px;
   cursor: pointer;
   padding: 4px 8px;
@@ -77,7 +104,7 @@
 }
 #help-panel .help-icon-btn:hover {
   background: rgba(255, 255, 255, .06);
-  color: var(--text-head, #e6edf3);
+  color: var(--help-text);
 }
 
 #help-messages {
@@ -88,6 +115,12 @@
   flex-direction: column;
   gap: 10px;
 }
+/* style.css / theme-light.css style ::-webkit-scrollbar globally off the page
+   theme — a light track/thumb on the dark panel. Re-scope it panel-locally. */
+#help-panel ::-webkit-scrollbar             { width: 6px; height: 6px; }
+#help-panel ::-webkit-scrollbar-track       { background: var(--help-bg); }
+#help-panel ::-webkit-scrollbar-thumb       { background: #30363d; border-radius: 3px; }
+#help-panel ::-webkit-scrollbar-thumb:hover { background: var(--help-text-dim); }
 
 .help-msg {
   max-width: 88%;
@@ -100,14 +133,14 @@
 }
 .help-msg-user {
   align-self: flex-end;
-  background: var(--blue, #388bfd);
+  background: var(--help-accent);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
 .help-msg-assistant {
   align-self: flex-start;
   background: rgba(255, 255, 255, .06);
-  color: var(--text-head, #e6edf3);
+  color: var(--help-text);
   border-bottom-left-radius: 4px;
 }
 .help-msg-assistant.help-msg-streaming::after {
@@ -127,7 +160,7 @@
 .help-msg-tool {
   align-self: flex-start;
   background: transparent;
-  color: var(--text-dim, #8b949e);
+  color: var(--help-text-dim);
   font-size: 11px;
   font-style: italic;
   padding: 2px 8px;
@@ -145,7 +178,7 @@
   text-align: left;
   background: rgba(255, 255, 255, .03);
   border: 1px solid rgba(255, 255, 255, .08);
-  color: var(--text-head, #e6edf3);
+  color: var(--help-text);
   font-size: 12px;
   padding: 8px 10px;
   border-radius: 8px;
@@ -153,7 +186,7 @@
 }
 #help-suggestions .help-suggestion:hover {
   background: rgba(255, 255, 255, .06);
-  border-color: var(--blue, #388bfd);
+  border-color: var(--help-accent);
 }
 #help-suggestions .help-suggestion.help-suggestion-primary {
   background: linear-gradient(135deg, rgba(46, 160, 67, 0.22) 0%, rgba(35, 134, 54, 0.18) 100%);
@@ -176,7 +209,7 @@
   background: rgba(56, 139, 253, .08);
   border-radius: 8px;
   font-size: 12px;
-  color: var(--text-head, #e6edf3);
+  color: var(--help-text);
 }
 #help-attachment-chip.hidden { display: none !important; }
 #help-attachment-chip .help-chip-icon { font-size: 14px; line-height: 1; }
@@ -189,12 +222,12 @@
   font-weight: 600;
 }
 #help-attachment-chip .help-chip-label {
-  color: var(--text-dim, #8b949e);
+  color: var(--help-text-dim);
   font-size: 11px;
 }
 #help-attachment-chip .help-chip-select {
-  background: var(--bg-input, #1e2330);
-  color: var(--text, #e6edf3);
+  background: var(--help-bg-input);
+  color: var(--help-text-body);
   border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 4px;
   font-size: 11px;
@@ -204,7 +237,7 @@
 #help-attachment-chip .help-chip-x {
   background: none;
   border: none;
-  color: var(--text-dim, #8b949e);
+  color: var(--help-text-dim);
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
@@ -213,7 +246,7 @@
 }
 #help-attachment-chip .help-chip-x:hover {
   background: rgba(255, 255, 255, .08);
-  color: var(--text-head, #e6edf3);
+  color: var(--help-text);
 }
 
 #help-input-row {
@@ -239,8 +272,8 @@
   resize: none;
   min-height: 36px;
   max-height: 120px;
-  background: var(--bg-input, #1e2330);
-  color: var(--text, #e6edf3);
+  background: var(--help-bg-input);
+  color: var(--help-text-body);
   border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 8px;
   padding: 8px 10px;
@@ -248,12 +281,16 @@
   font-size: 13px;
   line-height: 1.4;
 }
+#help-input::placeholder {
+  color: var(--help-text-dim);
+  opacity: 1;               /* Firefox dims placeholders by default */
+}
 #help-input:focus {
   outline: none;
-  border-color: var(--blue, #388bfd);
+  border-color: var(--help-accent);
 }
 #help-send {
-  background: var(--blue, #388bfd);
+  background: var(--help-accent);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -321,7 +358,7 @@
   gap: 6px;
   font-size: 11px;
   font-weight: 500;
-  color: var(--text-dim, #aaa);
+  color: var(--help-text-dim);
   cursor: pointer;
   user-select: none;
   padding: 4px 8px;
@@ -331,7 +368,7 @@
 .help-toggle:hover { background: rgba(255, 255, 255, 0.06); }
 .help-toggle input[type="checkbox"] {
   width: 12px; height: 12px;
-  accent-color: var(--accent, #58a6ff);
+  accent-color: var(--help-accent-hi);
   margin: 0;
   cursor: pointer;
 }
@@ -343,7 +380,7 @@
 }
 .help-actions-intro {
   font-size: 11px;
-  color: var(--text-dim, #888);
+  color: var(--help-text-dim);
   margin-bottom: 4px;
 }
 .help-actions-row {
@@ -353,7 +390,7 @@
 }
 .help-action-btn {
   background: rgba(88, 166, 255, 0.12);
-  color: var(--accent, #58a6ff);
+  color: var(--help-accent-hi);
   border: 1px solid rgba(88, 166, 255, 0.35);
   border-radius: 14px;
   padding: 4px 10px;
@@ -388,5 +425,7 @@
   border-radius: 4px;
 }
 @media (prefers-reduced-motion: reduce) {
-  .help-flash { animation: none; outline: 2px solid var(--accent, #58a6ff); outline-offset: 2px; }
+  /* .help-flash lands on PAGE elements the AI points at — outside #help-panel,
+     so the panel tokens are out of scope. Literal, matching --help-accent-hi. */
+  .help-flash { animation: none; outline: 2px solid #58a6ff; outline-offset: 2px; }
 }

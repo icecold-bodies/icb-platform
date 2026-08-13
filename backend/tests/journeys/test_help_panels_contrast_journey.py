@@ -375,6 +375,29 @@ def _stub_help_routes(page) -> None:
     )
 
 
+def _settle(page) -> None:
+    """Bring the panel to its RESTING paint before measuring.
+
+    Two sources of nondeterminism, both fixed here:
+
+    * Playwright leaves the pointer wherever the last click landed, so a row
+      under it keeps its ``:hover`` background.
+    * ``.audit-section-row`` carries ``transition: background 0.12s``, so
+      merely moving the pointer away starts a *fade-out* — sampling during it
+      reads an interpolated background that exists for ~120ms and never at
+      rest. That is what made the ``⊘ rounding`` chip read 4.31:1 on one run
+      and 4.72:1 on the next, failing a different parametrised case each time.
+
+    Transitions and animations are disabled outright rather than waited on, so
+    the sweep can never race a fade, a spinner or the streaming caret. Hover
+    and in-flight states are not the contract under test; the resting paint is.
+    """
+    page.mouse.move(0, 0)
+    page.add_style_tag(content="*, *::before, *::after {"
+                               " transition: none !important;"
+                               " animation: none !important; }")
+
+
 def _fmt(r) -> str:
     ratio = "(gradient)" if r["indeterminate"] else f"{r['ratio']:>6}:1"
     return (f"  {r['selector']:<46} {ratio}  "
@@ -433,6 +456,7 @@ def test_help_chat_panel_text_is_readable_on_every_skin(page, live_server, path,
     launcher.click()
     page.locator("#help-panel.open").wait_for(state="visible")
     page.evaluate(_INJECT_CHAT_JS)
+    _settle(page)
 
     _assert_readable(page.evaluate(_SWEEP_JS), path, "help-chat")
 
@@ -462,5 +486,6 @@ def test_help_audit_panel_text_is_readable_on_every_skin(page, live_server, path
     page.locator(".audit-formula-block").first.wait_for(state="visible")
     section.locator(".audit-section-row").click(button="right")
     page.locator(".audit-ctxmenu").wait_for(state="visible")
+    _settle(page)
 
     _assert_readable(page.evaluate(_SWEEP_JS), path, "help-audit")

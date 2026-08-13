@@ -14,7 +14,7 @@
  * (style.css :root). Nothing in here consumes a page variable, so no future
  * page-theme change can leak in again. Do NOT reintroduce a page-level custom
  * property anywhere in this file — the Playwright contrast check in
- * tests/journeys/test_help_chat_contrast_journey.py (and the always-on static
+ * tests/journeys/test_help_panels_contrast_journey.py (and the always-on static
  * guard tests/test_help_chat_theme_isolation.py) will go red.
  * ───────────────────────────────────────────────────────────────────────── */
 #help-launcher,

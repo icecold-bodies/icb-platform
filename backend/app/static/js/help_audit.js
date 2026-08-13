@@ -165,7 +165,7 @@
     }
     buildPanel();
     panel.querySelector('#audit-subtitle').textContent = 'Running audit…';
-    sectionsEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-dim,#8b949e);font-size:12px">Running audit…</div>';
+    sectionsEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--audit-text-dim);font-size:12px">Running audit…</div>';
 
     const live = window.helpContext || {};
     const body = {
@@ -281,7 +281,7 @@
 
     sectionsEl.innerHTML = '';
     if (!bySection.length) {
-      sectionsEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-dim,#8b949e);font-size:12px">No comparable sections — both sides are empty.</div>';
+      sectionsEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--audit-text-dim);font-size:12px">No comparable sections — both sides are empty.</div>';
       return;
     }
     bySection.forEach((sec, idx) => sectionsEl.appendChild(renderSection(sec, idx)));
@@ -398,7 +398,7 @@
 
   function _truncRow(kind, n) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="5" style="text-align:center;color:var(--text-dim,#8b949e);font-style:italic;font-size:10px">…and ${n} more (truncated)</td>`;
+    tr.innerHTML = `<td colspan="5" style="text-align:center;color:var(--audit-text-dim);font-style:italic;font-size:10px">…and ${n} more (truncated)</td>`;
     return tr;
   }
 

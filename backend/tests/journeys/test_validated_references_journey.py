@@ -580,3 +580,51 @@ def test_bom_snapshots_admin_page_is_unchanged(page: Page, live_server: str,
     with SessionLocal() as db:
         assert db.query(BomSnapshot).filter_by(
             trailer_type_id=staged["ref"]["trailer"]).count() == 0
+
+
+# ── 5. The Save-first dialog names WHY it fired ──────────────────────────────
+def test_save_first_dialog_names_the_dimension_change(
+        page: Page, live_server: str, staged) -> None:
+    """Michael's case: saved at one size, typed another, then pressed Mark.
+
+    v1.46.3 correctly refuses — dimensions are part of a reference's IDENTITY,
+    so marking would label one costing while pointing at another. But the
+    dialog said only "a validated reference has to point at a saved costing",
+    which is not the reason here and reads as a bug when the costing plainly
+    HAS been saved. The refusal has to name the dimension change.
+
+    Deterministic by construction: the guard compares the boxes against the
+    BOUND RECORD, so typing a new length after the save is enough — no
+    recompute has to land first.
+    """
+    ids = staged["other"]                 # the never-referenced control body
+    frame = _open_embed(page, live_server, str(ids["trailer"]))
+
+    frame.locator("#approve-btn").click()
+    try:
+        expect(frame.locator("#modal-no-customer")).to_be_visible(timeout=4_000)
+        frame.locator("#modal-no-customer .btn-outline").click()
+    except AssertionError:
+        pass
+    expect(frame.locator("#toast-container .toast-msg",
+                         has_text="Costing approved").first).to_be_visible(timeout=T)
+
+    # Saved at 7.5; now the boxes say 5.6 — exactly Michael's sequence.
+    frame.locator("#f-length").fill("5.6")
+    frame.locator("#vref-mark-btn").click()
+
+    confirm = frame.locator("#modal-confirm")
+    expect(confirm).to_be_visible(timeout=T)
+    expect(frame.locator("#confirm-title")).to_have_text("Save first", timeout=T)
+    msg = frame.locator("#confirm-message").inner_text()
+    assert "7.5" in msg and "5.6" in msg, \
+        f"the dialog does not name the sizes it is refusing over: {msg!r}"
+    assert "identity" in msg.lower(), \
+        f"the dialog does not say WHY the dimensions matter: {msg!r}"
+    shot(page, "09-save-first-names-the-dims", journey=JOURNEY)
+
+    # It is still the Save-first flow: cancelling marks nothing.
+    frame.locator("#confirm-cancel").click()
+    expect(confirm).to_be_hidden(timeout=T)
+    assert _reference_row(ids["trailer"]) is None, \
+        "a reference was created despite the Save-first refusal"

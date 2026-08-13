@@ -238,10 +238,31 @@ def _autologin(page, base: str) -> None:
     assert resp.ok, f"admin autologin failed: HTTP {resp.status}"
 
 
+def _stub_help_health(page) -> None:
+    """Report the assistant as configured, whatever the server's key situation.
+
+    help_chat.js ships the launcher with ``class="hidden"`` and only reveals it
+    once ``/api/help/health`` confirms an ``ANTHROPIC_API_KEY`` — so on a server
+    without one (CI) the launcher never becomes clickable. This test is about
+    what the panel PAINTS, not about whether the key is wired, so the one
+    availability call is stubbed. Everything downstream is the real JS: the real
+    unhide, the real click handler, the real ``openPanel()``.
+    """
+    page.route(
+        "**/api/help/health",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="application/json",
+            body='{"configured": true, "model": "stub"}',
+        ),
+    )
+
+
 @pytest.mark.parametrize("path,expect_light", PAGES, ids=[p for p, _ in PAGES])
 def test_help_panel_text_is_readable_on_every_skin(page, live_server, path, expect_light):
     base = live_server.rstrip("/")
     _autologin(page, base)
+    _stub_help_health(page)          # must be routed BEFORE the page loads
     page.goto(f"{base}{path}")
 
     launcher = page.locator("#help-launcher")

@@ -339,7 +339,7 @@ Soft-excluded rows still show (with the eye toggle) at qty computed, cost `—`.
 
 ## 9. Optional Extras
 
-[FACT] A section is optional when `bom_sections.is_optional` is set **or its name starts with `OPTIONAL`** (prefix, not substring — `"NON OPTIONAL EXTRAS"` is not optional; `services/__init__.py:57-63`). Optional sections render red, start **excluded**, and contribute nothing until ticked. State is per-browser (`localStorage` per body type) — which is precisely why optional extras were **excluded from the validated-reference fingerprint** (a reference marked with extras on never matched a fresh browser; ratified 11 Aug 2026).
+[FACT] A section is optional when `bom_sections.is_optional` is set **or its name starts with `OPTIONAL`** (prefix, not substring — `"NON OPTIONAL EXTRAS"` is not optional; `services/__init__.py:57-63`). Optional sections render red, start **excluded**, and contribute nothing until ticked. State is per-browser (`localStorage` per body type) — which is precisely why optional extras were **excluded from the validated-reference fingerprint** (a reference marked with extras on never matched a fresh browser; ratified 11 Aug 2026). **In the new UI this reverses [RATIFIED — OQ-15, Michael, 17 Aug 2026]:** category/extras state moves into the saved costing (Part 33.2), and extras become part of reference identity again.
 
 Client semantics worth preserving exactly: header tick = whole section; row ticks = partial (indeterminate header); disabling a section marks every row excluded so a later single un-tick yields a *partial* state, not all-on. **Checked = excluded** today (inverted) — the new UI should use normal polarity (include = checked) [PROPOSAL].
 
@@ -587,7 +587,7 @@ Every rule the investigation identified, in the brief's format. **None may be lo
 
 ### 14.9 Validated references — RULE-REF
 
-**RULE-REF-001 · Identity (fingerprint) contents.** IN: body type, dims (L/W/H, 3 dp), selected body options, excluded categories, truthy flags, ALL body variables (3 dp). OUT (ratified): price overrides, margin, ratio, discount, customer, chassis, optional extras + user row-excludes (localStorage-resident; their cost surfaces as drift instead). `services/validated_references.py:101-143`.
+**RULE-REF-001 · Identity (fingerprint) contents.** IN: body type, dims (L/W/H, 3 dp), selected body options, excluded categories, truthy flags, ALL body variables (3 dp). OUT (ratified): price overrides, margin, ratio, discount, customer, chassis, optional extras + user row-excludes (localStorage-resident; their cost surfaces as drift instead). `services/validated_references.py:101-143`. *New-UI note [OQ-15]: extras/user-excludes re-enter identity once their state lives on the saved costing — this rule describes the CURRENT system.*
 
 **RULE-REF-002 · Marking guards.** Needs `costings.validated_refs_manage` + a computed result + a SERVER-verified bound record of the same body type with dims matching the screen (±0.0005). Refusals open Save-first naming the actual reason (dims moved / different body / unsaved). Pre-v1.39.9 records 409 ("re-save it"). Re-marking relabels (idempotent). `calculator.js:6269-6367`; `routers/validated_references.py:124-187`.
 
@@ -921,7 +921,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | Stock picker fields | expose `materials.material_code`; optional per-item selling price = OQ-07 | Part 27 |
 | New permission keys | `costings.freehand_items`, `costings.qty_override`, `costings.template_save` (all default `{admin, full}`, naming per convention) | Parts 17, 24.10 |
 
-**Migration constraint:** existing saved costings (result_json shapes, replay edits, validated references' fingerprints) must remain readable and re-openable. The fingerprint definition (RULE-REF-001) may NOT change silently — if category-include state moves out of localStorage into the costing, the extras-excluded-from-identity decision should be revisited WITH the BA (it existed only because of localStorage).
+**Migration constraint:** existing saved costings (result_json shapes, replay edits, validated references' fingerprints) must remain readable and re-openable. The fingerprint definition (RULE-REF-001) may NOT change silently — and it now changes WITH BA sanction: **extras/user-excludes re-enter reference identity in the new UI [RATIFIED — OQ-15]** (the old exclusion existed only because that state was localStorage-resident). Migration consequence: existing references were fingerprinted WITHOUT extras, so the new CA must either recompute fingerprints from each costing's stored `input_state` at migration, or version the fingerprint algorithm (`v1` matches old, `v2` new) — silent coexistence of both definitions is not acceptable. Behaviour change to note: two costings differing only in extras were one identity (drift); they become distinct identities (no match) — which is the intended meaning: extras change what was built.
 
 ## 34. Open Questions
 
@@ -941,7 +941,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | OQ-12 | **Category-exclusion warning**: wording/severity per category — generic warning, or per-category consequence text (needs authoring)? | new CA |
 | OQ-13 | **Excel paste**: keep in the new UI as a transition assist, or retire once the new page ships? (marked keep [PROPOSAL] in the matrix) | BA |
 | OQ-14 | **PRICE 20.04.2004.xls**: 29 live workbook formulas still reference a 2004 price list (file not provided). Which lines, are those prices valid, and do any of them exist in imported app data? | BA + investigation |
-| OQ-15 | **Fingerprint scope revisit**: if category/extras state moves into the saved costing (33.2), should extras re-enter reference identity? | BA |
+| OQ-15 | ~~Fingerprint scope revisit~~ **RESOLVED (Michael, 17 Aug 2026): extras ARE part of reference identity in the new UI.** Migration strategy per Part 33.2 (recompute from input_state, or version the algorithm) | closed |
 
 ## 35. Assumptions
 
@@ -987,7 +987,7 @@ Two families: **inherited defects/quirks** (fix or consciously carry) and **rede
 ### 36.2 Redesign risks
 
 - **Silent rule loss** — the reason Part 14 exists. Mitigation: the new CA checks each of the 71 rules off explicitly (retire only via BA sign-off).
-- **Fingerprint drift** — changing what identifies a reference breaks existing references (RULE-REF-001, OQ-15).
+- **Fingerprint migration** — extras re-entering identity (OQ-15, ratified) changes fingerprints; existing references must be recomputed from stored input_state or the algorithm versioned (Part 33.2), else every old reference silently stops matching.
 - **Saved-record compatibility** — old costings must re-open (replay mode is the guarantee to preserve).
 - **Template-write semantics change (OQ-02, now ratified)** — removing mid-costing template writes is a behaviour change users may currently rely on (today's toasts train them that gestures update the template); needs comms at rollout.
 - **Two-worlds body options** — 17 v2 + 9 legacy bodies must both flow through the new category model from day one.

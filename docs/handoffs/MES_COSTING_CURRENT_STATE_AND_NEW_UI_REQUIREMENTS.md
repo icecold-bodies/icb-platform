@@ -927,7 +927,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 
 | # | Question | Owner |
 |---|---|---|
-| OQ-01 | **v4.37**: build the new UI on the parked native React calculator (parity re-skin, ~1,850 lines, ADR 0031) or start fresh and mine it for plumbing? This spec deliberately documents the current system, not v4.37's partial port | BA + new CA |
+| OQ-01 | ~~v4.37: build on the parked native React calculator or start fresh?~~ **RESOLVED (Michael, 17 Aug 2026): mine v4.37 for plumbing, start fresh on UX.** See the design brief (Part 37) | ~~BA + new CA~~ closed |
 | OQ-02 | **Template-write semantics**: today insulation/door/thickness gestures write the SHARED template mid-costing. Proposed: per-costing values + explicit "save to template". Confirm, and define who may save to template | BA |
 | OQ-03 | **Quantity override mechanics**: does an overridden quantity survive a recalc after dimension changes (sticky) or reset (derived wins)? Suggest sticky-with-badge + one-click revert | BA + new CA |
 | OQ-04 | **Free-hand line storage**: confirm lines live inside the costing only (no material creation), and whether they can be "promoted" to the catalogue by an admin later | BA |
@@ -1019,7 +1019,7 @@ You are designing a NEW costing experience for ICB. This document is your specif
 
 **Design philosophy** (ratified): *we are not redesigning the old application; we are redesigning the costing experience.* The old system is your source of business rules, calculations, data, dependencies, body types and history. It is NOT your source of layout, navigation, visual design, configuration workflow, or interaction model. When in doubt, ask: "what would the spreadsheet user expect?"
 
-**On v4.37 (OQ-01):** a parked native React calculator exists on `main` (`frontend/src/screens/Costings/calculator/`, ADR 0031). It is a parity-of-output re-implementation of Calculator 1's existing flow — the opposite philosophy to this brief. Mine it for plumbing (API calls, types, save bar mechanics); do not inherit its UX. Whether to build on that branch or start clean is an explicit open decision for you and the BA.
+**On v4.37 [RATIFIED — OQ-01 resolved, Michael, 17 Aug 2026]:** a parked native React calculator exists on `main` (`frontend/src/screens/Costings/calculator/`, ADR 0031) — a parity-of-output re-implementation of Calculator 1's existing flow, the opposite philosophy to this brief. The decision: **mine it for plumbing (API calls, types, save-bar mechanics); start fresh on UX.** Do not inherit its layout, flow, or interaction model.
 
 **Your first deliverables** [PROPOSAL]: (1) a design concept for the one-page costing experience validated against the Part 32 journeys; (2) the OQ answers you need from the BA; (3) a rule-coverage checklist against Part 14; (4) a data-model delta against Part 33.
 

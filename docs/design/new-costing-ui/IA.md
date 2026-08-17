@@ -43,12 +43,13 @@ The old app's rules and data flow through unchanged; only where the user *sees* 
 | Region | Purpose | Always visible? |
 |---|---|---|
 | R1 Totals bar | The four money stages (Part 24.1), permission-masked `••••`; the attention pill (D3); mode chip ("Editing Q-… rev 2" / "Copied from Q-…" / "Loaded from reference 'X' · balances ✓") | Yes — sticky |
-| R2 Header | What is being costed and for whom. Body variant: body ▾, L/W/H, margin, ratio, customer, contact, references. Repair variant: REPAIR ▾, customer, contact, type of repair (required), work description (optional, D4), margin, ratio | Yes |
+| R2 Header | What is being costed and for whom. Body variant: body ▾, L/W/H, margin, ratio, customer, contact, references. Repair variant: REPAIR ▾, customer, contact, type of repair (required), work description (optional, D4), margin, ratio | Yes — **pinned with R1 while the categories scroll** (17 Aug) |
 | R3 Body choices strip | Page-level choices that select *between* categories or don't belong to one: rear door DRD/SRD (radio-sibling categories, RULE-SEC-005), legacy groups whose name matches no category (D5) | Body variant only; hidden when empty |
 | R4 Category cards | The organising unit (Part 25). Order = `bom_sections.sort_order`. Includes OPTIONAL EXTRAS (picker-style, D6) and CHASSIS as cards | Body variant |
 | R4' Repair lines | One flat list; same row grammar as a category's rows | Repair variant |
 | R5 Save bar | Discount (percent ⇄ amount, one clears the other), the truthful Save button + mode selector, overflow (Replace, Print, Full report, Export, Excel paste, Save insulation to template) | Yes — sticky |
 | R6 Drawer | Everything that needs more than a cell: stock picker, free-hand entry, price-edit scope, reference recall, save-to-template diff. Never a modal for data entry; confirmations only for destructive/irreversible acts | On demand |
+| R7 Rail (added 17 Aug) | The unused side space, sticky under R1+R2: reference / rule / view notices (moved out of the main column so the categories keep the height), a **category index** (name · state dot · subtotal; click = jump; ▸ = collapse) with **Collapse all / Expand all**. Drops below the header on narrow screens | Yes on wide screens |
 
 **No navigation.** Admin surfaces (Body Templates, Configurator, Formulas, Materials, recipe engines, Repair types) are reachable only from deep links inside provenance popovers ("edit recipe →", "template →") — never from the costing chrome.
 

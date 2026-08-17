@@ -320,7 +320,6 @@ async function restoreLastSession() {
   _set('f-axles',       d.num_axles);
   _set('f-doors',       d.num_doors);
   _set('f-margin',      session.margin);
-  updateGeo();
 
   // Restore ratio (loadBOM already populated the options)
   if (session.ratio) {
@@ -2039,8 +2038,7 @@ function scheduleCalc() {
   calcTimer = setTimeout(() => { if (bomData.length) runCalc(); }, 700);
 }
 
-function triggerLiveRecalc(options = {}) {
-  if (options.updateGeo) updateGeo();
+function triggerLiveRecalc() {
   if (!bomData.length) return;
   scheduleCalc();
 }
@@ -2050,7 +2048,7 @@ function bindLiveCalcControl(id, options = {}) {
   if (!el) return;
   const events = options.events || ['input', 'change'];
   events.forEach(eventName => {
-    el.addEventListener(eventName, () => triggerLiveRecalc(options));
+    el.addEventListener(eventName, () => triggerLiveRecalc());
   });
 }
 
@@ -2343,7 +2341,6 @@ function applyCalculationInputs(payload) {
     renderBodyOptions(bomData);
     refreshBomDisplay();
   }
-  updateGeo();
 }
 
 async function prefillCalculation(recordId) {
@@ -2812,7 +2809,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     await restoreLastSession();
     defaultNewRatio();              // WO v4.30 — new costing: default ratio 55% (kept only if none restored)
   }
-  updateGeo();
 
   registerPageShortcuts({
     search: () => {
@@ -2830,8 +2826,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 
   ['f-length','f-width','f-height','f-floor-thick','f-panel-thick','f-insul-thick','f-axles','f-doors']
-    .forEach(id => bindLiveCalcControl(id, { updateGeo: true }));
-  bindLiveCalcControl('f-margin', { updateGeo: true });
+    .forEach(id => bindLiveCalcControl(id));
+  bindLiveCalcControl('f-margin');
   bindLiveCalcControl('f-ratio', { events: ['change'] });
 });
 
@@ -2882,18 +2878,9 @@ function getDims() {
   };
 }
 
-function updateGeo() {
-  const d = getDims();
-  const wallA = (d.length * d.height * 2).toFixed(2);
-  const roofA = (d.length * d.width).toFixed(2);
-  const floorA = (d.length * d.width).toFixed(2);
-  const frontA = (d.width * d.height * 2).toFixed(2);
-  const total = (+wallA + +roofA + +floorA + +frontA).toFixed(2);
-  document.getElementById('geo-summary').innerHTML =
-    `Wall: ${wallA} m²&nbsp; Roof: ${roofA} m²<br>` +
-    `Floor: ${floorA} m²&nbsp; Front/Rear: ${frontA} m²<br>` +
-    `<strong style="color:var(--blue-hi)">Total: ${total} m²</strong>`;
-}
+// v1.47 (Nadie 17 Aug) — updateGeo() and the #geo-summary footer strip it fed are removed
+// (unused by ICB). It was display-only: nothing read wallA/roofA/floorA/frontA, and the
+// geometry the FORMULAS use is computed server-side in formula_engine.py.
 
 function updateTopbarTitle(bodyName) {
   const el = document.getElementById('topbar-title');
@@ -2973,7 +2960,6 @@ async function loadBOM(options = {}) {
     if (t.default_height    != null) document.getElementById('f-height').value = t.default_height;
     if (t.markup_percentage != null && t.markup_percentage > 0)
       document.getElementById('f-margin').value = (t.markup_percentage * 100).toFixed(1);
-    updateGeo();
     // v1.44 R6 — the banner rendered before the default length landed;
     // programmatic .value writes fire no input event, so refresh it here.
     updateTopbarTitle(sel.selectedOptions[0]?.text);
@@ -6070,14 +6056,10 @@ function renderSummary(result) {
       </div>
     </div>`;
 
-    // ── Geometry grid — two paired boxes ───────────────────
-    const g = result.geometry;
-    html += `<div class="geo-grid" style="margin-top:14px">
-      <div class="geo-item"><div class="geo-label">Floor / Surface Area</div>
-        <div class="geo-value">${fmtNum(g.floor_area,1)} / ${fmtNum(g.surface_area,1)} m²</div></div>
-      <div class="geo-item"><div class="geo-label">Wall / Roof Area</div>
-        <div class="geo-value">${fmtNum(g.wall_area,1)} / ${fmtNum(g.roof_area,1)} m²</div></div>
-    </div>`;
+    // v1.47 (Nadie 17 Aug) — the two geometry tiles ("Floor / Surface Area" and
+    // "Wall / Roof Area") are removed from COST SUMMARY: ICB never used the figures.
+    // Display only — result.geometry still arrives from the server and still feeds the
+    // formulas; nothing else on this panel read these two tiles.
   }
 
   area.innerHTML = html;
@@ -6163,7 +6145,10 @@ function viewFullResults() {
     toast('Approve and save the costing first', 'warn');
     return;
   }
-  window.open(`/results/${lastRecordId}`, '_blank');
+  // v1.47 — route audit (Nadie 17 Aug): this was the one calculator→results hop that
+  // bypassed _skinnify, so "View Full Results" from /mes/calculator opened the results
+  // page WITHOUT the MES skin. Standalone /calculator is unaffected (_skinnify no-ops).
+  window.open(_skinnify(`/results/${lastRecordId}`), '_blank');
 }
 
 function printResults() {

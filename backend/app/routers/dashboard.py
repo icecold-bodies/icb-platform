@@ -2,12 +2,11 @@ import json
 from datetime import datetime, timezone, timedelta
 
 from fastapi import Request, APIRouter, Depends, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from ..database import get_db, TrailerType, Material, CalculationRecord, Customer
 from ..deps import get_current_user, user_can
-from ..templates_config import templates
 
 router = APIRouter()
 
@@ -161,10 +160,17 @@ def build_dashboard_context(request: Request, db: Session, user) -> dict:
     }
 
 
-@router.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request, db)
-    if not user:
-        return RedirectResponse(url="/login")
-    ctx = build_dashboard_context(request, db, user)
-    return templates.TemplateResponse("dashboard.html", ctx)
+@router.get("/")
+async def root_frontdoor():
+    """v1.43 (Michael, ratified 24 Jul) — the React MES is the SOLE front door: the bare
+    root hands off to /mes-app/ instead of landing on the legacy GRP Costings dashboard.
+
+    302 deliberately, NOT 301 — browsers hard-cache 301s, which would make this
+    painful to reverse. Auth is delegated to the SPA gate (main.py serve_mes_app):
+    unauthenticated users chain on to /login?next=/mes-app/.
+
+    Scope is front-door removal ONLY: the MES-embedded legacy routes
+    (/calculator, /mes/calculator, /results/{id}) and /api/* are untouched, and
+    build_dashboard_context above stays live — /mes/dashboard (mes_views.py) and the
+    /api/dashboard/* KPI endpoints still consume it."""
+    return RedirectResponse(url="/mes-app/", status_code=302)

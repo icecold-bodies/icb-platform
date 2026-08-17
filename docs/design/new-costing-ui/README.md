@@ -9,6 +9,7 @@ Redesign of the ICB costing experience per `docs/handoffs/MES_COSTING_CURRENT_ST
 | `wireframe-lofi.html` | The greybox that preceded the mockup (kept for the record). |
 | `RULE_COVERAGE.md` | All 81 Part-14 rules → design element / engine-side / flagged (49 · 21 · 11, zero unmapped). |
 | `DATA_MODEL_DELTA.md` | Concrete storage + contract delta (costing_type, repair_types, input_state v2, fingerprint v2 migration, permissions, endpoints). |
+| `STYLE_REFERENCE.md` | The ICB PULL BOARD tokens (read from the floor app's shipped CSS) that the mockup's default theme uses; light theme behind the demo toggle (`?theme=light`). |
 | `DESIGN_NOTE.md` | Decisions, trade-offs, rejected alternatives; D1–D6 citations; what to decide first at build. |
 
 Serve locally (any static server; never on :8000):

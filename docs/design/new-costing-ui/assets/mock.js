@@ -18,6 +18,9 @@
   const REFS = M.REFS.map((r) => Object.assign({}, r, { identity: JSON.parse(JSON.stringify(r.identity)) }));
   const TEMPLATE_INS = {}; // body id → per-cat insulation template (mutable copy, for "save to template")
   M.BODIES.forEach((b) => { TEMPLATE_INS[b.id] = JSON.parse(JSON.stringify(b.insDefaults)); });
+  // Theme: 'floor' (PULL BOARD dark, default) | 'light'. Demo-bar toggle; ?theme=light also works.
+  let THEME = (new URLSearchParams(location.search).get('theme') === 'light') ? 'light' : 'floor';
+  document.documentElement.dataset.theme = THEME;
 
   // ---------------------------------------------------------------- state
   let S;
@@ -238,9 +241,10 @@
   function renderDemoBar() {
     return '<div class="demo-bar"><b>MOCKUP</b> New Costing UI · design concept §3.2 · sample data (anonymised)'
       + '<span class="sp"></span>'
+      + '<span>theme: <select data-act="theme"><option value="floor"' + (THEME === 'floor' ? ' selected' : '') + '>floor (PULL BOARD)</option><option value="light"' + (THEME === 'light' ? ' selected' : '') + '>light</option></select></span>'
       + '<span>demo role: <select data-act="role"><option value="full"' + (S.role === 'full' ? ' selected' : '') + '>full (Nadie)</option><option value="user"' + (S.role === 'user' ? ' selected' : '') + '>user (no prices)</option></select></span>'
-      + '<button class="btn" style="padding:1px 8px;font-size:12px" data-act="drawer" data-kind="guide">Where to click</button>'
-      + '<button class="btn" style="padding:1px 8px;font-size:12px" data-act="reset">Reset</button></div>';
+      + '<button class="btn" data-act="drawer" data-kind="guide">Where to click</button>'
+      + '<button class="btn" data-act="reset">Reset</button></div>';
   }
 
   function renderTotals(C) {
@@ -322,7 +326,17 @@
     const hasDoors = bodyHasBothDoors(S);
     if (!hasDoors && !b.strip.length) return '';
     let h = '<div class="strip"><span class="cap">Body choices</span>';
-    if (hasDoors) h += '<span class="fam"><span class="lbl">Rear door</span><span class="seg"><button data-act="door" data-val="DRD" class="' + (S.door === 'DRD' ? 'on' : '') + '">DRD</button><button data-act="door" data-val="SRD" class="' + (S.door === 'SRD' ? 'on' : '') + '">SRD</button></span><span class="tiny mute">double · single</span></span>';
+    if (hasDoors) {
+      h += '<span class="fam"><span class="lbl">Rear door</span><span class="seg"><button data-act="door" data-val="DRD" class="' + (S.door === 'DRD' ? 'on' : '') + '">DRD</button><button data-act="door" data-val="SRD" class="' + (S.door === 'SRD' ? 'on' : '') + '">SRD</button>'
+        + (b.noRearDoors ? '<button data-act="door" data-val="NONE" class="' + (S.door === 'NONE' ? 'on' : '') + '" title="NO REAR DOORS — side doors only (RULE-DOOR-007)">None — side doors only</button>' : '')
+        + '</span><span class="tiny mute">double · single' + (b.noRearDoors ? ' · none' : '') + '</span></span>';
+      // RULE-DOOR-007 (bodies with the NO REAR DOORS control): warn-but-allow states, inline instead of modal.
+      if (b.noRearDoors) {
+        const sideDoor = S.added.some((a) => /side door/i.test(a.name));
+        if (S.door === 'NONE' && !sideDoor) h += '<span class="doornote">⚠ No doors quoted — no rear doors and no side-door extra yet. <button data-act="drawer" data-kind="stock" data-sec="OPTIONAL EXTRAS">Add a side door</button></span>';
+        if (S.door !== 'NONE' && sideDoor && !S.ui.doorPromptDismissed) h += '<span class="doornote">Side door added while ' + esc(S.door) + ' rear doors are quoted — remove the rear doors? <button data-act="door" data-val="NONE">Remove rear doors</button><button data-act="door-keep">Keep both</button></span>';
+      }
+    }
     b.strip.forEach((f) => { h += famControl(f); });
     if (b.strip.length) h += '<span class="tiny mute">legacy option group — matches no category, so it lives here (D5)</span>';
     return h + '</div>';
@@ -400,7 +414,7 @@
       h += '<div class="' + cls.join(' ') + '" id="cat-' + esc(name) + '"><div class="hd">';
       h += '<button class="caret" data-act="collapse" data-cat="' + esc(name) + '" title="collapse / expand">' + (collapsed ? '▸' : '▾') + '</button>';
       // name + state text
-      if (st === 'sibling') h += '<span class="nm">' + esc(name) + ' — not quoted (' + esc(S.door) + ' chosen)</span>';
+      if (st === 'sibling') h += '<span class="nm">' + esc(name) + ' — not quoted (' + (S.door === 'NONE' ? 'no rear doors — side doors only' : esc(S.door) + ' chosen') + ')</span>';
       else if (st === 'rule-off') h += '<span class="nm">' + esc(name) + '</span><span class="tag reason">excluded — needs ' + esc(sec.master.val) + '</span>';
       else h += '<span class="nm">' + esc(name) + '</span>';
       if (sec.mult > 1) h += '<span class="mult" title="' + esc('section multiplier × ' + sec.mult + ' — ' + (canPrices() ? fmtR(c.subtotal / sec.mult) + ' per side' : 'per-side amount masked')) + '">× ' + sec.mult + '</span>';
@@ -530,10 +544,11 @@
     let title = '', bodyH = '', foot = '';
     const close = '<button class="x" data-act="drawer-close" title="close">×</button>';
     if (d.kind === 'stock') {
-      const isExtras = d.sec === 'OPTIONAL EXTRAS';
-      title = isExtras ? 'Add extra → OPTIONAL EXTRAS' : 'Add from stock list → ' + d.sec;
+      const isExtras = /^OPTIONAL/.test(d.sec);                     // RULE-SEC-001: OPTIONAL prefix
+      const isXExtras = /EXPLOSIVE/.test(d.sec);
+      title = isExtras ? 'Add extra → ' + d.sec : 'Add from stock list → ' + d.sec;
       const q = (S.ui.stockQ || '').toLowerCase();
-      let list = M.STOCK.filter((s) => !isExtras || S.ui.stockAll || s.extra);
+      let list = M.STOCK.filter((s) => !isExtras || S.ui.stockAll || (isXExtras ? s.xextra : s.extra));
       if (q) list = list.filter((s) => (s.name + ' ' + s.sap + ' ' + s.cat + ' ' + s.sub).toLowerCase().includes(q));
       bodyH += '<div class="field"><input id="stockq" placeholder="Search name · SAP code · category · sub-category" data-act="stockq" value="' + esc(S.ui.stockQ) + '"></div>';
       if (isExtras) bodyH += '<label class="small"><input type="checkbox" data-act="stockall"' + (S.ui.stockAll ? ' checked' : '') + '> show the whole stock list (not only extras)</label>';
@@ -625,6 +640,7 @@
         + '<li><b>Exclude a category</b>: untick Include on ROOF → inline warning → “Exclude anyway”. Re-tick to bring it back.</li>'
         + '<li><b>Insulation inside FLOOR</b>: flip PU→EPS, change 100 → 76 mm; note “≠ template”; use the “Apply to all” chip.</li>'
         + '<li><b>Rear door</b> in Body choices: DRD ⇄ SRD — the sibling card stays visible, “not quoted”.</li>'
+        + '<li><b>EXPLOSIVES</b>: pick “EXPLOSIVE 2.7 TO 4.8” → Rear door gains <b>None — side doors only</b>; choose it → both door cards “not quoted”, amber “No doors quoted” note until you add a side door under OPTIONAL EXTRAS; add a side door while DRD is chosen → “remove the rear doors?” prompt (RULE-DOOR-007). Its “OPTIONAL EXPLOSIVE EXTRAS” card is optional by name prefix.</li>'
         + '<li><b>Qty in place</b>: click a quantity (e.g. GLUE LINE in FRONT), type 15, Enter → blue + ↺. Now change L → amber “formula now …” chip.</li>'
         + '<li><b>Price</b>: click a price → drawer → new value + scope (this costing needs a reason). Click an <i>ƒ</i> price for the recipe breakdown.</li>'
         + '<li><b>Add lines</b>: “+ Add from stock” / “+ Free-hand line” on any card; on OPTIONAL EXTRAS tick Include then “+ Add extra” — add “Fixed strip curtains – DRD” (unpriced) and watch the ⚠ pill.</li>'
@@ -632,7 +648,7 @@
         + '<li><b>Save</b>: pick Customer A → the button reads “Save revision 3 of Q-A101” with a mode selector; with unpriced lines the popover asks for acknowledgement. After saving, “Mark as validated reference” appears.</li>'
         + '<li><b>References</b>: “Validated references (2)” → Recall → chip “Loaded from reference … balances ✓”; then change a qty → drift banner.</li>'
         + '<li><b>REPAIR</b>: change the Costing dropdown to REPAIR → Type of repair + Work description; add stock/free-hand lines; Customer B → “Save revision 2 of Q-B207”.</li>'
-        + '<li>Try <b>demo role: user</b> (top bar) to see price masking; ⋯ next to Save for Print / Report / Export / Save-to-template / Replace.</li>'
+        + '<li>Try <b>demo role: user</b> (top bar) to see price masking; ⋯ next to Save for Print / Report / Export / Save-to-template / Replace. <b>theme</b> switches between the PULL BOARD look (default) and the light review theme.</li>'
         + '</ol>';
       foot = '<span class="sp"></span><button class="btn" data-act="drawer-close">Close</button>';
     }
@@ -663,7 +679,8 @@
       }
       case 'cat-exclude': S.excluded.add(t.dataset.cat); S.ui.pendingExclude = null; dirty(); render(); return;
       case 'cat-keep': S.ui.pendingExclude = null; render(); return;
-      case 'door': S.door = t.dataset.val; dirty(); render(); return;
+      case 'door': S.door = t.dataset.val; S.ui.doorPromptDismissed = false; dirty(); render(); return;
+      case 'door-keep': S.ui.doorPromptDismissed = true; render(); return;
       case 'ins-side': { const c = t.dataset.cat, v = t.dataset.val; if (S.ins[c].side !== v) { S.ins[c].side = v; S.ui.assist = { from: c, side: v }; dirty(); } render(); return; }
       case 'assist-yes': { const b = body(); b.insulated.forEach((c) => { S.ins[c].side = S.ui.assist.side; }); S.ui.assist = null; dirty(); toast('Applied ' + (S.ins[b.insulated[0]].side) + ' to all insulated categories — this costing only'); return; }
       case 'assist-no': S.ui.assist = null; render(); return;
@@ -701,7 +718,7 @@
         const s = M.STOCK.find((x) => x.id === +t.dataset.id), sec = t.dataset.sec;
         const ex = S.added.find((a) => a.section === sec && a.stockId === s.id);
         if (ex) ex.qty += 1; else S.added.push({ key: 'add#' + (addSeq++), section: sec, kind: 'stock', stockId: s.id, name: s.name, unit: s.unit, price: s.price, qty: 1, sap: s.sap, age: s.age });
-        if (sec === 'OPTIONAL EXTRAS') S.optOn.add(sec);
+        if (/^OPTIONAL/.test(sec)) S.optOn.add(sec);
         dirty(); render(); return;
       }
       case 'fh-add': {
@@ -711,7 +728,7 @@
         if (isNaN(qty) || qty <= 0) { S.ui.drawer.error = 'Quantity must be > 0'; render(); return; }
         if (isNaN(price) || price < 0) { S.ui.drawer.error = 'Unit price must be ≥ 0'; render(); return; }
         const sec = t.dataset.sec; S.added.push({ key: 'add#' + (addSeq++), section: sec, kind: 'manual', name: desc, unit, price, qty, note });
-        if (sec === 'OPTIONAL EXTRAS') S.optOn.add(sec);
+        if (/^OPTIONAL/.test(sec)) S.optOn.add(sec);
         S.ui.drawer = null; dirty(); toast('Free-hand line added to ' + sec); return;
       }
       case 'chassis-toggle': S.chassis.on = !S.chassis.on; dirty(); render(); return;
@@ -767,6 +784,7 @@
     const act = t.dataset.act;
     switch (act) {
       case 'role': S.role = t.value; render(); return;
+      case 'theme': THEME = t.value; document.documentElement.dataset.theme = THEME; render(); return;
       case 'pick-body': {
         if (t.value === 'repair') { const keep = { role: S.role, customer: S.customer, contact: S.contact }; S = freshState(S.bodyId, keep); S.type = 'repair'; S.margin = 0; render(); return; }
         S = freshState(+t.value, { role: S.role, customer: S.customer, contact: S.contact }); render(); return;

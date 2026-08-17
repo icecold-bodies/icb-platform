@@ -76,7 +76,7 @@ Zero unmapped. Every FLAG has a stated default so the build is never blocked on 
 | DOOR-004 Heal on render | **DESIGN** — *subsumed by* structural state | No healing needed: the state can't be inconsistent. |
 | DOOR-005 Zero the inactive door on load | **DESIGN** — *subsumed by* structural state | Not-quoted door pair is 0 by construction in every payload; no template write on load. |
 | DOOR-006 Door off = zero both cells | **DESIGN** — *subsumed by* the *not-quoted-sibling* card state | The unchosen door card is visible, collapsed, "not quoted (DRD chosen)", contributes nothing, warns nothing. |
-| DOOR-007 NO REAR DOORS + side doors | **DESIGN** (specified, **not mocked**) | Bodies that carry a NO REAR DOORS control get a third option in the Rear-door control (`DRD \| SRD \| None`); adding a SIDE DOOR extra while a rear door is quoted shows an inline warning "Remove rear doors?"; "None" with no side-door extra shows the amber "No doors quoted" note. Same outcomes as today, inline instead of modal. |
+| DOOR-007 NO REAR DOORS + side doors | **DESIGN** (mocked — EXPLOSIVE 2.7 TO 4.8) | Bodies that carry a NO REAR DOORS control (EXPLOSIVE types — Michael, 17 Aug) get a third option in the Rear-door control (`DRD \| SRD \| None — side doors only`); adding a SIDE DOOR extra while a rear door is quoted shows the inline prompt "remove the rear doors? [Remove] [Keep both]"; "None" with no side-door extra shows the amber "No doors quoted" note. Same outcomes as today, inline instead of modal. |
 | DOOR-008 Doors resolve for display from saved data (R-16) | **ENGINE** | New records store the door choice explicitly (DATA_MODEL_DELTA §3) so the display fallback is only ever needed for legacy records. |
 
 ## 14.4 Sections & categories — RULE-SEC

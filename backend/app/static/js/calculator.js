@@ -256,6 +256,7 @@ function saveLastSession() {
       ratio:       _v('f-ratio'),
       customer_id: _v('cust-select') || null,
       contact_id:  _v('contact-select') || null,
+      end_user_id: _v('end-user-select') || null,
       chassis_on:  chOn,
       chassis: chOn ? {
         length:        +_v('f-ch-length')     || 0,
@@ -333,7 +334,8 @@ async function restoreLastSession() {
   discountInput = discountKind ? (+session.discount_input || 0) : 0;
 
   // Restore customer (+ the attention-of contact riding the same snapshot)
-  if (session.customer_id) setCustomer(session.customer_id, session.contact_id || null);
+  if (session.customer_id) setCustomer(session.customer_id, session.contact_id || null,
+                                       session.end_user_id || null);
 
   // Restore chassis if it was enabled
   if (session.chassis_on && session.chassis) {
@@ -2074,19 +2076,22 @@ function renderCustomerList(custs) {
   if (prev && sel.querySelector(`option[value="${prev}"]`)) sel.value = prev;
 }
 
-function setCustomer(customerId, contactId = null) {
+function setCustomer(customerId, contactId = null, endUserId = null) {
   // Programmatic selection does NOT fire the select's change event, so every caller
   // (edit reopen, copy-from, session restore) gets the Attention picker refreshed here;
-  // contactId pre-selects a saved contact instead of the primary-contact default.
+  // contactId pre-selects a saved contact instead of the primary-contact default, and
+  // endUserId does the same for the End user picker (WO v1.47 lane B).
   const sel = document.getElementById('cust-select');
   if (!customerId) {
     sel.value = '';
     void loadContactsForCustomer(null);
+    void loadEndUsersForCustomer(null);
     return;
   }
   const target = String(customerId);
   if (sel.querySelector(`option[value="${target}"]`)) sel.value = target;
   void loadContactsForCustomer(sel.value || null, contactId);
+  void loadEndUsersForCustomer(sel.value || null, endUserId);
 }
 
 // ── Attention: customer-contact picker (customer-contacts WO) ────────────────
@@ -2097,7 +2102,8 @@ let allContacts = [];            // active contacts of the currently selected cu
 let _contactsForCustomer = null; // which customer the in-flight/loaded list belongs to
 
 async function onCustomerChanged() {
-  await loadContactsForCustomer(document.getElementById('cust-select').value || null);
+  const custId = document.getElementById('cust-select').value || null;
+  await Promise.all([loadContactsForCustomer(custId), loadEndUsersForCustomer(custId)]);
 }
 
 async function loadContactsForCustomer(custId, presetContactId = null) {
@@ -2196,6 +2202,123 @@ async function submitContactAdd() {
   }
 }
 
+// ── End user: the customer's customer (WO v1.47 lane B) ─────────────────────
+// ICB's customer is often a reseller or middleman — the body is actually FOR someone
+// else. Optional throughout: pick nothing and the quote behaves exactly as before.
+// Byte-parallel to the Attention picker above (load per customer, stale-response
+// guard, inline "+" quick-add), with ONE deliberate difference: nothing auto-selects.
+// An end user is a real commercial claim about who the body is for — defaulting to
+// the primary would silently put a company name on a quote that Nadie never chose.
+let allEndUsers = [];             // active end users of the currently selected customer
+let _endUsersForCustomer = null;  // which customer the in-flight/loaded list belongs to
+
+async function loadEndUsersForCustomer(custId, presetEndUserId = null) {
+  const block  = document.getElementById('end-user-block');
+  const sel    = document.getElementById('end-user-select');
+  const addBtn = document.getElementById('end-user-add-btn');
+  const empty  = document.getElementById('end-user-empty');
+  if (!sel) return;                                  // page variant without the picker
+  toggleEndUserAdd(false);
+  allEndUsers = [];
+  _endUsersForCustomer = custId;
+  if (!custId) {
+    // No customer → the whole block is hidden (there is nothing it could list).
+    if (block) block.style.display = 'none';
+    sel.innerHTML = '<option value="">— Select a customer first —</option>';
+    sel.disabled = true;
+    if (addBtn) addBtn.disabled = true;
+    if (empty) empty.style.display = 'none';
+    return;
+  }
+  if (block) block.style.display = '';
+  sel.disabled = true;
+  sel.innerHTML = '<option value="">Loading…</option>';
+  if (addBtn) addBtn.disabled = false;
+  let endUsers = [];
+  try {
+    endUsers = await api('GET', `/api/customers/${custId}/end-users`);
+  } catch(e) { /* non-fatal — render the empty state */ }
+  if (_endUsersForCustomer !== custId) return;       // stale response — a newer selection won
+  allEndUsers = Array.isArray(endUsers) ? endUsers : [];
+  renderEndUserList(presetEndUserId);
+}
+
+function renderEndUserList(presetEndUserId = null) {
+  const sel   = document.getElementById('end-user-select');
+  const empty = document.getElementById('end-user-empty');
+  if (!allEndUsers.length) {
+    // Customer on file with no end users: the picker is empty but the "+ Add now"
+    // affordance stays reachable (same as the Attention empty state).
+    sel.innerHTML = '<option value="">— No end users —</option>';
+    sel.disabled = true;
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">— No end user —</option>' + allEndUsers.map(e => {
+    const bits = [e.company_name || '(unnamed)'];
+    if (e.contact_name) bits.push(e.contact_name);
+    const label = bits.join(' — ') + (e.is_primary ? ' ● primary' : '');
+    return `<option value="${e.id}">${escHtml(label)}</option>`;
+  }).join('');
+  // Only an EXPLICIT preset (edit / copy / session restore) re-selects — see the
+  // no-auto-select note above.
+  sel.value = (presetEndUserId && allEndUsers.some(e => String(e.id) === String(presetEndUserId)))
+    ? String(presetEndUserId) : '';
+}
+
+function toggleEndUserAdd(show) {
+  const form = document.getElementById('end-user-add-form');
+  if (!form) return;
+  form.style.display = show ? '' : 'none';
+  const err = document.getElementById('end-user-add-err');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  if (show) {
+    ['end-user-new-company', 'end-user-new-name', 'end-user-new-role',
+     'end-user-new-email', 'end-user-new-tel']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('end-user-new-company')?.focus();
+  }
+}
+
+async function submitEndUserAdd() {
+  const custId = document.getElementById('cust-select').value || null;
+  const err = document.getElementById('end-user-add-err');
+  const showErr = msg => { if (err) { err.textContent = msg; err.style.display = ''; } };
+  if (!custId) { showErr('Select a customer first.'); return; }
+  const company = document.getElementById('end-user-new-company').value.trim();
+  if (!company) { showErr('End-user company name is required.'); return; }
+  const spin = document.getElementById('end-user-add-spin');
+  if (spin) spin.style.display = '';
+  try {
+    const created = await api('POST', `/api/customers/${custId}/end-users`, {
+      company_name:      company,
+      contact_name:      document.getElementById('end-user-new-name').value.trim(),
+      contact_role:      document.getElementById('end-user-new-role').value.trim(),
+      contact_email:     document.getElementById('end-user-new-email').value.trim(),
+      contact_telephone: document.getElementById('end-user-new-tel').value.trim(),
+      is_primary: !allEndUsers.length,   // a customer's first end user becomes the default
+    });
+    toggleEndUserAdd(false);
+    // The one just added IS the intended pick — pass it as the preset.
+    await loadEndUsersForCustomer(custId, created.id);
+    toast(`End user ${created.company_name} added`, 'success');
+  } catch(e) {
+    showErr('Could not save end user: ' + e.message);
+  } finally {
+    if (spin) spin.style.display = 'none';
+  }
+}
+
+/** The end user currently picked, or null — the preview payload's source (the approved
+ *  export reads the DB snapshot instead, so the two agree by construction). */
+function _selectedEndUser() {
+  const id = document.getElementById('end-user-select')?.value;
+  if (!id) return null;
+  return allEndUsers.find(e => String(e.id) === String(id)) || null;
+}
+
 function applyCalculationInputs(payload) {
   const dims = payload.dimensions || {};
   document.getElementById('f-length').value = dims.length ?? document.getElementById('f-length').value;
@@ -2211,7 +2334,7 @@ function applyCalculationInputs(payload) {
   document.getElementById('f-axles').value = dims.num_axles ?? document.getElementById('f-axles').value;
   document.getElementById('f-doors').value = dims.num_doors ?? document.getElementById('f-doors').value;
   document.getElementById('f-margin').value = payload.profit_margin ?? 0;
-  setCustomer(payload.customer_id, payload.contact_id ?? null);
+  setCustomer(payload.customer_id, payload.contact_id ?? null, payload.end_user_id ?? null);
   // Restore body-option selections from saved calculation
   if (payload.body_option_selections && typeof payload.body_option_selections === 'object') {
     Object.assign(bodyOptionSelections, payload.body_option_selections);
@@ -5103,11 +5226,13 @@ async function approveCosting() {
   if (!lastCalcPayload) { toast('Nothing to approve — select a trailer first', 'error'); return; }
   const customerId = document.getElementById('cust-select').value || null;
   const contactId  = document.getElementById('contact-select')?.value || null;
+  const endUserId  = document.getElementById('end-user-select')?.value || null;
 
   _pendingApproveBase = {
     ...lastCalcPayload,
     customer_id: customerId ? +customerId : null,
     contact_id:  contactId  ? +contactId  : null,
+    end_user_id: endUserId  ? +endUserId  : null,
   };
 
   // Editing an existing pending costing → ask whether to overwrite the original
@@ -7879,6 +8004,11 @@ function _previewPayload(opts) {
     drd_srd: (typeof drdSrdEnabled !== 'undefined' && drdSrdEnabled) || undefined,
     bom_sort_mode: (typeof getBomSortMode === 'function' ? getBomSortMode() : 'sheet'),
     customer_name: _selectedCustomerName(),
+    // End user (v1.47 lane B) — the preview has no saved record to read a snapshot
+    // from, so the picked values ride the payload; approved exports read the DB
+    // snapshot instead, and the two agree because both go through build_doc_ctx.
+    end_user_company:      _selectedEndUser()?.company_name || undefined,
+    end_user_contact_name: _selectedEndUser()?.contact_name || undefined,
   };
   if (opts.detail) payload.detail = opts.detail;
   if (Array.isArray(opts.ratios)) payload.ratios = opts.ratios;
@@ -7950,6 +8080,9 @@ async function downloadPreview(opts) {
       bom_sort_mode: (typeof getBomSortMode === 'function' ? getBomSortMode() : 'sheet'),
       // R2.2 — the client line mirrors the page's customer picker live.
       customer_name: _selectedCustomerName(),
+      // …and the end-user lines mirror the End user picker (v1.47 lane B).
+      end_user_company:      _selectedEndUser()?.company_name || undefined,
+      end_user_contact_name: _selectedEndUser()?.contact_name || undefined,
     };
     if (opts.detail) payload.detail = opts.detail;
     if (Array.isArray(opts.ratios)) payload.ratios = opts.ratios;

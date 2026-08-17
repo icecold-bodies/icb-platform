@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
-from ..database import Customer, CustomerContact, User, get_db
+from ..database import Customer, CustomerContact, CustomerEndUser, User, get_db
 from ..deps import require_admin, require_user
 
 router = APIRouter()
@@ -17,6 +17,14 @@ def _contact_dict(c: CustomerContact) -> dict:
     return {"id": c.id, "customer_id": c.customer_id, "name": c.name or "",
             "role": c.role or "", "email": c.email or "", "telephone": c.telephone or "",
             "is_primary": bool(c.is_primary), "is_active": bool(c.is_active)}
+
+
+def _end_user_dict(e: CustomerEndUser) -> dict:
+    return {"id": e.id, "customer_id": e.customer_id, "company_name": e.company_name or "",
+            "contact_name": e.contact_name or "", "contact_role": e.contact_role or "",
+            "contact_email": e.contact_email or "", "contact_telephone": e.contact_telephone or "",
+            "notes": e.notes or "",
+            "is_primary": bool(e.is_primary), "active": bool(e.active)}
 
 
 @router.get("/api/customers")
@@ -231,5 +239,131 @@ async def delete_contact(cust_id: int, contact_id: int,
     c.is_active = False
     c.is_primary = False
     c.updated_by = actor.username
+    db.commit()
+    return {"ok": True}
+
+
+# ── End users (WO v1.47 lane B §3.2) ─────────────────────────────────────────
+# The END USER the body is actually FOR when the customer is a reseller/middleman. One row
+# holds the end-user COMPANY plus its contact PERSON. Byte-for-byte the contacts pattern
+# above: one is_primary per customer (partial unique index, migration 0040), soft-delete via
+# `active`, CREATE relaxed to require_user for the calculator's inline "+" quick-add while
+# update / set-primary / delete stay admin-only.
+
+def _clear_primary_end_user(db: Session, cust_id: int, except_id: int | None = None) -> None:
+    """Demote every other primary for this customer, then FLUSH before the new primary lands —
+    without the flush SQLAlchemy batches INSERTs ahead of UPDATEs and the new is_primary=true
+    row collides with the still-true old one on uq_customer_end_users_one_primary. Same trap,
+    same fix as _clear_primary() above."""
+    q = db.query(CustomerEndUser).filter(CustomerEndUser.customer_id == cust_id,
+                                         CustomerEndUser.is_primary.is_(True))
+    if except_id is not None:
+        q = q.filter(CustomerEndUser.id != except_id)
+    demoted = False
+    for other in q.all():
+        other.is_primary = False
+        demoted = True
+    if demoted:
+        db.flush()
+
+
+def _get_end_user(db: Session, cust_id: int, end_user_id: int) -> CustomerEndUser:
+    e = (db.query(CustomerEndUser)
+         .filter_by(id=end_user_id, customer_id=cust_id).first())
+    if not e:
+        raise HTTPException(status_code=404, detail="End user not found")
+    return e
+
+
+@router.get("/api/customers/{cust_id}/end-users")
+async def list_end_users(cust_id: int, db: Session = Depends(get_db),
+                         user: User = Depends(require_user)):
+    _require_customer(db, cust_id)
+    rows = (db.query(CustomerEndUser)
+            .filter(CustomerEndUser.customer_id == cust_id, CustomerEndUser.active.is_(True))
+            .order_by(CustomerEndUser.is_primary.desc(),
+                      CustomerEndUser.company_name.nullslast(), CustomerEndUser.id)
+            .all())
+    return [_end_user_dict(e) for e in rows]
+
+
+@router.post("/api/customers/{cust_id}/end-users")
+async def create_end_user(cust_id: int, request: Request, db: Session = Depends(get_db),
+                          actor: User = Depends(require_user)):
+    """CREATE is require_user (like create_contact): the calculator's inline "+" quick-add must
+    work for sales users (Nadie) mid-quote. Additive and audited."""
+    _require_customer(db, cust_id)
+    body = await request.json()
+    company = str(body.get("company_name", "")).strip()
+    if not company:
+        raise HTTPException(status_code=400, detail="End-user company name is required")
+    is_primary = bool(body.get("is_primary", False))
+    if is_primary:
+        _clear_primary_end_user(db, cust_id)
+    e = CustomerEndUser(
+        customer_id=cust_id,
+        company_name=company,
+        contact_name=str(body.get("contact_name", "")).strip() or None,
+        contact_role=str(body.get("contact_role", "")).strip() or None,
+        contact_email=str(body.get("contact_email", "")).strip() or None,
+        contact_telephone=str(body.get("contact_telephone", "")).strip() or None,
+        notes=str(body.get("notes", "")).strip() or None,
+        is_primary=is_primary,
+        active=True,
+        created_by=actor.username,
+        updated_by=actor.username,
+    )
+    db.add(e)
+    db.commit()
+    db.refresh(e)
+    return _end_user_dict(e)
+
+
+@router.put("/api/customers/{cust_id}/end-users/{end_user_id}")
+async def update_end_user(cust_id: int, end_user_id: int, request: Request,
+                          db: Session = Depends(get_db), actor: User = Depends(require_admin)):
+    body = await request.json()
+    e = _get_end_user(db, cust_id, end_user_id)
+    if "company_name" in body:
+        company = str(body["company_name"]).strip()
+        if not company:
+            raise HTTPException(status_code=400, detail="End-user company name is required")
+        e.company_name = company
+    for field in ("contact_name", "contact_role", "contact_email", "contact_telephone", "notes"):
+        if field in body:
+            setattr(e, field, str(body[field]).strip() or None)
+    if body.get("is_primary") is True:
+        _clear_primary_end_user(db, cust_id, except_id=e.id)
+        e.is_primary = True
+    elif body.get("is_primary") is False:
+        e.is_primary = False
+    e.updated_by = actor.username
+    db.commit()
+    return _end_user_dict(e)
+
+
+@router.post("/api/customers/{cust_id}/end-users/{end_user_id}/set-primary")
+async def set_primary_end_user(cust_id: int, end_user_id: int,
+                               db: Session = Depends(get_db),
+                               actor: User = Depends(require_admin)):
+    e = _get_end_user(db, cust_id, end_user_id)
+    if not e.active:
+        raise HTTPException(status_code=422, detail="Cannot make an inactive end user primary")
+    _clear_primary_end_user(db, cust_id, except_id=e.id)
+    e.is_primary = True
+    e.updated_by = actor.username
+    db.commit()
+    return _end_user_dict(e)
+
+
+@router.delete("/api/customers/{cust_id}/end-users/{end_user_id}")
+async def delete_end_user(cust_id: int, end_user_id: int,
+                          db: Session = Depends(get_db), actor: User = Depends(require_admin)):
+    """Soft-delete: active=false (and drop is_primary so the partial-unique slot frees up).
+    Costings that already snapshotted this end user keep their values untouched."""
+    e = _get_end_user(db, cust_id, end_user_id)
+    e.active = False
+    e.is_primary = False
+    e.updated_by = actor.username
     db.commit()
     return {"ok": True}

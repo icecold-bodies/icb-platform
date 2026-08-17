@@ -346,6 +346,43 @@
       </div>
     </div>
 
+    <!-- End user: the customer's customer (WO v1.47 lane B). Optional — the whole block
+         hides when the selected customer has no end users on file. -->
+    <div id="end-user-block" style="display:none;padding:6px 12px;border-top:1px solid var(--border);background:var(--bg-panel)">
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
+        color:var(--text-dim);margin-bottom:3px">End user <span style="text-transform:none;letter-spacing:0">(optional)</span></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="end-user-select" class="form-control" disabled
+          style="flex:1;font-size:12px;background:var(--bg-input);border:1px solid var(--border);
+          border-radius:var(--radius);color:var(--text);padding:4px">
+          <option value="">— Select a customer first —</option>
+        </select>
+        <button type="button" class="btn btn-outline btn-sm" id="end-user-add-btn" disabled
+          title="Add an end user for this customer" onclick="toggleEndUserAdd(true)"
+          style="padding:4px 10px;font-weight:700">+</button>
+      </div>
+      <div id="end-user-empty" style="display:none;font-size:11px;color:var(--text-dim);margin-top:4px">
+        No end users yet —
+        <a href="#" onclick="toggleEndUserAdd(true);return false"
+          style="color:var(--blue-hi);font-weight:600">+ Add now</a>
+      </div>
+      <div id="end-user-add-form" style="display:none;margin-top:6px;padding:8px;
+        border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-input)">
+        <input class="form-control" id="end-user-new-company" placeholder="End-user company *" style="font-size:12px;margin-bottom:4px"/>
+        <input class="form-control" id="end-user-new-name"    placeholder="Contact name"       style="font-size:12px;margin-bottom:4px"/>
+        <input class="form-control" id="end-user-new-role"    placeholder="Contact role"       style="font-size:12px;margin-bottom:4px"/>
+        <input class="form-control" id="end-user-new-email"   placeholder="Contact email"      style="font-size:12px;margin-bottom:4px"/>
+        <input class="form-control" id="end-user-new-tel"     placeholder="Contact telephone"  style="font-size:12px;margin-bottom:6px"/>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn btn-primary btn-sm" style="flex:1" onclick="submitEndUserAdd()">
+            <span id="end-user-add-spin" class="spinner" style="display:none"></span>Save end user</button>
+          <button type="button" class="btn btn-outline btn-sm" style="flex:1"
+            onclick="toggleEndUserAdd(false)">Cancel</button>
+        </div>
+        <div id="end-user-add-err" style="display:none;font-size:11px;color:var(--red);margin-top:4px"></div>
+      </div>
+    </div>
+
     <!-- v1.46 (Michael) — economical footer: Total Cost on ONE line, no
          Selling Price line, and the unused Print / Full Report buttons gone,
          so the category totals above are no longer squashed to the top.
@@ -1286,6 +1323,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
+<script defer src="/static/js/calculator.js?v=158"></script>
 <script defer src="/static/js/calculator.js?v=157"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────

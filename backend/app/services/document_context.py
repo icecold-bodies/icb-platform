@@ -8,6 +8,12 @@ property of this module, and the renderers stay dumb.
 Document order (ratified R2):
   1. heading            — "Testing — {body} ({len} m)"  /  "{quote} — {body} ({len} m)"
   2. client_name        — selected customer, or "— no client selected —" on previews
+  2b. end_user_lines    — WO v1.47 lane B: when the costing snapshotted an END USER
+                          (ICB's customer is often a reseller and the body is FOR
+                          someone else), "End user: {company}" and, when present,
+                          "End user contact: {name}", directly under the client.
+                          Empty list when there is none — the renderers then emit
+                          NOTHING, so unaffected documents keep their exact layout.
   3. spec_pairs + spec_options — dimensions block then body-options block
   4. category_totals    — moved ABOVE the price summary and line items
   5. price_rows         — Materials Cost · Margin ({n}%) · Ratio ({r}) · TOTAL COST,
@@ -166,9 +172,27 @@ def build_price_rows(result: dict, ratios: list[float], db=None) -> list[dict]:
     return rows
 
 
+def build_end_user_lines(company, contact_name) -> list[str]:
+    """The end-user document lines (WO v1.47 lane B, Default 5). ONE definition, shared by
+    xlsx / docx / pdf so the wording cannot drift between formats.
+
+    No company → an empty list, and every renderer emits nothing at all: no blank line, no
+    empty label, layout byte-identical to pre-WO documents. A contact person without a
+    company is not renderable on its own (the end user IS the company), so it is dropped."""
+    company = str(company or "").strip()
+    if not company:
+        return []
+    lines = [f"End user: {company}"]
+    contact_name = str(contact_name or "").strip()
+    if contact_name:
+        lines.append(f"End user contact: {contact_name}")
+    return lines
+
+
 def build_doc_ctx(*, mode: str, heading: str, sub: str, client_name: str,
                   spec_pairs: list, spec_options: list, result: dict,
                   ratios: list[float], detail: str, db=None,
+                  end_user_company=None, end_user_contact_name=None,
                   heading_color: str = "58A6FF", is_repair: bool = False,
                   section_totals: dict | None = None,
                   highlight: bool = False,
@@ -203,6 +227,7 @@ def build_doc_ctx(*, mode: str, heading: str, sub: str, client_name: str,
         "heading_color": heading_color,
         "sub": sub,
         "client_name": client_name or NO_CLIENT_PLACEHOLDER,
+        "end_user_lines": build_end_user_lines(end_user_company, end_user_contact_name),
         "spec_pairs": spec_pairs,
         "spec_options": spec_options,
         "category_totals": cat_totals,

@@ -340,6 +340,8 @@ class Customer(Base):
     calculations  = relationship("CalculationRecord", back_populates="customer")
     contacts      = relationship("CustomerContact", back_populates="customer",
                                  cascade="all, delete-orphan")
+    end_users     = relationship("CustomerEndUser", back_populates="customer",
+                                 cascade="all, delete-orphan")
 
 
 class CustomerContact(Base):
@@ -367,6 +369,39 @@ class CustomerContact(Base):
     created_by  = Column(String(128))
     updated_by  = Column(String(128))
     customer    = relationship("Customer", back_populates="contacts")
+
+
+class CustomerEndUser(Base):
+    """WO v1.47 lane B (Nadie, 17 Aug) — the END USER: ICB's customer is often a reseller or a
+    middleman, and the body is actually FOR someone else. One row = one end-user COMPANY plus
+    its contact PERSON (Nadie's "table that contains the end user and the contact person").
+    Exact twin of CustomerContact, one level out: partial unique index = one is_primary per
+    customer; soft-delete via active. company_name is the only required field."""
+    __tablename__ = "customer_end_users"
+    __table_args__ = (
+        Index("ix_customer_end_users_customer", "customer_id"),
+        Index("uq_customer_end_users_one_primary", "customer_id", unique=True,
+              postgresql_where=_sa_text("is_primary")),
+    )
+    id                = Column(Integer, primary_key=True)
+    customer_id       = Column(Integer, ForeignKey("customers.id", ondelete="CASCADE"),
+                               nullable=False)
+    company_name      = Column(String(200), nullable=False)   # the end-user company
+    contact_name      = Column(String(200))                   # their person (all optional)
+    contact_email     = Column(String(300))
+    contact_telephone = Column(String(100))
+    contact_role      = Column(String(100))
+    notes             = Column(Text)
+    is_primary        = Column(Boolean, nullable=False, default=False,
+                               server_default=_sa_text("false"))
+    active            = Column(Boolean, nullable=False, default=True,
+                               server_default=_sa_text("true"))
+    created_at        = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at        = Column(DateTime, default=lambda: datetime.now(timezone.utc),
+                               onupdate=lambda: datetime.now(timezone.utc))
+    created_by        = Column(String(128))
+    updated_by        = Column(String(128))
+    customer          = relationship("Customer", back_populates="end_users")
 
 
 class TrailerRatio(Base):
@@ -485,6 +520,19 @@ class CalculationRecord(Base):
     contact_email     = Column(String(300), nullable=True)
     contact_telephone = Column(String(100), nullable=True)
     contact_role      = Column(String(100), nullable=True)
+    # End-user snapshot (migration 0040, WO v1.47 lane B). The END USER this body is
+    # actually FOR when the customer is a reseller/middleman — same write-time snapshot
+    # discipline as the contact block above, written by the same approve-path chokepoint
+    # and never rewritten by later edits to the end-user book. Fully optional: a costing
+    # with no end user leaves every column NULL and behaves exactly as before.
+    end_user_id                 = Column(Integer,
+                                         ForeignKey("customer_end_users.id", ondelete="SET NULL"),
+                                         nullable=True)
+    end_user_company            = Column(String(200), nullable=True)
+    end_user_contact_name       = Column(String(200), nullable=True)
+    end_user_contact_email      = Column(String(300), nullable=True)
+    end_user_contact_telephone  = Column(String(100), nullable=True)
+    end_user_contact_role       = Column(String(100), nullable=True)
     trailer_type = relationship("TrailerType", back_populates="calculations")
     user         = relationship("User", back_populates="calculations", foreign_keys=[user_id])
     approver     = relationship("User", back_populates="approved_calculations", foreign_keys=[approved_by_user_id])

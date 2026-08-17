@@ -266,7 +266,7 @@
 
   function renderTotals(C) {
     const ratioLbl = Math.round(S.ratio * 100) + '%';
-    const discLbl = S.disc.val > 0 ? (S.disc.kind === 'percent' ? S.disc.val + '%' : fmtR(S.disc.val)) : 'none';
+    const discLbl = S.disc.val > 0 ? (S.disc.kind === 'percent' ? S.disc.val + '%' : (C.total ? (C.discount / C.total * 100).toFixed(1) + '%' : '—')) : 'none';   // amount mode → its % equivalent
     let modeChip = '';
     if (S.loadedRef) modeChip = '<span class="pill mode ref">Loaded from reference “' + esc(S.loadedRef.label) + '” · balances ✓</span>';
     else if (S.saved) modeChip = '<span class="pill mode edit">' + (S.dirty ? 'Editing ' : 'Saved ') + esc(S.saved.quote) + ' · rev ' + S.saved.rev + ' · pending</span>';
@@ -275,8 +275,9 @@
     return '<div class="totals">'
       + '<div class="stage"><div class="lbl">Materials</div><div class="val">' + money(C.materials) + '</div><div class="sub">' + (S.chassis.on && S.type === 'body' ? 'incl. chassis ' + money(C.chassis.total) : (S.type === 'body' ? 'excl. chassis' : 'repair lines')) + (S.type === 'body' && canPrices() ? ' · ' + fmtR((C.materials - C.chassis.total) / Math.max(1e-9, (+S.dims.L) * (+S.dims.W))) + ' / m² floor' : '') + '</div></div>'
       + '<div class="stage"><div class="lbl"><span class="op">+</span> Margin ' + esc(S.margin) + '%</div><div class="val">' + money(C.margin) + '</div><div class="sub">' + (S.margin > 0 ? 'on materials' : 'no margin') + '</div></div>'
-      + '<div class="stage"><div class="lbl"><span class="op">÷</span> Ratio ' + ratioLbl + ' <span class="op">=</span> Total</div><div class="val">' + money(C.total) + '</div><div class="sub">selling price</div></div>'
-      + '<div class="stage net"><div class="lbl"><span class="op">−</span> Discount <span class="op">=</span> Net</div><div class="val">' + money(C.net) + '</div><div class="sub">discount ' + esc(discLbl) + '</div></div>'
+      // Michael, 17 Aug: when a discount is entered, show the discount AMOUNT next to the ratio (Total) amount
+      + '<div class="stage"><div class="lbl"><span class="op">÷</span> Ratio ' + ratioLbl + ' <span class="op">=</span> Total</div><div class="val">' + money(C.total) + (C.discount > 0 ? ' <span class="discamt" title="' + esc('discount ' + discLbl + ' = ' + (canPrices() ? fmtR(C.discount) : '••••')) + '">− ' + money(C.discount) + '</span>' : '') + '</div><div class="sub">selling price' + (C.discount > 0 ? ' · discount ' + esc(discLbl) + ' = ' + money(C.discount) : '') + '</div></div>'
+      + '<div class="stage net"><div class="lbl"><span class="op">−</span> Discount <span class="op">=</span> Net</div><div class="val">' + money(C.net) + '</div><div class="sub">' + (C.discount > 0 ? 'after ' + money(C.discount) + ' discount (' + esc(discLbl) + ')' : 'no discount') + '</div></div>'
       + '<div class="status">' + attn + modeChip + '</div>'
       + '</div>';
   }
@@ -551,7 +552,7 @@
   function renderSaveBar(C) {
     const info = saveInfo(S, C);
     let h = '<div class="sticky-bottom"><div class="inner">';
-    h += '<span class="disc"><span class="small mute">Discount</span><span class="seg"><button data-act="disc-kind" data-val="percent" class="' + (S.disc.kind === 'percent' ? 'on' : '') + '">%</button><button data-act="disc-kind" data-val="amount" class="' + (S.disc.kind === 'amount' ? 'on' : '') + '">R</button></span><input data-act="disc" value="' + esc(S.disc.val || '') + '" placeholder="0"><span class="tiny mute">one clears the other</span></span>';
+    h += '<span class="disc"><span class="small mute">Discount</span><span class="seg"><button data-act="disc-kind" data-val="percent" class="' + (S.disc.kind === 'percent' ? 'on' : '') + '">%</button><button data-act="disc-kind" data-val="amount" class="' + (S.disc.kind === 'amount' ? 'on' : '') + '">R</button></span><input data-act="disc" value="' + esc(S.disc.val || '') + '" placeholder="0">' + (C.discount > 0 ? '<span class="small discecho">= ' + money(C.discount) + (S.disc.kind === 'percent' ? ' off ' + money(C.total) : ' (' + (C.total ? (C.discount / C.total * 100).toFixed(1) : '0') + '%)') + '</span>' : '') + '<span class="tiny mute">one clears the other</span></span>';
     h += '<span class="savegroup">';
     if (info.modes.length) h += '<span class="modesel">' + info.modes.map((m) => '<label><input type="radio" name="mode" data-act="mode" value="' + m.id + '"' + (S.saveMode === m.id ? ' checked' : '') + '> ' + esc(m.label) + '</label>').join('') + (S.saveMode === 'revision' ? '<label><input type="checkbox" data-act="reuse"' + (S.reuse ? ' checked' : '') + '> reuse quote no.</label>' : '') + '</span>';
     const warnCls = info.warnNoCust && !info.disabled ? ' warn' : '';

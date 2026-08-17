@@ -8365,10 +8365,8 @@ function _repairToggleBodyInputs(showBody) {
   show('dims-wrap',        showBody);
   show('repair-meta-wrap', !showBody);
   show('cfg-tab-chassis',  showBody);
-  // The config panel's footer prints wall / roof / floor areas. A repair has no
-  // body, so the whole block is hidden (clearing its text is not enough — the
-  // geometry helper repopulates it).
-  show('geo-summary',      showBody);
+  // (#140 removed updateGeo, the #geo-summary footer strip and the COST SUMMARY
+  // area tiles outright, so there is no geometry left to hide for a repair.)
   if (!showBody) {
     const vref = document.getElementById('vref-picker-wrap');
     if (vref) vref.style.display = 'none';

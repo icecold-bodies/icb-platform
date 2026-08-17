@@ -259,9 +259,9 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     expect(page.locator("#dims-wrap")).to_be_hidden()
     expect(page.locator("#cfg-tab-chassis")).to_be_hidden()
     expect(page.locator("#vref-picker-wrap")).to_be_hidden()
-    # No body means no areas and no length: the geometry footer is hidden and the
-    # banner must not append the stale "(13.6 m)" from the hidden length input.
-    expect(page.locator("#geo-summary")).to_be_hidden()
+    # No body means no length: the banner must not append the stale "(13.6 m)"
+    # still sitting in the now-hidden length input. (This also checked a geometry
+    # footer until #140 removed that strip wholesale.)
     expect(page.locator("#topbar-title")).to_contain_text("REPAIRS")
     expect(page.locator("#topbar-title")).not_to_contain_text(" m)")
     # Nothing to approve until the repair has a type and a line.

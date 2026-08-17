@@ -798,7 +798,7 @@ Per §10.2: the stock list = `materials`, surfaced as a fast picker (name / SAP 
 Customer [ v ]   Type of repair [ ................ ]   <- recorded, required
 Lines:  + from stock list   |   + free-hand
         description | qty | unit price | total
-Totals: Materials -> (margin/ratio policy: OQ-08) -> TOTAL
+Totals: Materials -> +Margin -> /Ratio = TOTAL -> -Discount = NET   (same pipeline as normal costings [RATIFIED])
 Save -> normal costing lifecycle (quote number, accept/decline, revisions)
 ```
 
@@ -806,7 +806,7 @@ Save -> normal costing lifecycle (quote number, accept/decline, revisions)
 - No body template, no BOM, no dims/geometry: a flat line list from stock picks + free-hand entries. [RATIFIED]
 - Records customer AND **type of repair** (new field — OQ-09 for whether free text or a maintained list). [RATIFIED]
 - Keeps everything the `is_repair` flag already does: independent revision sequence per customer (RULE-SAVE-001 — and fixes R-03's client omission), "Repair" status display, dashboard filter, planner phase scheduling (`repair_phases_json`) downstream. [FACT-grounded]
-- Margin/ratio/discount applicability for repairs = OQ-08 (Excel practice unknown).
+- **Money pipeline [RATIFIED — OQ-08, Michael, 17 Aug 2026]: margin and ratio apply to repairs exactly as on normal costings**; discount likewise per "same as normal costings" [INFERENCE — flag if wrong]. Defaults: ratio 55% as on any new costing; margin defaults to 0 (a repair has no body type, so there is no `markup_percentage` to inherit) [INFERENCE].
 
 ## 31. Existing-to-New Function Mapping
 
@@ -934,7 +934,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | OQ-05 | **`calc2_default_excluded` seeds**: Calculator 2's per-body default exclusions — migrate into the new per-line model, or retire the flag? | BA |
 | OQ-06 | **Price source policy** once SAP is real: catalogue price vs SAP last-purchase (known −12%…+18% divergence). Build the seam now, decide policy later | BA (later) |
 | OQ-07 | **Per-item selling price** in the stock model: wanted, or does selling stay costing-level (÷ratio)? | BA |
-| OQ-08 | **Repairs and money**: do margin/ratio/discount apply to repair costings, and at what defaults? (Excel practice unknown) | BA |
+| OQ-08 | ~~Repairs and money~~ **RESOLVED (Michael, 17 Aug 2026): margin and ratio apply to repairs same as normal costings** (discount included per "same as normal" [INFERENCE]; defaults: ratio 55%, margin 0 — no body markup to inherit) | closed |
 | OQ-09 | **Type of repair**: free text or maintained list (reporting implications)? | BA |
 | OQ-10 | **Admin single-side view** (× N toggle): keep in the new UI or drop? | BA |
 | OQ-11 | **`menu.calculator`** is catalogued but enforced nowhere — should the new costing page enforce it (recommended), and does anyone rely on the current looseness? | BA |

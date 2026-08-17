@@ -47,7 +47,7 @@ import pytest
 # "make it work on light, break it on dark".
 PAGES = [
     ("/calculator?skin=mes", True),        # Michael's report: the costing calculator
-    ("/?skin=mes", True),                  # dashboard under the MES light skin
+    ("/mes/dashboard", True),              # dashboard under the MES light skin (#109: bare "/" now 302s to /mes-app/)
     ("/admin/customers?skin=mes", True),   # an admin page, per the WO click-through
     ("/calculator", False),                # standalone dark app — must be unchanged
 ]

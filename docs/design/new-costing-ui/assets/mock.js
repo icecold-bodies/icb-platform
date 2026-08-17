@@ -12,6 +12,9 @@
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const R0 = (n) => Math.round(n);
   const fmtR = (n) => 'R ' + R0(n).toLocaleString('en-ZA').replace(/,/g, ' ');
+  // Unit prices at 2 dp (Michael, 17 Aug), SA money style like the app: "R 3 795,74"
+  const fmtP = (n) => { const neg = n < 0; const parts = Math.abs(n).toFixed(2).split('.'); return (neg ? '−' : '') + 'R ' + parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ',' + parts[1]; };
+  const moneyP = (n) => S.role === 'user' ? '<span class="masked">••••</span>' : fmtP(n);
   const fmtQ = (n) => (Math.round(n * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
   const body = () => M.BODIES.find((b) => b.id === S.bodyId);
   const stateEXISTING = M.EXISTING.map((e) => Object.assign({}, e));
@@ -396,7 +399,7 @@
     const typed = l.prov.priceTyped ? ' typed' : '';
     const star = l.prov.priceTyped ? '<span title="' + esc('Quote override: ' + l.prov.priceTyped) + '">*</span>' : '';
     const act = l.prov.recipe ? 'recipe' : 'price';
-    return '<span class="cell click' + typed + '" data-act="' + act + '" data-key="' + esc(l.key) + '" title="' + (l.prov.recipe ? 'computed price — click for breakdown' : 'click to edit price') + '">' + fmtR(l.price) + star + g + '</span>';
+    return '<span class="cell click' + typed + '" data-act="' + act + '" data-key="' + esc(l.key) + '" title="' + (l.prov.recipe ? 'computed price — click for breakdown' : 'click to edit price') + '">' + fmtP(l.price) + star + g + '</span>';
   }
   function qtyCell(l) {
     if (S.ui.editing === l.key) return '<input class="cell-input" data-act="qty-commit" data-key="' + esc(l.key) + '" value="' + esc(fmtQ(l.qty).replace(/\s/g, '')) + '" id="qedit">';
@@ -530,7 +533,7 @@
         + '<div class="field"><label>Tyre</label>' + sel(M.CHASSIS.tyre, c.tyreId, 'tyreId') + '</div>'
         + '<div class="field"><label>Rim</label>' + sel(M.CHASSIS.rim, c.rim, 'rim') + '</div>'
         + '</div>';
-      h += '<table>' + TH + '<tbody>' + C.chassis.lines.map((l) => '<tr><td class="inc"></td><td class="desc">' + esc(l.name) + '<span class="tag">derived</span></td><td class="qty num">' + fmtQ(l.qty) + '</td><td class="unit">each</td><td class="price num">' + money(l.price) + '</td><td class="total num">' + money(l.total) + '</td><td></td></tr>').join('') + '</tbody></table>';
+      h += '<table>' + TH + '<tbody>' + C.chassis.lines.map((l) => '<tr><td class="inc"></td><td class="desc">' + esc(l.name) + '<span class="tag">derived</span></td><td class="qty num">' + fmtQ(l.qty) + '</td><td class="unit">each</td><td class="price num">' + moneyP(l.price) + '</td><td class="total num">' + money(l.total) + '</td><td></td></tr>').join('') + '</tbody></table>';
       h += '<div class="derived">Derived: ' + C.chassis.tyres + ' tyres/rims · ' + C.chassis.kits + ' suspension & brake kits' + (c.lift > 0 ? ' · 1 lifting axle' : '') + ' — counts follow axles/tyre style (RULE-CALC-013)</div>';
     }
     return h + '</div>';
@@ -600,7 +603,7 @@
       bodyH += '<div class="field"><input id="stockq" placeholder="Search name · SAP code · category · sub-category" data-act="stockq" value="' + esc(S.ui.stockQ) + '"></div>';
       if (isExtras) bodyH += '<label class="small"><input type="checkbox" data-act="stockall"' + (S.ui.stockAll ? ' checked' : '') + '> show the whole stock list (not only extras)</label>';
       bodyH += '<table><thead><tr><th>Item</th><th>SAP</th><th>Unit</th><th class="num">Price</th><th>Age</th><th></th></tr></thead><tbody>'
-        + list.map((s) => { const added = S.added.some((a) => a.section === d.sec && a.stockId === s.id); return '<tr class="pick"><td>' + esc(s.name) + '<div class="tiny mute">' + esc(s.cat + ' · ' + s.sub) + '</div></td><td class="tiny nowrap">' + esc(s.sap) + '</td><td>' + esc(s.unit) + '</td><td class="num">' + (s.price == null ? '<span class="tag bad" style="margin:0">no price</span>' : (canPrices() ? fmtR(s.price) : '••••')) + '</td><td class="nowrap">' + (s.age == null ? '—' : '<span class="dot ' + (s.age <= 7 ? 'fresh' : (s.age >= 90 ? 'old' : 'none')) + '"></span> <span class="tiny">' + s.age + ' d</span>') + '</td><td><button class="addmini' + (added ? ' on' : '') + '" data-act="stock-add" data-id="' + s.id + '" data-sec="' + esc(d.sec) + '">' + (added ? 'Added ✓ (+1)' : 'Add') + '</button></td></tr>'; }).join('')
+        + list.map((s) => { const added = S.added.some((a) => a.section === d.sec && a.stockId === s.id); return '<tr class="pick"><td>' + esc(s.name) + '<div class="tiny mute">' + esc(s.cat + ' · ' + s.sub) + '</div></td><td class="tiny nowrap">' + esc(s.sap) + '</td><td>' + esc(s.unit) + '</td><td class="num">' + (s.price == null ? '<span class="tag bad" style="margin:0">no price</span>' : (canPrices() ? fmtP(s.price) : '••••')) + '</td><td class="nowrap">' + (s.age == null ? '—' : '<span class="dot ' + (s.age <= 7 ? 'fresh' : (s.age >= 90 ? 'old' : 'none')) + '"></span> <span class="tiny">' + s.age + ' d</span>') + '</td><td><button class="addmini' + (added ? ' on' : '') + '" data-act="stock-add" data-id="' + s.id + '" data-sec="' + esc(d.sec) + '">' + (added ? 'Added ✓ (+1)' : 'Add') + '</button></td></tr>'; }).join('')
         + '</tbody></table>';
       if (!list.length) bodyH += '<div class="note">No matches.</div>';
       bodyH += '<div class="note">Stock list = the materials catalogue, SAP-ready by SAP code. No on-hand quantities (not a stock system). Unpriced items are shown as such <b>before</b> you add them.</div>';
@@ -617,11 +620,11 @@
     } else if (d.kind === 'price') {
       const l = findLine(C, d.key); if (!l) return '';
       title = 'Price → ' + esc(l.added ? l.added.name : l.row.name);
-      const cur = l.price == null ? 'no price' : fmtR(l.price);
+      const cur = l.price == null ? 'no price' : fmtP(l.price);
       const src = l.prov.priceTyped ? 'quote override (' + l.prov.priceTyped + ')' : l.prov.perm ? 'permanent price for this section' : l.added && l.added.kind === 'manual' ? 'manually entered' : 'catalogue price' + (l.prov.age != null ? ' · updated ' + l.prov.age + ' days ago' : '');
       const scope = d.scope || 'costing';
       bodyH += '<div class="kv"><span class="k">Current</span><span>' + cur + '</span><span class="k">Source</span><span>' + esc(src) + '</span></div>'
-        + '<div class="field"><label>New unit price R</label><input id="pr-val" value="' + esc(d.val != null ? d.val : (l.price == null ? '' : R0(l.price))) + '"></div>'
+        + '<div class="field"><label>New unit price R</label><input id="pr-val" value="' + esc(d.val != null ? d.val : (l.price == null ? '' : (Math.round(l.price * 100) / 100))) + '"></div>'
         + '<div class="radio' + (scope === 'costing' ? ' on' : '') + '"><input type="radio" name="scope" data-act="scope" value="costing"' + (scope === 'costing' ? ' checked' : '') + '><div><div class="t">This costing only</div><div class="d">Blue with <b>*</b>; a reason is required (≥ 5 chars) and shows in the tooltip and on the saved record.</div>' + (scope === 'costing' ? '<div class="field" style="margin-top:6px"><input id="pr-reason" placeholder="Reason (e.g. supplier quote 14 Aug)" value="' + esc(d.reason || '') + '"></div>' : '') + '</div></div>'
         + '<div class="radio' + (scope === 'perm' ? ' on' : '') + '"><input type="radio" name="scope" data-act="scope" value="perm"' + (scope === 'perm' ? ' checked' : '') + (S.role !== 'full' || l.added ? ' disabled' : '') + '><div><div class="t">Permanently for this section ' + (S.role !== 'full' ? '<span class="tiny mute">(needs costings.price_master_edit)</span>' : '') + (l.added ? '<span class="tiny mute">(not for added lines)</span>' : '') + '</div><div class="d">Writes the row’s price on the body template (this section only — the same material elsewhere is untouched). Journalled; clears any quote override.</div></div></div>'
         + '<div class="note">Setting the price back to the original clears the override with no reason needed. Price-age badges are suppressed while a quote override is in force.</div>'
@@ -647,7 +650,7 @@
     } else if (d.kind === 'recipe') {
       const l = findLine(C, d.key); if (!l) return '';
       title = 'Computed price → ' + esc(l.row.name);
-      bodyH += '<div class="kv"><span class="k">Engine</span><span>' + esc(l.prov.recipe) + '</span><span class="k">Unit price</span><span>' + fmtR(l.price) + ' / ' + esc(l.row.unit) + '</span></div>'
+      bodyH += '<div class="kv"><span class="k">Engine</span><span>' + esc(l.prov.recipe) + '</span><span class="k">Unit price</span><span>' + fmtP(l.price) + ' / ' + esc(l.row.unit) + '</span></div>'
         + '<table><thead><tr><th>Ingredient</th><th class="num">qty / m²</th><th class="num">price</th><th class="num">contrib.</th></tr></thead><tbody>'
         + '<tr><td>Resin (sample)</td><td class="num">1.20</td><td class="num">R 95</td><td class="num">R 114</td></tr><tr><td>Gelcoat (sample)</td><td class="num">0.60</td><td class="num">R 140</td><td class="num">R 84</td></tr><tr><td>Mat 450 (sample)</td><td class="num">2.00</td><td class="num">R 41</td><td class="num">R 82</td></tr>'
         + '</tbody></table>'
@@ -728,7 +731,8 @@
   function dirty() { if (S.saved) S.dirty = true; S.loadedRef = null; S.ack = false; }
   function closeTransient() { S.ui.menu = null; S.ui.rowMenu = null; S.ui.savePop = false; }
 
-  function num(v, fallback) { const n = parseFloat(String(v).replace(/[^\d.\-]/g, '')); return isNaN(n) ? fallback : n; }
+  // Accepts "3795,74" (SA comma decimal), "3 795.74", "R 280" — a lone comma with no dot is the decimal mark.
+  function num(v, fallback) { let s = String(v).replace(/\s| | /g, ''); if (s.includes(',') && !s.includes('.')) s = s.replace(',', '.'); const n = parseFloat(s.replace(/[^\d.\-]/g, '')); return isNaN(n) ? fallback : n; }
 
   document.addEventListener('click', (e) => {
     const t = e.target.closest('[data-act]');

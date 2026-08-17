@@ -116,6 +116,17 @@ def _grand_total(page: Page) -> float:
     return _money(page.locator("#grand-total").inner_text())
 
 
+def _settle(page: Page) -> None:
+    """Let the 700 ms debounced recalc land and the BOM table stop re-rendering.
+
+    Without this a click can race a re-render and Playwright reports the target
+    as "not stable" — the table is rebuilt wholesale on every recalc, so any
+    element inside it moves.
+    """
+    expect(page.locator("#calc-status")).to_have_text("", timeout=T)
+    page.wait_for_timeout(1200)
+
+
 def _select_body(page: Page, tt_id: int) -> None:
     page.select_option("#trailer-select", str(tt_id))
     # The BOM table lands only after /api/calculate resolves; the section header
@@ -158,6 +169,11 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     _select_body(page, laneC_body["tt"])
 
+    # Pin the ratio to None. #grand-total is the SELLING price, so with a ratio
+    # selected the headline moves by qty × price ÷ ratio; the R900 the WO asks us
+    # to prove is the materials movement, which is what "no ratio" shows.
+    page.select_option("#f-ratio", "")
+
     # Opt the OPTIONAL section in first — an optional section is OFF until ticked,
     # and this lane deliberately did not change that flag logic.
     tick = page.locator(f".opt-sec-tick[data-section-id='{laneC_body['opt_sec']}']")
@@ -167,6 +183,17 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
         tick.uncheck()
         before_optin = _wait_idle_total(page, before_optin)
     baseline = before_optin
+
+    # Sections render COLLAPSED by default, so expand this one — otherwise the
+    # new row is in the DOM but display:none and nothing can be clicked on it.
+    _settle(page)
+    hdr = page.locator(f"tr.calc-grp-hdr[data-section-id='{laneC_body['opt_sec']}']")
+    expect(hdr).to_be_visible(timeout=T)
+    if "collapsed" in (hdr.get_attribute("class") or ""):
+        # Click the section NAME, not the row: a row-centre click lands on one of
+        # the header's inline pill buttons.
+        hdr.locator(".calc-hdr-name").click()
+    _settle(page)
 
     # "+ Free-hand line" is offered on the OPTIONAL section header.
     add_btn = page.locator(f"button[data-free-hand-add='{laneC_body['opt_sec']}']")
@@ -232,9 +259,15 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     expect(page.locator("#dims-wrap")).to_be_hidden()
     expect(page.locator("#cfg-tab-chassis")).to_be_hidden()
     expect(page.locator("#vref-picker-wrap")).to_be_hidden()
+    # No body means no areas and no length: the geometry footer is hidden and the
+    # banner must not append the stale "(13.6 m)" from the hidden length input.
+    expect(page.locator("#geo-summary")).to_be_hidden()
+    expect(page.locator("#topbar-title")).to_contain_text("REPAIRS")
+    expect(page.locator("#topbar-title")).not_to_contain_text(" m)")
     # Nothing to approve until the repair has a type and a line.
     expect(page.locator("#approve-btn")).to_be_disabled()
 
+    page.select_option("#f-ratio", "")          # deterministic start; set below
     page.fill("#f-repair-type", "Side panel replacement")
     page.fill("#f-repair-scope", "Strip damaged panel, fit new panel, laminate joints.")
 
@@ -277,13 +310,18 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     shot(page, "repair_surface", JOURNEY)
 
     # Save it. A repair rides the same approve path and quote numbering.
-    page.select_option("#cust-select", label="J147LC Customer Ltd")
+    # Select by VALUE (the customer id) — the picker's option list is search-filtered,
+    # so a label match is not a reliable handle.
+    page.select_option("#cust-select", value=str(laneC_body["customer"]))
     page.click("#approve-btn")
     # Poll for the saved record id (page.evaluate, not wait_for_function — CSP).
+    # The BARE identifier, not window.lastRecordId: calculator.js declares it with
+    # a top-level `let`, which lives in the script's global scope and is therefore
+    # NOT a property of window.
     rec_id = None
     for _ in range(int(T / 250)):
         page.wait_for_timeout(250)
-        rec_id = page.evaluate("() => window.lastRecordId || null")
+        rec_id = page.evaluate("() => (typeof lastRecordId !== 'undefined') ? lastRecordId : null")
         if rec_id:
             break
     assert rec_id, "the repair did not save"
@@ -296,11 +334,14 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
         assert rec.is_repair is True
         assert rec.trailer_type_id is None
         assert rec.quote_number
+        quote_no = rec.quote_number
         # Accept it: "Schedule into MES" shows for an ACCEPTED repair (v1.2.1
         # status mapping), which is pre-existing behaviour this lane kept.
+    csrf = page.evaluate(
+        "() => document.querySelector('meta[name=\"csrf-token\"]')?.content || ''")
     acc = page.request.post(f"{base}/api/calculations/{int(rec_id)}/accept",
-                            headers={"Origin": base})
-    assert acc.ok, f"accept failed: HTTP {acc.status}"
+                            headers={"Origin": base, "X-CSRF-Token": csrf})
+    assert acc.ok, f"accept failed: HTTP {acc.status} {acc.text()[:200]}"
 
     # The React costings dashboard lists it as a Repair …
     page.goto("/mes-app/costings")
@@ -309,7 +350,10 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
 
     # … and opening it offers "Schedule into MES", which schedules through the
     # untouched RepairPhasePanel → /schedule-repair path.
-    page.goto(f"/mes-app/costings/{int(rec_id)}")
+    # The detail route is keyed on the QUOTE NUMBER (which contains slashes), so
+    # it is url-encoded exactly as the dashboard row builds it.
+    from urllib.parse import quote as _urlquote
+    page.goto(f"/mes-app/costings/{_urlquote(quote_no, safe='')}")
     sched_btn = page.get_by_role("button", name=re.compile("Schedule into MES"))
     expect(sched_btn).to_be_visible(timeout=T)
     expect(page.get_by_text("Side panel replacement").first).to_be_visible(timeout=T)
@@ -336,6 +380,8 @@ def test_normal_body_costing_is_unaffected(page: Page, laneC_body) -> None:
     page.goto("/mes/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     _select_body(page, laneC_body["tt"])
+    page.select_option("#f-ratio", "")   # headline == materials, so the number is checkable
+    _settle(page)                        # the ratio change re-costs on the 700 ms debounce
 
     # No free-hand rows, no repair chrome — and the body inputs are all present.
     expect(page.locator("tr.fh-row")).to_have_count(0)

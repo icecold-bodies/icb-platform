@@ -354,9 +354,14 @@ def test_repair_costs_without_a_body(client, admin_headers, seeded):
     assert d["grand_total"] == pytest.approx(1950.0)
     assert list(d["category_totals"].keys()) == ["REPAIR LINES"]
     assert d["category_totals"]["REPAIR LINES"] == pytest.approx(1950.0)
-    # No body means no geometry and no per-m² figure to mislead anyone.
-    assert "cost_per_sqm" not in d
-    assert "geometry" not in d
+    # A repair result keeps the SHAPE of a body result — the summary panel and the
+    # document builders read result.geometry directly, and a missing block took
+    # the whole summary render down (caught in the §3.4 journey). The geometry is
+    # all zeros, and cost_per_sqm is zeroed rather than left as grand_total ÷ the
+    # "or 1" floor-area fallback, which would print the repair's whole value as
+    # its cost per m². The per-m² row is hidden for repairs client-side.
+    assert d["geometry"]["floor_area"] == pytest.approx(0.0)
+    assert d["cost_per_sqm"] == pytest.approx(0.0)
 
 
 def test_stock_line_is_priced_from_the_catalogue_not_the_client(client, admin_headers, seeded):

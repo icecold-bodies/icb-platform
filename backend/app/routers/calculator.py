@@ -725,11 +725,14 @@ def _calculate_repair(body: dict, db: Session) -> tuple[dict, dict, list[dict]]:
                                    "stock-list item or a free-hand line.")
     bom_items = free_hand.to_bom_items(lines, default_category=free_hand.REPAIR_SECTION)
     # No dimensions: build_geometry over {} gives zeros, which is honest for a
-    # repair. cost_per_sqm and geometry are then meaningless, so they are dropped
-    # rather than reported as misleading numbers.
+    # repair. The geometry block is KEPT so a repair result has the same SHAPE as
+    # a body result — the summary panel and the document builders read it
+    # directly, and a differently-shaped result would break them. cost_per_sqm is
+    # zeroed rather than left as grand_total ÷ the "or 1" floor-area fallback,
+    # which would print the whole repair as its own cost per m². The per-m² row
+    # is hidden for repairs client-side.
     result = calculate_bom(bom_items, {}, {}, {}, {})
-    result.pop("cost_per_sqm", None)
-    result.pop("geometry", None)
+    result["cost_per_sqm"] = 0.0
     # A repair never carries a chassis, whatever a stale client sends.
     margin_body = {**body, "chassis": None}
     result = _apply_chassis_and_margin(result, margin_body, db)

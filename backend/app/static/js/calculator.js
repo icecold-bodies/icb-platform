@@ -2774,7 +2774,10 @@ function updateTopbarTitle(bodyName) {
     // bodyName is remembered so the f-length input listener can re-render.
     el.dataset.bodyName = bodyName;
     const len = parseFloat(document.getElementById('f-length')?.value);
-    const lenTxt = (!isNaN(len) && len > 0) ? ` (${Math.round(len * 10) / 10} m)` : '';
+    // v1.47 — a REPAIRS costing has no body and no length, so the banner must not
+    // append the (stale) length still sitting in the now-hidden dimension input.
+    const lenTxt = (!repairMode && !isNaN(len) && len > 0)
+      ? ` (${Math.round(len * 10) / 10} m)` : '';
     el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName + lenTxt)}</span>`;
   } else {
     delete el.dataset.bodyName;
@@ -5883,11 +5886,15 @@ function renderSummary(result) {
     </div>`;
   }
 
-  // Cost per m² (small detail)
-  html += `<div class="summary-row" style="margin-bottom:8px">
-    <span class="s-label" style="font-size:10px;color:var(--text-dim)">Cost / m²</span>
-    <span class="s-val" style="font-size:10px;color:var(--text-dim)">${fmt(result.cost_per_sqm * grandAdjust)}</span>
-  </div>`;
+  // Cost per m² (small detail). v1.47 — a REPAIRS costing has no body and so no
+  // floor area: a cost per m² would be a meaningless number, so the row is
+  // dropped rather than printed as zero.
+  if (!result.is_repair) {
+    html += `<div class="summary-row" style="margin-bottom:8px">
+      <span class="s-label" style="font-size:10px;color:var(--text-dim)">Cost / m²</span>
+      <span class="s-val" style="font-size:10px;color:var(--text-dim)">${fmt(result.cost_per_sqm * grandAdjust)}</span>
+    </div>`;
+  }
 
   // ── Additions ─────────────────────────────────────────
   // withMargin = pre-ratio total (manufacturing + margin). DO NOT use
@@ -8064,6 +8071,16 @@ function _fhNum(raw) {
   return (isFinite(v) && v >= 0) ? v : NaN;
 }
 
+// Focus the dialog's first field SYNCHRONOUSLY. This used to be a
+// setTimeout(..., 30), which raced anything typing into the dialog in that
+// window — a fill landing mid-timeout lost its value, which showed up as an
+// intermittently blank line total and a "Unit price must be a number" refusal
+// on a field the user had just filled (caught by repeated §3.4 journey runs).
+function _fhFocus(id) {
+  const el = document.getElementById(id);
+  if (el) el.focus();
+}
+
 function _fhLines() { return repairMode ? repairLines : freeHandLines; }
 function _fhFind(key) { return _fhLines().find(function (l) { return l.key === key; }) || null; }
 
@@ -8097,7 +8114,7 @@ function openFreeHandLine(sectionId, sectionName) {
   document.getElementById('fh-modal-title').textContent = '+ Free-hand line';
   document.getElementById('fh-save-btn').textContent = 'Add line';
   openModal('modal-free-hand');
-  setTimeout(function () { const el = document.getElementById('fh-description'); if (el) el.focus(); }, 30);
+  _fhFocus('fh-description');
 }
 
 function openRepairFreeHandLine() {
@@ -8109,7 +8126,7 @@ function openRepairFreeHandLine() {
   document.getElementById('fh-modal-title').textContent = '+ Free-hand line';
   document.getElementById('fh-save-btn').textContent = 'Add line';
   openModal('modal-free-hand');
-  setTimeout(function () { const el = document.getElementById('fh-description'); if (el) el.focus(); }, 30);
+  _fhFocus('fh-description');
 }
 
 function editFreeHandLine(key) {
@@ -8132,7 +8149,7 @@ function editFreeHandLine(key) {
     if (el) el.disabled = stock;
   });
   openModal('modal-free-hand');
-  setTimeout(function () { const el = document.getElementById('fh-qty'); if (el) el.focus(); }, 30);
+  _fhFocus('fh-qty');
 }
 
 function _fhFillDialog(line) {
@@ -8329,8 +8346,6 @@ function enterRepairMode() {
     '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;text-align:center">'
     + 'Add repair lines to see the price summary</div>';
   document.getElementById('grand-total').textContent = '—';
-  const geo = document.getElementById('geo-summary');
-  if (geo) geo.innerHTML = '';        // a repair has no geometry to summarise
   _setDisabled('approve-btn', true);
   onRepairMetaInput();
 }
@@ -8350,6 +8365,10 @@ function _repairToggleBodyInputs(showBody) {
   show('dims-wrap',        showBody);
   show('repair-meta-wrap', !showBody);
   show('cfg-tab-chassis',  showBody);
+  // The config panel's footer prints wall / roof / floor areas. A repair has no
+  // body, so the whole block is hidden (clearing its text is not enough — the
+  // geometry helper repopulates it).
+  show('geo-summary',      showBody);
   if (!showBody) {
     const vref = document.getElementById('vref-picker-wrap');
     if (vref) vref.style.display = 'none';
@@ -8414,7 +8433,10 @@ async function runRepairCalc() {
     status.textContent = '';
   } catch (e) {
     status.textContent = '';
-    toast('Calculation failed: ' + e.message, 'error');
+    // Log as well as toast: a render error inside the success path would
+    // otherwise be swallowed here and read as "the calc silently did nothing".
+    console.error('repair calculate failed', e);
+    toast('Calculation failed: ' + (e && e.message ? e.message : e), 'error');
   }
 }
 
@@ -8606,8 +8628,8 @@ function _fhSectionBtn(secId, secName) {
     + '+ Free-hand line</span></button>';
 }
 
-// Live line total in the entry dialog.
-['fh-qty', 'fh-unit-price'].forEach(function (id) {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', _fhUpdateLineTotal);
-});
+// NB: the live line total is wired with inline oninput= on #fh-qty and
+// #fh-unit-price in calculator.html, NOT with addEventListener here. Attaching
+// from the tail of this file made the wiring depend on load timing and produced
+// an intermittently blank line total (caught by a second §3.4 journey run); the
+// inline form is also the idiom the rest of this template already uses.

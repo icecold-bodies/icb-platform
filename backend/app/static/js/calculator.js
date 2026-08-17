@@ -2033,11 +2033,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function scheduleCalc() {
   clearTimeout(calcTimer);
-  calcTimer = setTimeout(() => { if (bomData.length) runCalc(); }, 700);
+  // v1.47 — a REPAIRS costing has no bomData, so the length gate would swallow
+  // every margin / ratio / discount change on the repair surface.
+  calcTimer = setTimeout(() => { if (repairMode || bomData.length) runCalc(); }, 700);
 }
 
 function triggerLiveRecalc() {
-  if (!bomData.length) return;
+  // v1.47 — a REPAIRS costing has no bomData, so this gate would otherwise
+  // swallow every margin / ratio / discount change on the repair surface.
+  // (#140 dropped this function's updateGeo option along with the surface-area
+  // displays; only the repair guard is added on top.)
+  if (!repairMode && !bomData.length) return;
   scheduleCalc();
 }
 
@@ -2782,6 +2788,10 @@ async function loadBOM(options = {}) {
   const tid = sel.value;
   const area = document.getElementById('bom-area');
   const counter = document.getElementById('bom-count');
+  // v1.47 — REPAIRS is a MODE, not a body type: there is no BOM to load. Hand
+  // over to the repair surface before any of the trailer machinery runs.
+  if (tid === 'repair') { enterRepairMode(); return; }
+  if (repairMode) exitRepairMode();
   updateTopbarTitle(tid ? sel.selectedOptions[0]?.text : null);
   if (!tid) {
     area.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;text-align:center">Select a body type</div>';
@@ -4848,6 +4858,9 @@ function catTagPlain(cat) {
 
 async function runCalc() {
   const tid = document.getElementById('trailer-select').value;
+  // v1.47 — the REPAIRS surface has its own calculate path (no dimensions, no
+  // BOM). Everything below assumes a body type.
+  if (repairMode) { await runRepairCalc(); return; }
   if (!tid) return;
   if (!validateDims()) {
     toast('Fix the highlighted fields before calculating', 'warn');
@@ -5048,6 +5061,9 @@ async function runCalc() {
     user_excluded_bom_ids: _optExcl,
     optional_sections_enabled: _optEnabledIds,
     body_variable_overrides: (editBodyVarOverrides && Object.keys(editBodyVarOverrides).length) ? editBodyVarOverrides : undefined,
+    // v1.47 — free-hand OPTIONAL EXTRAS. Omitted entirely when there are none,
+    // so a costing without them sends exactly the pre-v1.47 payload.
+    free_hand_lines: freeHandLines.length ? freeHandLines.map(_fhWireLine) : undefined,
   };
 
   // Edit-replay (legacy records with no snapshot): reproduce the saved result
@@ -5141,6 +5157,12 @@ async function approveCosting() {
     document.getElementById('modal-no-customer').classList.remove('hidden');
     return;
   }
+
+  // v1.47 — a repair is an independent job, not a revision of another repair.
+  // Two repairs for one customer are two separate quotes, so the duplicate /
+  // revision flow (which keys on customer + body type) is skipped: the server
+  // saves every repair as version 1 with its own quote number.
+  if (repairMode) { await _doApprove(null, null); return; }
 
   // Check for existing costings for this customer + trailer (all-time)
   try {
@@ -5521,17 +5543,25 @@ function renderBOMWithCosts(items, bomRef) {
             onclick="bulkOptionalRowsCalc1(event, ${_secId}, '${_optIdsAttr}', ${_bulkSelectAll}); return false"
             title="${_bulkSelectAll ? 'Tick every item in this section' : 'Untick every item in this section'}"><span class="costing-state-pill calc-bulk-pill state-declined">${_bulkSelectAll ? '✓ Select all' : '✗ Deselect all'}</span></button>`
       : '';
+    // v1.47 — "+ Free-hand line" on every OPTIONAL section header (Nadie, 17 Aug):
+    // type an extra that isn't in the list. Offered off the is_optional FLAG, not
+    // a section name, so it follows the same rule the rest of the section does.
+    const _fhBtn = _secOptional ? _fhSectionBtn(_secId, cat) : '';
     html += `<tr class="calc-grp-hdr${collapsed ? ' collapsed' : ''}${_secOptional ? ' opt-sec-hdr' : ''}${_secOptional && !_secEnabled ? ' opt-sec-disabled' : ''}" data-cat-id="${gid}" data-cat-name="${escHtml(cat)}" data-section-id="${_secId != null ? _secId : ''}"
         onclick="toggleCalcGroup('${gid}')"
         title="${escHtml(_hdrTitle)}"
         style="cursor:pointer;user-select:none">
       <td colspan="4" style="padding:6px 8px;background:var(--bg-panel)">
         ${_optToggle}<span class="grp-chevron" style="font-size:10px;margin-right:5px;color:var(--text-dim)">${collapsed ? '▶' : '▼'}</span>
-        <span class="calc-hdr-name" style="font-family:var(--font-mono);font-size:10px;color:${_hdrColor};letter-spacing:1px;text-transform:uppercase">${escHtml(cat)}</span><span style="font-family:var(--font-sans);font-size:10px;color:rgba(230,237,243,.55);margin-left:8px;letter-spacing:.2px;text-transform:none">— click on item for detail</span>${_bulkBtn}${formulaDots}${formulaErrorBadge}${eyeBtn}
+        <span class="calc-hdr-name" style="font-family:var(--font-mono);font-size:10px;color:${_hdrColor};letter-spacing:1px;text-transform:uppercase">${escHtml(cat)}</span><span style="font-family:var(--font-sans);font-size:10px;color:rgba(230,237,243,.55);margin-left:8px;letter-spacing:.2px;text-transform:none">— click on item for detail</span>${_bulkBtn}${_fhBtn}${formulaDots}${formulaErrorBadge}${eyeBtn}
         <span class="calc-hdr-sub" style="float:right;font-family:var(--font-mono);font-size:11px;color:${_hdrColor};font-weight:600;${collapsed ? '' : 'display:none'}">${subtotalTxt}</span>
       </td></tr>`;
 
     its.forEach(it => {
+      // v1.47 — a free-hand line has no bom_id, so none of the id-keyed machinery
+      // below (price overrides, recipe badges, the exclusion store) can bind to
+      // it. It gets its own row builder and never enters that code path.
+      if (it.free_hand) { html += _fhBomRow(it, gid, collapsed, _secEnabled); return; }
       // Soft-excluded rows: only render if the section's eye toggle is ON.
       // When rendered, the row is struck-through and dimmed; qty/price/cost
       // columns are muted so it's visually obvious nothing was counted.
@@ -7996,4 +8026,588 @@ window.addEventListener('message', (e) => {
 document.getElementById('f-length')?.addEventListener('input', () => {
   const el = document.getElementById('topbar-title');
   if (el && el.dataset.bodyName) updateTopbarTitle(el.dataset.bodyName);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// v1.47 Lane C — FREE-HAND LINES + THE "REPAIRS" COSTING MODE
+//
+// ONE mechanism, two features (Nadie, 17 Aug):
+//   1. OPTIONAL EXTRAS — type an extra that isn't in the list, on any body.
+//   2. REPAIRS — quote repair work that has no body behind it at all.
+//
+// A free-hand line is description · qty · unit · unit price · notes and costs
+// exactly like a BOM line: the server turns it into a synthetic bom_item, so the
+// category total, the materials cost and every margin/ratio/discount figure come
+// out of the SAME functions the body path uses. Nothing here reimplements a
+// formula, and nothing here is ever written to the materials master.
+// ═══════════════════════════════════════════════════════════════════════════
+
+let freeHandLines = [];      // OPTIONAL EXTRAS free-hand lines (body costings)
+let repairMode    = false;   // REPAIRS surface active (no body behind the costing)
+let repairLines   = [];      // stock + free-hand lines on the repair surface
+let _fhEditKey    = null;    // key being edited, or null when adding
+let _fhTarget     = null;    // {sectionId, sectionName} for extras; null for repair
+let _fhSeq        = 0;
+let _stockCache   = null;    // GET /api/materials, fetched once per page
+
+function _fhKey() { return 'fh' + (++_fhSeq) + '-' + Math.random().toString(36).slice(2, 7); }
+
+// SA money style: "450,50" and "1 234,50" both mean what a SA typist means.
+// Mirrors the server's tolerance in services/free_hand.py, so what is accepted
+// on screen is exactly what is accepted on save.
+function _fhNum(raw) {
+  let s = String(raw == null ? '' : raw).trim().replace(/\s/g, '');
+  if (!s) return NaN;
+  if (s.indexOf(',') >= 0 && s.indexOf('.') < 0) s = s.replace(/,/g, '.');
+  else s = s.replace(/,/g, '');
+  const v = parseFloat(s);
+  return (isFinite(v) && v >= 0) ? v : NaN;
+}
+
+function _fhLines() { return repairMode ? repairLines : freeHandLines; }
+function _fhFind(key) { return _fhLines().find(function (l) { return l.key === key; }) || null; }
+
+// Is this OPTIONAL section currently opted into? Read-only — the opt-in set stays
+// the user's to change from the section heading.
+function _fhSectionEnabled(sectionId) {
+  if (sectionId == null) return true;
+  const tidEl = document.getElementById('trailer-select');
+  const tid = tidEl ? +tidEl.value : NaN;
+  if (!window.OptionalSections || !isFinite(tid)) return true;
+  return window.OptionalSections.loadEnabled(tid).has(+sectionId);
+}
+
+// ── Entry dialog ───────────────────────────────────────────────────────────
+
+function openFreeHandLine(sectionId, sectionName) {
+  _fhTarget  = { sectionId: sectionId != null ? +sectionId : null,
+                 sectionName: sectionName || 'OPTIONAL EXTRAS' };
+  _fhEditKey = null;
+  _fhFillDialog(null);
+  let note = 'Adds a manual line to ' + _fhTarget.sectionName + '. It is saved on this costing '
+           + 'only — nothing is added to the material list.';
+  // An OPTIONAL section is OFF until the user ticks it, and a line inside a section
+  // that is off does not count. Say so here rather than letting the new line appear
+  // struck-through with no explanation — the section's own flag logic is untouched.
+  if (!_fhSectionEnabled(_fhTarget.sectionId)) {
+    note += '  NOTE: this section is not included in the costing yet — tick the section '
+          + 'heading to make its lines count.';
+  }
+  document.getElementById('fh-target-note').textContent = note;
+  document.getElementById('fh-modal-title').textContent = '+ Free-hand line';
+  document.getElementById('fh-save-btn').textContent = 'Add line';
+  openModal('modal-free-hand');
+  setTimeout(function () { const el = document.getElementById('fh-description'); if (el) el.focus(); }, 30);
+}
+
+function openRepairFreeHandLine() {
+  _fhTarget  = null;
+  _fhEditKey = null;
+  _fhFillDialog(null);
+  document.getElementById('fh-target-note').textContent =
+    'Adds a manual line to this repair. Saved on the quote only — nothing is added to the material list.';
+  document.getElementById('fh-modal-title').textContent = '+ Free-hand line';
+  document.getElementById('fh-save-btn').textContent = 'Add line';
+  openModal('modal-free-hand');
+  setTimeout(function () { const el = document.getElementById('fh-description'); if (el) el.focus(); }, 30);
+}
+
+function editFreeHandLine(key) {
+  const line = _fhFind(key);
+  if (!line) return;
+  _fhEditKey = key;
+  _fhTarget  = line.bom_section_id != null
+    ? { sectionId: line.bom_section_id, sectionName: line.category || '' } : null;
+  _fhFillDialog(line);
+  const stock = line.kind === 'stock';
+  document.getElementById('fh-target-note').textContent = stock
+    ? 'Stock-list item — the description, unit and price come from the material list. '
+      + 'Change the quantity or notes here.'
+    : 'Editing a manual line on this costing.';
+  document.getElementById('fh-modal-title').textContent = stock ? 'Edit stock line' : 'Edit free-hand line';
+  document.getElementById('fh-save-btn').textContent = 'Save line';
+  // A stock line's identity and price belong to the catalogue, not to the user.
+  ['fh-description', 'fh-unit', 'fh-unit-price'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) el.disabled = stock;
+  });
+  openModal('modal-free-hand');
+  setTimeout(function () { const el = document.getElementById('fh-qty'); if (el) el.focus(); }, 30);
+}
+
+function _fhFillDialog(line) {
+  const set = function (id, v) {
+    const el = document.getElementById(id);
+    if (el) { el.value = v; el.disabled = false; }
+  };
+  set('fh-description', line ? line.description : '');
+  set('fh-qty',         line ? line.qty : '');
+  set('fh-unit',        line ? (line.unit || '') : '');
+  set('fh-unit-price',  line ? line.unit_price : '');
+  set('fh-notes',       line ? (line.notes || '') : '');
+  const err = document.getElementById('fh-error');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  _fhUpdateLineTotal();
+}
+
+function _fhUpdateLineTotal() {
+  const el = document.getElementById('fh-line-total');
+  if (!el) return;
+  const qEl = document.getElementById('fh-qty');
+  const pEl = document.getElementById('fh-unit-price');
+  const q = _fhNum(qEl ? qEl.value : '');
+  const p = _fhNum(pEl ? pEl.value : '');
+  el.textContent = (isNaN(q) || isNaN(p)) ? '' : 'Line total  ' + fmt(q * p);
+}
+
+function submitFreeHandLine() {
+  const err  = document.getElementById('fh-error');
+  const fail = function (msg) { if (err) { err.textContent = msg; err.style.display = ''; } };
+  const existing = _fhEditKey ? _fhFind(_fhEditKey) : null;
+  const isStock  = !!(existing && existing.kind === 'stock');
+
+  const description = String(document.getElementById('fh-description').value || '').trim();
+  const unit        = String(document.getElementById('fh-unit').value || '').trim() || 'each';
+  const notes       = String(document.getElementById('fh-notes').value || '').trim();
+  const qty         = _fhNum(document.getElementById('fh-qty').value);
+  const unitPrice   = _fhNum(document.getElementById('fh-unit-price').value);
+
+  if (!isStock && !description) return fail('A description is required.');
+  if (isNaN(qty))               return fail('Quantity must be a number of 0 or more.');
+  if (isNaN(unitPrice))         return fail('Unit price must be a number of 0 or more.');
+
+  if (existing) {
+    existing.qty   = qty;
+    existing.notes = notes || null;
+    if (!isStock) {
+      existing.description = description;
+      existing.unit        = unit;
+      existing.unit_price  = unitPrice;
+    }
+  } else {
+    _fhLines().push({
+      kind: 'free_hand',
+      key:  _fhKey(),
+      description: description,
+      qty: qty,
+      unit: unit,
+      unit_price: unitPrice,
+      notes: notes || null,
+      material_id: null,
+      bom_section_id: _fhTarget ? _fhTarget.sectionId : null,
+      category: _fhTarget ? _fhTarget.sectionName : null,
+      excluded: false,
+    });
+  }
+  closeModal('modal-free-hand');
+  _fhEditKey = null;
+  _fhAfterChange();
+}
+
+function removeFreeHandLine(key) {
+  const lines = _fhLines();
+  const i = lines.findIndex(function (l) { return l.key === key; });
+  if (i < 0) return;
+  lines.splice(i, 1);
+  _fhAfterChange();
+}
+
+// Include / exclude, matching the tick semantics of the section the line sits in:
+// checked = EXCLUDED (the calculator's red-checkbox convention).
+function toggleFreeHandLine(key, excluded) {
+  const line = _fhFind(key);
+  if (!line) return;
+  line.excluded = !!excluded;
+  _fhAfterChange();
+}
+
+// Any line change re-costs through the normal path, so the total, the summary
+// panel and the exports all move together.
+function _fhAfterChange() {
+  if (repairMode) { renderRepairSurface(); runRepairCalc(); }
+  else            { runCalc(); }
+}
+
+// ── Stock-list picker (REPAIRS surface) ────────────────────────────────────
+
+async function openStockPicker() {
+  openModal('modal-stock-pick');
+  const search = document.getElementById('stock-search');
+  if (search) { search.value = ''; setTimeout(function () { search.focus(); }, 30); }
+  if (_stockCache === null) {
+    try {
+      _stockCache = await api('GET', '/api/materials');
+    } catch (e) {
+      _stockCache = null;
+      document.getElementById('stock-list').innerHTML =
+        '<div style="padding:16px;text-align:center;color:var(--red);font-size:12px">'
+        + 'Could not load the material list: ' + escHtml(e.message) + '</div>';
+      return;
+    }
+  }
+  renderStockPicker();
+}
+
+function renderStockPicker() {
+  const wrap = document.getElementById('stock-list');
+  const cnt  = document.getElementById('stock-count');
+  if (!wrap || !_stockCache) return;
+  const sEl = document.getElementById('stock-search');
+  const q = String(sEl ? sEl.value : '').trim().toLowerCase();
+  const rows = q
+    ? _stockCache.filter(function (m) {
+        return (m.name || '').toLowerCase().indexOf(q) >= 0
+            || (m.category || '').toLowerCase().indexOf(q) >= 0
+            || (m.material_code || '').toLowerCase().indexOf(q) >= 0;
+      })
+    : _stockCache;
+  const shown = rows.slice(0, 300);
+  if (!shown.length) {
+    wrap.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-dim);font-size:12px">'
+                   + 'Nothing matches that search</div>';
+    cnt.textContent = '';
+    return;
+  }
+  wrap.innerHTML = shown.map(function (m) {
+    return '<div onclick="pickStockItem(' + m.id + ')" title="Add to the repair"'
+      + ' style="display:flex;gap:8px;align-items:baseline;padding:6px 9px;cursor:pointer;'
+      + 'border-bottom:1px solid rgba(48,54,61,.5)"'
+      + ' onmouseover="this.style.background=\'var(--bg-raise)\'"'
+      + ' onmouseout="this.style.background=\'\'">'
+      + '<span style="flex:1;font-size:12px;color:var(--text-head)">' + escHtml(m.name || '') + '</span>'
+      + '<span style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono)">' + escHtml(m.category || '') + '</span>'
+      + '<span style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono)">' + escHtml(m.unit || '') + '</span>'
+      + '<span style="font-size:12px;font-family:var(--font-mono);color:var(--blue-hi);min-width:84px;text-align:right">' + fmt(m.price || 0) + '</span>'
+      + '</div>';
+  }).join('');
+  cnt.textContent = shown.length < rows.length
+    ? 'Showing ' + shown.length + ' of ' + rows.length + ' — narrow the search to see the rest'
+    : rows.length + (rows.length === 1 ? ' item' : ' items');
+}
+
+// A stock line records the material_id and the price SHOWN. The server
+// re-resolves the catalogue price at calculate time, so a repair can never be
+// priced off a value the browser made up.
+function pickStockItem(materialId) {
+  const m = (_stockCache || []).find(function (x) { return +x.id === +materialId; });
+  if (!m) return;
+  repairLines.push({
+    kind: 'stock',
+    key:  _fhKey(),
+    description: m.name || '',
+    qty: 1,
+    unit: m.unit || 'each',
+    unit_price: +(m.price || 0),
+    notes: null,
+    material_id: +m.id,
+    bom_section_id: null,
+    category: null,
+    excluded: false,
+  });
+  closeModal('modal-stock-pick');
+  _fhAfterChange();
+}
+
+// ── REPAIRS mode ──────────────────────────────────────────────────────────
+
+function enterRepairMode() {
+  repairMode = true;
+  // A repair has no geometry, no body options, no insulation and no chassis —
+  // hide every input that would be meaningless rather than leaving dead fields
+  // on screen for Nadie to wonder about.
+  _repairToggleBodyInputs(false);
+  updateTopbarTitle('REPAIRS');
+  const cnt = document.getElementById('bom-count');
+  if (cnt) cnt.textContent = '';
+  bomData = [];
+  lastRecordId = null;
+  lastResult = null;
+  priceOverrides = {};
+  discountKind = null; discountInput = 0;
+  renderRepairSurface();
+  document.getElementById('summary-area').innerHTML =
+    '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;text-align:center">'
+    + 'Add repair lines to see the price summary</div>';
+  document.getElementById('grand-total').textContent = '—';
+  const geo = document.getElementById('geo-summary');
+  if (geo) geo.innerHTML = '';        // a repair has no geometry to summarise
+  _setDisabled('approve-btn', true);
+  onRepairMetaInput();
+}
+
+function exitRepairMode() {
+  if (!repairMode) return;
+  repairMode  = false;
+  repairLines = [];
+  _repairToggleBodyInputs(true);
+}
+
+function _repairToggleBodyInputs(showBody) {
+  const show = function (id, on) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = on ? '' : 'none';
+  };
+  show('dims-wrap',        showBody);
+  show('repair-meta-wrap', !showBody);
+  show('cfg-tab-chassis',  showBody);
+  if (!showBody) {
+    const vref = document.getElementById('vref-picker-wrap');
+    if (vref) vref.style.display = 'none';
+    const bos = document.getElementById('body-options-section');
+    if (bos) bos.style.display = 'none';
+    // Validated references are a body-CONFIGURATION feature. A repair has no
+    // configuration, so the mark button stays off and the drift check never
+    // runs (POST /api/validated-references/match requires a trailer_type_id,
+    // and the mark path 409s on a trailer-less costing by design).
+    _setDisabled('vref-mark-btn', true);
+    const banner = document.getElementById('vref-banner');
+    if (banner) banner.innerHTML = '';
+    switchCfgTab('body');
+  }
+}
+
+function onRepairMetaInput() {
+  if (!repairMode) return;
+  const typeEl = document.getElementById('f-repair-type');
+  const type = String(typeEl ? typeEl.value : '').trim();
+  const err  = document.getElementById('err-repair-type');
+  if (err) err.style.display = type ? 'none' : 'block';
+  const echo = document.getElementById('repair-type-echo');
+  if (echo) {
+    echo.innerHTML = type
+      ? escHtml(type)
+      : '<span style="color:var(--text-dim)">— type of repair required —</span>';
+  }
+}
+
+function _repairMetaValid() {
+  const el = document.getElementById('f-repair-type');
+  return !!String(el ? el.value : '').trim();
+}
+
+async function runRepairCalc() {
+  if (!repairMode) return;
+  const included = repairLines.filter(function (l) { return !l.excluded; });
+  if (!_repairMetaValid() || !included.length) {
+    _setDisabled('approve-btn', true);
+    return;
+  }
+  const scopeEl = document.getElementById('f-repair-scope');
+  lastCalcPayload = {
+    is_repair:       true,
+    trailer_type_id: null,
+    repair_type:     String(document.getElementById('f-repair-type').value || '').trim(),
+    repair_scope:    String(scopeEl ? scopeEl.value : '').trim() || null,
+    repair_lines:    repairLines.map(_fhWireLine),
+    profit_margin:   +document.getElementById('f-margin').value || 0,
+    dimensions:      {},
+  };
+  const status = document.getElementById('calc-status');
+  _setDisabled('approve-btn', true);
+  status.innerHTML = '<span class="spinner spinner-sm"></span> Calculating…';
+  try {
+    const result = await api('POST', '/api/calculate', lastCalcPayload);
+    lastResult = result;
+    renderSummary(result);
+    renderRepairSurface();
+    _setDisabled('approve-btn', false);
+    status.textContent = '';
+  } catch (e) {
+    status.textContent = '';
+    toast('Calculation failed: ' + e.message, 'error');
+  }
+}
+
+// The wire shape the server validates. A stock line sends only what the server
+// cannot resolve for itself (material_id, qty, notes) — never a price.
+function _fhWireLine(l) {
+  if (l.kind === 'stock') {
+    return { kind: 'stock', key: l.key, material_id: l.material_id,
+             qty: l.qty, notes: l.notes, excluded: l.excluded };
+  }
+  return { kind: 'free_hand', key: l.key, description: l.description, qty: l.qty,
+           unit: l.unit, unit_price: l.unit_price, notes: l.notes,
+           bom_section_id: l.bom_section_id, category: l.category,
+           excluded: l.excluded };
+}
+
+// ── The repair surface (rendered into the BOM panel) ───────────────────────
+// Per Michael's mockup: a header rail MATERIALS → + MARGIN % → ÷ RATIO = TOTAL
+// → − DISCOUNT = NET above a REPAIR LINES table. Every figure on the rail is
+// READ from the server's result — produced by the same margin/ratio/discount
+// functions a body costing uses, never recomputed here.
+function renderRepairSurface() {
+  const area = document.getElementById('bom-area');
+  if (!area || !repairMode) return;
+  const r = (lastResult && lastResult.is_repair) ? lastResult : null;
+  const money = function (v) { return hasFullCostAccess ? fmt(v || 0) : '••••'; };
+
+  const railCell = function (label, value, opts) {
+    opts = opts || {};
+    return '<div style="flex:1;min-width:96px;padding:6px 9px;border-radius:6px;'
+      + 'background:' + (opts.strong ? 'rgba(88,166,255,.10)' : 'var(--bg-panel)') + ';'
+      + 'border:1px solid ' + (opts.strong ? 'var(--blue)' : 'var(--border)') + '">'
+      + '<div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)">'
+      + escHtml(label) + '</div>'
+      + '<div style="font-family:var(--font-mono);font-size:' + (opts.strong ? '14' : '12') + 'px;'
+      + 'font-weight:' + (opts.strong ? 700 : 600) + ';'
+      + 'color:' + (opts.color || 'var(--text-head)') + ';white-space:nowrap">' + value + '</div>'
+      + '</div>';
+  };
+
+  let rail = '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:stretch;margin-bottom:10px">';
+  rail += railCell('Materials',
+    money(r ? (r.materials_total != null ? r.materials_total : r.grand_total) : 0));
+  rail += railCell('+ Margin ' + (r && r.profit_margin ? r.profit_margin + '%' : ''),
+    money(r ? r.profit_amount : 0));
+  rail += railCell('÷ Ratio ' + (r && r.ratio_label ? r.ratio_label : ''),
+    money(r ? r.ratio_amount : 0));
+  rail += railCell('= Total',
+    money(r ? (r.selling_price != null ? r.selling_price : r.grand_total) : 0), { strong: true });
+  if (r && r.discount_amount) {
+    rail += railCell('− Discount', money(r.discount_amount), { color: 'var(--red,#e35d6a)' });
+    rail += railCell('= Net', money(r.net_total), { strong: true });
+  }
+  rail += '</div>';
+
+  const byKey = {};
+  if (r) (r.items || []).forEach(function (it) {
+    if (it.free_hand_key) byKey[it.free_hand_key] = it;
+  });
+
+  const rows = repairLines.map(function (l) {
+    const it   = byKey[l.key];
+    const out  = l.excluded;
+    const dim  = out ? 'text-decoration:line-through;opacity:.5;' : '';
+    const chip = l.kind === 'stock'
+      ? '<span title="From the material list — priced at the list price"'
+        + ' style="display:inline-block;margin-left:6px;font-size:9px;background:rgba(88,166,255,.16);'
+        + 'color:var(--blue-hi);border-radius:3px;padding:1px 5px;letter-spacing:.3px;text-decoration:none">stock</span>'
+      : _fhManualChip();
+    return '<tr style="border-bottom:1px solid rgba(48,54,61,.4);' + dim + '">'
+      + '<td style="padding:5px 8px">'
+      + '<div style="font-size:12px">'
+      + '<input type="checkbox" ' + (out ? 'checked' : '')
+      + ' onchange="toggleFreeHandLine(\'' + l.key + '\', this.checked)"'
+      + ' title="' + (out ? 'Untick to include this line' : 'Tick to exclude this line') + '"'
+      + ' style="cursor:pointer;width:13px;height:13px;vertical-align:middle;margin-right:6px;accent-color:var(--red,#e35d6a)">'
+      + escHtml(l.description) + chip + '</div>'
+      + (l.notes ? '<div style="font-size:10px;color:var(--text-dim);margin-top:1px">' + escHtml(l.notes) + '</div>' : '')
+      + '</td>'
+      + '<td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:var(--text-dim);white-space:nowrap">'
+      + fmtNum(l.qty, 2) + ' ' + escHtml(l.unit || '') + '</td>'
+      + '<td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);white-space:nowrap">'
+      + money(l.unit_price) + '</td>'
+      + '<td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);font-weight:600;white-space:nowrap">'
+      + (out ? '<span style="color:var(--text-dim)">—</span>'
+             : money(it ? it.line_cost : l.qty * l.unit_price)) + '</td>'
+      + '<td style="padding:5px 4px;white-space:nowrap;text-align:right">'
+      + '<button type="button" onclick="editFreeHandLine(\'' + l.key + '\')" title="Edit this line"'
+      + ' style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:12px;padding:1px 4px">✎</button>'
+      + '<button type="button" onclick="removeFreeHandLine(\'' + l.key + '\')" title="Remove this line"'
+      + ' style="background:none;border:none;cursor:pointer;color:var(--red,#e35d6a);font-size:12px;padding:1px 4px">✕</button>'
+      + '</td></tr>';
+  }).join('');
+
+  const typeEl = document.getElementById('f-repair-type');
+  const typeTxt = String(typeEl ? typeEl.value : '').trim();
+  const hdrCell = function (label, extra) {
+    return '<th style="text-align:' + (extra || 'right') + ';padding:4px 8px;font-size:10px;'
+      + 'letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)">' + label + '</th>';
+  };
+  area.innerHTML =
+      '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">'
+    + '<span style="font-family:var(--font-mono);font-size:11px;letter-spacing:1px;'
+    + 'text-transform:uppercase;color:var(--red,#e35d6a);font-weight:700">Repair quote</span>'
+    + '<span id="repair-type-echo" style="font-size:12px;color:var(--text-head)">'
+    + (typeTxt ? escHtml(typeTxt)
+               : '<span style="color:var(--text-dim)">— type of repair required —</span>')
+    + '</span></div>'
+    + rail
+    + '<div style="display:flex;gap:6px;margin-bottom:8px">'
+    + '<button type="button" class="btn btn-outline btn-sm" id="repair-add-stock"'
+    + ' onclick="openStockPicker()">+ From stock list</button>'
+    + '<button type="button" class="btn btn-outline btn-sm" id="repair-add-freehand"'
+    + ' onclick="openRepairFreeHandLine()">+ Free-hand line</button>'
+    + '</div>'
+    + '<table class="calc-table" style="width:100%;border-collapse:collapse"><thead>'
+    + '<tr style="border-bottom:1px solid var(--border)">'
+    + hdrCell('Repair lines', 'left') + hdrCell('Qty') + hdrCell('Unit price') + hdrCell('Line total')
+    + '<th style="width:56px"></th></tr></thead>'
+    + '<tbody id="repair-lines-body">'
+    + (rows || '<tr><td colspan="5" style="padding:18px 8px;text-align:center;'
+        + 'color:var(--text-dim);font-size:12px">No lines yet — add one from the stock list '
+        + 'or type a free-hand line</td></tr>')
+    + '</tbody></table>';
+}
+
+// The "manual" chip — the one visual marker that says a line was typed rather
+// than costed off the BOM. Used on the repair surface and in the BOM table.
+function _fhManualChip() {
+  return '<span title="Free-hand line — typed on this costing, not from the material list"'
+       + ' style="display:inline-block;margin-left:6px;font-size:9px;background:rgba(240,165,0,.18);'
+       + 'color:#f0a500;border:1px solid rgba(240,165,0,.5);border-radius:3px;padding:0 5px;'
+       + 'letter-spacing:.3px;text-decoration:none">manual</span>';
+}
+
+// One BOM-table row for a free-hand OPTIONAL EXTRA. Rendered separately from the
+// main row builder because a free-hand line has no bom_id — the id-keyed
+// override, exclusion and recipe-badge machinery has nothing to bind to, and
+// feeding it an empty id would emit a broken inline handler.
+function _fhBomRow(it, gid, collapsed, secEnabled) {
+  const line = freeHandLines.find(function (l) { return l.key === it.free_hand_key; });
+  const out  = !!it.excluded;
+  const dim  = out ? 'text-decoration:line-through;opacity:.5;' : '';
+  const money = function (v) { return hasFullCostAccess ? fmt(v || 0) : '••••'; };
+  const tick = line
+    ? '<input type="checkbox" ' + (out ? 'checked' : '') + ' ' + (secEnabled ? '' : 'disabled')
+      + ' onclick="event.stopPropagation()"'
+      + ' onchange="toggleFreeHandLine(\'' + line.key + '\', this.checked)"'
+      + ' title="' + (out ? 'Untick to include this item' : 'Tick to exclude this item') + '"'
+      + ' style="cursor:pointer;width:13px;height:13px;vertical-align:middle;margin-right:6px;accent-color:var(--red,#e35d6a)">'
+    : '';
+  const actions = line
+    ? '<button type="button" onclick="event.stopPropagation();editFreeHandLine(\'' + line.key + '\')"'
+      + ' title="Edit this line" style="background:none;border:none;cursor:pointer;'
+      + 'color:var(--text-dim);font-size:11px;padding:0 3px">✎</button>'
+      + '<button type="button" onclick="event.stopPropagation();removeFreeHandLine(\'' + line.key + '\')"'
+      + ' title="Remove this line" style="background:none;border:none;cursor:pointer;'
+      + 'color:var(--red,#e35d6a);font-size:11px;padding:0 3px">✕</button>'
+    : '';
+  return '<tr class="calc-grp-row opt-sec-row fh-row" data-cat-group="' + gid + '"'
+    + ' data-free-hand-key="' + escHtml(it.free_hand_key || '') + '"'
+    + ' style="border-bottom:1px solid rgba(48,54,61,.4);'
+    + (collapsed ? 'display:none;' : '') + dim + '">'
+    + '<td style="padding:5px 8px">'
+    + '<div style="font-size:12px">' + tick + escHtml(it.material) + _fhManualChip() + actions + '</div>'
+    + (it.notes ? '<div style="font-size:10px;color:var(--text-dim);margin-top:1px">' + escHtml(it.notes) + '</div>' : '')
+    + '</td>'
+    + '<td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);color:var(--text-dim);white-space:nowrap">'
+    + fmtNum(it.quantity, 2) + ' ' + escHtml(it.unit || '') + '</td>'
+    + '<td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);white-space:nowrap">'
+    + money(it.unit_price) + '</td>'
+    + '<td class="calc-line-cost" style="padding:5px 8px;text-align:right;font-family:var(--font-mono);'
+    + 'font-weight:600;white-space:nowrap">'
+    + (out ? '<span style="color:var(--text-dim)">—</span>' : money(it.line_cost)) + '</td>'
+    + '</tr>';
+}
+
+// The "+ Free-hand line" control on an OPTIONAL section header. Offered on every
+// optional section (the flag-driven is_optional rule), never keyed off a section
+// NAME — v1.42 established that optionality is the flag, not the name.
+function _fhSectionBtn(secId, secName) {
+  return ' <button type="button" class="calc-bulk-pill-btn"'
+    + ' data-free-hand-add="' + (secId != null ? secId : '') + '"'
+    + ' onclick="event.stopPropagation();openFreeHandLine(' + (secId != null ? secId : 'null')
+    + ', ' + JSON.stringify(secName).replace(/"/g, '&quot;') + ');return false"'
+    + ' title="Add an item that isn\'t in the list">'
+    + '<span class="costing-state-pill calc-bulk-pill"'
+    + ' style="background:rgba(240,165,0,.16);color:#f0a500;border:1px solid rgba(240,165,0,.5)">'
+    + '+ Free-hand line</span></button>';
+}
+
+// Live line total in the entry dialog.
+['fh-qty', 'fh-unit-price'].forEach(function (id) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', _fhUpdateLineTotal);
 });

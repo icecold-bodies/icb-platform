@@ -145,6 +145,17 @@ async def create_reference(request: Request, db: Session = Depends(get_db),
         raise HTTPException(status_code=404, detail="Costing not found")
 
     result = _load_result(rec)
+    # v1.47 — a REPAIRS costing has no body behind it (trailer_type_id is NULL, no
+    # dimensions, no body options), so there is no configuration to fingerprint.
+    # Refuse cleanly instead of letting config_fingerprint's int(None) 500. The
+    # match path needs no counterpart guard: it requires a trailer_type_id, so a
+    # repair simply never matches.
+    if rec.trailer_type_id is None:
+        raise HTTPException(
+            status_code=409,
+            detail=("A repair quote has no body configuration, so it cannot be used "
+                    "as a validated reference."),
+        )
     # Pre-v1.39.9 records carry no input_state, so their configuration cannot be
     # reconstructed — fingerprinting one would store a near-empty hash that
     # would then match every other legacy record. Refuse, loudly.

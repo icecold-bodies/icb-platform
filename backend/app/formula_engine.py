@@ -173,13 +173,21 @@ def calculate_bom(bom_items: list, dims: dict, body_variables: dict | None = Non
 
         _err: list = []
         _unknown: list = []
-        qty_raw = evaluate_formula(expr, ctx, merged_vars, formula_library, _err=_err, _unknown=_unknown)
-        formula_error = bool(_err) or bool(_unknown)
+        # Free-hand lines (v1.47) carry a typed quantity, never a formula. Bypass
+        # the engine entirely: there is no expression to mis-evaluate, so a
+        # manual line can never raise a formula error or a wobble in the totals.
+        if bom.get("free_hand"):
+            expr = ""
+            qty_raw = float(bom.get("quantity") or 0)
+            formula_error = False
+        else:
+            qty_raw = evaluate_formula(expr, ctx, merged_vars, formula_library, _err=_err, _unknown=_unknown)
+            formula_error = bool(_err) or bool(_unknown)
         section_mult = float(bom.get("section_multiplier") or 1.0)
         qty = qty_raw * section_mult * (1 + waste_pct / 100)
         line_cost = qty * price
 
-        items.append({
+        item = {
             "category": cat,
             "bom_id": bom.get("bom_id"),
             "bom_section_id": bom.get("bom_section_id"),
@@ -197,7 +205,17 @@ def calculate_bom(bom_items: list, dims: dict, body_variables: dict | None = Non
             "formula_unknown_vars": _unknown if _unknown else [],
             "excluded": excluded,
             "excluded_reason": excluded_reason,
-        })
+        }
+        # Free-hand markers are attached only on free-hand lines, so a normal
+        # costing's items payload stays byte-identical to before (a big freezer
+        # body already serialises ~200 KB of items).
+        if bom.get("free_hand"):
+            item["free_hand"] = True
+            item["free_hand_key"] = bom.get("free_hand_key")
+            item["free_hand_kind"] = bom.get("free_hand_kind") or "free_hand"
+            if bom.get("notes"):
+                item["notes"] = bom["notes"]
+        items.append(item)
 
         if not excluded:
             category_totals[cat] = category_totals.get(cat, 0) + line_cost

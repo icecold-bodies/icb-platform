@@ -24,7 +24,8 @@ from ..services import (
 )
 from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
 from ..templates_config import templates
-from ..quote_numbering import assign_quote_number
+from ..quote_numbering import (assign_quote_number, allocate_series_number,
+                               SERIES_REPAIR_DOC)
 from app.formula_engine import calculate_bom, evaluate_formula
 
 router = APIRouter()
@@ -706,6 +707,20 @@ def _append_free_hand_lines(bom_items: list, body: dict,
     return lines
 
 
+def _repair_document_number(result: dict) -> str | None:
+    """The R-series document number already on this costing, if any.
+
+    Read from BOTH the result root and the input_state snapshot: the root is
+    where a fresh save puts it, the snapshot is what survives an edit-replay.
+    Whichever is present wins, so the number is issued exactly once per costing
+    and never changes afterwards (D6: immutable once issued)."""
+    if not isinstance(result, dict):
+        return None
+    return (result.get("repair_document_number")
+            or (result.get("input_state") or {}).get("repair_document_number")
+            or None)
+
+
 def _calculate_repair(body: dict, db: Session) -> tuple[dict, dict, list[dict]]:
     """Compute a REPAIRS costing — the v1.47 repair surface, which has no body
     behind it (no dimensions, no body options, no insulation, no BOM).
@@ -718,7 +733,10 @@ def _calculate_repair(body: dict, db: Session) -> tuple[dict, dict, list[dict]]:
     Returns (result, repair_fields, normalised_lines).
     """
     fields = free_hand.repair_fields(body)
-    lines = free_hand.parse_lines(body.get("repair_lines"), allow_stock=True, db=db)
+    # allow_total_only: the ICB repair quotation's real line grammar is a long
+    # description with a LUMP-SUM total and no qty/price (addendum D3).
+    lines = free_hand.parse_lines(body.get("repair_lines"), allow_stock=True,
+                                  allow_total_only=True, db=db)
     if not lines:
         raise HTTPException(status_code=422,
                             detail="A repair quote needs at least one line — add a "
@@ -986,6 +1004,14 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             "repair_type":   repair_meta["repair_type"],
             "repair_scope":  repair_meta["repair_scope"],
             "repair_lines":  free_hand.snapshot(repair_lines),
+            # v1.47 Lane D (D8) — the quotation document's header fields, all
+            # per-quote: vehicle registration, delivery address, the ICB contact
+            # and phone, and the payment terms.
+            "vehicle_registration": repair_meta["vehicle_registration"],
+            "delivery_address":     repair_meta["delivery_address"],
+            "icb_contact_name":     repair_meta["icb_contact_name"],
+            "icb_contact_phone":    repair_meta["icb_contact_phone"],
+            "payment_terms":        repair_meta["payment_terms"],
             "profit_margin": profit_margin,
             "ratio_value":   body.get("ratio_value"),
             "ratio_label":   body.get("ratio_label"),
@@ -1020,6 +1046,14 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 except Exception:
                     _prev = {}
                 result["version"] = int(_prev.get("version", 1) or 1)
+                # D6 — the R-series document number is IMMUTABLE once issued.
+                # `result` is freshly computed and carries none, so an edit must
+                # copy the original forward or the costing would silently get a
+                # new document number (and burn one off the series) on every save.
+                _prev_doc = _repair_document_number(_prev)
+                if _prev_doc:
+                    result["repair_document_number"] = _prev_doc
+                    result["input_state"]["repair_document_number"] = _prev_doc
                 rec.result_json = json.dumps(result)
                 rec.dimensions_json = json.dumps({})
                 rec.customer_id = customer_id
@@ -1047,6 +1081,25 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                     assign_quote_number(rec, db=db, user=user, trailer=None)
                 except Exception:
                     logging.exception("assign_quote_number failed for repair record %s", rec.id)
+                # v1.47 Lane D (D6) — the repair QUOTATION DOCUMENT carries its own
+                # R-prefixed number from an independent series, so it never
+                # perturbs the body-costing sequence. Issued ONCE and immutable:
+                # allocate_series_number consumes a number on every call, so the
+                # guard is the stored value, mirroring assign_quote_number's own
+                # `if rec.quote_number` idempotency.
+                try:
+                    _doc_no = _repair_document_number(result)
+                    if not _doc_no:
+                        _doc_no = allocate_series_number(
+                            db, SERIES_REPAIR_DOC, user=user,
+                            when=rec.created_at or datetime.now(timezone.utc))
+                        result["repair_document_number"] = _doc_no
+                        result["input_state"]["repair_document_number"] = _doc_no
+                        rec.result_json = json.dumps(result)
+                        db.flush()
+                except Exception:
+                    logging.exception(
+                        "repair document number allocation failed for record %s", rec.id)
             rec.discount_kind   = result.get("discount_kind")
             rec.discount_input  = result.get("discount_input")
             rec.discount_amount = result.get("discount_amount")

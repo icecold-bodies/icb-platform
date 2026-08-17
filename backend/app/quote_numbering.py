@@ -32,15 +32,54 @@ ALLOWED_PLACEHOLDERS = {
     "trailer_code",
 }
 
+# Numbering SERIES (v1.47 Lane D, migration 0042). 'quote' is the original
+# body-costing line; 'repair_doc' is the R-prefixed repair QUOTATION DOCUMENT
+# number, which must never perturb the body sequence.
+SERIES_QUOTE = "quote"
+SERIES_REPAIR_DOC = "repair_doc"
 
-def get_or_create_counter(db: Session) -> QuoteCounter:
-    """Singleton pattern — id=1 always. Created on first use with defaults."""
-    qc = db.query(QuoteCounter).filter_by(id=1).first()
-    if qc is None:
-        qc = QuoteCounter(id=1, next_value=1,
-                          format_template="{user_initial}{counter}/{month}/{year}")
-        db.add(qc)
-        db.flush()
+DEFAULT_TEMPLATES = {
+    SERIES_QUOTE:      "{user_initial}{counter}/{month}/{year}",
+    SERIES_REPAIR_DOC: "R-{counter}",
+}
+
+
+def get_or_create_counter(db: Session, series: str = SERIES_QUOTE) -> QuoteCounter:
+    """The counter row for one numbering SERIES, created on first use.
+
+    v1.47 Lane D: this was a singleton keyed on id=1. It is now keyed on
+    `series` (unique — migration 0042) so a second numbering line can exist.
+    `series` defaults to 'quote', which IS the original line, so every existing
+    caller keeps its counter, its next_value and its admin template untouched.
+
+    The legacy id=1 row is ADOPTED as the 'quote' series rather than duplicated:
+    0042 backfills it, and the fallback below covers any database where that
+    backfill has not run yet.
+    """
+    qc = db.query(QuoteCounter).filter_by(series=series).first()
+    if qc is not None:
+        return qc
+    if series == SERIES_QUOTE:
+        # Adopt a genuine PRE-0042 row — one whose series was never set. Keyed on
+        # the blank series, NOT on id=1: on any database created after 0042 the
+        # seeded 'repair_doc' row IS id=1, and claiming it here silently made the
+        # repair series double as the body series (body quotes numbering
+        # themselves "R-1", "R-2"...). Caught by a direct check of the two series
+        # on a fresh database.
+        legacy = (db.query(QuoteCounter)
+                    .filter((QuoteCounter.series.is_(None)) | (QuoteCounter.series == ""))
+                    .order_by(QuoteCounter.id)
+                    .first())
+        if legacy is not None:
+            legacy.series = SERIES_QUOTE
+            db.flush()
+            return legacy
+    qc = QuoteCounter(
+        next_value=1, series=series,
+        format_template=DEFAULT_TEMPLATES.get(series, DEFAULT_TEMPLATES[SERIES_QUOTE]),
+    )
+    db.add(qc)
+    db.flush()
     return qc
 
 
@@ -143,5 +182,41 @@ def assign_quote_number(rec: CalculationRecord, *, db: Session,
         when=rec.created_at or datetime.now(timezone.utc),
     )
     rec.quote_number = rendered
+    db.flush()
+    return rendered
+
+
+def allocate_series_number(db: Session, series: str, *,
+                           user: Optional[User] = None,
+                           when: Optional[datetime] = None) -> str:
+    """Atomically allocate + format the next number on any SERIES.
+
+    The row-locking, the increment and the template rendering are the SAME as
+    assign_quote_number's — this is that function with the CalculationRecord
+    stamping factored out, so a document number can be issued for a series that
+    has no quote_number column of its own to be idempotent against.
+
+    ⚠ NOT idempotent by itself, precisely because there is no record field to
+    check: every call consumes a number. Callers must persist what they get and
+    return early when it is already set (see the repair-document path), exactly
+    as assign_quote_number's `if rec.quote_number` guard does.
+    """
+    qc = get_or_create_counter(db, series)
+    locked = (db.query(QuoteCounter)
+                .filter_by(id=qc.id)
+                .with_for_update()
+                .first())
+    if locked is None:
+        locked = qc
+
+    counter_value = int(locked.next_value or 1)
+    locked.next_value = counter_value + 1
+    db.flush()
+
+    rendered = render_template(
+        locked.format_template or DEFAULT_TEMPLATES.get(series, "{counter}"),
+        counter=counter_value, user=user, trailer=None,
+        when=when or datetime.now(timezone.utc),
+    )
     db.flush()
     return rendered

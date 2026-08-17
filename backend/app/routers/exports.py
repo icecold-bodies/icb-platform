@@ -1103,12 +1103,15 @@ def _doc_ctx_for_record(rec: CalculationRecord, db: Session, *, detail, ratios_r
         heading=heading,
         sub=sub,
         client_name=(rec.customer.name if rec.customer else ""),
+        # v1.47 Lane C — `spec_pairs` is computed above: the dimensions block for a
+        # body, the repair's own identity for a REPAIRS costing (which has no
+        # dimensions). The merge with #141 re-added the old
+        # `spec_pairs=_spec_pairs(dims)` alongside it, which is a duplicate kwarg.
         spec_pairs=spec_pairs,
         # End-user SNAPSHOT (0040) — never a live join, so re-exporting an old quote
         # after the end-user book changed still prints what was sent.
         end_user_company=rec.end_user_company,
         end_user_contact_name=rec.end_user_contact_name,
-        spec_pairs=_spec_pairs(dims),
         spec_options=_spec_options_from_derived(derived),
         result=result,
         ratios=ratios,
@@ -1229,7 +1232,6 @@ def _doc_ctx_for_preview(body: dict, db: Session):
         # from the picker — what you preview is what the approved export will say.
         end_user_company=body.get("end_user_company"),
         end_user_contact_name=body.get("end_user_contact_name"),
-        spec_pairs=_spec_pairs(dims),
         spec_options=_spec_options_from_derived(derived),
         result=result,
         ratios=ratios,

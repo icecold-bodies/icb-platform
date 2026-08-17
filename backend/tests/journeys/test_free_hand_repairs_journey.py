@@ -135,6 +135,39 @@ def _select_body(page: Page, tt_id: int) -> None:
     expect(page.locator("#grand-total")).not_to_have_text("—", timeout=T)
 
 
+def _wait_for_optional_section(page: Page, tt_id: int, section_id: int) -> None:
+    """Wait until the SERVER reports this section as optional, reloading the BOM
+    until it does.
+
+    services.get_section_snapshot() is cached with a 30 s TTL and
+    invalidate_sections() is never called, so a BOMSection this fixture inserts
+    straight into the database is invisible to the running server for up to 30
+    seconds. While it is, its rows come back with section_is_optional=false, so
+    the section renders as a NORMAL section — no tick, no "+ Free-hand line".
+
+    That is a race against a cache, not against a render, so no amount of
+    waiting on the page fixes it: the BOM has to be re-fetched after the TTL
+    lapses. Ubuntu happened to win this race and Windows lost it, which is
+    exactly how it reached CI green on one platform and red on the other.
+    """
+    deadline = 75.0
+    waited = 0.0
+    tick = page.locator(f".opt-sec-tick[data-section-id='{section_id}']")
+    while waited < deadline:
+        if tick.count() > 0:
+            return
+        page.wait_for_timeout(3000)
+        waited += 3.0
+        page.evaluate("loadBOM()")          # re-fetch the BOM from the server
+        try:
+            expect(page.locator(".calc-grp-hdr").first).to_be_visible(timeout=10_000)
+        except AssertionError:
+            pass
+    raise AssertionError(
+        f"section {section_id} never came back optional within {deadline:.0f}s — "
+        "the server's section snapshot cache never refreshed")
+
+
 def _wait_for_total(page: Page, expected: float) -> float:
     """Wait until the headline total SETTLES on `expected`, then return it.
 
@@ -179,6 +212,7 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
 
     # Opt the OPTIONAL section in first — an optional section is OFF until ticked,
     # and this lane deliberately did not change that flag logic.
+    _wait_for_optional_section(page, laneC_body["tt"], laneC_body["opt_sec"])
     tick = page.locator(f".opt-sec-tick[data-section-id='{laneC_body['opt_sec']}']")
     expect(tick).to_be_visible(timeout=T)
     if tick.is_checked():                    # checked == EXCLUDED
@@ -378,6 +412,9 @@ def test_normal_body_costing_is_unaffected(page: Page, laneC_body) -> None:
     page.goto("/mes/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     _select_body(page, laneC_body["tt"])
+    # Same section-cache race as (a): until the server sees the section as
+    # optional its rows are INCLUDED, and the plain-body total would read 1120.
+    _wait_for_optional_section(page, laneC_body["tt"], laneC_body["opt_sec"])
     page.select_option("#f-ratio", "")   # headline == materials, so the number is checkable
     _settle(page)                        # the ratio change re-costs on the 700 ms debounce
 

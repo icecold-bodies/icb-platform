@@ -135,29 +135,32 @@ def _select_body(page: Page, tt_id: int) -> None:
     expect(page.locator("#grand-total")).not_to_have_text("—", timeout=T)
 
 
-def _wait_idle_total(page: Page, previous: float) -> float:
-    """Wait for the debounced recalc (700 ms) to land a DIFFERENT total, then
-    return it.
+def _wait_for_total(page: Page, expected: float) -> float:
+    """Wait until the headline total SETTLES on `expected`, then return it.
 
-    Polls on the VALUE, never on "has text" — the summary panel keeps its old
-    number while the next async result is in flight, so an is-visible or
-    has-text wait passes on the PREVIOUS calc (banked level-vs-edge flake
-    class). Python-side polling, because the app's CSP has no unsafe-eval and
-    page.wait_for_function is therefore unusable here.
+    Polls for the expected STATE, never for "it changed" — every recalc here is
+    debounced 700 ms and several can be in flight at once (adding a line, then
+    the margin, then the ratio), so "wait for a different number" returns the
+    FIRST intermediate result and asserts against a calculation that is about to
+    be superseded. That is exactly what turned green locally and red on both CI
+    platforms: the repair total was read as 1700 (materials only) before the
+    margin+ratio recalc landed on 3740.
+
+    Python-side polling because the app's CSP has no unsafe-eval, so
+    page.wait_for_function is unusable here.
     """
     deadline = T / 1000.0
     waited = 0.0
+    last = _grand_total(page)
     while waited < deadline:
+        last = _grand_total(page)
+        if abs(last - expected) < 0.05:
+            return last
         page.wait_for_timeout(250)
         waited += 0.25
-        now = _grand_total(page)
-        if abs(now - previous) > 0.005:
-            # Let the debounce settle so we return the SETTLED value, not an
-            # intermediate one from a calc that is about to be superseded.
-            page.wait_for_timeout(400)
-            return _grand_total(page)
     raise AssertionError(
-        f"the total never moved off {previous:.2f} within {deadline:.0f}s")
+        f"the total settled on {last:.2f}, expected {expected:.2f} "
+        f"(waited {deadline:.0f}s)")
 
 
 # ── (a) free-hand OPTIONAL EXTRA on a body costing ───────────────────────────
@@ -178,11 +181,12 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
     # and this lane deliberately did not change that flag logic.
     tick = page.locator(f".opt-sec-tick[data-section-id='{laneC_body['opt_sec']}']")
     expect(tick).to_be_visible(timeout=T)
-    before_optin = _grand_total(page)
     if tick.is_checked():                    # checked == EXCLUDED
         tick.uncheck()
-        before_optin = _wait_idle_total(page, before_optin)
-    baseline = before_optin
+    # Read the baseline only once BOTH the ratio change and the opt-in have
+    # settled — reading it mid-flight is what makes every later delta wrong.
+    _settle(page)
+    baseline = _grand_total(page)
 
     # Sections render COLLAPSED by default, so expand this one — otherwise the
     # new row is in the DOM but display:none and nothing can be clicked on it.
@@ -214,9 +218,7 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
     expect(row).to_have_count(1, timeout=T)
     expect(row).to_contain_text("Rubber seal kit")
     expect(row).to_contain_text("manual")
-    after = _wait_idle_total(page, baseline)
-    assert abs(after - (baseline + 900.0)) < 0.05, (
-        f"total moved {after - baseline:.2f}, expected 900.00")
+    _wait_for_total(page, baseline + 900.0)
     shot(page, "free_hand_extra_added", JOURNEY)
 
     # Editing the line re-costs it.
@@ -224,9 +226,7 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
     expect(page.locator("#modal-free-hand")).not_to_have_class(re.compile(r"hidden"), timeout=T)
     page.fill("#fh-qty", "3")
     page.click("#fh-save-btn")
-    after_edit = _wait_idle_total(page, after)
-    assert abs(after_edit - (baseline + 1350.0)) < 0.05, (
-        f"edited total is {after_edit:.2f}, expected {baseline + 1350.0:.2f}")
+    _wait_for_total(page, baseline + 1350.0)
 
     # The Excel preview carries the line (R2/R4 shared document context).
     with page.expect_download(timeout=T) as dl:
@@ -235,8 +235,7 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
 
     # Removing it puts the total back exactly.
     row.locator("button[title='Remove this line']").click()
-    back = _wait_idle_total(page, after_edit)
-    assert abs(back - baseline) < 0.05, f"total did not return to {baseline:.2f} (got {back:.2f})"
+    _wait_for_total(page, baseline)
     expect(page.locator("tr.fh-row")).to_have_count(0, timeout=T)
 
 
@@ -300,13 +299,12 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     # ratio functions a body costing uses.
     # Margin + ratio re-cost the repair through the normal debounced path — the
     # same controls, the same functions a body costing uses.
-    before_margin = _grand_total(page)
     page.fill("#f-margin", "10")
     page.select_option("#f-ratio", "0.5")
     expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)
     expect(page.locator("#bom-area")).to_contain_text("Materials", timeout=T)
-    total = _wait_idle_total(page, before_margin)
-    assert abs(total - 3740.0) < 0.05, f"repair total is {total:.2f}, expected 3740.00 ((1700+170)/0.5)"
+    # 2 x 250 (catalogue) + 4 x 300 (typed) = 1700; +10% margin = 1870; / 0.5 = 3740.
+    _wait_for_total(page, 3740.0)
     shot(page, "repair_surface", JOURNEY)
 
     # Save it. A repair rides the same approve path and quote numbering.

@@ -303,7 +303,7 @@ A body is quoted as **either** DRD (double rear door) **or** SRD (single), never
 > Floor Panel                          1       R —        R —
 > ...
 > ```
-> The exact UX is the new CA's to design. **What must not change:** one thickness per pair; the selected type owns it; rear door follows the DRD/SRD choice; the `{TOKEN}` formula linkage keeps resolving. **What must change:** a costing-page gesture must NOT silently rewrite the shared template (see OQ-02 — per-costing insulation values with explicit "save to template" is the obvious shape, but it alters today's semantics and needs BA sign-off). **[RATIFIED direction, OQ on template-write semantics]**
+> The exact UX is the new CA's to design. **What must not change:** one thickness per pair; the selected type owns it; rear door follows the DRD/SRD choice; the `{TOKEN}` formula linkage keeps resolving. **What must change [RATIFIED — OQ-02 resolved, Michael, 17 Aug 2026]:** a costing-page gesture must NOT rewrite the shared template. Insulation/thickness values are **per-costing**, with an explicit, separate **"save to template"** action (who may perform it: see OQ-02 residual in Part 34). **[RATIFIED]**
 
 ---
 
@@ -756,7 +756,7 @@ Requirements (each traces to a ratified decision or the brief):
 7. **Add item, two methods** (brief Part 12): stock-list picker over `materials` (search by name/SAP code/category) and **free-hand entry** (description, qty, unit price — NEW capability; needs a new permission key and a decision on where free-hand lines land in the data model — OQ-04).
 8. **Loud zeros**: unpriced or formula-error lines must be visually unmissable and never silently included at R0 (fixes R-20/RULE-CALC-004's sharp edge).
 9. **One calculation authority**: live totals and saved totals computed by the same server path, eliminating the live/save asymmetry (RULE-CALC-015) and the debounce/stale-approve hazard (RULE-EDIT-008). Save must bind exactly what is on screen.
-10. **No template writes from costing gestures** — insulation/door/thickness changes affect THIS costing; template updates become an explicit, separate act (OQ-02 for the exact semantics).
+10. **No template writes from costing gestures [RATIFIED — OQ-02]** — insulation/door/thickness changes affect THIS costing only; updating the template is an explicit, separate "save to template" action.
 11. Preserved as-is: save/versioning flows and modals' SEMANTICS (RULE-SAVE-*), validated references (RULE-REF-*), Excel audit, chassis block, customer/contact snapshot, quote numbering, exports, accept/decline. The `replace` action must gain a real confirmation (R-05).
 
 ## 25. New Category Requirements
@@ -769,7 +769,7 @@ Requirements (each traces to a ratified decision or the brief):
 
 ## 26. New Insulation Requirements
 
-Per §7.4: type + thickness controls INSIDE each insulated category; one thickness per pair owned by the selected type; rear-door follows the DRD/SRD door choice; `{TOKEN}` linkage keeps resolving; "switch all categories to PU?" remains as an assist; both-zero impossible to save silently. Template-write semantics per OQ-02.
+Per §7.4: type + thickness controls INSIDE each insulated category; one thickness per pair owned by the selected type; rear-door follows the DRD/SRD door choice; `{TOKEN}` linkage keeps resolving; "switch all categories to PU?" remains as an assist; both-zero impossible to save silently. Template-write semantics [RATIFIED — OQ-02]: values are per-costing; "save to template" is an explicit separate action.
 
 ## 27. New Stock Requirements
 
@@ -817,7 +817,7 @@ Every significant function, its fate. "New location" = the one primary costing p
 | Body type selection | Calc 1/2 dropdown | §5.3 | Costing page dropdown (+ REPAIR entry) | Yes |
 | Default dims/margin/ratio seeding | Calc | §5.3, RULE-MONEY-002 | Same | Yes |
 | Body options (3 renderers) | Calc panel | §3.1.1, RULE-SEC-* | ONE representation designed by new CA; same gating outcomes | Yes (logic) / No (renderers) |
-| Insulation EPS/PU + thickness | Calc body-options panel | RULE-INS-* | Inside each category | Yes (semantics; template-write per OQ-02) |
+| Insulation EPS/PU + thickness | Calc body-options panel | RULE-INS-* | Inside each category | Yes (semantics; per-costing values + explicit save-to-template [RATIFIED]) |
 | DRD/SRD door choice | Calc panel pills / folders | RULE-DOOR-* | Visible door choice on the costing page | Yes |
 | Optional EXTRAS sections | Calc (checked=excluded) | RULE-SEC-001..003 | Category include control, normal polarity | Yes |
 | Per-line excludes (all sections) | **Calculator 2 only** | §3.2 | Every line, any category | Yes — generalised |
@@ -928,7 +928,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | # | Question | Owner |
 |---|---|---|
 | OQ-01 | ~~v4.37: build on the parked native React calculator or start fresh?~~ **RESOLVED (Michael, 17 Aug 2026): mine v4.37 for plumbing, start fresh on UX.** See the design brief (Part 37) | ~~BA + new CA~~ closed |
-| OQ-02 | **Template-write semantics**: today insulation/door/thickness gestures write the SHARED template mid-costing. Proposed: per-costing values + explicit "save to template". Confirm, and define who may save to template | BA |
+| OQ-02 | ~~Template-write semantics~~ **RESOLVED (Michael, 17 Aug 2026): per-costing values with an explicit "save to template" action.** *Residual:* who may save to template — suggested default `{admin, full}` matching `costings.price_master_edit` [PROPOSAL] | BA (residual only) |
 | OQ-03 | **Quantity override mechanics**: does an overridden quantity survive a recalc after dimension changes (sticky) or reset (derived wins)? Suggest sticky-with-badge + one-click revert | BA + new CA |
 | OQ-04 | **Free-hand line storage**: confirm lines live inside the costing only (no material creation), and whether they can be "promoted" to the catalogue by an admin later | BA |
 | OQ-05 | **`calc2_default_excluded` seeds**: Calculator 2's per-body default exclusions — migrate into the new per-line model, or retire the flag? | BA |
@@ -989,7 +989,7 @@ Two families: **inherited defects/quirks** (fix or consciously carry) and **rede
 - **Silent rule loss** — the reason Part 14 exists. Mitigation: the new CA checks each of the 71 rules off explicitly (retire only via BA sign-off).
 - **Fingerprint drift** — changing what identifies a reference breaks existing references (RULE-REF-001, OQ-15).
 - **Saved-record compatibility** — old costings must re-open (replay mode is the guarantee to preserve).
-- **Template-write semantics change (OQ-02)** — removing mid-costing template writes is a behaviour change users may currently rely on; needs comms.
+- **Template-write semantics change (OQ-02, now ratified)** — removing mid-costing template writes is a behaviour change users may currently rely on (today's toasts train them that gestures update the template); needs comms at rollout.
 - **Two-worlds body options** — 17 v2 + 9 legacy bodies must both flow through the new category model from day one.
 - **Scope creep into stock/SAP** — the stock model is a picker + seam, not an inventory system (Part 10.1).
 
@@ -1012,7 +1012,7 @@ You are designing a NEW costing experience for ICB. This document is your specif
 - support add-item by stock search AND free-hand entry (Parts 27, 29), SAP-ready by `sap_code` (Part 28)
 - surface zeros and formula errors loudly (Part 24.8)
 - compute live and saved totals through one server path and bind the save to what is on screen (Part 24.9)
-- stop costing gestures from silently rewriting shared templates (Part 24.10, OQ-02)
+- stop costing gestures from rewriting shared templates: per-costing values + explicit "save to template" (Part 24.10) [RATIFIED]
 - preserve every rule in Part 14 unless the BA retires it in writing; the Part 31 matrix is your checklist
 - keep permissions, exports, versioning, validated references, Excel audit, chassis, quote numbering working as specified
 - feel familiar to someone who lived in the Excel workbook — and be dramatically simpler than the current application

@@ -349,3 +349,6 @@ tr.attn td:first-child { box-shadow: inset 4px 0 0 var(--bad-strong); }
   .rail-inner { max-height: none; }
 }
 .card { scroll-margin-top: calc(var(--pin-h, 176px) + 10px); }
+/* discount amount shown beside the ratio (Total) amount when a discount is entered (17 Aug) */
+.stage .val .discamt { font-size: 13px; font-weight: 600; color: var(--warn); margin-left: 6px; vertical-align: 2px; white-space: nowrap; }
+.disc .discecho { color: var(--warn); font-weight: 600; }

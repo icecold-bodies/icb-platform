@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ..database import (
     get_db,
     TrailerType, BillOfMaterial, BOMSection,
-    CalculationRecord, Customer, CustomerContact, Formula, GlobalVariable,
+    CalculationRecord, Customer, CustomerContact, CustomerEndUser, Formula, GlobalVariable,
 )
 from ..deps import get_current_user, user_can
 from ..integration_auth import integration_identity_if_bearer  # v1.43 — GET /api/calculations/{id} token read (ADR 0038)
@@ -915,6 +915,36 @@ def _contact_snapshot(db: Session, customer_id, contact_id) -> dict:
     return fields
 
 
+def _end_user_snapshot(db: Session, customer_id, end_user_id) -> dict:
+    """Twin of _contact_snapshot for the END USER (migration 0040, WO v1.47 lane B) — the
+    company the body is actually FOR when ICB's customer is a reseller or middleman.
+
+    Same discipline, same reasons: a write-time SNAPSHOT rather than a live join, so later
+    edits to the end-user book never rewrite what a sent quote said; and a 422 rather than a
+    silent mis-attribution when the end user doesn't belong to the selected customer (or is
+    inactive), which only a stale or hand-crafted payload can produce.
+
+    Fully optional — no end user selected means every column stays NULL and every downstream
+    consumer renders exactly as it did before this WO."""
+    fields = {"end_user_id": None, "end_user_company": None, "end_user_contact_name": None,
+              "end_user_contact_email": None, "end_user_contact_telephone": None,
+              "end_user_contact_role": None}
+    if not end_user_id or not customer_id:
+        return fields
+    e = db.query(CustomerEndUser).filter_by(id=int(end_user_id)).first()
+    if e is None or e.customer_id != int(customer_id) or not e.active:
+        raise HTTPException(
+            status_code=422,
+            detail="Selected end user does not belong to the selected customer "
+                   "(or is inactive) — re-select the end user and save again.")
+    fields.update({"end_user_id": e.id, "end_user_company": e.company_name,
+                   "end_user_contact_name": e.contact_name,
+                   "end_user_contact_email": e.contact_email,
+                   "end_user_contact_telephone": e.contact_telephone,
+                   "end_user_contact_role": e.contact_role})
+    return fields
+
+
 @router.post("/api/approve")
 async def api_approve(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
@@ -929,6 +959,9 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     # Contact person this quote is for-attention-of (nullable — resolved to a write-time
     # snapshot BEFORE the heavy BOM compute so a bad pairing 422s fast).
     contact_fields = _contact_snapshot(db, customer_id, body.get("contact_id") or None)
+    # End user this body is FOR (nullable — same chokepoint, same transaction, resolved
+    # here so a bad pairing 422s before the heavy BOM compute).
+    end_user_fields = _end_user_snapshot(db, customer_id, body.get("end_user_id") or None)
     overrides      = {str(k): float(v) for k, v in body.get("overrides", {}).items()}
     override_reasons = {str(k): str(v).strip() for k, v in (body.get("override_reasons") or {}).items() if str(v).strip()}
     version_action = body.get("version_action")
@@ -1142,6 +1175,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             rec.customer_id     = customer_id
             for _k, _v in contact_fields.items():
                 setattr(rec, _k, _v)
+            for _k, _v in end_user_fields.items():
+                setattr(rec, _k, _v)
             rec.discount_kind   = result.get("discount_kind")
             rec.discount_input  = result.get("discount_input")
             rec.discount_amount = result.get("discount_amount")
@@ -1155,6 +1190,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             result["customer_name"] = _cust.name if _cust else None
             result["contact_id"]    = rec.contact_id
             result["contact_name"]  = rec.contact_name
+            result["end_user_id"]      = rec.end_user_id
+            result["end_user_company"] = rec.end_user_company
             return JSONResponse(result)
 
         if customer_id and version_action is None:
@@ -1205,6 +1242,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             discount_amount=result.get("discount_amount"),
             net_total=result.get("net_total"),
             **contact_fields,
+            **end_user_fields,
         )
         db.add(rec)
         db.flush()
@@ -1244,6 +1282,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     result["customer_name"] = customer.name if customer else None
     result["contact_id"]   = rec.contact_id
     result["contact_name"] = rec.contact_name
+    result["end_user_id"]      = rec.end_user_id
+    result["end_user_company"] = rec.end_user_company
     return JSONResponse(result)
 
 
@@ -1383,6 +1423,7 @@ async def api_list_calculations(
             "body_length": (float(_len) if _len not in (None, "", 0) else None),
             "customer": r.customer.name if r.customer else "—",
             "contact_name": getattr(r, "contact_name", None),   # attention-of snapshot (0035)
+            "end_user_company": getattr(r, "end_user_company", None),   # end-user snapshot (0040)
             "user":     r.user.username if r.user else "—",
             "created_at": r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "—",
             "grand_total": grand_total if full_access else None,   # net of discount (headline)
@@ -1531,6 +1572,14 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "contact_email":     rec.contact_email,
         "contact_telephone": rec.contact_telephone,
         "contact_role":      rec.contact_role,
+        # End-user snapshot (migration 0040) — end_user_id drives edit/duplicate
+        # re-selection; the snapshot fields are the historical display values.
+        "end_user_id":                 rec.end_user_id,
+        "end_user_company":            rec.end_user_company,
+        "end_user_contact_name":       rec.end_user_contact_name,
+        "end_user_contact_email":      rec.end_user_contact_email,
+        "end_user_contact_telephone":  rec.end_user_contact_telephone,
+        "end_user_contact_role":       rec.end_user_contact_role,
         "dimensions":      dims,
         "profit_margin":   float(result_data.get("profit_margin")
                                  or input_state.get("profit_margin") or 0),

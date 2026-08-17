@@ -19,6 +19,13 @@ interface Contact {
   id: number; customer_id: number; name: string; role: string; email: string
   telephone: string; is_primary: boolean; is_active: boolean
 }
+/** WO v1.47 lane B — the END USER: ICB's customer is often a reseller or middleman and the
+ *  body is actually FOR someone else. One row = the end-user COMPANY plus its contact PERSON. */
+interface EndUser {
+  id: number; customer_id: number; company_name: string; contact_name: string
+  contact_role: string; contact_email: string; contact_telephone: string
+  notes: string; is_primary: boolean; active: boolean
+}
 
 export function CustomersAdmin() {
   const toast = useToast()
@@ -133,6 +140,9 @@ function CustomerDetail({ customer, onUpdated }: { customer: Customer; onUpdated
       </div>
 
       <ContactsPanel customerId={customer.id} />
+      <div className="mt-5 border-t border-line pt-4">
+        <EndUsersPanel customerId={customer.id} />
+      </div>
     </Card>
   )
 }
@@ -289,6 +299,183 @@ function ContactsPanel({ customerId }: { customerId: number }) {
         </div>
       )}
       <p className="mt-1.5 text-[11px] text-muted">One primary contact per customer (enforced in the database). Removing a contact is a soft-delete — history is preserved.</p>
+    </div>
+  )
+}
+
+const EMPTY_END_USER = {
+  company_name: '', contact_name: '', contact_role: '', contact_email: '', contact_telephone: '',
+}
+
+/** WO v1.47 lane B §3.3 — the end-user book, managed on the SAME screen as contacts (Default 4:
+ *  a second section, not a new admin page). Deliberately the ContactsPanel shape: same table,
+ *  same set-primary star, same soft-delete, same inline add row. */
+function EndUsersPanel({ customerId }: { customerId: number }) {
+  const toast = useToast()
+  const [endUsers, setEndUsers] = useState<EndUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [draft, setDraft] = useState(EMPTY_END_USER)
+  const [adding, setAdding] = useState(false)
+  const [addDraft, setAddDraft] = useState({ ...EMPTY_END_USER, is_primary: false })
+  const [busy, setBusy] = useState(false)
+
+  const load = useCallback(() => {
+    setLoading(true)
+    apiGet<EndUser[]>(`/api/customers/${customerId}/end-users`)
+      .then(setEndUsers)
+      .catch((e) => handleApiError(e, toast.push))
+      .finally(() => setLoading(false))
+  }, [customerId, toast])
+
+  useEffect(() => { setEditingId(null); setAdding(false); load() }, [load])
+
+  async function addEndUser() {
+    if (!addDraft.company_name.trim()) {
+      toast.push({ kind: 'error', message: 'End-user company name is required.' }); return
+    }
+    setBusy(true)
+    try {
+      await apiPost(`/api/customers/${customerId}/end-users`, addDraft)
+      toast.push({ kind: 'ok', message: 'End user added.' })
+      setAdding(false); setAddDraft({ ...EMPTY_END_USER, is_primary: false }); load()
+    } catch (e) { handleApiError(e, toast.push) } finally { setBusy(false) }
+  }
+
+  async function saveEdit(id: number) {
+    setBusy(true)
+    try {
+      await apiPut(`/api/customers/${customerId}/end-users/${id}`, draft)
+      toast.push({ kind: 'ok', message: 'End user updated.' })
+      setEditingId(null); load()
+    } catch (e) { handleApiError(e, toast.push) } finally { setBusy(false) }
+  }
+
+  async function setPrimary(id: number) {
+    setBusy(true)
+    try {
+      await apiPost(`/api/customers/${customerId}/end-users/${id}/set-primary`, {})
+      load()
+    } catch (e) { handleApiError(e, toast.push) } finally { setBusy(false) }
+  }
+
+  async function remove(id: number) {
+    setBusy(true)
+    try {
+      await apiDelete(`/api/customers/${customerId}/end-users/${id}`)
+      toast.push({ kind: 'ok', message: 'End user removed.' })
+      load()
+    } catch (e) { handleApiError(e, toast.push) } finally { setBusy(false) }
+  }
+
+  const field = (key: keyof typeof EMPTY_END_USER, placeholder: string, testid?: string) => (
+    <input data-testid={testid} value={draft[key]} placeholder={placeholder}
+           onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
+           className="w-full rounded border border-line px-1.5 py-1 text-sm" />
+  )
+  const addField = (key: keyof typeof EMPTY_END_USER, placeholder: string, testid: string) => (
+    <input data-testid={testid} value={addDraft[key]} placeholder={placeholder}
+           onChange={(e) => setAddDraft((d) => ({ ...d, [key]: e.target.value }))}
+           className="w-full rounded border border-line px-1.5 py-1 text-sm" />
+  )
+
+  return (
+    <div data-testid="end-users-panel">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted">End users</h2>
+        {!adding && (
+          <button data-testid="end-user-add" onClick={() => setAdding(true)}
+                  className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-semibold text-white hover:opacity-90">
+            <Plus size={13} /> Add end user
+          </button>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center p-4"><Spinner size={18} /></div>
+      ) : (
+        <div className="overflow-hidden rounded-md border border-line">
+          <table className="w-full text-sm">
+            <thead className="bg-surface-alt text-left text-xs text-muted">
+              <tr>
+                <th className="px-2 py-1.5 font-semibold">Primary</th>
+                <th className="px-2 py-1.5 font-semibold">End-user company</th>
+                <th className="px-2 py-1.5 font-semibold">Contact</th>
+                <th className="px-2 py-1.5 font-semibold">Role</th>
+                <th className="px-2 py-1.5 font-semibold">Email</th>
+                <th className="px-2 py-1.5 font-semibold">Telephone</th>
+                <th className="px-2 py-1.5 text-right font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {endUsers.length === 0 && !adding && (
+                <tr><td colSpan={7} className="px-2 py-3 text-center text-muted">No end users yet.</td></tr>
+              )}
+              {endUsers.map((e) => editingId === e.id ? (
+                <tr key={e.id} data-testid="end-user-row" data-id={e.id} className="border-t border-line bg-primary-light/20">
+                  <td className="px-2 py-1.5">{e.is_primary && <Star size={14} className="fill-primary text-primary" />}</td>
+                  <td className="px-2 py-1.5">{field('company_name', 'Company', 'end-user-edit-company')}</td>
+                  <td className="px-2 py-1.5">{field('contact_name', 'Contact')}</td>
+                  <td className="px-2 py-1.5">{field('contact_role', 'Role')}</td>
+                  <td className="px-2 py-1.5">{field('contact_email', 'Email')}</td>
+                  <td className="px-2 py-1.5">{field('contact_telephone', 'Telephone')}</td>
+                  <td className="px-2 py-1.5">
+                    <div className="flex justify-end gap-1">
+                      <button data-testid="end-user-edit-save" onClick={() => saveEdit(e.id)} disabled={busy} title="Save"
+                              className="rounded p-1 text-status-green hover:bg-status-green/10"><Check size={15} /></button>
+                      <button onClick={() => setEditingId(null)} title="Cancel" className="rounded p-1 text-muted hover:bg-surface-alt"><X size={15} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                <tr key={e.id} data-testid="end-user-row" data-id={e.id} className="border-t border-line">
+                  <td className="px-2 py-1.5">
+                    {e.is_primary
+                      ? <span data-testid="end-user-primary-star" title="Primary end user"><Star size={14} className="fill-primary text-primary" /></span>
+                      : <button data-testid="end-user-set-primary" onClick={() => setPrimary(e.id)} disabled={busy} title="Make primary"
+                                className="text-muted hover:text-primary"><Star size={14} /></button>}
+                  </td>
+                  <td className="px-2 py-1.5 font-medium text-body">{e.company_name}</td>
+                  <td className="px-2 py-1.5 text-body">{e.contact_name || <span className="text-muted">—</span>}</td>
+                  <td className="px-2 py-1.5 text-body">{e.contact_role || <span className="text-muted">—</span>}</td>
+                  <td className="px-2 py-1.5 text-body">{e.contact_email || <span className="text-muted">—</span>}</td>
+                  <td className="px-2 py-1.5 text-body">{e.contact_telephone || <span className="text-muted">—</span>}</td>
+                  <td className="px-2 py-1.5">
+                    <div className="flex justify-end gap-1">
+                      <button data-testid="end-user-edit"
+                              onClick={() => { setEditingId(e.id); setDraft({ company_name: e.company_name, contact_name: e.contact_name, contact_role: e.contact_role, contact_email: e.contact_email, contact_telephone: e.contact_telephone }) }}
+                              title="Edit" className="rounded p-1 text-muted hover:bg-surface-alt hover:text-body"><Pencil size={14} /></button>
+                      <button data-testid="end-user-delete" onClick={() => remove(e.id)} disabled={busy}
+                              title="Remove" className="rounded p-1 text-status-red hover:bg-status-red/10"><Trash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {adding && (
+                <tr data-testid="end-user-add-row" className="border-t border-line bg-primary-light/20">
+                  <td className="px-2 py-1.5">
+                    <input data-testid="end-user-add-primary" type="checkbox" checked={addDraft.is_primary}
+                           onChange={(e) => setAddDraft((d) => ({ ...d, is_primary: e.target.checked }))} title="Make primary" />
+                  </td>
+                  <td className="px-2 py-1.5">{addField('company_name', 'Company *', 'end-user-add-company')}</td>
+                  <td className="px-2 py-1.5">{addField('contact_name', 'Contact', 'end-user-add-name')}</td>
+                  <td className="px-2 py-1.5">{addField('contact_role', 'Role', 'end-user-add-role')}</td>
+                  <td className="px-2 py-1.5">{addField('contact_email', 'Email', 'end-user-add-email')}</td>
+                  <td className="px-2 py-1.5">{addField('contact_telephone', 'Telephone', 'end-user-add-telephone')}</td>
+                  <td className="px-2 py-1.5">
+                    <div className="flex justify-end gap-1">
+                      <button data-testid="end-user-add-save" onClick={addEndUser} disabled={busy} title="Save"
+                              className="rounded p-1 text-status-green hover:bg-status-green/10"><Check size={15} /></button>
+                      <button onClick={() => { setAdding(false); setAddDraft({ ...EMPTY_END_USER, is_primary: false }) }} title="Cancel" className="rounded p-1 text-muted hover:bg-surface-alt"><X size={15} /></button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="mt-1.5 text-[11px] text-muted">The end user is the customer&apos;s customer — who the body is actually for. One primary per customer (enforced in the database); removing is a soft-delete, and costings already quoted keep the end user they were saved with.</p>
     </div>
   )
 }

@@ -93,6 +93,8 @@ export interface Costing {
   customer_id: number
   customer_name: string
   contact_name?: string            // customer-contacts WO — attention-of snapshot (0035)
+  end_user_company?: string        // v1.47 lane B — end-user snapshot (0040): the company the
+                                   // body is FOR when the customer is a reseller/middleman
   body_type: string
   body_length?: number | null      // v1.44 R6 — entered length (m) for "({length} m)" displays
   body_category: string
@@ -337,6 +339,7 @@ export interface LiveCalculation {
   body_length?: number | null      // v1.44 R6 — entered length (m)
   customer: string
   contact_name?: string | null     // customer-contacts WO — attention-of snapshot (0035)
+  end_user_company?: string | null // v1.47 lane B — end-user snapshot (0040)
   user: string
   created_at: string
   grand_total: number | null       // WO v4.30 §0.2a — net of discount (the headline)
@@ -384,6 +387,7 @@ export function liveToCosting(r: LiveCalculation): Costing {
     customer_id: 0,
     customer_name: r.customer || '—',
     contact_name: r.contact_name ?? undefined,
+    end_user_company: r.end_user_company ?? undefined,
     body_type: r.trailer || '—',
     body_length: r.body_length ?? null,
     body_category: '',

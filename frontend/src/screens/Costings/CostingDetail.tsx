@@ -23,6 +23,7 @@ import {
   Banknote,
   Package,
   Star,
+  Building2,
 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { apiGet, apiPost } from '../../lib/api'
@@ -304,6 +305,11 @@ export function CostingDetail() {
             <div className="space-y-4 lg:border-l lg:border-line lg:px-6">
               {c.contact_name && (
                 <InfoField accent="amber" icon={<UserCheck size={13} strokeWidth={2.5} />} label="Attention" value={c.contact_name} />
+              )}
+              {/* v1.47 lane B — the END USER this body is for (the customer's customer).
+                  Snapshot-driven and optional: absent → the row does not render at all. */}
+              {c.end_user_company && (
+                <InfoField accent="amber" icon={<Building2 size={13} strokeWidth={2.5} />} label="End user" value={c.end_user_company} />
               )}
               <InfoField accent="amber" icon={<MessageSquare size={13} strokeWidth={2.5} />} label="Quote type" value={c.quote_type} />
               <InfoField

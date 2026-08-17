@@ -118,13 +118,26 @@ def _render_xlsx(ctx: dict):
     c3.font = Font(bold=True, size=11, color="0D1117", name="Calibri")
     c3.alignment = Alignment(horizontal="center")
 
+    # 2b — end user, directly under the client. Rows from here down are counted rather
+    # than hardcoded so the block can be absent: with no end user, `hdr` lands on 4 and
+    # every following row is exactly where it was before this WO.
+    hdr = 3
+    for line in ctx["end_user_lines"]:
+        hdr += 1
+        ws.merge_cells(f"A{hdr}:I{hdr}")
+        eu = ws[f"A{hdr}"]
+        eu.value = line
+        eu.font = Font(bold=True, size=10, color="1F3A5F", name="Calibri")
+        eu.alignment = Alignment(horizontal="center")
+    hdr += 1
+
     # 3 — dimensions + body options
-    ws["A4"] = "DIMENSIONS & BODY OPTIONS"
-    ws["A4"].font = Font(bold=True, color="388BFD", name="Calibri")
+    ws[f"A{hdr}"] = "DIMENSIONS & BODY OPTIONS"
+    ws[f"A{hdr}"].font = Font(bold=True, color="388BFD", name="Calibri")
     for i, (lbl, val) in enumerate(ctx["spec_pairs"]):
-        ws.cell(row=5, column=i * 2 + 1, value=lbl).font = Font(color="444444", name="Calibri")
-        ws.cell(row=5, column=i * 2 + 2, value=val).font = Font(bold=True, color="000000", name="Calibri")
-    row = 6
+        ws.cell(row=hdr + 1, column=i * 2 + 1, value=lbl).font = Font(color="444444", name="Calibri")
+        ws.cell(row=hdr + 1, column=i * 2 + 2, value=val).font = Font(bold=True, color="000000", name="Calibri")
+    row = hdr + 2
     for lbl, val in ctx["spec_options"]:
         ws.cell(row=row, column=1, value=lbl).font = Font(color="444444", name="Calibri")
         ws.cell(row=row, column=2, value=val).font = Font(bold=True, color="000000", name="Calibri")
@@ -460,7 +473,14 @@ def _render_docx(ctx: dict):
     para(ctx["heading"], bold=True, size=16, center=True,
          color=(RED if ctx["is_repair"] else ACCENT))
     para(ctx["sub"], size=9, color=DIM, center=True)
-    para(f"Client:  {ctx['client_name']}", bold=True, size=11, center=True, space_after=10)
+    eu_lines = ctx["end_user_lines"]
+    para(f"Client:  {ctx['client_name']}", bold=True, size=11, center=True,
+         space_after=(2 if eu_lines else 10))
+    # End user, directly under the client. No end user → no paragraph at all, so the
+    # document keeps its pre-WO spacing exactly (hence the space_after switch above).
+    for i, line in enumerate(eu_lines):
+        para(line, bold=True, size=10, center=True, color=ACCENT,
+             space_after=(10 if i == len(eu_lines) - 1 else 2))
 
     para("DIMENSIONS & BODY OPTIONS", bold=True, size=10, color=ACCENT)
     spec_rows = list(ctx["spec_pairs"]) + list(ctx["spec_options"])
@@ -628,6 +648,12 @@ def _render_pdf(ctx: dict) -> bytes:
         "client", fontName="Helvetica-Bold", fontSize=11, leading=14,
         alignment=TA_CENTER, textColor=colors.HexColor("#0D1117"),
     )
+    # End-user lines: one step down from the client so the hierarchy reads
+    # client → end user, not two competing headings.
+    end_user_style = ParagraphStyle(
+        "end_user", fontName="Helvetica-Bold", fontSize=9.5, leading=12,
+        alignment=TA_CENTER, textColor=colors.HexColor("#1F3A5F"),
+    )
     section_head = ParagraphStyle("sh", fontSize=10, leading=12)
 
     elements = []
@@ -650,6 +676,10 @@ def _render_pdf(ctx: dict) -> bytes:
     elements.append(Spacer(1, 2.5 * mm))
 
     elements.append(Paragraph("Client: " + escape(str(ctx["client_name"])), client_style))
+    # End user, directly under the client. Empty list → no flowables appended, so a
+    # costing without an end user renders exactly as it did before this WO.
+    for line in ctx["end_user_lines"]:
+        elements.append(Paragraph(escape(str(line)), end_user_style))
     elements.append(Spacer(1, 2.5 * mm))
 
     # Dimensions + body options
@@ -1074,6 +1104,11 @@ def _doc_ctx_for_record(rec: CalculationRecord, db: Session, *, detail, ratios_r
         sub=sub,
         client_name=(rec.customer.name if rec.customer else ""),
         spec_pairs=spec_pairs,
+        # End-user SNAPSHOT (0040) — never a live join, so re-exporting an old quote
+        # after the end-user book changed still prints what was sent.
+        end_user_company=rec.end_user_company,
+        end_user_contact_name=rec.end_user_contact_name,
+        spec_pairs=_spec_pairs(dims),
         spec_options=_spec_options_from_derived(derived),
         result=result,
         ratios=ratios,
@@ -1190,6 +1225,11 @@ def _doc_ctx_for_preview(body: dict, db: Session):
         sub=f"{trailer_name}  |  {today.strftime('%d %B %Y')}",
         client_name=str(body.get("customer_name") or "").strip(),
         spec_pairs=spec_pairs,
+        # Preview has no saved record yet, so the end user rides the payload straight
+        # from the picker — what you preview is what the approved export will say.
+        end_user_company=body.get("end_user_company"),
+        end_user_contact_name=body.get("end_user_contact_name"),
+        spec_pairs=_spec_pairs(dims),
         spec_options=_spec_options_from_derived(derived),
         result=result,
         ratios=ratios,

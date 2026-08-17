@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New Costing UI — lo-fi wireframe (§3.1)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* GREYBOX ONLY — no visual design here. Boxes, labels, placement. */
+  :root { --ink:#222; --mute:#777; --line:#999; --soft:#f2f2f2; --paper:#fff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:13px/1.35 ui-monospace, Menlo, Consolas, monospace; color:var(--ink); background:#e6e6e6; }
+  .wrap { max-width:1180px; margin:0 auto; padding:14px; }
+  .tabs { display:flex; gap:8px; margin-bottom:10px; }
+  .tabs button { font:inherit; padding:6px 12px; border:1px solid var(--line); background:var(--paper); cursor:pointer; }
+  .tabs button.on { background:var(--ink); color:#fff; }
+  .page { background:var(--paper); border:1px solid var(--line); }
+  .region { border-bottom:1px dashed var(--line); padding:8px 10px; position:relative; }
+  .region:last-child { border-bottom:0; }
+  .rtag { position:absolute; left:-1px; top:-1px; background:var(--ink); color:#fff; font-size:10px; padding:1px 5px; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .box { border:1px solid var(--line); padding:3px 7px; background:var(--paper); white-space:nowrap; }
+  .box.sel { border-width:2px; }
+  .box.mute { color:var(--mute); border-style:dashed; }
+  .pill { border:1px solid var(--line); border-radius:12px; padding:1px 8px; font-size:11px; }
+  .note { color:var(--mute); font-size:11px; }
+  .money { display:grid; grid-template-columns:repeat(4,1fr) auto; gap:8px; align-items:stretch; }
+  .money .m { border:1px solid var(--line); padding:6px 8px; }
+  .money .m b { display:block; font-size:16px; }
+  .card { border:1px solid var(--line); margin:8px 0; }
+  .card .hd { display:flex; gap:10px; align-items:center; padding:5px 8px; background:var(--soft); border-bottom:1px solid var(--line); }
+  .card .hd .nm { font-weight:bold; min-width:150px; }
+  .card .hd .sub { margin-left:auto; }
+  .card.off .hd { background:#fafafa; color:var(--mute); }
+  .card.off .hd .nm { font-weight:normal; }
+  .card.user-off .hd { border-left:6px solid #bbb; }
+  .choices { padding:5px 8px; border-bottom:1px dashed var(--line); display:flex; gap:14px; flex-wrap:wrap; }
+  .fam { display:flex; gap:4px; align-items:center; }
+  .fam .lbl { color:var(--mute); }
+  .seg { display:inline-flex; border:1px solid var(--line); }
+  .seg span { padding:1px 7px; border-right:1px solid var(--line); }
+  .seg span:last-child { border-right:0; }
+  .seg span.on { background:var(--ink); color:#fff; }
+  table { border-collapse:collapse; width:100%; }
+  th, td { text-align:left; padding:3px 6px; border-bottom:1px solid #e0e0e0; vertical-align:top; }
+  th { font-weight:normal; color:var(--mute); font-size:11px; }
+  td.num, th.num { text-align:right; }
+  td.blue { text-decoration:underline; text-decoration-style:dotted; }  /* lo-fi stand-in for "blue = typed" */
+  tr.dim td { color:#aaa; }
+  tr.err td:first-child { border-left:4px solid #666; }
+  tr.rule td { font-style:italic; color:#888; }
+  .tag { border:1px solid var(--line); font-size:10px; padding:0 4px; margin-left:4px; }
+  .g { font-size:10px; border:1px solid var(--line); border-radius:8px; padding:0 4px; margin-left:3px; }
+  .add { padding:5px 8px; }
+  .savebar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .savebar .grow { flex:1; min-width:120px; }
+  .drawer { border:1px dashed var(--line); background:var(--soft); padding:8px; margin-top:12px; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .warn { border:1px solid var(--line); background:#f7f7f7; padding:5px 8px; margin:6px 8px; }
+  h3 { margin:14px 0 4px; font-size:13px; }
+  .hidden { display:none; }
+  .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:11px; color:var(--mute); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row" style="margin-bottom:8px">
+    <b>New Costing UI — lo-fi wireframe (§3.1)</b>
+    <span class="note">greybox · placement only · anonymised sample data · see IA.md for the region/state model</span>
+  </div>
+  <div class="tabs">
+    <button class="on" data-tab="body">Variant A · Body costing</button>
+    <button data-tab="repair">Variant B · Repair</button>
+    <button data-tab="drawer">R6 · Drawer sketches</button>
+    <button data-tab="states">Card / row state gallery</button>
+  </div>
+
+  <!-- ===================== VARIANT A: BODY ===================== -->
+  <div id="tab-body" class="page">
+    <div class="region"><span class="rtag">R1 · TOTALS BAR (sticky)</span>
+      <div class="money" style="margin-top:8px">
+        <div class="m">MATERIALS<b>R 152 400</b><span class="note">incl. chassis if on</span></div>
+        <div class="m">+ MARGIN 5%<b>R 7 620</b></div>
+        <div class="m">÷ RATIO 55% = TOTAL<b>R 290 945</b></div>
+        <div class="m">− DISCOUNT = NET<b>R 290 945</b><span class="note">no discount</span></div>
+        <div class="m" style="border-style:dashed">
+          <span class="pill">⚠ 2 unpriced · 1 formula error</span><br>
+          <span class="pill">Editing Q-A123 · rev 2</span>
+          <div class="note">chip: edit / copy / recall / (none)</div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:4px">values masked as •••• without bom.view_prices / view_full_cost (as today)</div>
+    </div>
+
+    <div class="region"><span class="rtag">R2 · COSTING HEADER</span>
+      <div class="row" style="margin-top:8px">
+        <span class="box sel">Body: FREEZER MEDIUM ▾</span>
+        <span class="box">L 5.6</span><span class="box">W 2.5</span><span class="box">H 2.4</span>
+        <span class="box">Margin 5 %</span><span class="box">Ratio 55% ▾</span>
+        <span class="box">Customer: Customer A ▾</span><span class="box">Contact: Contact 1 ▾</span>
+        <span class="box mute">Validated references (2) ▾</span>
+        <span class="box mute">Legend</span>
+      </div>
+      <div class="note">dropdown = 26 body types + ──── + REPAIR · defaults land from the body · reference list is per body</div>
+    </div>
+
+    <div class="region"><span class="rtag">R3 · BODY CHOICES STRIP</span>
+      <div class="row" style="margin-top:8px">
+        <span class="fam"><span class="lbl">Rear door</span> <span class="seg"><span class="on">DRD</span><span>SRD</span></span></span>
+        <span class="fam"><span class="lbl">Legacy group “DRD” (TAUT LINER only)</span> <span class="seg"><span>3MM MS FLOOR</span><span class="on">SOLID TAIL BOARD</span><span>REFLEXITE</span></span></span>
+      </div>
+      <div class="note">only choices that select BETWEEN categories (masters / radio siblings) or belong to no category (D5) · hidden when empty (most v2 bodies: just Rear door)</div>
+    </div>
+
+    <div class="region"><span class="rtag">R4 · CATEGORY CARDS (order = sort_order)</span>
+
+      <div class="card" style="margin-top:10px">
+        <div class="hd"><span class="nm">FRONT</span><span class="box">☑ Include</span><span class="sub">subtotal R 12 300</span></div>
+        <div class="choices">
+          <span class="fam"><span class="lbl">Insulation</span> <span class="seg"><span>EPS</span><span class="on">PU</span></span> <span class="box">60 mm</span> <span class="note">≠ template</span></span>
+        </div>
+        <table>
+          <tr><th></th><th>Description</th><th class="num">Qty</th><th>Unit</th><th class="num">Price</th><th class="num">Total</th><th></th></tr>
+          <tr><td>☑</td><td>EXT GRP SKIN 2×450</td><td class="num">14.56</td><td>m²</td><td class="num">R 280 <span class="g">ƒ</span></td><td class="num">R 4 077</td><td>⋯</td></tr>
+          <tr><td>☑</td><td>PU</td><td class="num">14.56</td><td>m²</td><td class="num">R 520 <span class="g">●</span></td><td class="num">R 7 571</td><td>⋯</td></tr>
+          <tr class="dim"><td>☐</td><td>EPS <span class="tag">gated · FRONT EPS = N</span></td><td class="num">14.56</td><td>each</td><td class="num">R 160</td><td class="num">—</td><td>⋯</td></tr>
+          <tr><td>☑</td><td>GLUE LINE</td><td class="num blue">15 ↺</td><td>metre</td><td class="num">R 28</td><td class="num">R 420</td><td>⋯</td></tr>
+        </table>
+        <div class="add"><span class="box mute">+ Add item (stock · free-hand)</span> <span class="note">qty 15 is a per-costing override (blue); hover → “formula gives 14.56”; ↺ reverts</span></div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><span class="nm">DRD</span><span class="box">☑ Include</span><span class="sub">subtotal R 9 800</span></div>
+        <div class="choices"><span class="fam"><span class="lbl">Insulation</span> <span class="seg"><span>EPS</span><span class="on">PU</span></span> <span class="box">60 mm</span></span></div>
+        <div class="add note">10 rows … (same grammar)</div>
+      </div>
+
+      <div class="card off">
+        <div class="hd"><span class="nm">SRD — not quoted (DRD chosen)</span><span class="box mute">Include ▫ (choose SRD in Rear door)</span><span class="sub">—</span></div>
+        <div class="add note">card stays IN PLACE, collapsed · “show 10 rows” · not costed (hard-drop semantics kept) · guard-rail 2</div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><span class="nm">SIDES</span><span class="pill">× 2</span><span class="box">☑ Include</span><span class="sub">subtotal R 34 000</span></div>
+        <div class="choices"><span class="fam"><span class="lbl">Insulation</span> <span class="seg"><span>EPS</span><span class="on">PU</span></span> <span class="box">60 mm</span></span></div>
+        <div class="add note">× 2 tooltip: “R 17 000 per side” (single-side view dropped, OQ-10)</div>
+      </div>
+
+      <div class="card user-off">
+        <div class="hd"><span class="nm">ROOF</span><span class="box">☐ Include</span><span class="sub">excluded by you · 11 lines · R 21 500 removed</span></div>
+        <div class="warn">⚠ Excluding ROOF removes 11 lines (R 21 500) from this costing. &nbsp;<span class="box">Exclude anyway</span> <span class="box">Keep</span> <span class="note">← inline warning at the moment of unticking (OQ-12 generic)</span></div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><span class="nm">FLOOR</span><span class="box">☑ Include</span><span class="sub">subtotal R 48 300</span></div>
+        <div class="choices">
+          <span class="fam"><span class="lbl">Insulation</span> <span class="seg"><span>EPS</span><span class="on">PU</span></span> <span class="box">100 mm</span></span>
+          <span class="fam"><span class="lbl">Plywood</span> <span class="seg"><span class="on">18MM FINN</span><span>18MM PHENO</span></span></span>
+          <span class="fam"><span class="lbl">Kick plates</span> <span class="box">☐ ALU</span><span class="box">☐ 2ND ROW ALU</span></span>
+          <span class="fam"><span class="lbl">Surface</span> <span class="box">☐ RICE GRAIN</span></span>
+        </div>
+        <table>
+          <tr><td>☑</td><td>18 MM FINN PLYWOOD</td><td class="num">15.12</td><td>m²</td><td class="num">R 470</td><td class="num">R 7 106</td><td>⋯</td></tr>
+          <tr class="dim"><td>☐</td><td>18 MM PF PLYWOOD <span class="tag">gated · 18MM PHENO PLY = N</span></td><td class="num">15.12</td><td>m²</td><td class="num">R 240</td><td class="num">—</td><td>⋯</td></tr>
+          <tr class="rule"><td>☑</td><td>4MM PF PLYWOOD <span class="tag">R0 by rule (3.2 m)</span></td><td class="num">0</td><td>m²</td><td class="num">R 95</td><td class="num">R 0</td><td>⋯</td></tr>
+          <tr class="err"><td>☑</td><td>100×50 LVL <span class="tag">formula error · unknown {LVL_PITCH}</span></td><td class="num">— err —</td><td>each</td><td class="num">R 128</td><td class="num">R 0</td><td>⋯</td></tr>
+          <tr><td>☑</td><td>ANTI-SKID FINAL COAT</td><td class="num">27.9</td><td>m²</td><td class="num">R 32 <span class="g">ƒ</span></td><td class="num">R 893</td><td>⋯</td></tr>
+        </table>
+        <div class="add"><span class="box mute">+ Add item</span> <span class="note">rule-zero line is grey-italic and NOT in the ⚠ pill; formula error IS (D3)</span></div>
+      </div>
+
+      <div class="card off">
+        <div class="hd"><span class="nm">SUB FRAME + LIGHT BOX ASSY</span><span class="box">☑ Include</span><span class="sub">subtotal R 18 900</span></div>
+        <div class="add note">▸ collapsed by user (any card collapses; state ≠ include)</div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><span class="nm">OPTIONAL EXTRAS</span><span class="box">☑ Include</span><span class="sub">subtotal R 8 600</span></div>
+        <table>
+          <tr><td>☑</td><td>Side doors with access step – Single <span class="tag">stock</span></td><td class="num">1</td><td>Each</td><td class="num">R 8 600</td><td class="num">R 8 600</td><td>⋯</td></tr>
+          <tr class="err"><td>☑</td><td>Fixed strip curtains – DRD <span class="tag">stock</span> <span class="tag">no price</span></td><td class="num">1</td><td>Each</td><td class="num">—</td><td class="num">R 0</td><td>⋯</td></tr>
+          <tr><td>☑</td><td>Extra hinge set (site) <span class="tag">manual</span></td><td class="num blue">2</td><td>each</td><td class="num blue">R 350</td><td class="num">R 700</td><td>⋯</td></tr>
+        </table>
+        <div class="add"><span class="box mute">+ Add extra (picker pre-filtered to 134 extras)</span> <span class="box mute">+ free-hand</span> <span class="note">picker-style: only chosen extras are rows (D6); unpriced shows “no price” IN the picker</span></div>
+      </div>
+
+      <div class="card off">
+        <div class="hd"><span class="nm">CHASSIS</span><span class="box">☐ Include</span><span class="sub">—</span></div>
+        <div class="choices note">when included: Length · Axles [2|3] · Lift axles · Tyres [dual|super-single] · Suspension ▾ · Lift type ▾ · Brake ▾ · Tyre ▾ · Rim ▾ → derived: 12 tyres, 3 kits (RULE-CALC-013)</div>
+      </div>
+    </div>
+
+    <div class="region"><span class="rtag">R5 · SAVE BAR (sticky bottom)</span>
+      <div class="savebar" style="margin-top:8px">
+        <span class="box">Discount: 0 %</span><span class="box mute">or R amount</span>
+        <span class="grow"></span>
+        <span class="box mute">Mode: ◉ New costing ○ Revision 3 (☑ reuse Q-A123) ○ Overwrite rev 2</span>
+        <span class="box sel">Save revision 3 of Q-A123</span>
+        <span class="box">⋯</span>
+      </div>
+      <div class="note">discount: percent ⇄ amount, one clears the other, clamped as today · button NAMES its outcome (dup check runs as soon as customer+body are set) · no customer → “Save without customer” · unpriced → confirm popover with ☐ “I acknowledge 2 unpriced lines” (D3, recorded on the record) · ⋯ = Replace (typed confirm, R-05) · Print · Full report · Export · Excel paste · Save insulation to template (gated) · Mark as validated reference (after save)</div>
+    </div>
+  </div>
+
+  <!-- ===================== VARIANT B: REPAIR ===================== -->
+  <div id="tab-repair" class="page hidden">
+    <div class="region"><span class="rtag">R1 · TOTALS BAR (identical)</span>
+      <div class="money" style="margin-top:8px">
+        <div class="m">MATERIALS<b>R 6 150</b></div>
+        <div class="m">+ MARGIN 0%<b>R 0</b><span class="note">default 0 — no body markup</span></div>
+        <div class="m">÷ RATIO 55% = TOTAL<b>R 11 182</b></div>
+        <div class="m">− DISCOUNT = NET<b>R 11 182</b></div>
+        <div class="m" style="border-style:dashed"><span class="pill">✓ no attention items</span><br><span class="pill">New repair costing</span></div>
+      </div>
+    </div>
+    <div class="region"><span class="rtag">R2 · HEADER (repair)</span>
+      <div class="row" style="margin-top:8px">
+        <span class="box sel">Costing: REPAIR ▾</span>
+        <span class="box">Customer: Customer B ▾</span><span class="box">Contact: — ▾</span>
+        <span class="box">Type of repair: Panel repair ▾ <span class="note">required</span></span>
+        <span class="box">Margin 0 %</span><span class="box">Ratio 55% ▾</span>
+      </div>
+      <div class="row" style="margin-top:6px"><span class="box" style="min-width:520px">Work description (optional): Replace damaged rear panel and re-seal…</span> <span class="note">D4</span></div>
+      <div class="note">no L/W/H · no references · no Excel paste · repair types = admin-maintained list, name snapshotted at save</div>
+    </div>
+    <div class="region"><span class="rtag">R3 — absent</span><div class="note" style="margin-top:8px">no body choices strip on a repair</div></div>
+    <div class="region"><span class="rtag">R4' · REPAIR LINES (one flat list, same row grammar)</span>
+      <table style="margin-top:10px">
+        <tr><th></th><th>Description</th><th class="num">Qty</th><th>Unit</th><th class="num">Price</th><th class="num">Total</th><th></th></tr>
+        <tr><td>☑</td><td>GRP panel 2×450 <span class="tag">stock</span></td><td class="num">2</td><td>m²</td><td class="num">R 280 <span class="g">●</span></td><td class="num">R 560</td><td>⋯</td></tr>
+        <tr><td>☑</td><td>Sealant cartridge <span class="tag">stock</span></td><td class="num">4</td><td>each</td><td class="num">R 95</td><td class="num">R 380</td><td>⋯</td></tr>
+        <tr><td>☑</td><td>Sub-contract panel beating <span class="tag">manual</span></td><td class="num blue">1</td><td>job</td><td class="num blue">R 5 210</td><td class="num">R 5 210</td><td>⋯</td></tr>
+      </table>
+      <div class="add"><span class="box mute">+ from stock list</span> <span class="box mute">+ free-hand</span> <span class="note">no gating states, no formula menu; remove available on every line</span></div>
+    </div>
+    <div class="region"><span class="rtag">R5 · SAVE BAR (identical)</span>
+      <div class="savebar" style="margin-top:8px">
+        <span class="box">Discount: 0 %</span><span class="grow"></span>
+        <span class="box mute">Mode: ◉ New costing</span>
+        <span class="box sel">Save as new repair costing</span><span class="box">⋯</span>
+      </div>
+      <div class="note">duplicate detection = customer + REPAIR type (independent revision sequence; fixes R-03) · same lifecycle downstream (accept → phases → production)</div>
+    </div>
+  </div>
+
+  <!-- ===================== DRAWER SKETCHES ===================== -->
+  <div id="tab-drawer" class="page hidden">
+    <div class="region"><span class="rtag">R6 · DRAWER (right side, on demand — never a modal for data entry)</span>
+      <div class="two" style="margin-top:12px">
+        <div class="drawer"><b>Add item → Stock list</b><br>
+          <span class="box">🔍 name / SAP code / category / sub-category</span><br><br>
+          <table>
+            <tr><th>Item</th><th>SAP</th><th>Unit</th><th class="num">Price</th><th>Age</th><th></th></tr>
+            <tr><td>Marker light – each</td><td>S-1001</td><td>Each</td><td class="num">R 500</td><td>●</td><td><span class="box">Add</span></td></tr>
+            <tr><td>Load lock rail</td><td>S-1002</td><td>Meter</td><td class="num">R 205</td><td>● 120 d</td><td><span class="box">Add</span></td></tr>
+            <tr class="err"><td>Fixed strip curtains – DRD</td><td>S-1003</td><td>Each</td><td class="num">no price</td><td>—</td><td><span class="box">Add</span></td></tr>
+          </table>
+          <div class="note">SAP-ready by sap_code; material_code exposed; per-item selling price deferred (OQ-07); no on-hand</div>
+        </div>
+        <div class="drawer"><b>Add item → Free-hand</b><br>
+          <span class="box">Description*</span> <span class="box">Qty*</span> <span class="box">Unit</span> <span class="box">Unit price*</span><br><br>
+          <span class="box">Note (optional)</span><br><br>
+          <span class="box sel">Add to FLOOR</span> <span class="note">lands under the card it was opened from (repair: the flat list) · never a template row or material · needs costings.freehand_items</span>
+        </div>
+        <div class="drawer"><b>Price → edit</b><br>
+          EXT GRP SKIN 2×450 · current R 280 (catalogue, updated 3 Aug)<br>
+          <span class="box">New price</span><br><br>
+          ◉ This costing only — reason* <span class="box">reason ≥ 5 chars</span><br>
+          ○ Permanently for this section (needs price_master_edit)<br><br>
+          <span class="box sel">Apply</span> <span class="note">recipe-priced rows open a READ-ONLY breakdown here instead, with “edit recipe →”</span>
+        </div>
+        <div class="drawer"><b>Save insulation to template</b> <span class="note">gated {admin, full}</span><br>
+          <table>
+            <tr><th>Category</th><th>Template</th><th>This costing</th><th></th></tr>
+            <tr><td>FRONT</td><td>PU 60 mm</td><td>PU 76 mm</td><td>☑ write</td></tr>
+            <tr><td>FLOOR</td><td>PU 100 mm</td><td>EPS 100 mm</td><td>☑ write</td></tr>
+          </table>
+          <span class="box sel">Write 2 changes to template</span> <span class="note">explicit, separate, listed — the only template write left on the page (Part 24.10)</span>
+        </div>
+        <div class="drawer"><b>Validated references (FREEZER MEDIUM)</b><br>
+          <span class="box">Ref A — 5.6×2.5×2.4 · PU all sides · marked 11 Aug</span> <span class="box">Recall</span><br>
+          <span class="box">Ref B — 6.0×2.5×2.5 · EPS/PU mixed</span> <span class="box">Recall</span><br>
+          <span class="note">recall = copy, never edit-bound; drift banner appears under R1 when identity matches</span>
+        </div>
+        <div class="drawer"><b>Replace (from ⋯)</b><br>
+          Deletes ALL 3 costings for Customer A on FREEZER MEDIUM, including 1 validated reference.<br>
+          Type <span class="box">REPLACE</span> to confirm. <span class="box">Cancel</span> <span class="note">the R-05 fix</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== STATE GALLERY ===================== -->
+  <div id="tab-states" class="page hidden">
+    <div class="region"><span class="rtag">CARD STATES</span>
+      <div class="card" style="margin-top:12px"><div class="hd"><span class="nm">included</span><span class="box">☑ Include</span><span class="sub">subtotal R …</span></div></div>
+      <div class="card off"><div class="hd"><span class="nm">optional-off (OPTIONAL EXTRAS default)</span><span class="box">☐ Include</span><span class="sub">—</span></div></div>
+      <div class="card user-off"><div class="hd"><span class="nm">excluded-by-user</span><span class="box">☐ Include</span><span class="sub">excluded by you · 11 lines · R 21 500 removed</span></div></div>
+      <div class="card off"><div class="hd"><span class="nm">excluded-by-rule</span><span class="box mute">Include (disabled) · needs HEAD BOARD master</span><span class="sub">—</span></div></div>
+      <div class="card off"><div class="hd"><span class="nm">not-quoted-sibling — SRD (DRD chosen)</span><span class="box mute">Include ▫ (choose SRD in Rear door)</span><span class="sub">—</span></div></div>
+    </div>
+    <div class="region"><span class="rtag">ROW STATES + PROVENANCE</span>
+      <table style="margin-top:12px">
+        <tr><th></th><th>State</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th><th>Lo-fi stand-in → hi-fi meaning</th></tr>
+        <tr><td>☑</td><td>costed, formula qty, catalogue price</td><td class="num">14.56</td><td class="num">R 280 <span class="g">●</span></td><td class="num">R 4 077</td><td>black text · price-age dot (green ≤7 d / amber ≥90 d)</td></tr>
+        <tr><td>☑</td><td>qty override (this costing)</td><td class="num blue">15 ↺</td><td class="num">R 280</td><td class="num">R 4 200</td><td>dotted underline here = <b>blue</b> in hi-fi · ↺ revert · hover “formula gives 14.56” · amber chip if formula moves</td></tr>
+        <tr><td>☑</td><td>recipe price</td><td class="num">14.56</td><td class="num">R 280 <span class="g">ƒ</span></td><td class="num">R 4 077</td><td>ƒ glyph → read-only breakdown popover → “edit recipe →”</td></tr>
+        <tr><td>☑</td><td>permanent row override</td><td class="num">14.56</td><td class="num">R 300 <span class="g">📌</span></td><td class="num">R 4 368</td><td>pin glyph, tooltip who/when</td></tr>
+        <tr><td>☑</td><td>quote price override</td><td class="num">14.56</td><td class="num blue">R 250 *</td><td class="num">R 3 640</td><td>blue + * · tooltip = reason · age badges suppressed</td></tr>
+        <tr class="dim"><td>☐</td><td>excluded-by-user</td><td class="num">14.56</td><td class="num">R 280</td><td class="num">—</td><td>dimmed, always visible (no eye toggle)</td></tr>
+        <tr class="dim"><td>☐</td><td>gated <span class="tag">linked to SOLID TAIL BOARD</span></td><td class="num">1</td><td class="num">R 900</td><td class="num">—</td><td>reason DERIVED server-side from body_option_linked (guard-rail 1) — no authoring</td></tr>
+        <tr class="rule"><td>☑</td><td>zero-by-rule <span class="tag">R0 by rule</span></td><td class="num">0</td><td class="num">R 95</td><td class="num">R 0</td><td>grey italic, not in ⚠ pill</td></tr>
+        <tr class="err"><td>☑</td><td>unpriced <span class="tag">no price</span></td><td class="num">1</td><td class="num">—</td><td class="num">R 0</td><td>red cell + stripe · in ⚠ pill · save needs acknowledgement (D3)</td></tr>
+        <tr class="err"><td>☑</td><td>formula error <span class="tag">unknown {X}</span></td><td class="num">— err —</td><td class="num">R 128</td><td class="num">R 0</td><td>red · in ⚠ pill</td></tr>
+        <tr><td>☑</td><td>stock-pick <span class="tag">stock</span></td><td class="num">1</td><td class="num">R 500 <span class="g">●</span></td><td class="num">R 500</td><td>row tag · removable</td></tr>
+        <tr><td>☑</td><td>free-hand <span class="tag">manual</span></td><td class="num blue">2</td><td class="num blue">R 350</td><td class="num">R 700</td><td>all cells blue · row tag · removable</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="legend" style="margin-top:10px">
+    <span>Lo-fi conventions:</span><span>dotted underline = blue (typed) in hi-fi</span><span>ƒ = recipe price</span><span>● = price-age dot</span><span>📌 = permanent row price</span><span>* = quote override</span><span>left stripe = attention (unpriced / error)</span>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tabs button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      ['body','repair','drawer','states'].forEach(function (t) {
+        document.getElementById('tab-' + t).classList.toggle('hidden', t !== b.dataset.tab);
+      });
+    });
+  });
+</script>
+</body>
+</html>

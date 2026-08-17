@@ -795,7 +795,7 @@ Per §10.2: the stock list = `materials`, surfaced as a fast picker (name / SAP 
     -----------------------------
     REPAIR
         v
-Customer [ v ]   Type of repair [ ................ ]   <- recorded, required
+Customer [ v ]   Type of repair [ dropdown v ]   <- required; admin-maintained list
 Lines:  + from stock list   |   + free-hand
         description | qty | unit price | total
 Totals: Materials -> +Margin -> /Ratio = TOTAL -> -Discount = NET   (same pipeline as normal costings [RATIFIED])
@@ -804,7 +804,7 @@ Save -> normal costing lifecycle (quote number, accept/decline, revisions)
 
 - Reached from the SAME dropdown as body types (one flow, not a second application — brief Part 13). [RATIFIED]
 - No body template, no BOM, no dims/geometry: a flat line list from stock picks + free-hand entries. [RATIFIED]
-- Records customer AND **type of repair** (new field — OQ-09 for whether free text or a maintained list). [RATIFIED]
+- Records customer AND **type of repair** — **a maintained list, selected from a dropdown; admins can add repair types [RATIFIED — OQ-09, Michael, 17 Aug 2026]**. Filterable in reporting/dashboards by construction.
 - Keeps everything the `is_repair` flag already does: independent revision sequence per customer (RULE-SAVE-001 — and fixes R-03's client omission), "Repair" status display, dashboard filter, planner phase scheduling (`repair_phases_json`) downstream. [FACT-grounded]
 - **Money pipeline [RATIFIED — OQ-08, Michael, 17 Aug 2026]: margin and ratio apply to repairs exactly as on normal costings**; discount likewise per "same as normal costings" [INFERENCE — flag if wrong]. Defaults: ratio 55% as on any new costing; margin defaults to 0 (a repair has no body type, so there is no `markup_percentage` to inherit) [INFERENCE].
 
@@ -913,7 +913,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | Concept | Suggested shape | Why |
 |---|---|---|
 | Costing type | `calculations.costing_type` ('body' \| 'repair') derived from/alongside `is_repair` | repair as first-class; keeps `is_repair` readers working |
-| Type of repair | new column (or structured field) on `calculations`; free text vs list = OQ-09 | ratified requirement |
+| Type of repair | new `repair_types` catalogue (id, name, is_active soft-delete, sort_order) + FK/snapshot on `calculations` — snapshot the NAME at save like contacts, so renaming a type never rewrites quote history; admin CRUD gated like other catalogues [RATIFIED — OQ-09] | ratified requirement |
 | Free-hand lines | inside the saved costing's line data with `origin='freehand'` (description, qty, unit_price); NEVER template rows or materials | Part 29 |
 | Quantity override | per-costing `{bom_id: qty}` map in `input_state`, mirroring price `overrides` | Part 24.4; same replay/edit semantics |
 | Line origin/provenance | per-line `origin`: template \| stock-pick \| freehand (+ existing override flags) | Part 24.6 |
@@ -935,7 +935,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | OQ-06 | **Price source policy** once SAP is real: catalogue price vs SAP last-purchase (known −12%…+18% divergence). Build the seam now, decide policy later | BA (later) |
 | OQ-07 | **Per-item selling price** in the stock model: wanted, or does selling stay costing-level (÷ratio)? | BA |
 | OQ-08 | ~~Repairs and money~~ **RESOLVED (Michael, 17 Aug 2026): margin and ratio apply to repairs same as normal costings** (discount included per "same as normal" [INFERENCE]; defaults: ratio 55%, margin 0 — no body markup to inherit) | closed |
-| OQ-09 | **Type of repair**: free text or maintained list (reporting implications)? | BA |
+| OQ-09 | ~~Type of repair~~ **RESOLVED (Michael, 17 Aug 2026): a maintained list; admins can add repair types.** Model per Part 33.2 (catalogue + write-time name snapshot) | closed |
 | OQ-10 | **Admin single-side view** (× N toggle): keep in the new UI or drop? | BA |
 | OQ-11 | **`menu.calculator`** is catalogued but enforced nowhere — should the new costing page enforce it (recommended), and does anyone rely on the current looseness? | BA |
 | OQ-12 | **Category-exclusion warning**: wording/severity per category — generic warning, or per-category consequence text (needs authoring)? | new CA |

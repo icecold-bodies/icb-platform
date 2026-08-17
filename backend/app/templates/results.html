@@ -29,12 +29,21 @@
 .bom-group-hdr.collapsed td { opacity: .85; }
 </style>
 {% endblock %}
+{# v1.47 (Nadie 17 Aug) — MES-skin context, recomputed locally so it is unambiguous inside these
+   blocks. Same single source of truth as base.html: ?skin=mes, or a /mes/ path. This page is
+   served BOTH pristine (dark app, /results/{id}) and MES-skinned (results_mes.html via
+   /results/{id}?skin=mes, iframed by /mes-app/costings/results/:id). Its two calculator links
+   were hardcoded to the legacy /calculator, so Duplicate on an approved costing dropped the user
+   into the DARK calculator. Target the /mes/calculator fork when we are in MES context — the same
+   path-based skin the sidebar already uses (base.html), which survives further navigation. #}
+{% set _mes = (request.query_params.get('skin') == 'mes') or request.url.path.startswith('/mes/') %}
+{% set _calc = '/mes/calculator' if _mes else '/calculator' %}
 {% block breadcrumb %}
-  <a href="/calculator" style="color:var(--text-dim);text-decoration:none">Calculator</a>
+  <a href="{{ _calc }}" style="color:var(--text-dim);text-decoration:none">Calculator</a>
   &nbsp;/&nbsp; <strong>Results {{ record.quote_number or ('#' ~ record.id) }}</strong>
 {% endblock %}
 {% block topbar_actions %}
-  <a href="/calculator?from={{ record.id }}" class="btn btn-outline btn-sm no-print" title="Re-open with same dimensions in calculator">⧉ Duplicate</a>
+  <a href="{{ _calc }}?from={{ record.id }}" class="btn btn-outline btn-sm no-print" title="Re-open with same dimensions in calculator">⧉ Duplicate</a>
   {# v1.44 R5b — ONE Export button for all three formats; the options dialog
      picks format + detail + ratios (Excel keeps its highlight option). #}
   {% if user_can(user, 'export.excel') or user_can(user, 'export.word') or user_can(user, 'export.pdf') %}

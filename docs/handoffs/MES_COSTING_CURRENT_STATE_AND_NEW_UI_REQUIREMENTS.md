@@ -303,7 +303,7 @@ A body is quoted as **either** DRD (double rear door) **or** SRD (single), never
 > Floor Panel                          1       R —        R —
 > ...
 > ```
-> The exact UX is the new CA's to design. **What must not change:** one thickness per pair; the selected type owns it; rear door follows the DRD/SRD choice; the `{TOKEN}` formula linkage keeps resolving. **What must change [RATIFIED — OQ-02 resolved, Michael, 17 Aug 2026]:** a costing-page gesture must NOT rewrite the shared template. Insulation/thickness values are **per-costing**, with an explicit, separate **"save to template"** action (who may perform it: see OQ-02 residual in Part 34). **[RATIFIED]**
+> The exact UX is the new CA's to design. **What must not change:** one thickness per pair; the selected type owns it; rear door follows the DRD/SRD choice; the `{TOKEN}` formula linkage keeps resolving. **What must change [RATIFIED — OQ-02 resolved, Michael, 17 Aug 2026]:** a costing-page gesture must NOT rewrite the shared template. Insulation/thickness values are **per-costing**, with an explicit, separate **"save to template"** action (gated `{admin, full}` — ratified). **[RATIFIED]**
 
 ---
 
@@ -919,7 +919,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | Line origin/provenance | per-line `origin`: template \| stock-pick \| freehand (+ existing override flags) | Part 24.6 |
 | Category include state | per-costing record of include/exclude decisions (today scattered across localStorage + draft states) — costings must re-open on ANY browser | fixes the localStorage fragility that broke reference matching |
 | Stock picker fields | expose `materials.material_code`; optional per-item selling price = OQ-07 | Part 27 |
-| New permission keys | `costings.freehand_items`, `costings.qty_override` (naming per convention) | Part 17 |
+| New permission keys | `costings.freehand_items`, `costings.qty_override`, `costings.template_save` (all default `{admin, full}`, naming per convention) | Parts 17, 24.10 |
 
 **Migration constraint:** existing saved costings (result_json shapes, replay edits, validated references' fingerprints) must remain readable and re-openable. The fingerprint definition (RULE-REF-001) may NOT change silently — if category-include state moves out of localStorage into the costing, the extras-excluded-from-identity decision should be revisited WITH the BA (it existed only because of localStorage).
 
@@ -928,7 +928,7 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | # | Question | Owner |
 |---|---|---|
 | OQ-01 | ~~v4.37: build on the parked native React calculator or start fresh?~~ **RESOLVED (Michael, 17 Aug 2026): mine v4.37 for plumbing, start fresh on UX.** See the design brief (Part 37) | ~~BA + new CA~~ closed |
-| OQ-02 | ~~Template-write semantics~~ **RESOLVED (Michael, 17 Aug 2026): per-costing values with an explicit "save to template" action.** *Residual:* who may save to template — suggested default `{admin, full}` matching `costings.price_master_edit` [PROPOSAL] | BA (residual only) |
+| OQ-02 | ~~Template-write semantics~~ **FULLY RESOLVED (Michael, 17 Aug 2026): per-costing values with an explicit "save to template" action; save-to-template gated `{admin, full}`** (mirrors `costings.price_master_edit`; suggested key: `costings.template_save`) | closed |
 | OQ-03 | **Quantity override mechanics**: does an overridden quantity survive a recalc after dimension changes (sticky) or reset (derived wins)? Suggest sticky-with-badge + one-click revert | BA + new CA |
 | OQ-04 | **Free-hand line storage**: confirm lines live inside the costing only (no material creation), and whether they can be "promoted" to the catalogue by an admin later | BA |
 | OQ-05 | **`calc2_default_excluded` seeds**: Calculator 2's per-body default exclusions — migrate into the new per-line model, or retire the flag? | BA |

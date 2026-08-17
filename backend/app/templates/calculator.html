@@ -253,10 +253,10 @@
       </div><!-- end #cfg-pane-chassis -->
 
     </div>
-    <div class="panel-footer">
-      <div id="geo-summary" style="font-family:var(--font-mono);font-size:11px;
-        color:var(--text-dim);line-height:1.8"></div>
-    </div>
+    {# v1.47 (Nadie 17 Aug) — the Wall/Roof/Floor/Front-Rear/Total m² footer strip is removed;
+       ICB never used the figures and they crowded the Configuration panel. The whole
+       .panel-footer goes with it (an empty one leaves a bordered strip). The geometry that
+       FORMULAS use is server-side (formula_engine.py) and is untouched. #}
   </div>
 
   <!-- CENTRE: Assembly / BOM lines -->
@@ -1286,7 +1286,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
-<script defer src="/static/js/calculator.js?v=156"></script>
+<script defer src="/static/js/calculator.js?v=157"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

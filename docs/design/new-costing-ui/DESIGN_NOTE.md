@@ -83,7 +83,10 @@ The workbook had one sheet per body, sections down column B, a row per material,
 - **Not inherited:** its layout, iframe-parity flow, single-form interaction model, flat rendering of v2 bodies.
 
 ## 4. Deliberate omissions from the mockup (specified in RULE_COVERAGE, not clickable)
-DOOR-007 (NO REAR DOORS + side doors) as a third Rear-door option; EDIT-001/002/004 entry via `?from=`/`?edit=` (post-save edit state *is* mocked); Print / Full report / Export / Excel paste (stubs); RICE GRAIN ⇄ KICK auto-coupling (SPEC-002 flag); admin surfaces (repair types CRUD, template authoring) — outside the costing flow by design.
+EDIT-001/002/004 entry via `?from=`/`?edit=` (post-save edit state *is* mocked); Print / Full report / Export / Excel paste (stubs); RICE GRAIN ⇄ KICK auto-coupling (SPEC-002 flag); admin surfaces (repair types CRUD, template authoring) — outside the costing flow by design.
+
+## 4a. Visual language (added 17 Aug after ratification)
+ICB likes the look of the live floor system (PULL BOARD). Its tokens were read from the app's shipped CSS and applied as the mockup's default theme (`STYLE_REFERENCE.md`); the neutral light theme the concept was reviewed in stays behind the demo toggle. The provenance grammar is unchanged — only its colours moved (typed → sky-300, attention → rose, ok → emerald, warn → amber, primary → the board's blue). RULE-DOOR-007 (NO REAR DOORS — side doors only, on EXPLOSIVE bodies) is now clickable on the sample EXPLOSIVE body rather than only cited.
 
 ## 5. Open questions carried to the build (all with defaults — none blocked design)
 - OQ-03 sticky qty override + moved-formula chip (provisional, to Michael with the mockup).

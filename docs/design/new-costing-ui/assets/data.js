@@ -122,7 +122,31 @@ window.MOCK = (function () {
     ],
   };
 
-  const BODIES = [CHILLER_LARGE, FREEZER_MEDIUM, TAUT_LINER];
+  // Explosives body (sample shape): carries the NO REAR DOORS control (RULE-DOOR-007 —
+  // Michael, 17 Aug: "for EXPLOSIVES there is an option for no rear doors, side doors only").
+  // Also shows the OPTIONAL-prefix rule (RULE-SEC-001): 'OPTIONAL EXPLOSIVE EXTRAS' is
+  // optional by NAME, not by flag.
+  const EXPLOSIVE_MEDIUM = {
+    id: 37, name: 'EXPLOSIVE 2.7 TO 4.8', v2: true, noRearDoors: true,
+    dims: { L: 7.8, W: 2.6, H: 2.1 }, markup: 10,
+    insulated: [], insDefaults: {}, families: {}, strip: [],
+    sections: [
+      { name: 'FRONT', mult: 1, rows: [R('EXT GRP SKIN 2×450', 'm²', 280, 'front', 1, { recipe: 'Skin formula · GRP 2×450 (standard region)', age: 3 }), R('PLY CORE 12MM', 'm²', 210, 'front', 1), R('INT GRP SKIN 2×300', 'm²', 190, 'front', 1, { recipe: 'Skin formula · GRP 2×300 (standard region)', age: 130 })] },
+      { name: 'DRD', mult: 1, door: 'DRD', rows: [R('DOOR FRAME ALU', 'each', 1200, 'const', 2), R('DOOR PANEL', 'm²', 310, 'front', 1), R('HINGE SET HD', 'each', 640, 'const', 4, { age: 95 })] },
+      { name: 'SRD', mult: 1, door: 'SRD', rows: [R('DOOR FRAME ALU', 'each', 1200, 'const', 1), R('DOOR PANEL', 'm²', 310, 'front', 1), R('HINGE SET HD', 'each', 640, 'const', 2, { age: 95 })] },
+      { name: 'DRD DOOR FITTINGS', mult: 1, door: 'DRD', rows: [R('LOCK BAR SET', 'each', 950, 'const', 2), R('DOOR SEAL', 'metre', 45, 'perim', 1)] },
+      { name: 'SRD DOOR FITTINGS', mult: 1, door: 'SRD', rows: [R('LOCK BAR SET', 'each', 950, 'const', 1), R('DOOR SEAL', 'metre', 45, 'perim', 1)] },
+      { name: 'SIDES', mult: 2, rows: [R('EXT GRP SKIN 2×450', 'm²', 280, 'side', 1, { recipe: 'Skin formula · GRP 2×450 (standard region)', age: 3 }), R('PLY CORE 12MM', 'm²', 210, 'side', 1), R('SIDE RUB RAIL', 'metre', 95, 'len', 1)] },
+      { name: 'ROOF', mult: 1, rows: [R('ROOF SHEET GRP', 'm²', 240, 'roof', 1), R('ROOF BOW ALU', 'each', 210, 'len', 1.4)] },
+      { name: 'FLOOR', mult: 1, rows: [R('18 MM PF PLYWOOD', 'm²', 240, 'roof', 1), R('100×50 R.T. TUBE', 'each', 124, 'len', 2.9), R('ANTI-SKID FINAL COAT', 'm²', 32, 'roof', 1.9, { recipe: 'Floor plate · anti-skid (÷12 op-chain)' })] },
+      { name: 'SUB FRAME + LIGHT BOX ASSY', mult: 1, rows: [R('SUB FRAME KIT', 'each', 5600, 'const', 1), R('LIGHT BOX', 'each', 1350, 'const', 1)] },
+      { name: 'SPRAY PAINTING', mult: 1, rows: [R('SPRAY PAINT (BODY)', 'each', 7200, 'const', 1)] },
+      { name: 'OPTIONAL EXPLOSIVE EXTRAS', mult: 1, optional: true, byPrefix: true, rows: [] },
+      { name: 'OPTIONAL EXTRAS', mult: 1, optional: true, rows: [] },
+    ],
+  };
+
+  const BODIES = [CHILLER_LARGE, EXPLOSIVE_MEDIUM, FREEZER_MEDIUM, TAUT_LINER];
 
   // ---- Stock list (materials) — the picker's source. Some deliberately unpriced.
   const STOCK = [
@@ -152,6 +176,10 @@ window.MOCK = (function () {
     { id: 24, sap: 'S-1024', name: 'Rivet pack (500)', cat: 'CONSUMABLES', sub: 'FASTENERS', unit: 'pack', price: 310, age: 5 },
     { id: 25, sap: 'S-1025', name: 'Anti-skid coat', cat: 'PAINT', sub: 'FLOOR', unit: 'm²', price: 32, age: 27 },
     { id: 26, sap: 'S-1026', name: 'Floor plate 3CR12', cat: 'STEEL', sub: 'PLATE', unit: 'each', price: null, age: null },
+    // explosives-only extras (picker for OPTIONAL EXPLOSIVE EXTRAS)
+    { id: 27, sap: 'S-1027', name: 'Explosives placard set', cat: 'SAFETY', sub: 'SIGNAGE', unit: 'Each', price: 380, age: 22, xextra: true },
+    { id: 28, sap: 'S-1028', name: 'Fire extinguisher bracket', cat: 'SAFETY', sub: 'FIRE', unit: 'Each', price: 210, age: 40, xextra: true },
+    { id: 29, sap: 'S-1029', name: 'Static earthing strap', cat: 'SAFETY', sub: 'ELECTRICAL', unit: 'Each', price: null, age: null, xextra: true },
   ];
 
   const REPAIR_TYPES = ['Panel repair', 'Door re-hang', 'Floor repair', 'Roof leak repair', 'Rear frame repair', 'Other'];

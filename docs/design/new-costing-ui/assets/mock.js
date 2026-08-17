@@ -196,14 +196,14 @@
     if (st.saved && !st.dirty) { info.label = 'Saved ' + st.saved.quote + ' · rev ' + st.saved.rev; info.disabled = true; return info; }
     if (st.saved) {
       info.modes = [{ id: 'overwrite', label: 'Overwrite rev ' + st.saved.rev + ' (pending)' }, { id: 'revision', label: 'Revision ' + (st.saved.rev + 1), reuse: true }];
-      if (!st.saveMode || !info.modes.some((m) => m.id === st.saveMode)) st.saveMode = 'overwrite';
+      if (!st.saveMode || !info.modes.some((m) => m.id === st.saveMode)) { st.saveMode = 'overwrite'; st.reuse = true; } // RULE-SAVE-003: edit flow defaults reuse ON
       info.label = st.saveMode === 'overwrite' ? 'Overwrite rev ' + st.saved.rev + ' of ' + st.saved.quote : 'Save revision ' + (st.saved.rev + 1) + ' of ' + st.saved.quote;
       return info;
     }
     if (!cust) { info.label = st.type === 'repair' ? 'Save repair without customer' : 'Save without customer'; return info; }
     if (dup) {
       info.modes = [{ id: 'revision', label: 'Revision ' + (dup.revs + 1) + ' of ' + dup.quote, reuse: true }, { id: 'new', label: 'New costing' }];
-      if (!st.saveMode || !info.modes.some((m) => m.id === st.saveMode)) st.saveMode = 'revision';
+      if (!st.saveMode || !info.modes.some((m) => m.id === st.saveMode)) { st.saveMode = 'revision'; st.reuse = false; } // RULE-SAVE-003: duplicate flow defaults reuse OFF
       info.label = st.saveMode === 'revision' ? 'Save revision ' + (dup.revs + 1) + ' of ' + dup.quote : (st.type === 'repair' ? 'Save as new repair costing' : 'Save as new costing');
       return info;
     }
@@ -252,7 +252,7 @@
     else modeChip = '<span class="pill mode">' + (S.type === 'repair' ? 'New repair costing' : 'New costing') + '</span>';
     const attn = C.attn > 0 ? '<span class="pill bad" data-act="jump-attn" title="jump to the first line needing attention">⚠ ' + C.attn + ' line' + (C.attn > 1 ? 's' : '') + ' need' + (C.attn > 1 ? '' : 's') + ' attention</span>' : '<span class="pill ok">✓ no attention items</span>';
     return '<div class="totals">'
-      + '<div class="stage"><div class="lbl">Materials</div><div class="val">' + money(C.materials) + '</div><div class="sub">' + (S.chassis.on && S.type === 'body' ? 'incl. chassis ' + money(C.chassis.total) : (S.type === 'body' ? 'excl. chassis' : 'repair lines')) + '</div></div>'
+      + '<div class="stage"><div class="lbl">Materials</div><div class="val">' + money(C.materials) + '</div><div class="sub">' + (S.chassis.on && S.type === 'body' ? 'incl. chassis ' + money(C.chassis.total) : (S.type === 'body' ? 'excl. chassis' : 'repair lines')) + (S.type === 'body' && canPrices() ? ' · ' + fmtR((C.materials - C.chassis.total) / Math.max(1e-9, (+S.dims.L) * (+S.dims.W))) + ' / m² floor' : '') + '</div></div>'
       + '<div class="stage"><div class="lbl"><span class="op">+</span> Margin ' + esc(S.margin) + '%</div><div class="val">' + money(C.margin) + '</div><div class="sub">' + (S.margin > 0 ? 'on materials' : 'no margin') + '</div></div>'
       + '<div class="stage"><div class="lbl"><span class="op">÷</span> Ratio ' + ratioLbl + ' <span class="op">=</span> Total</div><div class="val">' + money(C.total) + '</div><div class="sub">selling price</div></div>'
       + '<div class="stage net"><div class="lbl"><span class="op">−</span> Discount <span class="op">=</span> Net</div><div class="val">' + money(C.net) + '</div><div class="sub">discount ' + esc(discLbl) + '</div></div>'

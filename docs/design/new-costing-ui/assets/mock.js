@@ -18,6 +18,7 @@
   const REFS = M.REFS.map((r) => Object.assign({}, r, { identity: JSON.parse(JSON.stringify(r.identity)) }));
   const TEMPLATE_INS = {}; // body id → per-cat insulation template (mutable copy, for "save to template")
   M.BODIES.forEach((b) => { TEMPLATE_INS[b.id] = JSON.parse(JSON.stringify(b.insDefaults)); });
+  const FIXED_FORMULAS = {};   // "bodyId|rowKey" → new formula text — mock of "formula fixed on the body template" (admin)
   // Theme: 'floor' (PULL BOARD dark, default) | 'light'. Demo-bar toggle; ?theme=light also works.
   let THEME = (new URLSearchParams(location.search).get('theme') === 'light') ? 'light' : 'floor';
   document.documentElement.dataset.theme = THEME;
@@ -46,7 +47,7 @@
       repair: { type: '', work: '' },
       saved: null, dirty: false, saveMode: null, reuse: true, ack: false,
       loadedRef: null,
-      ui: { drawer: null, pendingExclude: null, assist: null, menu: null, savePop: false, rowMenu: null, toast: null, editing: null, focus: null, stockQ: '', stockAll: false, drawerData: {} },
+      ui: { drawer: null, pendingExclude: null, assist: null, menu: null, savePop: false, rowMenu: null, toast: null, editing: null, focus: null, stockQ: '', stockAll: false, drawerData: {}, oneSide: false },
     };
   }
   S = freshState(20);
@@ -76,13 +77,23 @@
     if (row.ins) { const s = st.ins[sec.name]; if (!s || s.side !== row.ins) { line.state = 'gated'; line.reason = sec.name + ' ' + row.ins + ' = N'; } }
     if (row.gate && !famHas(st, row.gate.fam, row.gate.val)) { line.state = 'gated'; line.reason = row.gate.val + ' = N'; }
     if (row.link && !famHas(st, 'LEGACY|DRD', row.link)) { line.state = 'gated'; line.reason = 'linked to ' + row.link; line.derived = true; }
-    // quantity
-    let q = baseQty(row, g) * (sec.mult || 1);
+    // quantity — one-side view (OQ-10 reinstated, display-only) divides multiplied sections by their multiplier
+    const mult = sec.mult || 1;
+    const view = st.ui.oneSide && mult > 1 ? 1 / mult : 1;
+    let q = baseQty(row, g) * mult;
     if (row.rule32 && rule32Active(st)) { q = 0; if (line.state === 'costed') line.state = 'rule'; }
-    if (row.err) { line.err = row.err; if (line.state === 'costed') line.state = 'err'; }
+    // formula error — unless the formula was fixed on the template (mock: FIXED_FORMULAS) or the
+    // user typed a quantity for THIS costing (override bypasses the broken formula, RULE-CALC-004)
+    const fixed = FIXED_FORMULAS[st.bodyId + '|' + key];
+    if (row.err && !fixed) { line.err = row.err; if (line.state === 'costed') line.state = 'err'; }
+    if (fixed) line.prov.formulaFixed = fixed;
     line.formulaQty = q;
-    if (st.qtyOv[key] != null && !row.err) { q = st.qtyOv[key]; line.prov.qtyTyped = true; if (st.formulaBase[key] != null && Math.abs(st.formulaBase[key] - line.formulaQty) > 1e-6) line.prov.qtyDelta = line.formulaQty; }
-    line.qty = q;
+    if (st.qtyOv[key] != null) {
+      q = st.qtyOv[key]; line.prov.qtyTyped = true;
+      if (line.state === 'err') { line.state = 'costed'; line.prov.errBypassed = row.err; }
+      if (st.formulaBase[key] != null && Math.abs(st.formulaBase[key] - line.formulaQty) > 1e-6 && !row.err) line.prov.qtyDelta = line.formulaQty;
+    }
+    line.qty = q * view; line.view = view;
     // price precedence: quote override > permanent(row/session) > insulation-scaled > catalogue
     let p = row.price;
     if (row.ins && st.ins[sec.name]) p = row.price * (st.ins[sec.name].mm / 60);
@@ -94,7 +105,7 @@
     if (p == null) { if (line.state === 'costed') line.state = 'unpriced'; }
     if (row.age != null && !line.prov.priceTyped) line.prov.age = row.age;
     if (st.lineOff.has(key)) line.state = 'user-off';
-    line.total = (line.state === 'costed' || line.state === 'rule') && p != null && !row.err ? q * p : 0;
+    line.total = (line.state === 'costed' || line.state === 'rule') && p != null ? line.qty * p : 0;
     if (line.state === 'err' || line.state === 'unpriced') line.total = 0;
     return line;
   }
@@ -225,16 +236,19 @@
     const html = [];
     html.push(renderDemoBar());
     html.push('<div class="page">');
-    html.push('<div class="sticky-top">' + renderTotals(C) + renderBanners(C) + '</div>');
-    html.push(renderHeader(C));
+    // R1 + R2 stay pinned while the categories scroll (Michael, 17 Aug: freeze the parameters like the materials modal)
+    html.push('<div class="sticky-top">' + renderTotals(C) + renderHeader(C) + '</div>');
+    html.push('<div class="body-grid"><div class="main-col">');
     if (S.type === 'body') { html.push(renderStrip(b)); html.push(renderCards(C, b)); }
     else html.push(renderRepairLines(C));
     html.push('<div class="foot">Mockup · sample data only · no prices or customers here are real · design/new-costing-ui-concept</div>');
+    html.push('</div>' + renderRail(C, b) + '</div>');
     html.push('</div>');
     html.push(renderSaveBar(C));
     html.push(renderDrawer(C));
     if (S.ui.toast) html.push('<div class="toast ' + (S.ui.toast.kind || '') + '">' + esc(S.ui.toast.msg) + '</div>');
     app.innerHTML = html.join('');
+    { const pin = app.querySelector('.sticky-top'); if (pin) document.documentElement.style.setProperty('--pin-h', pin.offsetHeight + 'px'); }
     if (S.ui.focus) { const el = app.querySelector(S.ui.focus); if (el) { el.focus(); if (el.select) el.select(); } S.ui.focus = null; }
   }
 
@@ -264,21 +278,51 @@
       + '</div>';
   }
 
-  function renderBanners(C) {
+  // Notices live in the right-hand rail (Michael, 17 Aug: give the categories the height back;
+  // use the unused space on the side). Same content as the old banners, rail-sized.
+  function renderNotices(C) {
     let out = '';
     if (S.type === 'body') {
       const ref = matchedRef(S);
-      if (ref && ref.baseline && !S.loadedRef) {
+      if (ref && ref.baseline && !S.loadedRef && !S.ui.oneSide) {   // drift is meaningless against per-side display figures
         const d = ref.baseline.materials ? (C.materials - ref.baseline.materials) / ref.baseline.materials : 0;
         if (Math.abs(d) > 0.02) {
           const deltas = C.cats.map((c) => ({ n: c.sec.name, d: (c.state === 'included' ? c.subtotal : 0) - (ref.baseline.cats[c.sec.name] || 0) })).filter((x) => Math.abs(x.d) > 0.5).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 3);
-          out += '<div class="banner warn"><span>⚠ Matches reference “' + esc(ref.label) + '” · <b>' + (d > 0 ? '+' : '') + (d * 100).toFixed(1) + '%</b> vs baseline' + (canPrices() ? ' (' + fmtR(ref.baseline.materials) + ')' : '') + '</span>'
-            + (canPrices() && deltas.length ? '<span class="mute">' + deltas.map((x) => esc(x.n) + ' ' + (x.d > 0 ? '+' : '−') + fmtR(Math.abs(x.d))).join(' · ') + '</span>' : '') + '<span class="sp"></span><span class="tiny">display-only · tolerance 2%</span></div>';
-        } else out += '<div class="banner ok">✓ Matches validated reference “' + esc(ref.label) + '” — within tolerance</div>';
+          out += '<div class="notice warn"><div><b>⚠ Reference “' + esc(ref.label) + '”</b> · ' + (d > 0 ? '+' : '') + (d * 100).toFixed(1) + '% vs baseline' + (canPrices() ? ' (' + fmtR(ref.baseline.materials) + ')' : '') + '</div>'
+            + (canPrices() && deltas.length ? '<div class="tiny">' + deltas.map((x) => esc(x.n) + ' ' + (x.d > 0 ? '+' : '−') + fmtR(Math.abs(x.d))).join(' · ') + '</div>' : '') + '<div class="tiny mute">display-only · tolerance 2%</div></div>';
+        } else out += '<div class="notice ok">✓ Matches reference “' + esc(ref.label) + '” — within tolerance</div>';
       }
-      if (rule32Active(S)) out += '<div class="banner warn">3.2 m rule in force: 4MM PF PLYWOOD and its GLUE LINE in FRONT / SIDES / FLOOR cost R0 (rows stay visible at qty 0). <span class="sp"></span><span class="tiny">RULE-SPEC-001</span></div>';
+      if (rule32Active(S)) out += '<div class="notice warn"><b>3.2 m rule in force</b> — 4MM PF PLYWOOD + GLUE LINE in FRONT / SIDES / FLOOR cost R0 (rows stay at qty 0). <span class="tiny mute">RULE-SPEC-001</span></div>';
+      if (S.ui.oneSide) out += '<div class="notice warn"><b>½ ONE SIDE VIEW</b> — multiplied categories (× N) shown per side; totals follow. Display-only, never saved. <button class="minibtn" data-act="oneside-off">reset</button></div>';
     }
     return out;
+  }
+
+  // R7 — the rail: notices, view state, and a category index (subtotal + state; click = scroll; caret = collapse).
+  function renderRail(C, b) {
+    let h = '<aside class="rail"><div class="rail-inner">';
+    const notices = renderNotices(C);
+    if (notices) h += '<div class="rail-sec">' + notices + '</div>';
+    if (S.type === 'body') {
+      const collapsedAll = C.cats.filter((c) => c.state === 'included').every((c) => S.collapsed.has(c.sec.name));
+      h += '<div class="rail-sec"><div class="rail-hd"><span>Categories</span><span class="sp"></span>'
+        + '<button class="minibtn" data-act="collapse-all" title="collapse every category to its header">Collapse all</button>'
+        + '<button class="minibtn" data-act="expand-all" title="expand every category">Expand all</button></div>'
+        + '<ul class="catidx">'
+        + C.cats.map((c) => {
+          const st = c.state, nm = c.sec.name;
+          const dot = st === 'included' ? (c.attn ? 'bad' : 'ok') : (st === 'user-off' ? 'off' : 'mute');
+          const right = st === 'included' ? money(c.subtotal) : (st === 'optional-off' ? 'off' : (st === 'user-off' ? 'excluded' : (st === 'sibling' ? 'not quoted' : 'by rule')));
+          const collapsed = S.collapsed.has(nm) || (st !== 'included' && st !== 'optional-off');
+          return '<li class="' + st + '"><button class="caret" data-act="collapse" data-cat="' + esc(nm) + '" title="collapse / expand">' + (collapsed ? '▸' : '▾') + '</button>'
+            + '<button class="jump" data-act="jump-cat" data-cat="' + esc(nm) + '" title="scroll to ' + esc(nm) + '"><span class="dot2 ' + dot + '"></span>' + esc(nm) + (c.sec.mult > 1 ? ' <span class="tiny">×' + (S.ui.oneSide ? 1 : c.sec.mult) + '</span>' : '') + '</button>'
+            + '<span class="amt">' + right + '</span></li>';
+        }).join('')
+        + '<li class="' + (S.chassis.on ? 'included' : 'off') + '"><span class="caret"></span><button class="jump" data-act="jump-cat" data-cat="CHASSIS"><span class="dot2 ' + (S.chassis.on ? 'ok' : 'mute') + '"></span>CHASSIS</button><span class="amt">' + (S.chassis.on ? money(C.chassis.total) : 'off') + '</span></li>'
+        + '</ul></div>';
+    }
+    h += '<div class="rail-sec tiny mute">Rail = the unused side space. Categories keep the height. On narrow screens the rail drops below the header.</div>';
+    return h + '</div></aside>';
   }
 
   function renderHeader(C) {
@@ -356,7 +400,7 @@
   }
   function qtyCell(l) {
     if (S.ui.editing === l.key) return '<input class="cell-input" data-act="qty-commit" data-key="' + esc(l.key) + '" value="' + esc(fmtQ(l.qty).replace(/\s/g, '')) + '" id="qedit">';
-    if (l.state === 'err') return '<span class="cell bad ro" title="' + esc('Unknown token ' + l.err) + '">— err —</span>';
+    if (l.state === 'err') return '<span class="cell bad click" data-act="qty-edit" data-key="' + esc(l.key) + '" title="' + esc('Unknown token ' + l.err + ' — click to type the quantity for this costing (bypasses the broken formula), or use ⋯ → Fix formula for the template') + '">— err —</span>';
     if (l.added) return '<span class="cell click typed" data-act="qty-edit" data-key="' + esc(l.key) + '">' + fmtQ(l.qty) + '</span>';
     const tip = 'formula: ' + (FTEXT[l.row.f] || '') + (l.row.k !== 1 && l.row.f !== 'const' ? ' × ' + l.row.k : (l.row.f === 'const' ? l.row.k : '')) + (l.sec.mult > 1 ? ' · × ' + l.sec.mult + ' (' + l.sec.name + ')' : '') + ' → ' + fmtQ(l.formulaQty);
     if (l.prov.qtyTyped) return '<span class="cell click typed" data-act="qty-edit" data-key="' + esc(l.key) + '" title="' + esc('you set ' + fmtQ(l.qty) + ' · ' + tip) + '">' + (l.prov.qtyDelta != null ? '<span class="delta" title="the formula moved since you overrode this">formula now ' + fmtQ(l.prov.qtyDelta) + '</span>' : '') + fmtQ(l.qty) + '<button class="revert" data-act="qty-revert" data-key="' + esc(l.key) + '" title="revert to formula">↺</button></span>';
@@ -372,7 +416,9 @@
     if (l.prov.manual) tags.push('<span class="tag manual">manual</span>');
     if (l.state === 'gated') tags.push('<span class="tag reason" title="' + (l.derived ? 'reason derived from the legacy link — nothing to author' : 'per-item condition') + '">gated · ' + esc(l.reason) + '</span>');
     if (l.state === 'rule') tags.push('<span class="tag rule">R0 by rule (3.2 m)</span>');
-    if (l.state === 'err') tags.push('<span class="tag bad">formula error · unknown ' + esc(l.err) + '</span>');
+    if (l.state === 'err') tags.push('<span class="tag bad">formula error · unknown ' + esc(l.err) + '</span> <button class="linkbtn tiny" data-act="fix-formula" data-key="' + esc(l.key) + '" style="padding:0">how to fix ›</button>');
+    if (l.prov.errBypassed) tags.push('<span class="tag reason" title="the formula still references ' + esc(l.prov.errBypassed) + ' — your typed quantity is used for this costing">formula error bypassed · qty typed</span>');
+    if (l.prov.formulaFixed) tags.push('<span class="tag" title="' + esc('formula on the body template is now: ' + l.prov.formulaFixed) + '">formula fixed on template</span>');
     if (l.state === 'unpriced') tags.push('<span class="tag bad">no price</span>');
     if (l.state === 'user-off') tags.push('<span class="tag">excluded by you</span>');
     const name = l.added ? l.added.name : l.row.name;
@@ -417,7 +463,8 @@
       if (st === 'sibling') h += '<span class="nm">' + esc(name) + ' — not quoted (' + (S.door === 'NONE' ? 'no rear doors — side doors only' : esc(S.door) + ' chosen') + ')</span>';
       else if (st === 'rule-off') h += '<span class="nm">' + esc(name) + '</span><span class="tag reason">excluded — needs ' + esc(sec.master.val) + '</span>';
       else h += '<span class="nm">' + esc(name) + '</span>';
-      if (sec.mult > 1) h += '<span class="mult" title="' + esc('section multiplier × ' + sec.mult + ' — ' + (canPrices() ? fmtR(c.subtotal / sec.mult) + ' per side' : 'per-side amount masked')) + '">× ' + sec.mult + '</span>';
+      if (sec.mult > 1) h += '<button class="mult' + (S.ui.oneSide ? ' one' : '') + '" data-act="oneside" title="' + esc(S.ui.oneSide ? 'ONE SIDE VIEW — click anywhere to reset to × ' + sec.mult : 'section multiplier × ' + sec.mult + ' — click to view every line at ONE side (verify against the workbook), click anywhere to reset') + '">× ' + (S.ui.oneSide ? 1 : sec.mult) + '</button>';
+      if (sec.mult > 1 && S.ui.oneSide) h += '<span class="tag reason" style="color:var(--warn);border-color:var(--warn-line)">½ ONE SIDE VIEW — click elsewhere to reset</span>';
       // include control
       if (st === 'sibling') h += '<span class="inc mute" title="choose ' + esc(name) + ' in Body choices → Rear door">Include ▫ via Rear door</span>';
       else if (st === 'rule-off') h += '<span class="inc mute"><input type="checkbox" disabled> Include</span>';
@@ -580,6 +627,23 @@
         + '<div class="note">Setting the price back to the original clears the override with no reason needed. Price-age badges are suppressed while a quote override is in force.</div>'
         + (d.error ? '<div class="small" style="color:var(--bad)">' + esc(d.error) + '</div>' : '');
       foot = '<button class="btn" data-act="price-clear" data-key="' + esc(l.key) + '"' + (l.prov.priceTyped ? '' : ' disabled') + '>Clear override</button><span class="sp"></span><button class="btn" data-act="drawer-close">Cancel</button><button class="btn primary" data-act="price-apply" data-key="' + esc(l.key) + '">Apply</button>';
+    } else if (d.kind === 'fixformula') {
+      const l = findLine(C, d.key); if (!l || l.added) return '';
+      const err = l.row.err, fixed = FIXED_FORMULAS[S.bodyId + '|' + l.key];
+      const ftxt = fixed || ((FTEXT[l.row.f] || String(l.row.k)) + (l.row.k !== 1 && l.row.f !== 'const' ? '*' + l.row.k : '') + (err ? '*' + err : ''));
+      title = (err && !fixed ? 'Fix formula → ' : 'Formula → ') + esc(l.row.name);
+      bodyH += '<div class="kv"><span class="k">Category</span><span>' + esc(l.sec.name) + '</span><span class="k">Body</span><span>' + esc(body().name) + '</span>'
+        + (err && !fixed ? '<span class="k">Problem</span><span style="color:var(--bad)">unknown token <b>' + esc(err) + '</b> — resolves to 0, the line costs R 0</span>' : '') + '</div>';
+      if (err && !fixed) {
+        bodyH += '<div class="radio on"><div><div class="t">1 · Quick — type the quantity for THIS costing</div><div class="d">Close this, click the red “— err —” cell, type the number (blue + ↺). The broken formula is bypassed for this costing only; the line costs and the ⚠ clears. Nothing on the template changes.</div>'
+          + '<div class="row" style="display:flex;gap:8px;margin-top:6px"><button class="btn" data-act="qty-edit" data-key="' + esc(l.key) + '">Type the quantity now</button></div></div></div>';
+        bodyH += '<div class="radio"><div><div class="t">2 · Proper — fix the formula on the body template</div><div class="d">Changes every future costing of ' + esc(body().name) + '. Needs the template permission (admin / power user); journalled like a permanent price.</div></div></div>';
+        bodyH += '<div class="radio"><div><div class="t">3 · Define the missing variable</div><div class="d">If ' + esc(err) + ' <i>should</i> exist (a body variable or global), define it once in Admin → Formulas and every row that uses it resolves — nothing to edit here.</div><div class="row" style="display:flex;gap:8px;margin-top:6px"><button class="btn" data-act="formula-var">Define ' + esc(err) + ' in Admin → Formulas ›</button></div></div></div>';
+      }
+      bodyH += '<div class="field"><label>Formula on the template' + (S.role !== 'full' ? ' <span class="tiny mute">(read-only — needs template permission)</span>' : '') + '</label><textarea id="fx-text" style="height:64px;font-family:ui-monospace,Consolas,monospace"' + (S.role !== 'full' ? ' readonly' : '') + '>' + esc(ftxt) + '</textarea></div>'
+        + '<div class="note">Variables: length · width · height · {Waste} · body variables (e.g. {FRONT PU}) · formula library names. Unknown tokens turn the line red (RULE-CALC-004).' + (err && !fixed ? ' Try replacing <code>*' + esc(err) + '</code> with a number, e.g. <code>*3</code>.' : '') + '</div>'
+        + (d.error ? '<div class="small" style="color:var(--bad)">' + esc(d.error) + '</div>' : '');
+      foot = '<span class="sp"></span><button class="btn" data-act="drawer-close">Close</button><button class="btn primary" data-act="formula-save" data-key="' + esc(l.key) + '"' + (S.role !== 'full' ? ' disabled' : '') + '>Save to body template</button>';
     } else if (d.kind === 'recipe') {
       const l = findLine(C, d.key); if (!l) return '';
       title = 'Computed price → ' + esc(l.row.name);
@@ -637,6 +701,9 @@
       title = 'Where to click — the two journeys';
       bodyH += '<ol class="small" style="margin:0;padding-left:18px;line-height:1.7">'
         + '<li><b>Body</b> is pre-selected (FREEZER MEDIUM). Change L/W/H — the totals bar moves. Try <b>L = 3.2</b> to see the 3.2 m rule banner and grey “R0 by rule” lines in FLOOR.</li>'
+        + '<li><b>Pinned parameters + rail</b>: scroll — the totals bar and the header (body, dims, margin, ratio, customer) stay put; the right-hand rail holds the reference / rule notices and a <b>category index</b> (click a name to jump, ▸ to collapse; <b>Collapse all / Expand all</b> at the top).</li>'
+        + '<li><b>½ ONE SIDE VIEW</b>: click the <b>× 2</b> badge on SIDES → every SIDES line and the totals show one side (verify against the workbook’s single-side sheet); click anywhere to reset.</li>'
+        + '<li><b>Formula error (FLOOR → 100×50 LVL)</b>: click “how to fix ›” or the red “— err —” cell. Quick: type the quantity for this costing (bypasses the broken formula, ⚠ clears). Proper: ⋯ → Edit formula → fix on the body template (admin). Or define the missing variable in Admin → Formulas.</li>'
         + '<li><b>Exclude a category</b>: untick Include on ROOF → inline warning → “Exclude anyway”. Re-tick to bring it back.</li>'
         + '<li><b>Insulation inside FLOOR</b>: flip PU→EPS, change 100 → 76 mm; note “≠ template”; use the “Apply to all” chip.</li>'
         + '<li><b>Rear door</b> in Body choices: DRD ⇄ SRD — the sibling card stays visible, “not quoted”.</li>'
@@ -665,12 +732,27 @@
 
   document.addEventListener('click', (e) => {
     const t = e.target.closest('[data-act]');
+    // ONE SIDE VIEW resets on any click that is not the ×N badge itself (today's "click elsewhere to reset")
+    if (S.ui.oneSide && !(t && t.dataset.act === 'oneside')) { S.ui.oneSide = false; if (!t) { render(); return; } }
     if (!t) { if (!e.target.closest('.menu') && !e.target.closest('.pop')) { if (S.ui.menu || S.ui.rowMenu || S.ui.savePop) { closeTransient(); render(); } } return; }
     const act = t.dataset.act;
     if (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA') { if (t.type !== 'checkbox' && t.type !== 'radio') return; }
     switch (act) {
       case 'reset': S = freshState(20); render(); return;
       case 'collapse': { const c = t.dataset.cat; if (S.collapsed.has(c)) S.collapsed.delete(c); else S.collapsed.add(c); render(); return; }
+      case 'collapse-all': body().sections.forEach((s) => S.collapsed.add(s.name)); render(); return;
+      case 'expand-all': S.collapsed.clear(); render(); return;
+      case 'jump-cat': { const el = document.getElementById('cat-' + t.dataset.cat); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
+      case 'oneside': S.ui.oneSide = !S.ui.oneSide; render(); return;
+      case 'oneside-off': S.ui.oneSide = false; render(); return;
+      case 'fix-formula': S.ui.rowMenu = null; S.ui.drawer = { kind: 'fixformula', key: t.dataset.key }; render(); return;
+      case 'formula-save': {
+        const key = t.dataset.key, txt = (document.getElementById('fx-text') || {}).value || '';
+        const lx = findLine(compute(S), key);
+        if (lx && lx.row.err && txt.includes(lx.row.err)) { S.ui.drawer.error = 'The formula still references ' + lx.row.err + ', which does not exist. Replace it, or define the variable first (option 3).'; render(); return; }
+        FIXED_FORMULAS[S.bodyId + '|' + key] = txt.trim() || '1'; S.ui.drawer = null; toast('Body template updated — every costing of ' + body().name + ' now uses this formula (journalled)'); return;
+      }
+      case 'formula-var': S.ui.drawer = null; toast('Would deep-link to Admin → Formulas to define {LVL_PITCH} as a variable; the row then resolves for every body that uses it', 'warn'); return;
       case 'cat-toggle': {
         const c = t.dataset.cat, sec = body().sections.find((s) => s.name === c);
         if (sec.optional) { if (S.optOn.has(c)) S.optOn.delete(c); else S.optOn.add(c); dirty(); render(); return; }
@@ -693,9 +775,9 @@
       case 'line-toggle': { const k = t.dataset.key; if (S.lineOff.has(k)) S.lineOff.delete(k); else S.lineOff.add(k); S.ui.rowMenu = null; dirty(); render(); return; }
       case 'line-remove': { S.added = S.added.filter((a) => a.key !== t.dataset.key); S.ui.rowMenu = null; dirty(); render(); return; }
       case 'rowmenu': S.ui.rowMenu = S.ui.rowMenu === t.dataset.key ? null : t.dataset.key; S.ui.menu = null; render(); return;
-      case 'qty-edit': S.ui.editing = t.dataset.key; S.ui.focus = '#qedit'; S.ui.rowMenu = null; render(); return;
+      case 'qty-edit': S.ui.editing = t.dataset.key; S.ui.focus = '#qedit'; S.ui.rowMenu = null; S.ui.drawer = null; render(); { const row = document.getElementById('row-' + t.dataset.key); if (row) row.scrollIntoView({ block: 'center' }); } return;
       case 'qty-revert': delete S.qtyOv[t.dataset.key]; delete S.formulaBase[t.dataset.key]; S.ui.rowMenu = null; dirty(); render(); return;
-      case 'formula': S.ui.rowMenu = null; toast('Formula editor (power users) would open — it changes the body template, not this costing', 'warn'); return;
+      case 'formula': S.ui.rowMenu = null; S.ui.drawer = { kind: 'fixformula', key: t.dataset.key }; render(); return;
       case 'price': S.ui.rowMenu = null; S.ui.drawer = { kind: 'price', key: t.dataset.key, scope: 'costing' }; S.ui.focus = '#pr-val'; render(); return;
       case 'recipe': S.ui.rowMenu = null; S.ui.drawer = { kind: 'recipe', key: t.dataset.key }; render(); return;
       case 'scope': { const pv = document.getElementById('pr-val'), pr = document.getElementById('pr-reason'); if (pv) S.ui.drawer.val = pv.value; if (pr) S.ui.drawer.reason = pr.value; S.ui.drawer.scope = t.value; render(); return; }

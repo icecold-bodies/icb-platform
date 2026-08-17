@@ -309,3 +309,43 @@ tr.attn td:first-child { box-shadow: inset 4px 0 0 var(--bad-strong); }
   .status { grid-column: span 2; align-items: flex-start; }
   .stage:nth-child(2) { border-right: 0; }
 }
+
+/* ---- v3: sticky header + main/rail grid (Michael, 17 Aug) ------------------- */
+.page { max-width: 1480px; }
+.sticky-top { padding-bottom: 6px; box-shadow: 0 6px 12px -8px rgba(0,0,0,.5); }
+.sticky-top .header { padding: 8px 12px; margin-top: 6px; }
+.body-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; align-items: start; margin-top: 2px; }
+.main-col { min-width: 0; }
+.rail { position: sticky; top: calc(var(--pin-h, 176px) + 6px); }
+.rail-inner { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - var(--pin-h, 176px) - 84px); overflow: auto; padding-right: 2px; }
+.rail-sec { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; box-shadow: var(--shadow); }
+.rail-sec.tiny { padding: 6px 10px; }
+.rail-hd { display: flex; align-items: center; gap: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); font-weight: 700; margin-bottom: 6px; }
+.rail-hd .sp { flex: 1; }
+.minibtn { border: 1px solid var(--line); background: var(--raised); color: var(--ink-2); border-radius: 4px; padding: 0 6px; font-size: 11px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.minibtn:hover { border-color: var(--mute); color: var(--ink); }
+.notice { border-radius: 6px; padding: 7px 9px; font-size: 12.5px; display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+.notice:last-child { margin-bottom: 0; }
+.notice.warn { background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn); }
+.notice.ok { background: var(--ok-bg); border: 1px solid var(--ok-line); color: var(--ok); }
+.notice .minibtn { align-self: flex-start; }
+.catidx { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.catidx li { display: flex; align-items: center; gap: 4px; padding: 2px 0; border-bottom: 1px solid var(--line-2); font-size: 12.5px; }
+.catidx li:last-child { border-bottom: 0; }
+.catidx .caret { width: 14px; color: var(--mute); background: none; border: 0; padding: 0; font-size: 11px; }
+.catidx .jump { flex: 1; text-align: left; background: none; border: 0; padding: 2px 4px; color: var(--ink); border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-weight: 600; letter-spacing: .02em; }
+.catidx .jump:hover { background: var(--hover); }
+.catidx li.user-off .jump, .catidx li.rule-off .jump, .catidx li.sibling .jump, .catidx li.optional-off .jump, .catidx li.off .jump { color: var(--mute); font-weight: 500; }
+.catidx .amt { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 12px; white-space: nowrap; }
+.catidx li.included .amt { color: var(--ink); font-weight: 600; }
+.dot2 { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+.dot2.ok { background: var(--ok-strong); } .dot2.bad { background: var(--bad-strong); } .dot2.off { background: var(--off-bar); } .dot2.mute { background: var(--line); }
+.card > .hd button.mult { cursor: pointer; background: var(--bad-bg); }
+.card > .hd button.mult:hover { border-color: var(--bad); }
+.card > .hd button.mult.one { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); }
+@media (max-width: 1100px) {
+  .body-grid { grid-template-columns: 1fr; }
+  .rail { position: static; }
+  .rail-inner { max-height: none; }
+}
+.card { scroll-margin-top: calc(var(--pin-h, 176px) + 10px); }

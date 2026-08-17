@@ -88,6 +88,12 @@ EDIT-001/002/004 entry via `?from=`/`?edit=` (post-save edit state *is* mocked);
 ## 4a. Visual language (added 17 Aug after ratification)
 ICB likes the look of the live floor system (PULL BOARD). Its tokens were read from the app's shipped CSS and applied as the mockup's default theme (`STYLE_REFERENCE.md`); the neutral light theme the concept was reviewed in stays behind the demo toggle. The provenance grammar is unchanged — only its colours moved (typed → sky-300, attention → rose, ok → emerald, warn → amber, primary → the board's blue). RULE-DOOR-007 (NO REAR DOORS — side doors only, on EXPLOSIVE bodies) is now clickable on the sample EXPLOSIVE body rather than only cited.
 
+## 4b. Second pass after Michael's click-through (17 Aug)
+- **OQ-10 reversed on evidence:** the old `× 2` "backdoor" was a verification tool — Nadie ticks SIDES lines against the workbook's single-side sheet (`=SUM(...)*2` at the section total). Reinstated whole-costing, display-only, exactly today's contract in the new grammar (badge → `× 1`, amber "½ ONE SIDE VIEW — click elsewhere to reset", totals follow, drift not evaluated while on). RULE_COVERAGE SEC-010 updated.
+- **Pinned parameters:** R1 + R2 stay fixed while the categories scroll (like the materials modal); the rail's sticky offset follows the measured pinned height.
+- **The rail (R7):** notices moved off the main column into the unused side space; a category index (state dot · subtotal · jump · collapse) with Collapse all / Expand all. Categories get the height back.
+- **Formula errors are correctable from the page** (the FLOOR → 100×50 LVL question): quick (type the qty for this costing — bypass), proper (fix the formula on the template, gated + journalled, refuses to save while the unknown token remains), or define the missing variable (Admin → Formulas). RULE_COVERAGE CALC-004 updated.
+
 ## 5. Open questions carried to the build (all with defaults — none blocked design)
 - OQ-03 sticky qty override + moved-formula chip (provisional, to Michael with the mockup).
 - RULE_COVERAGE FLAG register (11 + 1 sub-flag): CALC-003/007/010/016, INS-008, SEC-002, SAVE-003(R-04), EDIT-005, SPEC-002/003, PERM-002/003.

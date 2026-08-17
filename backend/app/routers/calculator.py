@@ -969,6 +969,19 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                         status_code=409,
                         detail=f"Only pending costings can be edited — this one is '{rec_status}'.",
                     )
+                # A repair save must land on a REPAIR. Without this, a stale or
+                # hand-crafted payload could overwrite a BODY costing's result_json
+                # with a repair result while its trailer_type_id stayed set, leaving
+                # a record that is neither one thing nor the other. (v1.45 lesson:
+                # a save binds to the record on screen, verified server-side at
+                # action time — and symmetrical states need symmetrical guards, so
+                # the body path below carries the mirror of this.)
+                if not (rec.trailer_type_id is None and bool(getattr(rec, "is_repair", False))):
+                    raise HTTPException(
+                        status_code=409,
+                        detail="That costing is not a repair — reopen it from the "
+                               "costings list and save it there.",
+                    )
                 try:
                     _prev = json.loads(rec.result_json) if rec.result_json else {}
                 except Exception:
@@ -1107,6 +1120,15 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 raise HTTPException(
                     status_code=409,
                     detail=f"Only pending costings can be edited — this one is '{rec_status}'.",
+                )
+            # v1.47 — the mirror of the repair path's guard above: a BODY save must
+            # not land on a trailer-less REPAIR, which would leave a record with a
+            # body result_json and no trailer behind it.
+            if rec.trailer_type_id is None and bool(getattr(rec, "is_repair", False)):
+                raise HTTPException(
+                    status_code=409,
+                    detail="That costing is a repair — reopen it from the costings "
+                           "list and save it there.",
                 )
             try:
                 _prev = json.loads(rec.result_json) if rec.result_json else {}

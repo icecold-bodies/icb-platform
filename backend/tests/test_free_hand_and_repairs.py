@@ -536,3 +536,48 @@ def test_the_32m_zero_rule_never_fires_on_a_repair(client, admin_headers, seeded
     calc = client.post("/api/calculate", json=_repair(seeded), headers=admin_headers)
     assert calc.status_code == 200, calc.text
     assert zero_rule_note(calc.json()) is None
+
+
+def test_a_repair_save_cannot_overwrite_a_body_costing(client, admin_headers, seeded):
+    """Symmetrical-state guard (v1.45 lesson). A stale or hand-crafted payload
+    must not drop a repair result onto a BODY costing, which would leave a record
+    with a repair result_json and a trailer_type_id still set."""
+    made = client.post("/api/approve", json=_body(
+        seeded, customer_id=seeded["customer"], version_action="save_as_new"),
+        headers=admin_headers)
+    assert made.status_code == 200, made.text
+    body_id = made.json()["record_id"]
+
+    r = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"],
+        version_action="overwrite", edit_record_id=body_id), headers=admin_headers)
+    assert r.status_code == 409, r.text
+    assert "not a repair" in r.json()["detail"]
+
+    # And the body costing is untouched.
+    from app.database import SessionLocal, CalculationRecord
+    with SessionLocal() as db:
+        rec = db.query(CalculationRecord).filter_by(id=body_id).first()
+        assert rec.trailer_type_id == seeded["tt"]
+        assert not rec.is_repair
+
+
+def test_a_body_save_cannot_overwrite_a_repair(client, admin_headers, seeded):
+    """The mirror of the guard above — the two must be symmetrical or the hole
+    simply moves to the other side."""
+    made = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"]), headers=admin_headers)
+    assert made.status_code == 200, made.text
+    repair_id = made.json()["record_id"]
+
+    r = client.post("/api/approve", json=_body(
+        seeded, customer_id=seeded["customer"],
+        version_action="overwrite", edit_record_id=repair_id), headers=admin_headers)
+    assert r.status_code == 409, r.text
+    assert "is a repair" in r.json()["detail"]
+
+    from app.database import SessionLocal, CalculationRecord
+    with SessionLocal() as db:
+        rec = db.query(CalculationRecord).filter_by(id=repair_id).first()
+        assert rec.trailer_type_id is None
+        assert rec.is_repair is True

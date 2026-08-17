@@ -936,12 +936,23 @@ Notable storage facts the new CA inherits: `version` and `ui_snapshot` live INSI
 | OQ-07 | **Per-item selling price** in the stock model: wanted, or does selling stay costing-level (÷ratio)? | BA |
 | OQ-08 | ~~Repairs and money~~ **RESOLVED (Michael, 17 Aug 2026): margin and ratio apply to repairs same as normal costings** (discount included per "same as normal" [INFERENCE]; defaults: ratio 55%, margin 0 — no body markup to inherit) | closed |
 | OQ-09 | ~~Type of repair~~ **RESOLVED (Michael, 17 Aug 2026): a maintained list; admins can add repair types.** Model per Part 33.2 (catalogue + write-time name snapshot) | closed |
-| OQ-10 | **Admin single-side view** (× N toggle): keep in the new UI or drop? | BA |
+| OQ-10 | ~~Admin single-side view~~ **RESOLVED (Michael, 17 Aug 2026): drop it** — the `× N` badge's tooltip shows the per-side amount instead | closed |
 | OQ-11 | **`menu.calculator`** is catalogued but enforced nowhere — should the new costing page enforce it (recommended), and does anyone rely on the current looseness? | BA |
-| OQ-12 | **Category-exclusion warning**: wording/severity per category — generic warning, or per-category consequence text (needs authoring)? | new CA |
+| OQ-12 | ~~Category-exclusion warning~~ **RESOLVED (design phase, 17 Aug 2026): generic warning now** — names the category, its line count and the subtotal being removed; per-category consequence text can follow later as data | closed |
 | OQ-13 | **Excel paste**: keep in the new UI as a transition assist, or retire once the new page ships? (marked keep [PROPOSAL] in the matrix) | BA |
 | OQ-14 | **PRICE 20.04.2004.xls**: 29 live workbook formulas still reference a 2004 price list (file not provided). Which lines, are those prices valid, and do any of them exist in imported app data? | BA + investigation |
 | OQ-15 | ~~Fingerprint scope revisit~~ **RESOLVED (Michael, 17 Aug 2026): extras ARE part of reference identity in the new UI.** Migration strategy per Part 33.2 (recompute from input_state, or version the algorithm) | closed |
+
+### 34.1 Design-phase decisions (ratified by the BA on the design CA's defaults, 17 Aug 2026)
+
+| # | Decision | Ratified |
+|---|---|---|
+| D1 | Thickness shown in **mm** in the control, metres in the tooltip (workbook cells are metres) | yes |
+| D2 | A quantity override replaces the **final** quantity (post section-multiplier and waste) — matches the `quantity` the engine already returns (`formula_engine.py:191`) | yes |
+| D3 | Unpriced lines / formula errors at save: **warn + acknowledge**, not block; acknowledgement recorded on the record; zero-by-rule lines are distinct and not counted | yes |
+| D4 | Repair header carries an optional free-text **Work description** alongside the required repair-type dropdown | yes |
+| D5 | Legacy option groups whose name matches no category render in a page-level **Body choices** strip (mapping rule: `body_option_group == section name` → in-card, else → strip) | yes |
+| D6 | OPTIONAL EXTRAS renders **picker-style** — only chosen extras appear as rows, "+ Add extra" opens a pre-filtered picker with "show all" (134–136 rows per body verified on dev; a ticked table is unusable) | yes |
 
 ## 35. Assumptions
 

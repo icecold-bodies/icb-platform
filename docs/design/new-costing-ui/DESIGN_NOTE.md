@@ -92,6 +92,7 @@ ICB likes the look of the live floor system (PULL BOARD). Its tokens were read f
 - **OQ-10 reversed on evidence:** the old `× 2` "backdoor" was a verification tool — Nadie ticks SIDES lines against the workbook's single-side sheet (`=SUM(...)*2` at the section total). Reinstated whole-costing, display-only, exactly today's contract in the new grammar (badge → `× 1`, amber "½ ONE SIDE VIEW — click elsewhere to reset", totals follow, drift not evaluated while on). RULE_COVERAGE SEC-010 updated.
 - **Pinned parameters:** R1 + R2 stay fixed while the categories scroll (like the materials modal); the rail's sticky offset follows the measured pinned height.
 - **The rail (R7):** notices moved off the main column into the unused side space; a category index (state dot · subtotal · jump · collapse) with Collapse all / Expand all. Categories get the height back.
+- **Unit prices at 2 dp** in the app's SA money style (`R 3 795,74`); line/category/bar totals stay whole rands (flip on request). Typed prices accept a comma decimal.
 - **Formula errors are correctable from the page** (the FLOOR → 100×50 LVL question): quick (type the qty for this costing — bypass), proper (fix the formula on the template, gated + journalled, refuses to save while the unknown token remains), or define the missing variable (Admin → Formulas). RULE_COVERAGE CALC-004 updated.
 
 ## 5. Open questions carried to the build (all with defaults — none blocked design)

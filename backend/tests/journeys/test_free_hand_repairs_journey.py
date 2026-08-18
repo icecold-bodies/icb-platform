@@ -41,6 +41,19 @@ PLAIN_SECTION = "J147LC FLOOR"
 
 def _purge(db) -> None:
     from sqlalchemy import text
+    # v1.49 — MES children FIRST. Scheduling a repair now creates and advances a
+    # production job, and fk_production_jobs_calculation_record_id is RESTRICT, so
+    # deleting the calculations first aborts the whole purge. That failure is
+    # delayed and misleading: this module's bom_sections are globally unique by
+    # name, so the surviving rows break the NEXT run at SETUP.
+    _owned = (
+        "SELECT c.id FROM icb_costings.calculations c "
+        "LEFT JOIN icb_costings.trailer_types t ON t.id = c.trailer_type_id "
+        "LEFT JOIN icb_costings.customers cu ON cu.id = c.customer_id "
+        "WHERE t.name LIKE 'J147LC%' OR cu.name LIKE 'J147LC%'")
+    for _tbl, _col in (("icb_mes.prejob_cards", "calculation_id"),
+                       ("icb_mes.production_jobs", "calculation_record_id")):
+        db.execute(text(f"DELETE FROM {_tbl} WHERE {_col} IN ({_owned})"))
     db.execute(text(
         "DELETE FROM icb_costings.calculations c USING icb_costings.trailer_types t "
         "WHERE c.trailer_type_id = t.id AND t.name LIKE 'J147LC%'"))

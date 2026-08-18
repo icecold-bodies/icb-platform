@@ -490,11 +490,17 @@ def schedule_repair(db: Session, calculation_id: int, phases: list[dict], user) 
              .filter(ProductionJob.calculation_record_id == calculation_id)
              .first())
     if job is None:
-        # The job is created when the costing is ACCEPTED. Scheduling before that
-        # has nothing to schedule, and silently creating one here would bypass
-        # accept_calculation's branch resolution and job numbering.
-        raise RepairHasNoJobError(
-            "This repair has no production job yet — accept the costing first.")
+        # The job is normally created when the costing is accepted — but by a
+        # SECOND client call (/production-jobs/from-calculation) that follows
+        # /accept. Depending on that call having happened makes scheduling fail
+        # for a costing the user can see is accepted, with nothing to do about it;
+        # the journey does exactly that, and it is a real user path, not a test
+        # artefact. So create it here through the SAME service, which resolves the
+        # branch, assigns the number and is idempotent — this is not a bypass.
+        if calc.status != "accepted":
+            raise RepairHasNoJobError(
+                "This repair has no production job yet — accept the costing first.")
+        (job, _c, _cu, _v), _created = accept_calculation(db, calculation_id, user)
 
     blob = json.dumps(phases)
     calc.repair_phases_json = blob

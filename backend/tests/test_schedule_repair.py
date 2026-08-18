@@ -195,9 +195,46 @@ def test_it_lands_in_the_boards_unscheduled_pool(api, accepted_repair):
                for j in pool), "the scheduled repair must be in the unscheduled pool"
 
 
+def test_scheduling_an_accepted_repair_creates_its_job_if_the_client_never_did(api):
+    """The job is normally created by a SECOND client call after /accept.
+
+    Depending on that call having happened makes scheduling fail for a costing the
+    user can plainly see is accepted, with no way to recover — which is exactly
+    what the journey hit. Scheduling now creates it through accept_calculation
+    (idempotent, resolves the branch, assigns the number), so the ordering of two
+    client calls stops being load-bearing.
+    """
+    import json as _json
+    from app.database import Customer, CalculationRecord, SessionLocal
+    from app.models.mes import ProductionJob
+    with SessionLocal() as db:
+        _purge(db)
+        cust = Customer(name=f"{_MARK} NoJobYet", bp_code=f"{_MARK}4", is_active=True)
+        db.add(cust)
+        db.flush()
+        rec = CalculationRecord(trailer_type_id=None, customer_id=cust.id, is_repair=True,
+                                status="accepted", quote_number=f"{_MARK}NJY/08/2026",
+                                dimensions_json="{}",
+                                result_json=_json.dumps({"items": [], "grand_total": 0.0}))
+        db.add(rec)
+        db.commit()
+        rec_id = rec.id
+        assert db.query(ProductionJob).filter_by(calculation_record_id=rec_id).count() == 0
+    try:
+        r = api.post(f"/api/calculations/{rec_id}/schedule-repair", json={"phases": PHASES})
+        assert r.status_code == 200, r.text[:300]
+        with SessionLocal() as db:
+            job = db.query(ProductionJob).filter_by(calculation_record_id=rec_id).one()
+            assert job.status == "planning"
+            assert job.job_number, "accept_calculation assigns the number — not this code"
+    finally:
+        with SessionLocal() as db:
+            _purge(db)
+
+
 def test_scheduling_before_accepting_is_refused_clearly(api):
-    """Without a job there is nothing to schedule. Creating one here would bypass
-    accept_calculation's branch resolution and job numbering, so it refuses."""
+    """A costing that was never accepted has nothing to schedule, and creating a
+    job for it would invent work nobody approved."""
     import json as _json
     from app.database import Customer, CalculationRecord, SessionLocal
     with SessionLocal() as db:

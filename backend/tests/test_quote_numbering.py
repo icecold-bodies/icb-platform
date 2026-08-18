@@ -43,8 +43,16 @@ def two_recs(app_mod):
 
 
 def _counter_value(db) -> int:
-    from app.database import QuoteCounter
-    row = db.get(QuoteCounter, 1)
+    """The BODY-costing counter's next value.
+
+    v1.47 Lane D: this used to read `db.get(QuoteCounter, 1)`, which baked in the
+    old singleton ("id=1 always"). Migration 0042 keys the table by `series`, and
+    on a database built after it the row at id=1 is the seeded 'repair_doc' one —
+    so an id lookup silently measured the WRONG sequence. The assertions in this
+    file are unchanged; only the way the counter row is found is.
+    """
+    from app.quote_numbering import get_or_create_counter, SERIES_QUOTE
+    row = get_or_create_counter(db, SERIES_QUOTE)
     return int(row.next_value or 1) if row is not None else 1
 
 

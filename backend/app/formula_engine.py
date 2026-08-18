@@ -213,6 +213,11 @@ def calculate_bom(bom_items: list, dims: dict, body_variables: dict | None = Non
             item["free_hand"] = True
             item["free_hand_key"] = bom.get("free_hand_key")
             item["free_hand_kind"] = bom.get("free_hand_kind") or "free_hand"
+            # A lump-sum line (v1.47 Lane D) rides as quantity 1 x the total, so
+            # the money is right; this flag tells every renderer to print EMPTY
+            # qty / unit-price cells instead of those carrier values.
+            if bom.get("total_only"):
+                item["total_only"] = True
             if bom.get("notes"):
                 item["notes"] = bom["notes"]
         items.append(item)

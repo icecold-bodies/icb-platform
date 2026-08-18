@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Quotation Document{% endblock %}
+{% block breadcrumb %}<strong>Admin</strong> / Quotation Document{% endblock %}
+
+{% block content %}
+<style>
+  .qd-wrap { max-width: 980px; }
+  .qd-card {
+    background: var(--bg-panel,#161b22); border:1px solid var(--border,#30363d);
+    border-radius:8px; padding:18px; margin-bottom:18px;
+  }
+  .qd-card h3 {
+    color: var(--blue-hi,#58a6ff); text-transform:uppercase; letter-spacing:1px;
+    font-size:11px; margin: 0 0 12px; border-bottom:1px solid var(--border,#30363d);
+    padding-bottom:6px;
+  }
+  .qd-row { margin-bottom:14px; }
+  .qd-row label { display:block; font-size:11px; color:var(--text-dim,#8b949e);
+                  text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+  .qd-row input, .qd-row textarea {
+    width:100%; padding:8px 10px; background:#0d1117; color:#c9d1d9;
+    border:1px solid var(--border,#30363d); border-radius:6px;
+    font-family: var(--font-sans); font-size:13px; line-height:1.5;
+  }
+  .qd-row textarea { resize:vertical; min-height:64px; }
+  .qd-note { font-size:12px; color:var(--text-dim,#8b949e); line-height:1.6; }
+  .qd-warn {
+    border:1px solid #b07800; background:rgba(240,165,0,.08); color:#f0a500;
+    border-radius:6px; padding:10px 12px; font-size:12px; margin-bottom:16px;
+  }
+</style>
+
+<div class="qd-wrap">
+  <p class="qd-note">
+    What the outgoing <strong>repair quotation</strong> says, apart from the quote's own
+    figures: the VAT rate, the branding on the letterhead and in the footer, and every
+    block of terms. The renderer prints whatever is saved here, so wording changes need
+    no code change.
+  </p>
+
+  {% if is_placeholder %}
+  <div class="qd-warn">
+    ⚠ The letterhead is still the <strong>placeholder</strong> extracted from the sample
+    quote (about 99 dpi). It is fine on screen and soft in print — replace
+    <code>static/img/quote_doc/PLACEHOLDER_img0.png</code> with the original artwork.
+  </div>
+  {% endif %}
+
+  <form id="qd-form" onsubmit="return false">
+    <div class="qd-card">
+      <h3>Document settings</h3>
+      {% for f in fields %}
+      <div class="qd-row">
+        <label for="fld-{{ loop.index }}">{{ f.label }}</label>
+        {% if f.multiline %}
+        <textarea id="fld-{{ loop.index }}" name="{{ f.path }}" rows="3">{{ f.value }}</textarea>
+        {% else %}
+        <input id="fld-{{ loop.index }}" type="text" name="{{ f.path }}" value="{{ f.value }}"/>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <button class="btn btn-primary" type="button" onclick="saveQuoteDoc(this)">Save document settings</button>
+    <span id="qd-status" style="margin-left:12px;font-size:13px"></span>
+  </form>
+</div>
+
+<script>
+// Saves through the JSON API with the app's own helper, which carries the CSRF
+// token — the same shape every other admin screen here uses.
+async function saveQuoteDoc(btn) {
+  const status = document.getElementById('qd-status');
+  const payload = {};
+  document.querySelectorAll('#qd-form [name]').forEach(function (el) {
+    payload[el.name] = el.value;
+  });
+  const done = showBusy(btn, 'Saving…');
+  try {
+    await api('PUT', '/api/quote-document-config', payload);
+    status.style.color = '#3fb950';
+    status.textContent = 'Saved — the next quotation prints these.';
+  } catch (e) {
+    status.style.color = 'var(--red,#e35d6a)';
+    status.textContent = 'Could not save: ' + e.message;
+  } finally {
+    done();
+  }
+}
+</script>
+{% endblock %}

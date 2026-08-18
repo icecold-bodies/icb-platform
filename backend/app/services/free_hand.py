@@ -41,6 +41,13 @@ MAX_UNIT        = 32
 MAX_NOTES       = 1000
 MAX_REPAIR_TYPE = 120
 MAX_REPAIR_SCOPE = 4000
+# v1.47 Lane D — quotation-document header fields (addendum D8).
+MAX_VEHICLE_REG = 40
+MAX_DELIVERY_ADDRESS = 500      # multiline
+MAX_CONTACT_NAME = 120
+MAX_CONTACT_PHONE = 60
+MAX_PAYMENT_TERMS = 60
+DEFAULT_PAYMENT_TERMS = "COD"
 # Per-costing line cap. A repair sheet is a handful of lines; anything near
 # this is a malformed or hostile payload, not a quote.
 MAX_LINES       = 200
@@ -102,17 +109,27 @@ def _number(raw, *, field: str, ceiling: float) -> float:
     return v
 
 
-def parse_lines(raw, *, allow_stock: bool = False, db=None) -> list[dict]:
+def parse_lines(raw, *, allow_stock: bool = False, allow_total_only: bool = False,
+                db=None) -> list[dict]:
     """Validate + normalise a client ``free_hand_lines`` / ``repair_lines`` list.
 
     Returns one normalised dict per line:
-        {kind, key, description, qty, unit, unit_price, notes,
-         material_id, bom_section_id, category, excluded}
+        {kind, key, description, qty, unit, unit_price, line_total, total_only,
+         notes, material_id, bom_section_id, category, excluded}
 
     ``kind`` is "stock" (price resolved from the materials master) or
     "free_hand" (price typed by the user). Stock lines are only accepted when
     ``allow_stock`` is set — the OPTIONAL EXTRAS surface has the real BOM for
     catalogue items and has no business minting stock lines.
+
+    ``allow_total_only`` (v1.47 Lane D, addendum D3) permits the line grammar the
+    ICB repair quotation actually uses: a long description and a LUMP-SUM TOTAL,
+    with no quantity and no unit price. In the reference quote every one of the
+    14 lines is of this shape. Rules, as ratified:
+      * both qty and unit price given  -> total = qty x unit price
+      * neither given, line_total given -> that total is used VERBATIM
+      * qty/unit price left out are None, NOT 0 or 1, so the document can print
+        empty cells rather than a misleading "1".
 
     Raises 422 with a message fit to show the user on any malformed line.
     """
@@ -133,7 +150,6 @@ def parse_lines(raw, *, allow_stock: bool = False, db=None) -> list[dict]:
         if kind == "stock" and not allow_stock:
             _fail("Stock-list lines are not valid here.")
 
-        qty = _number(item.get("qty"), field="Quantity", ceiling=MAX_QTY)
         notes = _text(item.get("notes"), field="Notes", cap=MAX_NOTES)
         # A stable per-line key so the client can tick / edit / remove a line and
         # have the reply's items map back to its own rows.
@@ -152,13 +168,34 @@ def parse_lines(raw, *, allow_stock: bool = False, db=None) -> list[dict]:
             unit        = mat.unit_of_measure or "each"
             # Current catalogue price, resolved here and never taken from the client.
             unit_price  = float(mat.price_per_unit or 0)
+            qty = _number(item.get("qty"), field="Quantity", ceiling=MAX_QTY)
+            line_total = round(qty * unit_price, 2)
+            total_only = False
         else:
             mat_id      = None
             description = _text(item.get("description"), field="Description",
                                 cap=MAX_DESCRIPTION, required=True)
             unit        = _text(item.get("unit"), field="Unit", cap=MAX_UNIT) or "each"
-            unit_price  = _number(item.get("unit_price"), field="Unit price",
-                                  ceiling=MAX_UNIT_PRICE)
+            _raw_qty   = item.get("qty")
+            _raw_price = item.get("unit_price")
+            _blank = lambda v: v is None or (isinstance(v, str) and not v.strip())
+            if allow_total_only and _blank(_raw_qty) and _blank(_raw_price):
+                # Lump-sum line: the total is the only figure there is.
+                qty        = None
+                unit_price = None
+                unit       = _text(item.get("unit"), field="Unit", cap=MAX_UNIT) or None
+                line_total = _number(item.get("line_total"), field="Line total",
+                                     ceiling=MAX_UNIT_PRICE)
+                total_only = True
+            else:
+                if allow_total_only and (_blank(_raw_qty) != _blank(_raw_price)):
+                    _fail("Give BOTH a quantity and a unit price, or neither and a "
+                          "line total on its own.")
+                qty        = _number(_raw_qty, field="Quantity", ceiling=MAX_QTY)
+                unit_price = _number(_raw_price, field="Unit price",
+                                     ceiling=MAX_UNIT_PRICE)
+                line_total = round(qty * unit_price, 2)
+                total_only = False
 
         section_id = item.get("bom_section_id")
         try:
@@ -173,6 +210,8 @@ def parse_lines(raw, *, allow_stock: bool = False, db=None) -> list[dict]:
             "qty":            qty,
             "unit":           unit,
             "unit_price":     unit_price,
+            "line_total":     line_total,
+            "total_only":     total_only,
             "notes":          notes or None,
             "material_id":    mat_id,
             "bom_section_id": section_id,
@@ -222,9 +261,17 @@ def to_bom_items(lines: list[dict], *, default_category: str,
             "section_is_optional": bool(section_optional_by_id.get(ln.get("bom_section_id"))),
             # The typed quantity — calculate_bom bypasses the formula engine for
             # free-hand lines, so there is no expression to mis-evaluate.
-            "quantity":            ln["qty"],
-            "price_per_unit":      ln["unit_price"],
-            "unit_of_measure":     ln["unit"],
+            #
+            # A LUMP-SUM line (v1.47 Lane D) has no qty and no unit price, so it
+            # rides as quantity 1 x the line total: the money is identical and
+            # every downstream total keeps working untouched. `total_only` tells
+            # the renderers to print EMPTY qty/unit-price cells rather than the
+            # "1" that is sitting here — never show the carrier values.
+            "quantity":            1.0 if ln.get("total_only") else ln["qty"],
+            "price_per_unit":      (ln.get("line_total") if ln.get("total_only")
+                                    else ln["unit_price"]),
+            "total_only":          bool(ln.get("total_only")),
+            "unit_of_measure":     ln["unit"] or "",
             "waste_percentage":    0,
             "section_multiplier":  1.0,
             "notes":               ln.get("notes"),
@@ -247,6 +294,8 @@ def snapshot(lines: list[dict]) -> list[dict]:
             "qty":            ln["qty"],
             "unit":           ln["unit"],
             "unit_price":     ln["unit_price"],
+            "line_total":     ln.get("line_total"),
+            "total_only":     bool(ln.get("total_only")),
             "notes":          ln.get("notes"),
             "material_id":    ln.get("material_id"),
             "bom_section_id": ln.get("bom_section_id"),
@@ -291,4 +340,32 @@ def repair_fields(body: dict, *, require_type: bool = True) -> dict:
                         cap=MAX_REPAIR_TYPE, required=require_type)
     scope = _text(body.get("repair_scope"), field="Work description",
                   cap=MAX_REPAIR_SCOPE)
-    return {"repair_type": repair_type, "repair_scope": scope or None}
+    return {
+        "repair_type": repair_type,
+        "repair_scope": scope or None,
+        # ── v1.47 Lane D (addendum D8) — the quotation document's header fields.
+        # All four live ON THE COSTING (input_state), not on the customer:
+        #   * vehicle_registration prints as "Your Reference: Veh reg nr: {v}" and
+        #     is per-JOB by nature — the same customer's next repair is another
+        #     vehicle.
+        #   * delivery_address is captured per quote with NO default: the customer
+        #     record carries no address at all (§3.0), and per-quote capture was
+        #     ratified over a third migration.
+        #   * icb_contact_* prints as "Your Contact" and is ICB's salesperson, not
+        #     the customer's contact. The client defaults the NAME from the logged-in
+        #     user; `User` has no phone column, so the phone is typed.
+        #   * payment_terms prints beside the totals; default "COD".
+        "vehicle_registration": _text(body.get("vehicle_registration"),
+                                      field="Vehicle registration",
+                                      cap=MAX_VEHICLE_REG) or None,
+        "delivery_address": _text(body.get("delivery_address"),
+                                  field="Delivery address",
+                                  cap=MAX_DELIVERY_ADDRESS) or None,
+        "icb_contact_name": _text(body.get("icb_contact_name"),
+                                  field="Your contact", cap=MAX_CONTACT_NAME) or None,
+        "icb_contact_phone": _text(body.get("icb_contact_phone"),
+                                   field="Contact telephone",
+                                   cap=MAX_CONTACT_PHONE) or None,
+        "payment_terms": _text(body.get("payment_terms"), field="Payment terms",
+                               cap=MAX_PAYMENT_TERMS) or DEFAULT_PAYMENT_TERMS,
+    }

@@ -15,10 +15,15 @@ from fastapi.responses import StreamingResponse
 from io import BytesIO
 from sqlalchemy.orm import Session
 
+from fastapi.responses import HTMLResponse, RedirectResponse
+
 from ..database import CalculationRecord, get_db
-from ..deps import get_current_user, user_can
+from ..deps import get_current_user, require_admin, user_can
 from ..services.quote_document import build_repair_quote_context
+from ..services.quote_document_config import (apply_edits, editable_view,
+                                              get_config, save_config)
 from ..services.quote_document_pdf import render_repair_quote_pdf
+from ..templates_config import templates
 
 router = APIRouter()
 
@@ -67,3 +72,44 @@ async def repair_quote_pdf(record_id: int, request: Request,
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{safe}.pdf"'},
     )
+
+
+# ── admin: the document's own settings (D7/D9) ───────────────────────────────
+
+@router.get("/admin/quote-document", response_class=HTMLResponse)
+async def admin_quote_document(request: Request, db: Session = Depends(get_db)):
+    """Edit the VAT rate, the branding and every block of terms.
+
+    Its own screen, not /admin/pdf-template-builder: that builder is a visual
+    layout tool bound to trailer-type BOM reports, and this config would appear
+    in its list as a nonsense entry with no sensible editor. The pdf_templates
+    TABLE is reused as the store; the SCREEN is not.
+    """
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse(url="/login")
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    cfg = get_config(db)
+    return templates.TemplateResponse("admin_quote_document.html", {
+        "request": request, "user": user,
+        "fields": editable_view(cfg),
+        "is_placeholder": bool((cfg.get("branding") or {}).get("letterhead_is_placeholder")),
+    })
+
+
+@router.get("/api/quote-document-config")
+async def api_quote_document_config(request: Request, db: Session = Depends(get_db)):
+    require_admin(request, db)
+    return {"fields": editable_view(get_config(db))}
+
+
+@router.put("/api/quote-document-config")
+async def api_save_quote_document_config(payload: dict, request: Request,
+                                         db: Session = Depends(get_db)):
+    """Apply the submitted fields. Unknown keys are ignored by apply_edits, so an
+    older form cannot wipe a setting it never knew about."""
+    require_admin(request, db)
+    cfg = apply_edits(get_config(db), payload or {})
+    saved = save_config(db, cfg)
+    return {"ok": True, "fields": editable_view(saved)}

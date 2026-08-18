@@ -214,3 +214,119 @@ def vat_amount(net: float, rate_pct: float) -> float:
     VAT (the sample says so in its own terms), so this is added, never
     extracted."""
     return round(float(net or 0) * float(rate_pct or 0) / 100.0, 2)
+
+
+# ── admin editing (D7) ───────────────────────────────────────────────────────
+#
+# The config is a nested structure, but an admin screen should be a list of
+# labelled boxes, not a JSON editor — Michael should not have to keep brackets
+# balanced to change a warranty period. These two functions flatten it into
+# addressable fields and put the edits back, so the template can just loop.
+
+# (path, label, multiline) — path is dotted, with [i] for list members.
+EDITABLE_FIELDS: list[tuple[str, str, bool]] = [
+    ("vat_rate_pct",                    "VAT rate (%)",                     False),
+    ("branding.company_name",           "Company name",                     False),
+    ("branding.email",                  "E-mail (letterhead)",              False),
+    ("branding.web",                    "Website (letterhead)",             False),
+    ("branding.quality_banner",         "Quality banner",                   False),
+    ("branding.co_reg_nr",              "Co. Reg. Nr",                      False),
+    ("branding.vat_nr",                 "ICB VAT Nr",                       False),
+    ("branding.customs_code",           "Customs code",                     False),
+    ("branding.remittance.contact",     "Remittance contact",               False),
+    ("branding.remittance.email",       "Remittance e-mail",                False),
+    ("branding.banking.lines",          "Banking details (one per line)",   True),
+    ("branding.order_fax",              "Order fax",                        False),
+    ("branding.order_email",            "Order e-mail",                     False),
+    ("terms.notes.items[0]",            "NOTE A",                           True),
+    ("terms.notes.items[1]",            "NOTE B",                           True),
+    ("terms.notes.items[2]",            "NOTE C",                           True),
+    ("terms.vat.intro",                 "V.A.T. statement",                 True),
+    ("terms.vat.items[0]",              "V.A.T. clause 1",                  True),
+    ("terms.vat.items[1]",              "V.A.T. clause 2",                  True),
+    ("terms.vat.items[2]",              "V.A.T. clause 3",                  True),
+    ("terms.vat.items[3]",              "V.A.T. clause 4",                  True),
+    ("terms.blocks[0].body",            "VALIDITY",                         True),
+    ("terms.blocks[1].body",            "COMPLETION",                       True),
+    ("terms.blocks[2].body",            "WARRANTY",                         True),
+    ("terms.blocks[3].body",            "TERMS OF SALES",                   True),
+    ("terms.acceptance.intro",          "Acceptance form — intro",          True),
+    ("terms.acceptance.body",           "Acceptance form — body ({ref} = document number)", True),
+]
+
+
+def _walk(cfg: dict, path: str):
+    """Resolve a dotted path to (container, key). Returns (None, None) when the
+    path does not exist, so a stale field name is ignored rather than crashing."""
+    node: Any = cfg
+    parts = path.split(".")
+    for i, part in enumerate(parts):
+        idx = None
+        if part.endswith("]") and "[" in part:
+            part, raw = part[:part.index("[")], part[part.index("[") + 1:-1]
+            try:
+                idx = int(raw)
+            except ValueError:
+                return None, None
+        last = (i == len(parts) - 1)
+        if last and idx is None:
+            return (node, part) if isinstance(node, dict) else (None, None)
+        if not isinstance(node, dict) or part not in node:
+            return None, None
+        node = node[part]
+        if idx is not None:
+            if not isinstance(node, list) or idx >= len(node):
+                return None, None
+            if last:
+                return node, idx
+            node = node[idx]
+    return None, None
+
+
+def read_field(cfg: dict, path: str):
+    container, key = _walk(cfg, path)
+    if container is None:
+        return ""
+    value = container[key]
+    # NOTE items are (tag, text) pairs — the admin edits the TEXT.
+    if isinstance(value, (list, tuple)) and path.startswith("terms.notes.items"):
+        return value[1] if len(value) > 1 else ""
+    if isinstance(value, list):
+        return "\n".join(str(v) for v in value)
+    return value
+
+
+def write_field(cfg: dict, path: str, raw: str) -> None:
+    container, key = _walk(cfg, path)
+    if container is None:
+        return
+    current = container[key]
+    if isinstance(current, (list, tuple)) and path.startswith("terms.notes.items"):
+        tag = current[0] if len(current) else ""
+        container[key] = (tag, raw)          # keep the A./B./C. tag
+    elif isinstance(current, list):
+        container[key] = [ln for ln in str(raw).splitlines() if ln.strip()]
+    elif isinstance(current, (int, float)) and not isinstance(current, bool):
+        try:
+            container[key] = float(raw)
+        except (TypeError, ValueError):
+            pass                              # keep the old value on a bad number
+    else:
+        container[key] = raw
+
+
+def editable_view(cfg: dict) -> list[dict]:
+    """The admin screen's field list, ready to loop over in a template."""
+    return [{"path": p, "label": lbl, "multiline": ml, "value": read_field(cfg, p)}
+            for p, lbl, ml in EDITABLE_FIELDS]
+
+
+def apply_edits(cfg: dict, form: dict) -> dict:
+    """Put submitted values back. Unknown keys are ignored, so an older form
+    cannot wipe a field it never knew about."""
+    import copy
+    out = copy.deepcopy(cfg)
+    for path, _lbl, _ml in EDITABLE_FIELDS:
+        if path in form:
+            write_field(out, path, form[path])
+    return out

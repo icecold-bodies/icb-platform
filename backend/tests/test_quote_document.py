@@ -349,3 +349,44 @@ def test_the_document_endpoint_requires_a_session(client, saved_repair):
     rec_id, _ = saved_repair
     r = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf")
     assert r.status_code == 401
+
+
+# ── admin round-trip (D7) ────────────────────────────────────────────────────
+
+def test_an_admin_edit_reaches_the_next_document(client, admin_headers, saved_repair):
+    """D7's actual promise: change the wording in admin, and the NEXT quotation
+    prints it — no code change, no redeploy. Asserted end to end, from the API
+    through the store to text extracted from the rendered PDF."""
+    rec_id, _ = saved_repair
+
+    before = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf", headers=admin_headers)
+    assert before.status_code == 200
+    assert "thirty (30) days" in "\n".join(_page_texts(before.content))
+
+    r = client.put("/api/quote-document-config", headers=admin_headers, json={
+        "terms.blocks[0].body": "The validity period on this quote is NINETY (90) days.",
+        "vat_rate_pct": "20",
+    })
+    assert r.status_code == 200, r.text[:300]
+
+    after = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf", headers=admin_headers)
+    joined = "\n".join(_page_texts(after.content))
+    assert "NINETY (90) days" in joined, "the edited term did not reach the document"
+    assert "thirty (30) days" not in joined
+    # The VAT rate is a setting too: 280.00 at 20% is 56.00 tax, 336.00 incl.
+    assert "56.00" in joined and "336.00" in joined, "the edited VAT rate did not apply"
+
+    # Put it back so the rest of the suite sees the seeded wording.
+    client.put("/api/quote-document-config", headers=admin_headers, json={
+        "terms.blocks[0].body": "The validity period on this quote is thirty (30) days "
+                                "from date hereof. After this period, we reserve the "
+                                "right to re-quote.",
+        "vat_rate_pct": "15",
+    })
+
+
+def test_the_config_api_is_admin_only(client, saved_repair):
+    r = client.get("/api/quote-document-config")
+    assert r.status_code in (401, 403)
+    r2 = client.put("/api/quote-document-config", json={"vat_rate_pct": "0"})
+    assert r2.status_code in (401, 403)

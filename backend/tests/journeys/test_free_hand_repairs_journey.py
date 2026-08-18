@@ -587,3 +587,42 @@ def test_a_repair_prices_as_soon_as_it_has_a_line(page: Page, laneC_body) -> Non
     expect(page.locator("#approve-btn")).to_be_disabled()
     page.fill("#f-repair-type", "Side panel replacement")
     expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)
+
+
+def test_ticking_a_repair_line_off_drops_the_totals_to_zero(page: Page, laneC_body) -> None:
+    """Michael, 18 Aug (second report): the line struck through but the rail and
+    the summary carried on showing what it used to cost."""
+    base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
+    admin_session(page, base=base)
+    page.goto("/mes/calculator")
+    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    page.select_option("#trailer-select", "repair")
+    expect(page.locator("#repair-add-freehand")).to_be_visible(timeout=T)
+    page.fill("#f-repair-type", "Side panel replacement")
+    page.fill("#f-margin", "10")
+    # Pinned, not cleared: the page restores a saved ratio shortly after load, so
+    # "select None then assert" races that restore (same note as the sibling
+    # test). 0.55 also makes this the reported figure exactly.
+    page.fill("#f-margin", "10")
+    page.select_option("#f-ratio", "0.55")
+    expect(page.locator("#f-ratio")).to_have_value("0.55", timeout=T)
+
+    page.click("#repair-add-freehand")
+    expect(page.locator("#modal-free-hand")).not_to_have_class(re.compile(r"hidden"), timeout=T)
+    page.fill("#fh-description", "test")
+    page.fill("#fh-qty", "12")
+    page.fill("#fh-unit-price", "123.98")
+    page.click("#fh-save-btn")
+    # 12 x 123.98 = 1487.76, +10% margin = 1636.54, / 0.55 = 2975.53 — the
+    # figure in the report.
+    _wait_for_total(page, 2975.53)
+
+    # Tick the line OFF (checked == EXCLUDED) — everything must go to zero.
+    page.locator("#repair-lines-body input[type=checkbox]").first.check()
+    _wait_for_total(page, 0.0)
+    expect(page.locator("#approve-btn")).to_be_disabled()
+
+    # And back in again.
+    page.locator("#repair-lines-body input[type=checkbox]").first.uncheck()
+    _wait_for_total(page, 2975.53)
+    expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)

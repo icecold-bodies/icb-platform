@@ -599,3 +599,35 @@ def test_a_body_save_cannot_overwrite_a_repair(client, admin_headers, seeded):
         rec = db.query(CalculationRecord).filter_by(id=repair_id).first()
         assert rec.trailer_type_id is None
         assert rec.is_repair is True
+
+
+def test_a_repair_with_every_line_ticked_off_totals_zero(client, admin_headers, seeded):
+    """Michael, 18 Aug (second report): ticking a repair's only line OFF struck
+    the line through but left the rail and the summary showing what it used to
+    cost. Excluded lines are still SENT — the server prices them at zero, which
+    is the honest answer — so the client must not short-circuit the calculate
+    when nothing is ticked in."""
+    payload = _repair(seeded, profit_margin=10, ratio_value=0.55, ratio_label="55%")
+    for line in payload["repair_lines"]:
+        line["excluded"] = True
+    r = client.post("/api/calculate", json=payload, headers=admin_headers)
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert d["grand_total"] == pytest.approx(0.0)
+    assert d.get("profit_amount", 0) == pytest.approx(0.0)
+    assert float(d.get("net_total") or 0) == pytest.approx(0.0)
+    # Every line still comes back, struck through rather than dropped, so the
+    # user can tick one back in.
+    assert len(d["items"]) == len(payload["repair_lines"])
+    assert all(it["excluded"] for it in d["items"])
+
+
+def test_ticking_one_of_two_repair_lines_off_prices_only_the_other(
+        client, admin_headers, seeded):
+    """The partial case the zero test cannot see: the total must follow the
+    lines that are still in, not fall to zero and not stay whole."""
+    payload = _repair(seeded)          # stock 3 x 250 = 750, free-hand 4 x 300 = 1200
+    payload["repair_lines"][0]["excluded"] = True
+    r = client.post("/api/calculate", json=payload, headers=admin_headers)
+    assert r.status_code == 200, r.text
+    assert r.json()["grand_total"] == pytest.approx(1200.0)

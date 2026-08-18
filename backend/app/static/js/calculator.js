@@ -8602,8 +8602,16 @@ async function runRepairCalc() {
   // RATIO / TOTAL on R0,00 and the summary on its empty-state text until the
   // type happened to be typed: the surface looked broken. The type gates the
   // SAVE (below, and server-side in api_approve), not the price.
-  if (!included.length) {
+  //
+  // ⚠ The gate is on the number of LINES, not on how many are ticked IN.
+  // Returning early when nothing is included left the previous totals frozen on
+  // screen: ticking a repair's only line off struck the line through but the
+  // rail and the summary carried on showing what it used to cost (Michael,
+  // 18 Aug — second report). Excluded lines are still sent; the server prices
+  // them at zero, which is the honest answer and the one the user expects.
+  if (!repairLines.length) {
     _setDisabled('approve-btn', true);
+    _repairClearTotals();
     return;
   }
   const scopeEl = document.getElementById('f-repair-scope');
@@ -8637,9 +8645,11 @@ async function runRepairCalc() {
     lastResult = result;
     renderSummary(result);
     renderRepairSurface();
-    // Priced, but only SAVEABLE once the repair has a type — the inline
-    // "Type of repair is required" error under the field says why.
-    _setDisabled('approve-btn', !_repairMetaValid());
+    // Priced, but only SAVEABLE once the repair has a type AND something is
+    // actually ticked in — an all-excluded repair totals zero and is not a
+    // quote. The inline "Type of repair is required" error says why for the
+    // first case.
+    _setDisabled('approve-btn', !(_repairMetaValid() && included.length));
     status.textContent = '';
   } catch (e) {
     status.textContent = '';
@@ -8683,6 +8693,22 @@ function _repairRatio() {
   if (isNaN(raw) || raw <= 0) return { value: null, label: null };
   return { value: raw, label: (el.selectedOptions && el.selectedOptions[0]
                                ? el.selectedOptions[0].text : null) || null };
+}
+
+// Put the rail and the summary back to their empty state. Used when the last
+// line is REMOVED — with no lines at all there is nothing to ask the server
+// about, and leaving the previous figures on screen is the very bug this
+// function exists to prevent.
+function _repairClearTotals() {
+  lastResult = null;
+  renderRepairSurface();
+  const area = document.getElementById('summary-area');
+  if (area) {
+    area.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;'
+                   + 'text-align:center">Add repair lines to see the price summary</div>';
+  }
+  const gt = document.getElementById('grand-total');
+  if (gt) gt.textContent = '—';
 }
 
 // The wire shape the server validates. A stock line sends only what the server

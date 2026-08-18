@@ -332,6 +332,10 @@ class Customer(Base):
     name          = Column(String(300), nullable=False)
     email         = Column(String(300))
     telephone     = Column(String(100))
+    # v1.47 Lane D (migration 0041) — the customer's VAT number, printed in the
+    # quotation-document header ("Vat Num - Partner"). Free text: ICB quotes
+    # cross-border customers, so it must hold whatever their jurisdiction issues.
+    vat_number    = Column(String(50), nullable=True)
     is_active     = Column(Boolean, default=True)
     # WO v4.34.1 §0.2 — single-table dealer flag: an entity can be BOTH a biller and a chassis
     # supplier (Burt). Pure dealers are customers rows with is_dealer=true + nullable billing fields.
@@ -569,11 +573,21 @@ class ChassisOption(Base):
 
 
 class QuoteCounter(Base):
-    """Singleton row holding the next quote-number integer and the format
-    template the admin has chosen. Numbers, once assigned to a calculation,
-    are immutable — changing the template here only affects future records."""
+    """One row PER NUMBERING SERIES, holding that series' next integer and the
+    format template the admin has chosen. Numbers, once assigned to a
+    calculation, are immutable — changing the template here only affects future
+    records.
+
+    v1.47 Lane D (migration 0042): this used to be a singleton ("id=1 always").
+    The repair QUOTATION DOCUMENT carries its own R-prefixed number that must
+    never perturb the body-costing sequence, so the table is now keyed by
+    `series` (unique index). 'quote' IS the original body-costing line and is
+    unchanged; 'repair_doc' is the R-series.
+    """
     __tablename__ = "quote_counter"
     id              = Column(Integer, primary_key=True)
+    series          = Column(String(32), nullable=False, default="quote",
+                             server_default=_sa_text("'quote'"))
     next_value      = Column(Integer, nullable=False, default=1)
     format_template = Column(String(255), nullable=False, default="{user_initial}{counter}/{month}/{year}")
     updated_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc),

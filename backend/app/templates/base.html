@@ -219,6 +219,13 @@
         <a href="/admin/pdf-templates" class="nav-item {% if '/admin/pdf-templates' in request.url.path and '/admin/pdf-template-builder' not in request.url.path %}active{% endif %}">
           <span class="nav-icon">📄</span> PDF Templates
         </a>
+        {# v1.47 Lane D — the outgoing quotation document's own settings: VAT
+           rate, letterhead branding and every block of terms. Admin only. #}
+        {% if user.is_admin %}
+        <a href="/admin/quote-document" class="nav-item {% if '/admin/quote-document' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">🧾</span> Quotation Document
+        </a>
+        {% endif %}
         {% if user_can(user, 'menu.templates') %}
         <a href="/admin/quote-templates" class="nav-item {% if '/admin/quote-templates' in request.url.path %}active{% endif %}">
           <span class="nav-icon">📑</span> Quote Templates

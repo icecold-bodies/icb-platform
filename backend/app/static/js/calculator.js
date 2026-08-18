@@ -8524,6 +8524,12 @@ function enterRepairMode() {
   priceOverrides = {};
   discountKind = null; discountInput = 0;
   renderRepairSurface();
+  // D8 — "Your Contact" defaults to the signed-in user. Only the NAME: the User
+  // model has no phone column (§3.0), so the telephone is typed per quote.
+  const _contactEl = document.getElementById('f-repair-contact');
+  if (_contactEl && !_contactEl.value && typeof CURRENT_USER_NAME !== 'undefined') {
+    _contactEl.value = CURRENT_USER_NAME || '';
+  }
   document.getElementById('summary-area').innerHTML =
     '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;text-align:center">'
     + 'Add repair lines to see the price summary</div>';
@@ -8616,6 +8622,8 @@ async function runRepairCalc() {
     repair_scope:    String(scopeEl ? scopeEl.value : '').trim() || null,
     repair_lines:    repairLines.map(_fhWireLine),
     profit_margin:   +document.getElementById('f-margin').value || 0,
+    // v1.47 Lane D (D8) — the quotation document's header fields, all per-quote.
+    ...(_repairDocFields()),
     // v1.47 — the RATIO and the DISCOUNT must go to the server with the calc.
     // Without them the server returned ratio_amount 0 while renderSummary
     // computed the ratio client-side, so the repair rail printed "÷ RATIO
@@ -8650,6 +8658,32 @@ async function runRepairCalc() {
     console.error('repair calculate failed', e);
     toast('Calculation failed: ' + (e && e.message ? e.message : e), 'error');
   }
+}
+
+// Download the customer-facing quotation for the SAVED repair.
+function downloadRepairQuote() {
+  if (!lastRecordId) {
+    toast('Save the repair first — its document number is issued on save', 'warn');
+    return;
+  }
+  window.open(`/api/calculations/${lastRecordId}/repair-quote.pdf`, '_blank');
+}
+
+// The quotation-document header fields (D8). Read straight off the surface;
+// every one is optional, so a repair still prices and saves without them and
+// they simply print blank on the document.
+function _repairDocFields() {
+  const v = function (id) {
+    const el = document.getElementById(id);
+    return el ? String(el.value || '').trim() : '';
+  };
+  return {
+    vehicle_registration: v('f-repair-vehicle') || null,
+    delivery_address:     v('f-repair-delivery') || null,
+    icb_contact_name:     v('f-repair-contact') || null,
+    icb_contact_phone:    v('f-repair-contact-tel') || null,
+    payment_terms:        v('f-repair-terms') || 'COD',
+  };
 }
 
 // The ratio currently selected, in the shape /api/calculate expects.
@@ -8783,11 +8817,21 @@ function renderRepairSurface() {
                : '<span style="color:var(--text-dim)">— type of repair required —</span>')
     + '</span></div>'
     + rail
-    + '<div style="display:flex;gap:6px;margin-bottom:8px">'
+    + '<div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">'
     + '<button type="button" class="btn btn-outline btn-sm" id="repair-add-stock"'
     + ' onclick="openStockPicker()">+ From stock list</button>'
     + '<button type="button" class="btn btn-outline btn-sm" id="repair-add-freehand"'
     + ' onclick="openRepairFreeHandLine()">+ Free-hand line</button>'
+    // v1.47 Lane D — the customer-facing quotation on the ICB letterhead. Only
+    // offered once the repair is SAVED: the document carries a document number
+    // from its own R-series, and that is issued at save time.
+    + (lastRecordId
+        ? '<button type="button" class="btn btn-outline btn-sm" id="repair-quote-doc"'
+          + ' style="margin-left:auto" onclick="downloadRepairQuote()"'
+          + ' title="The customer-facing quotation on the ICB letterhead">'
+          + '↓ Repair quotation (PDF)</button>'
+        : '<span style="margin-left:auto;font-size:11px;color:var(--text-dim)">'
+          + 'Save the repair to get its quotation document</span>')
     + '</div>'
     + '<table class="calc-table" style="width:100%;border-collapse:collapse"><thead>'
     + '<tr style="border-bottom:1px solid var(--border)">'

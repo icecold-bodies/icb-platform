@@ -398,10 +398,28 @@ def test_repair_with_no_lines_is_refused(client, admin_headers, seeded):
     assert "at least one line" in r.json()["detail"]
 
 
-def test_repair_requires_a_type_of_repair(client, admin_headers, seeded):
+def test_a_repair_prices_before_it_has_a_type(client, admin_headers, seeded):
+    """Michael, 18 Aug: adding a repair line left every total on R0,00.
+
+    The type of repair was required to CALCULATE as well as to save, so the
+    header rail and the price summary stayed empty until it happened to be
+    filled in — the surface looked broken. Pricing is a preview; the type is a
+    commitment made at save time."""
     r = client.post("/api/calculate", json=_repair(seeded, repair_type=""),
                     headers=admin_headers)
-    assert r.status_code == 422
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert d["grand_total"] == pytest.approx(1950.0), "the lines must still price"
+    assert d["is_repair"] is True
+    assert not d.get("repair_type")
+
+
+def test_a_repair_still_cannot_be_SAVED_without_a_type(client, admin_headers, seeded):
+    """The other half of the same rule — relaxing the calculate path must not
+    let a repair reach the database with no type on it."""
+    r = client.post("/api/approve", json=_repair(
+        seeded, repair_type="", customer_id=seeded["customer"]), headers=admin_headers)
+    assert r.status_code == 422, r.text
     assert "Type of repair" in r.json()["detail"]
 
 

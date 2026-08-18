@@ -14,10 +14,14 @@ import {
   ThumbsUp,
   ThumbsDown,
   RotateCw,
+  Trash2,
+  Undo2,
 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { useAppData } from '../../store/AppDataContext'
-import { ALL_STATUSES, type Costing, type StatusName } from '../../data/costingsData'
+import { Toast } from '../../components/ui/overlays'
+import { apiDelete, apiGet, apiPost } from '../../lib/api'
+import { ALL_STATUSES, liveToCosting, type Costing, type LiveCalculation, type StatusName } from '../../data/costingsData'
 import { Tooltip } from '../../components/ui/Tooltip'
 import { Card } from '../../components/ui/primitives'
 import { STATUS_STYLES, StatusPillCosting, statusFilterTooltipKey } from './statusPalette'
@@ -41,8 +45,74 @@ import { Spinner } from '../../components/ui/feedback'
 export function CostingsDashboard() {
   const nav = useNavigate()
   const { mode, costings, statusCounts, acceptStage, refresh, scheduleRepairPhases, acceptCosting, declineCosting } = useCostings()
-  const { profile, hasPermission } = useAppData()
+  const { profile, hasPermission, isAdmin } = useAppData()
+  // v1.49 — admin-only right-click delete. ctxMenu holds the row the menu was
+  // opened on; confirmRow moves it into the confirmation step. Deleting is
+  // irreversible, so nothing happens on the menu click itself.
+  const [ctxMenu, setCtxMenu] = useState<{ c: Costing; x: number; y: number } | null>(null)
+  const [confirmRow, setConfirmRow] = useState<Costing | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [toast, setToast] = useState('')
+  // v1.49 — the "Deleted" pill. Soft-deleted costings are NOT in `costings`
+  // (the server withholds them), so this view fetches its own rows.
+  const [showDeleted, setShowDeleted] = useState(false)
+  const [deletedRows, setDeletedRows] = useState<Costing[]>([])
   const [filter, setFilter] = useState<Set<StatusName>>(new Set())
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(''), 3200)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  async function doDelete(c: Costing) {
+    if (!c.calculation_id) {
+      setToast('This costing is not live — nothing to delete')
+      setConfirmRow(null)
+      return
+    }
+    setDeleting(true)
+    try {
+      await apiDelete(`/api/calculations/${c.calculation_id}`)
+      setConfirmRow(null)
+      // Refetch rather than splicing the row out locally: the KPI strip and the
+      // status filter chips are derived from the SAME fetch, so a local removal
+      // would leave the counts one ahead of the table.
+      await refresh()
+      setToast(`Deleted ${c.quote_number}`)
+    } catch (e: any) {
+      // The server refuses with 409 and a sentence written for this dialog —
+      // show it verbatim rather than inventing wording for a case the client
+      // cannot evaluate (a Pre-Job Card or a scheduled production job).
+      setToast(e?.detail || e?.message || 'Could not delete this costing')
+      setConfirmRow(null)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  async function loadDeleted() {
+    try {
+      const rows = await apiGet<LiveCalculation[]>('/api/calculations?filter=deleted&limit=100')
+      setDeletedRows(rows.map(liveToCosting))
+    } catch {
+      setDeletedRows([])
+      setToast('Could not load deleted costings')
+    }
+  }
+
+  useEffect(() => { if (showDeleted) void loadDeleted() }, [showDeleted])
+
+  async function doRestore(c: Costing) {
+    if (!c.calculation_id) return
+    try {
+      await apiPost(`/api/calculations/${c.calculation_id}/restore`, {})
+      await Promise.all([loadDeleted(), refresh()])
+      setToast(`Restored ${c.quote_number}`)
+    } catch (e: any) {
+      setToast(e?.detail || e?.message || 'Could not restore this costing')
+    }
+  }
   const [q, setQ] = useState('')
   // Default scope is "mine" so the demo opens on Burt's own work, but flip to
   // "all" automatically once Live mode confirms — the FastAPI session user (the
@@ -93,6 +163,10 @@ export function CostingsDashboard() {
       )
     })
   }, [costings, q, filter, scope, profile, mode])
+
+  // v1.49 — the Deleted view swaps the table's source. The status chips and the
+  // mine/all scope describe LIVE work, so they are not applied to a recycle bin.
+  const rows = showDeleted ? deletedRows : filtered
 
   function toggleStatus(s: StatusName) {
     setFilter((prev) => {
@@ -197,6 +271,22 @@ export function CostingsDashboard() {
             </Tooltip>
           )
         })}
+        {/* v1.49 — the recycle bin. Deliberately set apart from the status
+            chips: those filter live work, this REPLACES the table with rows the
+            server does not otherwise send. Admin-only, like the delete itself. */}
+        {isAdmin && (
+          <button
+            data-testid="costing-deleted-pill"
+            onClick={() => { setShowDeleted((v) => !v); setCtxMenu(null) }}
+            className={`ml-2 flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+              showDeleted
+                ? 'border-status-red/40 bg-status-red/10 text-status-red'
+                : 'border-line bg-white text-muted hover:bg-surface-alt'
+            }`}
+          >
+            <Trash2 size={12} /> Deleted{showDeleted && deletedRows.length ? ` (${deletedRows.length})` : ''}
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -252,7 +342,7 @@ export function CostingsDashboard() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((c, i) => (
+              {rows.map((c, i) => (
                 <tr
                   key={c.quote_number}
                   data-testid="costing-row"
@@ -260,6 +350,14 @@ export function CostingsDashboard() {
                     i % 2 ? 'bg-surface-alt' : 'bg-white'
                   }`}
                   onClick={() => nav(`/costings/${encodeURIComponent(c.quote_number)}`)}
+                  onContextMenu={(e) => {
+                    // Admin-only, and the browser menu is only suppressed for an
+                    // admin — everyone else keeps normal right-click behaviour.
+                    if (!isAdmin) return
+                    e.preventDefault()
+                    e.stopPropagation()      // the row's own onClick would navigate away
+                    setCtxMenu({ c, x: e.clientX, y: e.clientY })
+                  }}
                 >
                   <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                     <input
@@ -469,6 +567,74 @@ export function CostingsDashboard() {
           setDeclineTarget(null)
         }}
       />
+
+      {/* v1.49 — admin right-click menu. Same scrim + fixed-position idiom as
+          ChassisModelSelect, so both context menus behave identically. */}
+      {ctxMenu && (
+        <>
+          <div className="fixed inset-0 z-[70]" data-testid="costing-ctx-scrim"
+               onClick={() => setCtxMenu(null)}
+               onContextMenu={(e) => { e.preventDefault(); setCtxMenu(null) }} />
+          <div data-testid="costing-ctx"
+               className="fixed z-[71] w-56 rounded-md border border-line bg-white py-1 shadow-xl"
+               style={{ left: Math.min(ctxMenu.x, window.innerWidth - 240),
+                        top: Math.min(ctxMenu.y, window.innerHeight - 80) }}>
+            <div className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              {ctxMenu.c.quote_number}
+            </div>
+            {showDeleted ? (
+              <button data-testid="costing-ctx-restore"
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-body hover:bg-surface-alt"
+                      onClick={() => { const c = ctxMenu.c; setCtxMenu(null); void doRestore(c) }}>
+                <Undo2 size={14} /> Restore to the board
+              </button>
+            ) : (
+              <button data-testid="costing-ctx-delete"
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-status-red hover:bg-status-red/10"
+                      onClick={() => { setConfirmRow(ctxMenu.c); setCtxMenu(null) }}>
+                <Trash2 size={14} /> Delete costing…
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* The confirmation. Deliberately a second, explicit step: the menu click
+          only opens this, so a mis-aimed right-click can never delete anything. */}
+      {confirmRow && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4"
+             data-testid="costing-delete-confirm">
+          <div className="w-full max-w-md rounded-lg border border-line bg-white p-5 shadow-xl">
+            <div className="mb-2 flex items-center gap-2 text-status-red">
+              <Trash2 size={18} />
+              <h2 className="text-base font-bold">Delete this costing?</h2>
+            </div>
+            <p className="mb-1 text-sm text-body">
+              <strong>{confirmRow.quote_number}</strong> — {confirmRow.customer_name}
+            </p>
+            <p className="mb-4 text-sm text-muted">
+              It comes off the costings board. Nothing is destroyed — it stays
+              available under the <strong>Deleted</strong> pill and can be restored
+              from there. If it has a Pre-Job Card or is already scheduled into
+              production, the delete is refused and nothing changes.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button data-testid="costing-delete-cancel"
+                      className="rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-body hover:bg-surface-alt"
+                      onClick={() => setConfirmRow(null)} disabled={deleting}>
+                Cancel
+              </button>
+              <button data-testid="costing-delete-confirm-btn"
+                      className="rounded-md bg-status-red px-3 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                      onClick={() => doDelete(confirmRow)} disabled={deleting}>
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Toast message={toast} show={!!toast} />
     </div>
   )
 }

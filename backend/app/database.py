@@ -465,6 +465,12 @@ class CalculationRecord(Base):
     decline_reason  = Column(Text, nullable=True)
     quote_number    = Column(String(64), nullable=True, index=True)  # Immutable once assigned. Formatted via QuoteCounter template.
     is_repair       = Column(Boolean, default=False)  # quote is for repair work, not a new build
+    # v1.49 (0043) — SOFT delete. NULL deleted_at = live; a value hides the costing
+    # from the board until the "Deleted" pill is selected. deleted_by is the
+    # actor's USERNAME snapshotted at write time (house audit idiom), so the
+    # record survives that user being renamed or removed.
+    deleted_at      = Column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_by      = Column(String(120), nullable=True)
     # Cost Calculator discount (WO v4.30 port from GRP-Costing-System d2da5bf). Applied to the selling
     # price; net_total is the post-discount headline (also mirrored into result_json). NULLs = no
     # discount, behaviour identical to before. Columns exist on the shared prod DB (faje's d2da5bf

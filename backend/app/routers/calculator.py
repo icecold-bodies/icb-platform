@@ -1652,6 +1652,19 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "repair_scope":    result_data.get("repair_scope") or input_state.get("repair_scope"),
         "repair_lines":    input_state.get("repair_lines") or [],
         "free_hand_lines": input_state.get("free_hand_lines") or [],
+        # The quotation document's header fields (D8). Returned so reopening a
+        # repair restores what was typed — without these the surface rebuilds
+        # with the lines intact but the vehicle registration, delivery address
+        # and contact silently blank, which is worse than refusing to open it.
+        "vehicle_registration": input_state.get("vehicle_registration"),
+        "delivery_address":     input_state.get("delivery_address"),
+        "icb_contact_name":     input_state.get("icb_contact_name"),
+        "icb_contact_phone":    input_state.get("icb_contact_phone"),
+        "payment_terms":        input_state.get("payment_terms"),
+        # Immutable once issued (D6) — carried so an edit-save copies it forward
+        # rather than burning a second number off the R-series.
+        "repair_document_number": (result_data.get("repair_document_number")
+                                   or input_state.get("repair_document_number")),
         # Price overrides survive on every record (overrides_by_bom); option
         # toggles only on records saved with the input_state snapshot.
         "overrides":               result_data.get("overrides_by_bom")

@@ -2326,6 +2326,12 @@ function _selectedEndUser() {
 }
 
 function applyCalculationInputs(payload) {
+  // v1.47 — restore the costing's FREE-HAND OPTIONAL EXTRAS. The GET has
+  // returned them since the feature shipped, but nothing read them, so
+  // reopening a costing quietly dropped every manual line and the total fell by
+  // their value with no error and no explanation. Restored before the recalc so
+  // the reopened quote balances with the saved one.
+  freeHandLines = _restoreLines(payload.free_hand_lines);
   const dims = payload.dimensions || {};
   document.getElementById('f-length').value = dims.length ?? document.getElementById('f-length').value;
   // v1.44 R6 — keep the banner's "({length} m)" in sync on edit-replay
@@ -2349,10 +2355,86 @@ function applyCalculationInputs(payload) {
   }
 }
 
+// ── v1.47 — reopening a REPAIR, and restoring free-hand lines ───────────────
+// A REPAIRS costing has NO trailer type by design (it is a mode, not a body),
+// so both edit and copy used to throw "Stored calculation has no trailer type"
+// the moment one was opened. The GET already returns everything needed to
+// rebuild the surface — repair_mode, repair_type, repair_scope, repair_lines
+// and the document header fields — it was simply never read.
+function _isSavedRepair(payload) {
+  return !!(payload && (payload.repair_mode
+                        || (payload.is_repair && !payload.trailer_type_id)));
+}
+
+// The saved snapshot uses the same field names as the client's own line shape,
+// so this is a copy with defensive defaults rather than a translation.
+function _restoreLines(saved) {
+  return (saved || []).map(function (l, i) {
+    return {
+      kind: l.kind === 'stock' ? 'stock' : 'free_hand',
+      key: l.key || ('fh-restored-' + i),
+      description: l.description || '',
+      qty: l.qty,
+      unit: l.unit || 'each',
+      unit_price: l.unit_price,
+      line_total: l.line_total,
+      total_only: !!l.total_only,
+      notes: l.notes || null,
+      material_id: l.material_id != null ? +l.material_id : null,
+      bom_section_id: l.bom_section_id != null ? +l.bom_section_id : null,
+      category: l.category || null,
+      excluded: !!l.excluded,
+    };
+  });
+}
+
+// Rebuild the repair surface from a saved costing. `forEdit` keeps the record
+// identity so Save can overwrite it; a copy starts clean.
+async function _openSavedRepair(payload, recordId, forEdit) {
+  const sel = document.getElementById('trailer-select');
+  if (sel) sel.value = 'repair';
+  enterRepairMode();
+  const set = function (id, v) {
+    const el = document.getElementById(id);
+    if (el) el.value = v == null ? '' : v;
+  };
+  set('f-repair-type', payload.repair_type);
+  set('f-repair-scope', payload.repair_scope);
+  // The quotation-document header fields (D8).
+  set('f-repair-vehicle', payload.vehicle_registration);
+  set('f-repair-delivery', payload.delivery_address);
+  set('f-repair-contact', payload.icb_contact_name);
+  set('f-repair-contact-tel', payload.icb_contact_phone);
+  if (payload.payment_terms) set('f-repair-terms', payload.payment_terms);
+  set('f-margin', payload.profit_margin ?? 0);
+  restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
+  setCustomer(payload.customer_id, payload.contact_id ?? null, payload.end_user_id ?? null);
+
+  repairLines = _restoreLines(payload.repair_lines);
+  if (forEdit) {
+    editingRecordId    = recordId;
+    editingQuoteNumber = payload.quote_number || null;
+    editingVersion     = payload.version || 1;
+    lastRecordId       = recordId;
+  } else {
+    editingRecordId = null;
+    lastRecordId    = null;
+  }
+  onRepairMetaInput();
+  renderRepairSurface();
+  await runRepairCalc();
+}
+
 async function prefillCalculation(recordId) {
   const doneLoading = showLoadingOverlay(`Loading calculation #${recordId}...`);
   try {
     const payload = await api('GET', `/api/calculations/${recordId}`);
+    // A repair has no trailer type by design — rebuild its surface instead.
+    if (_isSavedRepair(payload)) {
+      clearOverrideSession();
+      await _openSavedRepair(payload, recordId, false);
+      return;
+    }
     if (!payload.trailer_type_id) throw new Error('Stored calculation has no trailer type');
 
     clearOverrideSession();  // copied quote always starts with clean prices
@@ -2405,6 +2487,18 @@ async function editCalculation(recordId) {
   const doneLoading = showLoadingOverlay(`Loading costing #${recordId} for editing…`);
   try {
     const payload = await api('GET', `/api/calculations/${recordId}`);
+    // A repair has no trailer type by design — rebuild its surface instead. A
+    // non-pending repair still opens; the save path is what refuses to
+    // overwrite it, exactly as for a body costing.
+    if (_isSavedRepair(payload)) {
+      const _st = payload.status || 'pending';
+      if (_st !== 'pending') {
+        toast(`Only pending costings can be edited — “${payload.quote_number || ('#'+recordId)}” is ${_st}. Opening a copy instead.`, 'warn');
+      }
+      clearOverrideSession();
+      await _openSavedRepair(payload, recordId, _st === 'pending');
+      return;
+    }
     if (!payload.trailer_type_id) throw new Error('Stored calculation has no trailer type');
 
     // v1.44 F2 — an Inactive body type is hidden from the dropdown (NEW costings

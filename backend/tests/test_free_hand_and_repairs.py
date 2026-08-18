@@ -631,3 +631,76 @@ def test_ticking_one_of_two_repair_lines_off_prices_only_the_other(
     r = client.post("/api/calculate", json=payload, headers=admin_headers)
     assert r.status_code == 200, r.text
     assert r.json()["grand_total"] == pytest.approx(1200.0)
+
+
+# ── reopening a saved costing (Michael, 18 Aug — "no trailer type") ──────────
+
+def test_reopening_a_repair_returns_everything_needed_to_rebuild_it(
+        client, admin_headers, seeded):
+    """A REPAIRS costing has no trailer type by design, so /calculator?edit=
+    threw "Stored calculation has no trailer type" the moment one was opened.
+    The GET must hand back enough to rebuild the surface — and enough is not
+    just the lines: reopening with the vehicle registration and contact silently
+    blank is worse than refusing to open it."""
+    made = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"],
+        vehicle_registration="LT 15 FB GP",
+        delivery_address="83 Heidelberg Road\nCity Deep",
+        icb_contact_name="Suzette Cocklin",
+        icb_contact_phone="+27 82 563 4864",
+        payment_terms="30 days",
+    ), headers=admin_headers)
+    assert made.status_code == 200, made.text
+    rec_id = made.json()["record_id"]
+
+    got = client.get(f"/api/calculations/{rec_id}", headers=admin_headers)
+    assert got.status_code == 200, got.text
+    d = got.json()
+    assert d["repair_mode"] is True, "a trailer-less repair must announce itself"
+    assert d["trailer_type_id"] is None
+    assert d["repair_type"] == "Side panel replacement"
+    assert d["repair_scope"].startswith("Strip damaged panel")
+    assert len(d["repair_lines"]) == 2, "both lines must come back"
+    assert {l["kind"] for l in d["repair_lines"]} == {"stock", "free_hand"}
+    # The D8 header fields — the half that was missing.
+    assert d["vehicle_registration"] == "LT 15 FB GP"
+    assert d["delivery_address"].startswith("83 Heidelberg Road")
+    assert d["icb_contact_name"] == "Suzette Cocklin"
+    assert d["icb_contact_phone"] == "+27 82 563 4864"
+    assert d["payment_terms"] == "30 days"
+    # D6 — the document number rides along so an edit copies it forward instead
+    # of burning a second number off the series.
+    assert d["repair_document_number"], "the R-series number must come back"
+
+
+def test_reopening_a_body_costing_returns_its_free_hand_extras(
+        client, admin_headers, seeded):
+    """The quieter half of the same bug: free-hand OPTIONAL EXTRAS were returned
+    by this endpoint from the day the feature shipped, but nothing read them, so
+    reopening a costing dropped every manual line and the total fell by their
+    value with NO error — the failure mode that looks like nothing happened."""
+    made = client.post("/api/approve", json=_body(
+        seeded, customer_id=seeded["customer"], version_action="save_as_new",
+        free_hand_lines=[_fh(description="Rubber seal kit", qty=2, unit_price=450,
+                             notes="ex stock Cape Town",
+                             bom_section_id=seeded["opt_sec"], category=OPT_SECTION)],
+    ), headers=admin_headers)
+    assert made.status_code == 200, made.text
+    saved_total = made.json()["grand_total"]
+    rec_id = made.json()["record_id"]
+
+    d = client.get(f"/api/calculations/{rec_id}", headers=admin_headers).json()
+    lines = d["free_hand_lines"]
+    assert len(lines) == 1, "the manual line must survive the round trip"
+    assert lines[0]["description"] == "Rubber seal kit"
+    assert lines[0]["qty"] == pytest.approx(2.0)
+    assert lines[0]["unit_price"] == pytest.approx(450.0)
+    assert lines[0]["notes"] == "ex stock Cape Town"
+
+    # Recomputing from what came back must reproduce the SAVED total — that is
+    # what "the reopened quote balances with the saved one" actually means.
+    again = client.post("/api/calculate", json=_body(
+        seeded, free_hand_lines=[dict(l, key=l["key"]) for l in lines],
+    ), headers=admin_headers)
+    assert again.status_code == 200, again.text
+    assert again.json()["grand_total"] == pytest.approx(saved_total)

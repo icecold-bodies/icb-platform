@@ -319,10 +319,14 @@ def is_repair_mode(body: dict) -> bool:
     return bool(body.get("is_repair")) and not body.get("trailer_type_id")
 
 
-def repair_fields(body: dict) -> dict:
+def repair_fields(body: dict, *, require_type: bool = True) -> dict:
     """Validate + normalise the repair surface's own inputs.
 
-    TYPE OF REPAIR is required (WO §6). There is no repair-type catalogue in the
+    TYPE OF REPAIR is required to SAVE a repair (WO §6) but NOT to price one:
+    `require_type=False` on the calculate path. Michael, 18 Aug: with it required
+    everywhere, adding a repair line left every total on R0,00 until the type
+    happened to be filled in, so the surface looked broken. Pricing is a preview;
+    the type is a commitment made at save time. There is no repair-type catalogue in the
     schema yet — verified in §3.0 — so it is free text for now; an admin-managed
     list is a later change that can populate the same field.
 
@@ -333,7 +337,7 @@ def repair_fields(body: dict) -> dict:
     the scheduler and holds a LIST of phase entries.
     """
     repair_type = _text(body.get("repair_type"), field="Type of repair",
-                        cap=MAX_REPAIR_TYPE, required=True)
+                        cap=MAX_REPAIR_TYPE, required=require_type)
     scope = _text(body.get("repair_scope"), field="Work description",
                   cap=MAX_REPAIR_SCOPE)
     return {

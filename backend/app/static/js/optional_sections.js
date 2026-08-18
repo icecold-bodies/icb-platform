@@ -64,24 +64,30 @@
     return out;
   }
 
-  // Master header toggle: unticked means "include everything in this section",
-  // checked means "exclude everything in this section" — the same semantics as
-  // SRD/DRD in Calculator 2. We still keep the enabled-set for backward
-  // compatibility with compute(), but "OFF" now also writes every row into the
-  // per-row exclusion set so the first row untick can promote the section into
-  // a partial (indeterminate) state.
+  // Master header toggle: it turns the SECTION on or off, and nothing more.
+  //
+  // v1.47 (Michael, 18 Aug): turning a section ON no longer selects its rows.
+  // An OPTIONAL EXTRAS section can hold hundreds of items, so the old behaviour
+  // ("on" = include every row) made the only route to costing ONE extra
+  // "include all ~300, then untick 299". Now:
+  //
+  //   ON  -> section enabled, EVERY row left excluded. The user then ticks the
+  //          few items they actually want, one by one.
+  //   OFF -> section disabled, every row excluded (unchanged).
+  //
+  // "Select all" is still one click away on the header pill for the rare case
+  // where the whole section really is wanted — the two actions are now distinct
+  // instead of the master tick silently doing both.
   function toggleSection(tid, page, sectionId, allBomIdsInSection, enabled) {
     if (!tid || sectionId == null) return;
     const enSet = loadEnabled(tid);
     const exSet = loadRowExcl(tid, page);
     const ids = Array.isArray(allBomIdsInSection) ? allBomIdsInSection.map(Number).filter(Number.isFinite) : [];
-    if (enabled) {
-      enSet.add(+sectionId);
-      ids.forEach(id => exSet.delete(+id));
-    } else {
-      enSet.delete(+sectionId);
-      ids.forEach(id => exSet.add(+id));
-    }
+    if (enabled) enSet.add(+sectionId);
+    else         enSet.delete(+sectionId);
+    // Either way the rows start excluded: switching a section on is an
+    // invitation to choose, not a bulk selection.
+    ids.forEach(id => exSet.add(+id));
     saveEnabled(tid, enSet);
     saveRowExcl(tid, page, exSet);
   }
@@ -119,6 +125,13 @@
   // Bulk select/deselect every row in an optional section.
   // selectAll=true  → clear all matching bom_ids from the excl set (= included)
   // selectAll=false → add all matching bom_ids to the excl set    (= excluded)
+  //
+  // v1.47 (Michael, 18 Aug): "Deselect all" clears the ROWS and leaves the
+  // SECTION ON. It used to switch the section off as well, which made
+  // "deselect all, then pick the two I want" impossible — the section went
+  // dark and every row with it, so the only way back was Select all. The
+  // master tick is the control for the section; this pill is the control for
+  // the rows, and it no longer reaches across.
   function bulkRows(tid, page, sectionId, bomIds, selectAll) {
     if (!tid || !Array.isArray(bomIds)) return;
     const exSet = loadRowExcl(tid, page);
@@ -127,10 +140,9 @@
       if (selectAll) exSet.delete(+id);
       else           exSet.add(+id);
     });
-    if (sectionId != null) {
-      if (selectAll) enSet.add(+sectionId);
-      else           enSet.delete(+sectionId);
-    }
+    // Both directions leave the section ENABLED: after either bulk action the
+    // user is still working inside the section.
+    if (sectionId != null) enSet.add(+sectionId);
     saveEnabled(tid, enSet);
     saveRowExcl(tid, page, exSet);
   }

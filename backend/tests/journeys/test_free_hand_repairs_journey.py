@@ -69,9 +69,13 @@ def laneC_body():
                          price_per_unit=100.0, is_active=True)
         tray = Material(name="J147LC EXTRA TRAY", unit_of_measure="each",
                         price_per_unit=60.0, is_active=True)
+        # A SECOND optional item, priced differently, so a test can prove it
+        # selected ONE row rather than merely "the section".
+        rail = Material(name="J147LC EXTRA RAIL", unit_of_measure="each",
+                        price_per_unit=75.0, is_active=True)
         seal = Material(name="J147LC REPAIR SEAL", unit_of_measure="each",
                         price_per_unit=250.0, is_active=True)
-        db.add_all([floor, tray, seal])
+        db.add_all([floor, tray, rail, seal])
         db.flush()
         plain_sec = BOMSection(name=PLAIN_SECTION, sort_order=10, is_optional=False)
         opt_sec = BOMSection(name=OPT_SECTION, sort_order=11, is_optional=True)
@@ -91,6 +95,10 @@ def laneC_body():
                            formula_expression="2", waste_percentage=0,
                            bom_section=OPT_SECTION, bom_section_id=opt_sec.id,
                            sort_order=2),
+            BillOfMaterial(trailer_type_id=tt.id, material_id=rail.id,
+                           formula_expression="1", waste_percentage=0,
+                           bom_section=OPT_SECTION, bom_section_id=opt_sec.id,
+                           sort_order=3),
         ])
         db.commit()
         ids = {"tt": tt.id, "customer": cust.id, "opt_sec": opt_sec.id}
@@ -441,3 +449,141 @@ def test_normal_body_costing_is_unaffected(page: Page, laneC_body) -> None:
     expect(page.locator("#repair-meta-wrap")).to_be_hidden()
     back = _grand_total(page)
     assert abs(back - 1000.0) < 0.05, f"after leaving repair mode the total is {back:.2f}"
+
+# ── (d) Michael 18 Aug — selecting ONE extra without touching the other 300 ──
+
+def test_a_free_hand_line_costs_on_its_own_without_selecting_the_section(
+        page: Page, laneC_body) -> None:
+    """The reported bug, end to end.
+
+    An OPTIONAL EXTRAS section holds hundreds of items. Adding a free-hand line
+    used to leave it struck through with a DISABLED tick, so the only way to
+    cost that one line was "Select all" (~300 items) and then untick 299 by
+    hand. Adding a line now includes THAT LINE ONLY: the section switches on
+    behind it and every other row in the section stays excluded.
+    """
+    base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
+    admin_session(page, base=base)
+    page.goto("/mes/calculator")
+    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    _select_body(page, laneC_body["tt"])
+    _wait_for_optional_section(page, laneC_body["tt"], laneC_body["opt_sec"])
+    page.select_option("#f-ratio", "")
+    _settle(page)
+
+    # Section OFF — its real rows (2 x R60 = R120) are not in the total.
+    baseline = _grand_total(page)
+
+    hdr = page.locator(f"tr.calc-grp-hdr[data-section-id='{laneC_body['opt_sec']}']")
+    if "collapsed" in (hdr.get_attribute("class") or ""):
+        hdr.locator(".calc-hdr-name").click()
+    _settle(page)
+
+    page.locator(f"button[data-free-hand-add='{laneC_body['opt_sec']}']").click()
+    expect(page.locator("#modal-free-hand")).not_to_have_class(re.compile(r"hidden"), timeout=T)
+    page.fill("#fh-description", "Rubber seal kit")
+    page.fill("#fh-qty", "2")
+    page.fill("#fh-unit-price", "450")
+    page.click("#fh-save-btn")
+
+    # The line counts IMMEDIATELY, with no section tick and no Select all …
+    _wait_for_total(page, baseline + 900.0)
+    row = page.locator("tr.fh-row")
+    expect(row).to_have_count(1, timeout=T)
+    expect(row.locator("input[type=checkbox]")).not_to_be_checked()
+    expect(row.locator("input[type=checkbox]")).to_be_enabled()
+
+    # … and the section's OWN rows are still out: the total moved by the line
+    # alone, not by the line plus R120 of extras nobody asked for.
+    body_rows = page.locator(f"tr.opt-sec-row:not(.fh-row)")
+    assert body_rows.count() > 0, "the optional section rendered no BOM rows"
+    for i in range(body_rows.count()):
+        expect(body_rows.nth(i).locator("input.opt-row-tick")).to_be_checked()
+
+
+def test_deselect_all_leaves_the_section_selectable(page: Page, laneC_body) -> None:
+    """"Deselect all" clears the ROWS and leaves the SECTION on, so the user can
+    then pick the two items they want. It used to switch the section off, which
+    is what forced the Select-all-then-untick-everything dance."""
+    base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
+    admin_session(page, base=base)
+    page.goto("/mes/calculator")
+    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    _select_body(page, laneC_body["tt"])
+    _wait_for_optional_section(page, laneC_body["tt"], laneC_body["opt_sec"])
+    page.select_option("#f-ratio", "")
+    _settle(page)
+    baseline = _grand_total(page)
+
+    hdr = page.locator(f"tr.calc-grp-hdr[data-section-id='{laneC_body['opt_sec']}']")
+    if "collapsed" in (hdr.get_attribute("class") or ""):
+        hdr.locator(".calc-hdr-name").click()
+    _settle(page)
+
+    # Select all -> both rows in (TRAY 2 x R60 = R120, RAIL 1 x R75 = R75 -> R195),
+    # then Deselect all -> back out.
+    # Click the pills BY LABEL: the header carries several .calc-bulk-pill-btn
+    # buttons (the bulk pill and "+ Free-hand line"), and the bulk pill's own
+    # label flips between the two actions, so clicking "the first button twice"
+    # can silently press Select all twice.
+    hdr.get_by_text(re.compile("Select all")).click()
+    _wait_for_total(page, baseline + 195.0)
+    expect(hdr.get_by_text(re.compile("Deselect all"))).to_be_visible(timeout=T)
+    hdr.get_by_text(re.compile("Deselect all")).click()
+    _wait_for_total(page, baseline)
+
+    # The section is still live: including ONE row costs exactly that row and
+    # NOT the other — only possible because Deselect all left the section on.
+    # The first row is the TRAY (R120); the RAIL (R75) must stay out.
+    first_row = page.locator("tr.opt-sec-row:not(.fh-row)").first
+    first_row.locator("input.opt-row-tick").uncheck()      # unchecked == INCLUDED
+    _wait_for_total(page, baseline + 120.0)
+    rows = page.locator("tr.opt-sec-row:not(.fh-row)")
+    expect(rows.nth(1).locator("input.opt-row-tick")).to_be_checked()
+
+
+# ── (e) Michael 18 Aug — a repair must price before it has a type ────────────
+
+def test_a_repair_prices_as_soon_as_it_has_a_line(page: Page, laneC_body) -> None:
+    """Reported: adding a free-hand repair line left every total on R0,00.
+
+    The type of repair gated the CALCULATE as well as the save, so the header
+    rail and the price summary stayed empty until the type happened to be typed
+    — the surface looked broken. Pricing is a preview; the type is a commitment
+    made at save time, and only the Approve button waits for it.
+    """
+    base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
+    admin_session(page, base=base)
+    page.goto("/mes/calculator")
+    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    page.select_option("#trailer-select", "repair")
+    expect(page.locator("#repair-add-freehand")).to_be_visible(timeout=T)
+
+    # TYPE OF REPAIR deliberately left empty, exactly as reported.
+    # The ratio is pinned EXPLICITLY rather than cleared: the page restores a
+    # saved ratio after load, so "select None then assert" races that restore —
+    # and the ratio is incidental to what this test proves.
+    page.fill("#f-margin", "10")
+    page.select_option("#f-ratio", "0.55")
+    expect(page.locator("#f-ratio")).to_have_value("0.55", timeout=T)
+    page.click("#repair-add-freehand")
+    expect(page.locator("#modal-free-hand")).not_to_have_class(re.compile(r"hidden"), timeout=T)
+    page.fill("#fh-description", "rubber seal")
+    page.fill("#fh-qty", "1")
+    page.fill("#fh-unit-price", "123.23")
+    page.click("#fh-save-btn")
+
+    # 123.23 materials + 10% margin = 135.55, / 0.55 ratio = 246.45. The rail and
+    # the summary must agree on it — they disagreed until the repair calculate
+    # started sending the ratio to the server (rail said "RATIO R 0,00" beside a
+    # summary reading "Ratio (55%) + R 110,90").
+    _wait_for_total(page, 246.45)
+    expect(page.locator("#bom-area")).to_contain_text("110,90", timeout=T)
+    expect(page.locator("#bom-area")).to_contain_text("123,23", timeout=T)
+    expect(page.locator("#summary-area")).to_contain_text("Materials Cost", timeout=T)
+    assert page.input_value("#f-repair-type") == "", "the type must still be empty"
+
+    # Priced, but NOT saveable — the type is what unlocks Approve.
+    expect(page.locator("#approve-btn")).to_be_disabled()
+    page.fill("#f-repair-type", "Side panel replacement")
+    expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)

@@ -11,11 +11,22 @@ of *what a release contains and why*; this is the *how*.
 ## From Windows (normal case)
 
 ```powershell
-cd deploy\prod
-.\Push-ToProd.ps1 -Status          # what is on prod right now
-.\Push-ToProd.ps1 v1.48.1 -DryRun  # the plan, without touching anything
-.\Push-ToProd.ps1 v1.48.1          # deploy (asks on the VM before changing anything)
+cd C:\Users\micge\Documents\icb-platform\deploy\prod
+.\Push-ToProd.ps1 -Status
+.\Push-ToProd.ps1 v1.49.1 -DryRun
+.\Push-ToProd.ps1 v1.49.1
 ```
+
+`-Status` and `-DryRun` are read-only, need no password, and are always safe to run first.
+
+**Do not join those lines with `&&`.** The default console here is Windows PowerShell 5.1,
+where `&&` is a parse error:
+
+    The token '&&' is not a valid statement separator in this version
+
+Use separate lines, or `;`, which works in both shells. PowerShell 7 (`pwsh`) is installed
+and does support `&&` — but nothing here needs it, so the one-per-line form is the one to
+copy.
 
 `Push-ToProd.ps1` sends the shell script over ssh each run, so **you are always running the
 version in your working copy** — prod does not need to have pulled it first. It allocates a
@@ -76,6 +87,22 @@ may need an install first) or when `.env.example` changes (prod's `.env` is Marn
 
 Resets the code, rebuilds the SPA if that range touched `frontend/`, restarts, verifies.
 It refuses to "roll back" to something *ahead* of what is deployed.
+
+## Encoding: these files are ASCII on purpose
+
+`Push-ToProd.ps1` and the three `.sh` files contain **no non-ASCII characters**, and must
+not gain any. Windows PowerShell 5.1 reads a UTF-8 file **without a BOM as ANSI**, so a
+single tick or em-dash mangles mid-string and the parser dies with "The string is missing
+the terminator" — pointing at a line that looks perfectly fine, followed by a cascade of
+bogus "missing closing }" errors. One tick in one `Write-Host` made this script unrunnable
+in the shell it was written for, while passing every test under pwsh 7.
+
+The shell scripts are ASCII for a related reason: their output is read in that same
+console, where UTF-8 dashes arrive as mojibake exactly when the operator most needs to read
+carefully.
+
+Colour is emitted only when stdout is a terminal and `NO_COLOR` is unset, so a piped or
+logged run carries no raw escape codes.
 
 ## Why this cannot run unattended
 

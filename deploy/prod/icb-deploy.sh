@@ -107,7 +107,14 @@ else
   say "  $TARGET_REF is not in prod's object store yet — fetching (needs sudo)."
   say "  ${BLD}sudo will ask for your password now.${RST}"
   sudo -v || die "sudo declined — nothing has changed"
-  sudo -u icb git -C "$REPO" fetch origin --tags --quiet
+  # NOT --quiet. A silent multi-second network fetch immediately after a
+  # password prompt looks exactly like a hang, and the operator's instinct at
+  # that moment is Ctrl-C — which is what happened on the first real run. The
+  # fetch itself is harmless either way, but an interrupt here leaves the
+  # operator unsure whether anything was applied. Show that work is happening.
+  say "  fetching from origin (a few seconds)…"
+  sudo -u icb git -C "$REPO" fetch origin --tags --progress 2>&1 | sed 's/^/    /'
+  ok "fetched — nothing has been applied yet, the plan comes next"
 fi
 TARGET=$(git -C "$PLANREPO" rev-parse "${TARGET_REF}^{commit}" 2>/dev/null) \
   || die "ref '$TARGET_REF' not found even after fetch"
@@ -156,6 +163,17 @@ if [ "$ASSUME_YES" -eq 0 ]; then
   printf 'Proceed with this deploy? [y/N] '
   read -r reply </dev/tty || die "no terminal to confirm on — re-run with --yes if you are sure"
   case "$reply" in y|Y|yes|YES) ;; *) die "aborted by operator (nothing has changed)" ;; esac
+fi
+
+# Get the sudo credential NOW, in one clearly-labelled place, before anything
+# mutates. Otherwise the first prompt lands mid-deploy — at the npm build or the
+# restart — where a surprise password request is easy to mistake for a failure,
+# and where declining leaves prod half-updated. Skipped when the fetch above
+# already validated sudo in this run.
+if ! sudo -n true 2>/dev/null; then
+  say ""
+  say "  ${BLD}sudo will ask for your password now${RST} (build + restart need it)."
+  sudo -v || die "sudo declined — nothing has changed"
 fi
 
 ROLLBACK_FILE=/tmp/icb-rollback-$(date +%Y%m%d-%H%M%S).txt
@@ -241,5 +259,24 @@ say ""
 say "${GRN}${BLD}DEPLOYED${RST}  ${CURRENT:0:8} -> ${TARGET:0:8}  ($TARGET_REF)"
 say ""
 say "Rollback (code-only — additive migrations are left in place deliberately):"
-say "    $(dirname "$0")/icb-rollback.sh ${CURRENT:0:8}"
+# $0 may be anywhere — the script is often run from ~ before it exists in the
+# repo (deploy/prod/ is not on prod until the commit adding it is deployed), and
+# its sibling icb-rollback.sh may simply not be there. Naming a path that does
+# not exist is worst at exactly this moment, so only offer the script if it is
+# really present, and always print a fallback that needs no script at all.
+_rb=""
+for _c in "$(dirname "$0")/icb-rollback.sh" "$REPO/deploy/prod/icb-rollback.sh"; do
+  [ -x "$_c" ] && { _rb="$_c"; break; }
+done
+if [ -n "$_rb" ]; then
+  say "    $_rb ${CURRENT:0:8}"
+  say ""
+  say "  or, without the script:"
+else
+  say "  (icb-rollback.sh is not on this box yet — use the commands directly:)"
+fi
+say "    sudo -u icb git -C $REPO reset --hard ${CURRENT:0:8}"
+[ "$NEED_BUILD" -eq 1 ] && \
+  say "    sudo -u icb bash -lc 'cd $REPO/frontend && npm run build'   # this range touched frontend/"
+say "    sudo systemctl restart $SERVICE"
 say ""

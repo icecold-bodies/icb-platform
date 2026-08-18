@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# ICB MES — production rollback (code only).
+# ICB MES - production rollback (code only).
 #
 #   ./icb-rollback.sh 0dd4075          go back to that commit
 #   ./icb-rollback.sh 0dd4075 --yes    no confirmation prompt
 #
 # Deliberately does NOT touch the database. Every migration in this project so
-# far has been additive, so old code simply ignores the new columns — whereas
+# far has been additive, so old code simply ignores the new columns - whereas
 # `alembic downgrade` destroys data (0042's downgrade, for one, deletes the
 # repair-document counter series and any numbers already issued from it).
 #
@@ -38,17 +38,17 @@ while [ $# -gt 0 ]; do
   shift
 done
 [ -n "$TARGET_REF" ] || die "usage: $0 <tag-or-sha> [--yes]"
-[ -d "$REPO/.git" ]  || die "$REPO is not a git repo — are you on the prod VM?"
+[ -d "$REPO/.git" ]  || die "$REPO is not a git repo - are you on the prod VM?"
 
 CURRENT=$(git -C "$REPO" rev-parse HEAD)
 # Only fetch if the target is genuinely missing. A rollback target is nearly
-# always a commit prod was running minutes ago, so it is already on disk — and
+# always a commit prod was running minutes ago, so it is already on disk - and
 # an unconditional fetch would make rollback impossible whenever origin is
 # unreachable, and would demand a sudo password before printing so much as the
 # plan. Neither is acceptable in the one script you reach for during an incident.
 if ! git -C "$REPO" cat-file -e "${TARGET_REF}^{commit}" 2>/dev/null; then
-  say "  $TARGET_REF is not in prod's object store — fetching (needs sudo)."
-  sudo -v || die "sudo declined — nothing has changed"
+  say "  $TARGET_REF is not in prod's object store - fetching (needs sudo)."
+  sudo -v || die "sudo declined - nothing has changed"
   sudo -u icb git -C "$REPO" fetch origin --tags --progress 2>&1 | sed 's/^/    /'
 fi
 TARGET=$(git -C "$REPO" rev-parse "${TARGET_REF}^{commit}" 2>/dev/null) || die "ref '$TARGET_REF' not found"
@@ -60,7 +60,7 @@ say "  to    ${TARGET:0:8}  $(git -C "$REPO" log -1 --format=%s "$TARGET"  | cut
 # Was this a forward move? If so we are genuinely going backwards, which is the
 # normal case. If the target is AHEAD, the operator has the direction wrong.
 if git -C "$REPO" merge-base --is-ancestor "$CURRENT" "$TARGET"; then
-  warn "$TARGET_REF is AHEAD of what is deployed — that is a deploy, not a rollback. Use icb-deploy.sh."
+  warn "$TARGET_REF is AHEAD of what is deployed - that is a deploy, not a rollback. Use icb-deploy.sh."
   die "refusing to 'roll back' forwards"
 fi
 
@@ -69,11 +69,11 @@ n_frontend=$(printf '%s\n' "$CHANGED" | grep -c '^frontend/' || true)
 LOST_MIGRATIONS=$(git -C "$REPO" diff --name-only --diff-filter=A "$TARGET".."$CURRENT" -- 'backend/alembic/versions/*' || true)
 
 say ""
-say "  SPA rebuild      $([ "$n_frontend" -gt 0 ] && echo "YES — $n_frontend file(s) under frontend/" || echo 'no')"
+say "  SPA rebuild      $([ "$n_frontend" -gt 0 ] && echo "YES - $n_frontend file(s) under frontend/" || echo 'no')"
 
 # `reset --hard` discards tracked modifications without a word. During an
 # incident those are exactly the hot-fixes someone just made by hand on the box,
-# so name them and make the operator consent — a hard refusal would be wrong
+# so name them and make the operator consent - a hard refusal would be wrong
 # here (rolling back is the emergency), but silently destroying the work is worse.
 DIRTY=$(git -C "$REPO" status --porcelain --untracked-files=no | wc -l)
 if [ "$DIRTY" -gt 0 ]; then
@@ -127,11 +127,11 @@ STARTED=$(sudo journalctl -u "$SERVICE" --since '-2 min' --no-pager | grep -c 'A
 say "  workers started   $STARTED (expected $EXPECTED_WORKERS)"
 say "  BOOTSTRAP FAILED  $FAILED (expected 0)"
 # Printing "expected 0" and then declaring success in green regardless is worse
-# than not checking at all — it looks like it was checked. Assert, as the deploy
+# than not checking at all - it looks like it was checked. Assert, as the deploy
 # script does: a worker that logged BOOTSTRAP FAILED has silently lost its role
 # grants, and a rollback that ends green on top of that is a lie.
-[ "$FAILED" -eq 0 ] || die "$FAILED worker(s) logged BOOTSTRAP FAILED — the rollback is NOT healthy"
-[ "$STARTED" -ge "$EXPECTED_WORKERS" ] || warn "fewer workers than expected — check: sudo journalctl -u $SERVICE -n 100"
+[ "$FAILED" -eq 0 ] || die "$FAILED worker(s) logged BOOTSTRAP FAILED - the rollback is NOT healthy"
+[ "$STARTED" -ge "$EXPECTED_WORKERS" ] || warn "fewer workers than expected - check: sudo journalctl -u $SERVICE -n 100"
 CODE=$(curl -k -s -o /dev/null -w '%{http_code}' "$HEALTH_URL" || true)
 say "  $HEALTH_URL -> $CODE"
 [ "$CODE" = "200" ] || die "health check returned $CODE"

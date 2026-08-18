@@ -41,7 +41,16 @@ done
 [ -d "$REPO/.git" ]  || die "$REPO is not a git repo — are you on the prod VM?"
 
 CURRENT=$(git -C "$REPO" rev-parse HEAD)
-sudo -u icb git -C "$REPO" fetch origin --tags --quiet
+# Only fetch if the target is genuinely missing. A rollback target is nearly
+# always a commit prod was running minutes ago, so it is already on disk — and
+# an unconditional fetch would make rollback impossible whenever origin is
+# unreachable, and would demand a sudo password before printing so much as the
+# plan. Neither is acceptable in the one script you reach for during an incident.
+if ! git -C "$REPO" cat-file -e "${TARGET_REF}^{commit}" 2>/dev/null; then
+  say "  $TARGET_REF is not in prod's object store — fetching (needs sudo)."
+  sudo -v || die "sudo declined — nothing has changed"
+  sudo -u icb git -C "$REPO" fetch origin --tags --progress 2>&1 | sed 's/^/    /'
+fi
 TARGET=$(git -C "$REPO" rev-parse "${TARGET_REF}^{commit}" 2>/dev/null) || die "ref '$TARGET_REF' not found"
 
 step "rollback plan"
@@ -61,6 +70,19 @@ LOST_MIGRATIONS=$(git -C "$REPO" diff --name-only --diff-filter=A "$TARGET".."$C
 
 say ""
 say "  SPA rebuild      $([ "$n_frontend" -gt 0 ] && echo "YES — $n_frontend file(s) under frontend/" || echo 'no')"
+
+# `reset --hard` discards tracked modifications without a word. During an
+# incident those are exactly the hot-fixes someone just made by hand on the box,
+# so name them and make the operator consent — a hard refusal would be wrong
+# here (rolling back is the emergency), but silently destroying the work is worse.
+DIRTY=$(git -C "$REPO" status --porcelain --untracked-files=no | wc -l)
+if [ "$DIRTY" -gt 0 ]; then
+  say ""
+  warn "the working tree has $DIRTY modified TRACKED file(s). reset --hard WILL DISCARD them:"
+  git -C "$REPO" status --short --untracked-files=no | head -20 | sed 's/^/      /'
+  warn "if any of that is a hot-fix worth keeping, stop now and save it:"
+  say  "      sudo -u icb git -C $REPO stash push -m rollback-$(date +%H%M)"
+fi
 if [ -n "$LOST_MIGRATIONS" ]; then
   warn "this range introduced migration(s): $(printf '%s\n' "$LOST_MIGRATIONS" | xargs -n1 basename | tr '\n' ' ')"
   warn "they STAY APPLIED. The old code ignores them. Do not downgrade to undo this."
@@ -76,6 +98,10 @@ fi
 step "reset the working tree"
 # reset --hard, not merge --ff-only: going backwards is not a fast-forward.
 sudo -u icb git -C "$REPO" reset --hard "$TARGET"
+# The deploy script's completion record described the commit we are leaving, so
+# it is now false. Clearing it means a later re-deploy of that same target can
+# never mistake the old record for proof it already ran.
+rm -f /var/tmp/icb-deploy-state 2>/dev/null || true
 NOW=$(git -C "$REPO" rev-parse HEAD)
 [ "$NOW" = "$TARGET" ] || die "HEAD is ${NOW:0:8}, expected ${TARGET:0:8}"
 ok "at ${TARGET:0:8}"
@@ -100,6 +126,12 @@ FAILED=$(sudo journalctl -u "$SERVICE" --since '-2 min' --no-pager | grep -c 'BO
 STARTED=$(sudo journalctl -u "$SERVICE" --since '-2 min' --no-pager | grep -c 'Application startup complete' || true)
 say "  workers started   $STARTED (expected $EXPECTED_WORKERS)"
 say "  BOOTSTRAP FAILED  $FAILED (expected 0)"
+# Printing "expected 0" and then declaring success in green regardless is worse
+# than not checking at all — it looks like it was checked. Assert, as the deploy
+# script does: a worker that logged BOOTSTRAP FAILED has silently lost its role
+# grants, and a rollback that ends green on top of that is a lie.
+[ "$FAILED" -eq 0 ] || die "$FAILED worker(s) logged BOOTSTRAP FAILED — the rollback is NOT healthy"
+[ "$STARTED" -ge "$EXPECTED_WORKERS" ] || warn "fewer workers than expected — check: sudo journalctl -u $SERVICE -n 100"
 CODE=$(curl -k -s -o /dev/null -w '%{http_code}' "$HEALTH_URL" || true)
 say "  $HEALTH_URL -> $CODE"
 [ "$CODE" = "200" ] || die "health check returned $CODE"

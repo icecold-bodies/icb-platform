@@ -120,12 +120,21 @@ switch ($PSCmdlet.ParameterSetName) {
                 throw "'$Tag' is not a tag on origin. Push it first:  git push origin $Tag"
             }
             if ($onOrigin) {
-                $local = (& git rev-parse $Tag 2>$null)
+                # rev-parse prints the ref name back on failure instead of a SHA,
+                # so trust the exit code, not stdout — otherwise an unfetched tag
+                # is silently compared as if it were a commit id. And truncate by
+                # length, since Substring(0,8) throws on anything shorter.
+                $local = (& git rev-parse "$Tag^{commit}" 2>$null)
+                if ($LASTEXITCODE -ne 0) { $local = $null }
                 $remoteSha = ($onOrigin -split '\s+')[0]
-                if ($local -and $local -ne $remoteSha) {
-                    throw "tag $Tag differs between local ($($local.Substring(0,8))) and origin ($($remoteSha.Substring(0,8))) — resolve before deploying"
+                $short = { param($s) if ($s -and $s.Length -ge 8) { $s.Substring(0, 8) } else { $s } }
+                if (-not $local) {
+                    Write-Host "! $Tag is on origin but not in this clone — run: git fetch origin --tags" -ForegroundColor Yellow
+                } elseif ($local -ne $remoteSha) {
+                    throw "tag $Tag differs between local ($(& $short $local)) and origin ($(& $short $remoteSha)) — resolve before deploying"
+                } else {
+                    Write-Host "✓ $Tag is on origin" -ForegroundColor Green
                 }
-                Write-Host "✓ $Tag is on origin" -ForegroundColor Green
             }
         } finally { Pop-Location }
 

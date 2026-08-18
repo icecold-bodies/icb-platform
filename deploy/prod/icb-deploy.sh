@@ -30,6 +30,14 @@ ENV_FILE=/etc/icb/backend.env
 EXPECTED_WORKERS=4
 HEALTH_URL=https://127.0.0.1/health
 
+# Completion record. /var/tmp rather than /tmp: it survives a reboot, and it is
+# world-writable so the operator can write it without sudo. It records only that
+# a deploy of a given SHA reached the end — never anything the deploy depends on.
+STATE_FILE=/var/tmp/icb-deploy-state
+
+_deploy_recorded() { [ -f "$STATE_FILE" ] && grep -qx "completed $1" "$STATE_FILE"; }
+_record_deploy()   { printf 'completed %s\n' "$1" > "$STATE_FILE" 2>/dev/null || true; }
+
 RED=$'\033[31m'; GRN=$'\033[32m'; YEL=$'\033[33m'; BLD=$'\033[1m'; RST=$'\033[0m'
 say()  { printf '%s\n' "$*"; }
 step() { printf '\n%s== %s%s\n' "$BLD" "$*" "$RST"; }
@@ -120,14 +128,49 @@ TARGET=$(git -C "$PLANREPO" rev-parse "${TARGET_REF}^{commit}" 2>/dev/null) \
   || die "ref '$TARGET_REF' not found even after fetch"
 ok "$TARGET_REF = ${TARGET:0:8}"
 
+RESUME=0
 if [ "$CURRENT" = "$TARGET" ]; then
-  say ""; ok "already at ${TARGET:0:8} — nothing to deploy."
-  exit 0
+  # HEAD equality proves only that step 4 ran. Steps 5-8 (migrate, build,
+  # restart, verify) leave nothing behind that this script reads, so on its own
+  # a matching SHA cannot tell "fully deployed" from "fast-forwarded and then
+  # died" — and the natural response to a failed deploy is to run it again.
+  # Printing a green "nothing to deploy" there would confirm a deploy that never
+  # finished, while prod serves new templates and static assets (both reload
+  # from disk immediately) against workers still running the old Python.
+  # So completion is recorded explicitly, and only that record ends the run.
+  if _deploy_recorded "$TARGET"; then
+    say ""
+    ok "already at ${TARGET:0:8} — nothing to deploy (a completed deploy is on record)."
+    CODE=$(curl -k -s -o /dev/null -w '%{http_code}' "$HEALTH_URL" || true)
+    say "  $HEALTH_URL -> $CODE"
+    [ "$CODE" = "200" ] || warn "…but health is $CODE. Investigate: sudo journalctl -u $SERVICE -n 100"
+    exit 0
+  fi
+  RESUME=1
+else
+  git -C "$PLANREPO" merge-base --is-ancestor "$CURRENT" "$TARGET" \
+    || die "$TARGET_REF is NOT ahead of the deployed commit — this would not be a fast-forward. Use icb-rollback.sh to go backwards."
 fi
-git -C "$PLANREPO" merge-base --is-ancestor "$CURRENT" "$TARGET" \
-  || die "$TARGET_REF is NOT ahead of the deployed commit — this would not be a fast-forward. Use icb-rollback.sh to go backwards."
 
 # ── 2. work out what this deploy actually needs ──────────────────────────────
+if [ "$RESUME" -eq 1 ]; then
+  step "2. plan — RESUME"
+  warn "prod's code is ALREADY at ${TARGET:0:8}, but no completed deploy is on record for it."
+  warn "A previous run most likely died after the fast-forward, which leaves prod serving"
+  warn "the new templates and static assets against workers still on the OLD Python."
+  say ""
+  say "  Re-running every step that leaves no trace. All three are idempotent:"
+  say "    alembic upgrade head   — a no-op when the schema is already at head"
+  say "    npm run build          — repeatable"
+  say "    systemctl restart      — repeatable"
+  NEED_MIGRATE=1; NEED_BUILD=1; NEED_RESTART=1
+  n_deps=0; n_env=0
+  say ""
+  say "  DB migration     YES (upgrade head)"
+  say "  SPA rebuild      YES"
+  say "  Service restart  YES"
+  if [ "$DRY_RUN" -eq 1 ]; then say ""; ok "dry run — nothing changed."; exit 0; fi
+else
 step "2. plan"
 CHANGED=$(git -C "$PLANREPO" diff --name-only "$CURRENT".."$TARGET")
 NEW_MIGRATIONS=$(git -C "$PLANREPO" diff --name-only --diff-filter=A "$CURRENT".."$TARGET" -- 'backend/alembic/versions/*' || true)
@@ -157,6 +200,7 @@ fi
 [ "$n_env"  -gt 0 ] && warn ".env.example changed — prod .env is Marnus-owned: APPEND missing keys only, never overwrite"
 
 if [ "$DRY_RUN" -eq 1 ]; then say ""; ok "dry run — nothing changed."; exit 0; fi
+fi
 
 if [ "$ASSUME_YES" -eq 0 ]; then
   say ""
@@ -253,6 +297,11 @@ CODE=$(curl -k -s -o /dev/null -w '%{http_code}' "$HEALTH_URL" || true)
 say "  $HEALTH_URL -> $CODE"
 [ "$CODE" = "200" ] || die "health check returned $CODE"
 ok "healthy"
+
+# Only NOW is the deploy complete. Recording it here — after every step has been
+# verified, not after the fast-forward — is what lets a re-run tell a finished
+# deploy from one that died partway and needs resuming.
+_record_deploy "$TARGET"
 
 # ── done ─────────────────────────────────────────────────────────────────────
 say ""

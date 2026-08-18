@@ -138,7 +138,7 @@ async def api_schedule_repair(record_id: int, request: Request, db: Session = De
     """Store the planner-selected Phase Entry Points for a Repair quote.
     Body: {"phases": [{"phase": "VACUUM", "bay_id": "VAC-2", "estimated_hours": 6}, ...]}
     """
-    _require_user(request, db)
+    user = _require_user(request, db)
     rec = _record_or_404(record_id, db)
     if not rec.is_repair:
         raise HTTPException(
@@ -159,14 +159,29 @@ async def api_schedule_repair(record_id: int, request: Request, db: Session = De
             "bay_id":          str(p.get("bay_id", "")),
             "estimated_hours": float(p.get("estimated_hours", 0) or 0),
         })
-    rec.repair_phases_json = json.dumps(cleaned)
-    db.commit()
-    db.refresh(rec)
+    # v1.49 — this used to be `rec.repair_phases_json = ...; db.commit()` and
+    # nothing else, which is why a scheduled repair never appeared on the Planning
+    # board: the board's unscheduled pool selects jobs with status 'planning', and
+    # nothing here ever moved one. Scheduling now performs the transition, in the
+    # service layer where every other lifecycle move lives.
+    from app.services import production_jobs as pj
+    try:
+        job, calc, _cust, _vin = pj.schedule_repair(db, rec.id, cleaned, user)
+    except pj.RepairHasNoJobError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except pj.NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     return {
         "ok": True,
-        "id": rec.id,
-        "quote_number": rec.quote_number,
+        "id": calc.id,
+        "quote_number": calc.quote_number,
         "repair_phases": cleaned,
+        # What actually changed, so the client can tell scheduling worked rather
+        # than inferring it from a bare ok:true.
+        "status": calc.status,
+        "job_id": job.id,
+        "job_number": job.job_number,
+        "job_status": job.status,
     }
 
 

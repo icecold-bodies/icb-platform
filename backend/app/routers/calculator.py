@@ -1488,7 +1488,14 @@ async def api_list_calculations(
         # status to the labels the MES React mockup uses on its Costings Dashboard.
         # A Repair quote reads as "Repair" once it has been accepted; until then it
         # follows the normal status flow with an additional Repair badge in the UI.
-        if bool(getattr(r, "is_repair", False)) and raw_status in ("accepted", "pre_job_sent", "pre_job_confirmed", "planning"):
+        #
+        # v1.49 — 'planning' is NO LONGER swallowed by that override. The Planning
+        # board drops any costing whose status is not exactly 'Planning'
+        # (PlanningBoard.tsx), so while a scheduled repair reported "Repair" it
+        # could never appear there however correct the rest of the chain was. The
+        # Repair badge is driven by quote_type, not by this field, so nothing
+        # loses its badge — a scheduled repair simply now reads as what it is.
+        if bool(getattr(r, "is_repair", False)) and raw_status in ("accepted", "pre_job_sent", "pre_job_confirmed"):
             mes_status = "Repair"
         else:
             mes_status = {

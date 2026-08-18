@@ -230,3 +230,122 @@ def test_the_terms_and_acceptance_pages_come_from_the_editable_config():
     joined2 = "\n".join(_page_texts(render_repair_quote_pdf(ctx2)))
     assert "NINETY (90) days" in joined2, "an edited term did not reach the document"
     assert "thirty (30) days" not in joined2
+
+
+# ── the download endpoint ────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def app_mod():
+    import app.main as m
+    from starlette.testclient import TestClient
+    with TestClient(m.app) as _c:
+        yield m
+
+
+@pytest.fixture(scope="module")
+def client(app_mod):
+    from starlette.testclient import TestClient
+    with TestClient(app_mod.app) as c:
+        yield c
+
+
+@pytest.fixture(scope="module")
+def admin_headers(app_mod):
+    import uuid
+    from app.database import SessionLocal, User, UserSession
+    sid = f"qd-{uuid.uuid4().hex[:12]}"
+    csrf = f"csrf-{sid}"
+    with SessionLocal() as db:
+        u = db.query(User).filter_by(username="admin").first()
+        db.merge(UserSession(id=sid, user_id=u.id, role=u.role, expires_at=None,
+                             csrf_token=csrf))
+        db.commit()
+    return {"Cookie": f"session_id={sid}", "X-CSRF-Token": csrf}
+
+
+@pytest.fixture()
+def saved_repair(app_mod):
+    """A saved REPAIRS costing, shaped as the surface saves one."""
+    import json
+    from app.database import SessionLocal, CalculationRecord, Customer
+    with SessionLocal() as db:
+        cust = Customer(name="QD Sample Customer", is_active=True,
+                        telephone="011 000 0000", email="qd@example.co.za",
+                        vat_number="477 026 7526")
+        db.add(cust)
+        db.flush()
+        result = {
+            "items": [{"material": "Remove nose cone and scrap.", "quantity": 1.0,
+                       "unit_price": 280.0, "line_cost": 280.0, "total_only": True,
+                       "free_hand": True}],
+            "grand_total": 280.0, "selling_price": 280.0,
+            "discount_amount": 0.0, "net_total": 280.0,
+            "repair_type": "Front panel replacement",
+            "repair_document_number": "R-000777",
+            "input_state": {"is_repair": True, "repair_type": "Front panel replacement",
+                            "repair_scope": "Strip and refit the front panel.",
+                            "vehicle_registration": "LT 15 FB GP",
+                            "delivery_address": "83 Heidelberg Road\nCity Deep",
+                            "icb_contact_name": "Suzette Cocklin",
+                            "icb_contact_phone": "+27 82 563 4864",
+                            "payment_terms": "COD",
+                            "repair_document_number": "R-000777"},
+        }
+        rec = CalculationRecord(trailer_type_id=None, customer_id=cust.id,
+                                is_repair=True, quote_number="A1/08/2026",
+                                dimensions_json="{}", result_json=json.dumps(result))
+        db.add(rec)
+        db.commit()
+        ids = (rec.id, cust.id)
+    yield ids
+    with SessionLocal() as db:
+        db.query(CalculationRecord).filter_by(id=ids[0]).delete()
+        db.query(Customer).filter_by(id=ids[1]).delete()
+        db.commit()
+
+
+def test_the_repair_quote_downloads_as_a_pdf_named_by_document_number(
+        client, admin_headers, saved_repair):
+    rec_id, _ = saved_repair
+    r = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf", headers=admin_headers)
+    assert r.status_code == 200, r.text[:300]
+    assert r.headers["content-type"].startswith("application/pdf")
+    assert "R-000777.pdf" in r.headers.get("content-disposition", "")
+    assert r.content[:4] == b"%PDF"
+
+    texts = _page_texts(r.content)
+    joined = "\n".join(texts)
+    # The header block carries the customer, its VAT number and the D8 fields.
+    assert "QD Sample Customer" in joined
+    assert "477 026 7526" in joined
+    assert "LT 15 FB GP" in joined, "the vehicle registration must print"
+    assert "Suzette Cocklin" in joined, "Your Contact must print"
+    assert "R-000777" in joined, "the document number must print"
+    assert "Remove nose cone and scrap." in joined, "the repair line must print"
+
+
+def test_a_body_costing_is_refused_rather_than_rendered_blank(
+        client, admin_headers, app_mod):
+    """A body costing has no repair lines, no repair type and no vehicle — an
+    official-looking document full of blanks is worse than a clear refusal."""
+    from app.database import SessionLocal, CalculationRecord
+    with SessionLocal() as db:
+        rec = CalculationRecord(trailer_type_id=None, is_repair=False,
+                                dimensions_json="{}", result_json="{}")
+        db.add(rec)
+        db.commit()
+        rid = rec.id
+    try:
+        r = client.get(f"/api/calculations/{rid}/repair-quote.pdf", headers=admin_headers)
+        assert r.status_code == 409, r.text[:200]
+        assert "only for repair costings" in r.json()["detail"]
+    finally:
+        with SessionLocal() as db:
+            db.query(CalculationRecord).filter_by(id=rid).delete()
+            db.commit()
+
+
+def test_the_document_endpoint_requires_a_session(client, saved_repair):
+    rec_id, _ = saved_repair
+    r = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf")
+    assert r.status_code == 401

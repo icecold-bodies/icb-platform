@@ -87,6 +87,7 @@ from .routers import import_excel as _r_import_excel
 from .routers import performance as _r_performance
 from .routers import pdf_templates as _r_pdf_templates
 from .routers import exports as _r_exports
+from .routers import quote_document as _r_quote_document  # v1.47 Lane D
 from .routers import bom_snapshots as _r_bom_snapshots
 # WO v1.45 — Nadie's "Validated references". Unrelated to bom_snapshots above
 # (that one is the admin, template-level feature); no shared names or routes.
@@ -181,6 +182,7 @@ app.include_router(_r_import_excel.router)
 app.include_router(_r_performance.router)
 app.include_router(_r_pdf_templates.router)
 app.include_router(_r_exports.router)
+app.include_router(_r_quote_document.router)
 app.include_router(_r_bom_snapshots.router)
 app.include_router(_r_validated_references.router)  # WO v1.45 — validated references
 app.include_router(_r_help.router)

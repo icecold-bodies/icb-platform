@@ -103,6 +103,44 @@
                         oninput="onRepairMetaInput()"
                         style="resize:vertical;font-size:12px;line-height:1.5"></textarea>
             </div>
+
+            <!-- v1.47 Lane D (addendum D8) — the fields the ICB quotation
+                 document prints in its header. All per-quote: the same customer's
+                 next repair is a different vehicle, and the customer record holds
+                 no address at all (per-quote capture was ratified over adding a
+                 column). Optional here — a repair still prices and saves without
+                 them; they simply print blank on the document. -->
+            <div style="border-top:1px solid var(--border);margin:10px 0 0;padding-top:8px">
+              <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
+                color:var(--text-dim);margin-bottom:6px">Quotation document (optional)</div>
+              <div class="form-group stacked">
+                <label class="form-label" for="f-repair-vehicle">Vehicle registration</label>
+                <input class="form-control" type="text" id="f-repair-vehicle" maxlength="40"
+                       placeholder="e.g. LT 15 FB GP" oninput="onRepairMetaInput()"/>
+              </div>
+              <div class="form-group stacked">
+                <label class="form-label" for="f-repair-delivery">Delivery address</label>
+                <textarea class="form-control" id="f-repair-delivery" rows="3" maxlength="500"
+                          placeholder="Where the vehicle is to be delivered"
+                          oninput="onRepairMetaInput()"
+                          style="resize:vertical;font-size:12px;line-height:1.5"></textarea>
+              </div>
+              <div class="form-group stacked">
+                <label class="form-label" for="f-repair-contact">Your contact (ICB)</label>
+                <input class="form-control" type="text" id="f-repair-contact" maxlength="120"
+                       oninput="onRepairMetaInput()"/>
+              </div>
+              <div class="form-group stacked">
+                <label class="form-label" for="f-repair-contact-tel">Contact telephone</label>
+                <input class="form-control" type="text" id="f-repair-contact-tel" maxlength="60"
+                       placeholder="e.g. +27 82 000 0000" oninput="onRepairMetaInput()"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-repair-terms">Payment terms</label>
+                <input class="form-control" type="text" id="f-repair-terms" maxlength="60"
+                       value="COD" oninput="onRepairMetaInput()"/>
+              </div>
+            </div>
           </div>
 
           <!-- v1.45 Validated references (Nadie) — a PAIRED dropdown directly
@@ -1428,9 +1466,11 @@ const hasFullCostAccess = {{ 'true' if user.can_view_full_cost else 'false' }};
 const isAdmin           = {{ 'true' if user.is_admin else 'false' }};
 const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') else 'false' }};
 const CURRENT_USER_ID   = {{ user.id }};
+// v1.47 Lane D — defaults "Your Contact" on the repair surface (D8).
+const CURRENT_USER_NAME = {{ user.username | tojson }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=3"></script>
-<script defer src="/static/js/calculator.js?v=159"></script>
+<script defer src="/static/js/calculator.js?v=161"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

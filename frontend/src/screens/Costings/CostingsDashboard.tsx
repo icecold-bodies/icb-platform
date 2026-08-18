@@ -32,15 +32,13 @@ import { BottleneckIndicator } from './BottleneckIndicator'
 import { zarShort, dmy, lengthSuffix } from '../../lib/format'
 import { Spinner } from '../../components/ui/feedback'
 
-// WO v4.31 §3.3 (§0.6/§0.13) — ONE component, two embed contexts: full-page on /costings (default),
-// and `embedded` (compressed chrome: smaller title, no New-Costing self-link, distinct root testid).
+// The costings dashboard — full-page on /costings, which is now the ONLY place it renders.
 //
-// ⚠ `embedded` has NO caller as of 18 Aug. Its only consumer was the compressed dashboard below
-// the calculator on /costings/new, removed at Michael's request (it duplicated /costings and
-// ambushed anyone scrolling inside an unfinished costing). Left in place rather than ripped out:
-// it is inert while unused, and removing it would churn five branches of the page that now SOLELY
-// owns the costings list. Delete it if no second embed context appears.
-export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) {
+// It used to take an `embedded` prop (WO v4.31 §3.3 / §0.13) for a compressed copy below the
+// calculator on /costings/new: smaller title, no New-Costing self-link, its own root testid.
+// That embed was removed on 18 Aug (Michael) — it duplicated this page and ambushed anyone
+// scrolling inside an unfinished costing — so the prop and its five branches went with it.
+export function CostingsDashboard() {
   const nav = useNavigate()
   const { mode, costings, statusCounts, acceptStage, refresh, scheduleRepairPhases, acceptCosting, declineCosting } = useCostings()
   const { profile, hasPermission } = useAppData()
@@ -116,11 +114,11 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
   // (template choice + section edits + signer selection can't be batched). Single-card only.
 
   return (
-    <div className="p-4" data-testid={embedded ? 'costings-dashboard-embedded' : 'costings-dashboard'}>
+    <div className="p-4" data-testid="costings-dashboard">
       {/* Header */}
-      <div className={`${embedded ? 'mb-3' : 'mb-4'} flex flex-wrap items-center justify-between gap-2`}>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <Tooltip k="costings_dashboard.header_title">
-          <h1 className={`flex items-center gap-2 font-bold text-body ${embedded ? 'text-base' : 'text-xl'}`}>
+          <h1 className="flex items-center gap-2 text-xl font-bold text-body">
             Costings
             <ModePill mode={mode} />
           </h1>
@@ -146,7 +144,7 @@ export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) 
               </button>
             </div>
           )}
-          {canCreate && !embedded && (   /* on /costings/new the link would self-navigate — omit */
+          {canCreate && (
             <Tooltip k="costings_dashboard.create_new_costing_button">
               <Link
                 to="/costings/new"

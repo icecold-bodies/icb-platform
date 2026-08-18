@@ -42,7 +42,9 @@ def _assert_both_contexts(page: Page, prefix: str) -> None:
     expect(page.locator("iframe[title='Calculator (live costing app)']")).to_be_visible(timeout=T)
     page.mouse.wheel(0, 20_000)
     page.wait_for_timeout(300)
-    expect(page.get_by_test_id("costings-dashboard-embedded")).to_have_count(0)
+    # Both testids DO exist — on /costings, asserted in context 1 above — so their absence
+    # here is a real check. (The old `costings-dashboard-embedded` id is deliberately NOT
+    # asserted: the prop that produced it is gone, so the assertion could never fail.)
     expect(page.get_by_test_id("costings-dashboard")).to_have_count(0)
     expect(page.get_by_test_id("costings-table")).to_have_count(0)
     shot(page, f"{prefix}-costings-new-calculator-only", journey=JOURNEY)

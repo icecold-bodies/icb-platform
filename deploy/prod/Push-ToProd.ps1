@@ -5,7 +5,7 @@
 .DESCRIPTION
     Ships the deploy script from THIS repo over ssh and runs it on the VM with a
     TTY attached, so sudo can prompt for your password. Because the script is
-    sent every run, you are always running the version in your working copy —
+    sent every run, you are always running the version in your working copy -
     prod does not need to have pulled it first.
 
     Nothing is decided here: all the logic (does this need a migration, a
@@ -18,7 +18,7 @@
 
 .EXAMPLE
     .\Push-ToProd.ps1 v1.48.1 -DryRun
-    Print the plan — commits, migration/build/restart decisions — and stop.
+    Print the plan - commits, migration/build/restart decisions - and stop.
 
 .EXAMPLE
     .\Push-ToProd.ps1 v1.48.1
@@ -54,6 +54,13 @@ param(
     [string]$Target = 'icb-mes-prod'
 )
 
+# ASCII ONLY IN THIS FILE. Windows PowerShell 5.1 - which is what `powershell` runs,
+# and what the operator's default console is - reads a UTF-8 file WITHOUT a BOM as
+# ANSI. A multi-byte character then mangles mid-string and the parser dies with
+# "The string is missing the terminator", pointing at a line that looks fine. A tick
+# in one Write-Host was enough to make this whole script unrunnable in the shell it
+# was written for, while passing every test under pwsh 7. Keep it to ASCII; the .sh
+# files it ships are read by bash on Linux and are not subject to this.
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
@@ -77,12 +84,12 @@ function Send-AndRun {
     $b64  = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($text))
     $remote = "/tmp/$([IO.Path]::GetFileNameWithoutExtension($LocalScript))-$(Get-Random).sh"
 
-    Write-Host "→ sending $LocalScript to ${Target}:$remote" -ForegroundColor DarkGray
+    Write-Host "-> sending $LocalScript to ${Target}:$remote" -ForegroundColor DarkGray
     & ssh $Target "printf '%s' '$b64' | base64 -d > $remote && chmod +x $remote"
     if ($LASTEXITCODE -ne 0) { throw "could not copy the script to $Target (exit $LASTEXITCODE)" }
 
     $cmd = (@($remote) + $ScriptArgs) -join ' '
-    Write-Host "→ $Target : $cmd`n" -ForegroundColor DarkGray
+    Write-Host "-> $Target : $cmd`n" -ForegroundColor DarkGray
 
     # -t forces a TTY so sudo can prompt. mickeyger's sudo is password-required,
     # which is why this cannot run unattended.
@@ -110,7 +117,7 @@ switch ($PSCmdlet.ParameterSetName) {
     }
 
     'Deploy' {
-        # Check the tag is actually on origin before involving the VM — prod
+        # Check the tag is actually on origin before involving the VM - prod
         # fetches from origin, so a tag that only exists locally would fail
         # there with a much less obvious message.
         Push-Location (Split-Path -Parent (Split-Path -Parent $here))
@@ -121,7 +128,7 @@ switch ($PSCmdlet.ParameterSetName) {
             }
             if ($onOrigin) {
                 # rev-parse prints the ref name back on failure instead of a SHA,
-                # so trust the exit code, not stdout — otherwise an unfetched tag
+                # so trust the exit code, not stdout - otherwise an unfetched tag
                 # is silently compared as if it were a commit id. And truncate by
                 # length, since Substring(0,8) throws on anything shorter.
                 $local = (& git rev-parse "$Tag^{commit}" 2>$null)
@@ -129,11 +136,11 @@ switch ($PSCmdlet.ParameterSetName) {
                 $remoteSha = ($onOrigin -split '\s+')[0]
                 $short = { param($s) if ($s -and $s.Length -ge 8) { $s.Substring(0, 8) } else { $s } }
                 if (-not $local) {
-                    Write-Host "! $Tag is on origin but not in this clone — run: git fetch origin --tags" -ForegroundColor Yellow
+                    Write-Host "! $Tag is on origin but not in this clone - run: git fetch origin --tags" -ForegroundColor Yellow
                 } elseif ($local -ne $remoteSha) {
-                    throw "tag $Tag differs between local ($(& $short $local)) and origin ($(& $short $remoteSha)) — resolve before deploying"
+                    throw "tag $Tag differs between local ($(& $short $local)) and origin ($(& $short $remoteSha)) - resolve before deploying"
                 } else {
-                    Write-Host "✓ $Tag is on origin" -ForegroundColor Green
+                    Write-Host "OK: $Tag is on origin" -ForegroundColor Green
                 }
             }
         } finally { Pop-Location }

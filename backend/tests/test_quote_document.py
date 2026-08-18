@@ -278,6 +278,14 @@ def saved_repair(app_mod):
             "items": [{"material": "Remove nose cone and scrap.", "quantity": 1.0,
                        "unit_price": 280.0, "line_cost": 280.0, "total_only": True,
                        "free_hand": True}],
+            # v1.48 — the display-only keys results.html reads. The document
+            # itself needs none of them, but a test that renders the results
+            # page does, and a repair's real result_json carries them.
+            "category_totals": {"REPAIR LINES": 280.0},
+            "category_multipliers": {}, "materials_total": 280.0,
+            "cost_per_sqm": 0.0, "geometry": {}, "chassis": None,
+            "profit_amount": 0.0, "profit_margin": 0.0,
+            "ratio_value": 1.0, "ratio_label": "100%", "ratio_amount": 0.0,
             "grand_total": 280.0, "selling_price": 280.0,
             "discount_amount": 0.0, "net_total": 280.0,
             "repair_type": "Front panel replacement",
@@ -390,3 +398,129 @@ def test_the_config_api_is_admin_only(client, saved_repair):
     assert r.status_code in (401, 403)
     r2 = client.put("/api/quote-document-config", json={"vat_rate_pct": "0"})
     assert r2.status_code in (401, 403)
+
+
+# ── v1.48: who may download it, and where the button appears ─────────────────
+
+def test_a_non_admin_quoting_user_can_download_the_quotation():
+    """The gate is quote.generate — the same one the body Generate Quote uses.
+
+    Negative control for a real defect: through v1.47 the gate string was
+    "exports.pdf", which matches no catalogue row, so `user_can` could only ever
+    return True via the admin short-circuit. Every test of this endpoint ran as
+    admin, so nothing caught it — Nadie on the 'full' role would have been
+    refused her own customer's quotation.
+    """
+    from app.database import PERMISSION_CATALOGUE
+    from app.routers.quote_document import _GATE
+
+    keys = {row[0] for row in PERMISSION_CATALOGUE}
+    assert _GATE in keys, (
+        f"the download gate {_GATE!r} is not a permission key — it can never be "
+        f"granted, so only admins could ever download")
+
+    roles = next(row[3] for row in PERMISSION_CATALOGUE if row[0] == _GATE)
+    assert "full" in roles and "user" in roles, (
+        "a quoting user must be able to download the quote they just made")
+
+
+def test_the_document_predicate_is_the_pair_not_the_repair_flag_alone():
+    """Calculator 2's repair tick keeps a body — that costing has no quotation."""
+    from app.services.quote_document import has_repair_quote_document
+
+    class _Rec:
+        def __init__(self, is_repair, trailer_type_id):
+            self.is_repair, self.trailer_type_id = is_repair, trailer_type_id
+
+    assert has_repair_quote_document(_Rec(True, None)) is True, "REPAIRS mode"
+    assert has_repair_quote_document(_Rec(True, 7)) is False, \
+        "Calculator 2 repair tick on a real body — the document would be blanks"
+    assert has_repair_quote_document(_Rec(False, 7)) is False, "ordinary body"
+    assert has_repair_quote_document(_Rec(False, None)) is False
+
+
+def test_the_endpoint_and_the_buttons_share_one_predicate():
+    """The button must never appear where the endpoint refuses.
+
+    Both surfaces (results.html's Generate Quote, the React detail page's
+    has_repair_quote) are fed from has_repair_quote_document, so a change to
+    who gets the document moves them together.
+    """
+    import inspect
+    from app.routers import quote_document, calculator
+
+    src = inspect.getsource(quote_document.repair_quote_pdf)
+    assert "has_repair_quote_document" in src, \
+        "the endpoint must ask the shared predicate, not re-derive the rule"
+    assert "is_repair" not in src.replace("has_repair_quote_document", ""), \
+        "no second copy of the rule in the endpoint"
+
+    list_src = inspect.getsource(calculator.api_list_calculations)
+    assert '"has_repair_quote": has_repair_quote_document(r)' in list_src, \
+        "the React detail button reads this field off the list row"
+
+
+def test_the_repair_results_page_offers_the_quotation_not_a_dead_button(
+        client, admin_headers, saved_repair):
+    """The reported symptom: Generate Quote greyed out on a repair.
+
+    resolve_report_template needs a trailer type and a REPAIRS costing has none,
+    so before v1.48 this page fell to the disabled branch.
+    """
+    rec_id, _ = saved_repair
+    r = client.get(f"/results/{rec_id}", headers=admin_headers)
+    assert r.status_code == 200, r.text[:200]
+    html = r.text
+
+    assert f"/api/calculations/{rec_id}/repair-quote.pdf" in html, \
+        "Generate Quote must point at the repair quotation"
+    assert "No PDF quote template has been configured" not in html, \
+        "the disabled branch must not be what a repair gets"
+
+
+def test_a_body_costing_keeps_its_own_generate_quote(client, admin_headers, app_mod):
+    """Negative control: the repair branch must not capture body costings."""
+    import json
+    from app.database import SessionLocal, CalculationRecord, TrailerType
+    made_tt = None
+    with SessionLocal() as db:
+        tt = db.query(TrailerType).first()
+        if tt is None:            # a bare test DB has no body templates seeded
+            tt = TrailerType(name="QD Control Body", is_active=True)
+            db.add(tt)
+            db.flush()
+            made_tt = tt.id
+        rec = CalculationRecord(
+            trailer_type_id=tt.id, is_repair=False, dimensions_json="{}",
+            result_json=json.dumps({
+                "items": [], "category_totals": {}, "category_multipliers": {},
+                "materials_total": 0.0, "cost_per_sqm": 0.0, "geometry": {},
+                "chassis": None, "profit_amount": 0.0, "profit_margin": 0.0,
+                "ratio_value": 1.0, "ratio_label": "100%", "ratio_amount": 0.0,
+                "grand_total": 0.0, "selling_price": 0.0,
+            }))
+        db.add(rec)
+        db.commit()
+        rid = rec.id
+    try:
+        r = client.get(f"/results/{rid}", headers=admin_headers)
+        assert r.status_code == 200, r.text[:200]
+        assert "repair-quote.pdf" not in r.text, \
+            "a body costing must not be offered the repair quotation"
+    finally:
+        with SessionLocal() as db:
+            db.query(CalculationRecord).filter_by(id=rid).delete()
+            if made_tt:
+                db.query(TrailerType).filter_by(id=made_tt).delete()
+            db.commit()
+
+
+def test_the_list_row_carries_the_flag_for_the_react_button(
+        client, admin_headers, saved_repair):
+    rec_id, _ = saved_repair
+    r = client.get("/api/calculations?limit=200", headers=admin_headers)
+    assert r.status_code == 200, r.text[:200]
+    row = next((x for x in r.json() if x["id"] == rec_id), None)
+    assert row is not None, "the saved repair must be in the list"
+    assert row["has_repair_quote"] is True
+    assert row["is_repair"] is True

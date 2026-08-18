@@ -99,6 +99,7 @@ export interface Costing {
   body_length?: number | null      // v1.44 R6 — entered length (m) for "({length} m)" displays
   body_category: string
   quote_type: 'New Build' | 'Repair'
+  has_repair_quote?: boolean       // v1.48 — server says this repair has a letterhead quotation
   requires_chassis: boolean
   chassis_supplied_by?: 'customer' | 'in-house'
   extras_count: number
@@ -349,6 +350,11 @@ export interface LiveCalculation {
   status: string
   mes_status: StatusName | string
   is_repair: boolean
+  // v1.48 — the server's answer to "does this costing have a repair quotation?".
+  // Deliberately NOT derived from is_repair on this side: Calculator 2's repair
+  // tick sets that flag on a costing that still has a body, and the download
+  // would 409. Optional so a mockup-seeded row simply reads as false.
+  has_repair_quote?: boolean
   // v1.47 Lane C — the repair surface's own fields, served off the costing's
   // result_json / input_state snapshot (NOT repair_phases_json, which the
   // scheduler owns). Optional: before v1.47 nothing created a repair, so rows
@@ -392,6 +398,7 @@ export function liveToCosting(r: LiveCalculation): Costing {
     body_length: r.body_length ?? null,
     body_category: '',
     quote_type: r.is_repair ? 'Repair' : 'New Build',
+    has_repair_quote: !!r.has_repair_quote,
     // v1.47 — carry the repair's scope through so the Repair scope block and the
     // RepairPhasePanel's Scope line have something to show on a LIVE repair. The
     // mapper dropped it before v1.47, when nothing could create one.

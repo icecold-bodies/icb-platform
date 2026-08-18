@@ -19,7 +19,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ..database import CalculationRecord, get_db
 from ..deps import get_current_user, require_admin, user_can
-from ..services.quote_document import build_repair_quote_context
+from ..services.quote_document import (build_repair_quote_context,
+                                       has_repair_quote_document)
 from ..services.quote_document_config import (apply_edits, editable_view,
                                               get_config, save_config)
 from ..services.quote_document_pdf import render_repair_quote_pdf
@@ -27,8 +28,15 @@ from ..templates_config import templates
 
 router = APIRouter()
 
-# The same gate the PDF export uses — this IS a PDF of a costing.
-_GATE = "exports.pdf"
+# v1.48 — this is the CUSTOMER quote, so it rides the same gate as the body
+# Generate Quote button ("Generate customer quote PDF for a costing", granted to
+# admin/full/user). It is not `export.pdf`, which covers the internal cost
+# breakdown and is deliberately narrower (admin/full only).
+#
+# It was written "exports.pdf" through v1.47 — a key that is in no catalogue
+# row, so `user_can` could only ever match it for admins, who short-circuit
+# every gate. Nobody noticed because every test of this endpoint ran as admin.
+_GATE = "quote.generate"
 
 
 def _require_pdf_user(request: Request, db: Session):
@@ -55,7 +63,7 @@ async def repair_quote_pdf(record_id: int, request: Request,
     rec = db.query(CalculationRecord).filter_by(id=record_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Costing not found")
-    if not (bool(getattr(rec, "is_repair", False)) and rec.trailer_type_id is None):
+    if not has_repair_quote_document(rec):
         raise HTTPException(
             status_code=409,
             detail="The repair quotation document is only for repair costings.")

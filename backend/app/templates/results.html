@@ -50,7 +50,12 @@
   <button class="btn btn-success btn-sm no-print" id="excel-export-btn" onclick="openExportModal()">⬇ Export</button>
   {% endif %}
   {% if user_can(user, 'quote.generate') %}
-    {% if report_template %}
+    {# v1.48 — a REPAIRS costing has no body and so no ReportTemplate; its quote
+       is the ICB-letterhead repair quotation, on its own R-series number. Checked
+       BEFORE report_template so the repair never falls to the disabled branch. #}
+    {% if repair_quote %}
+    <a href="/api/calculations/{{ record.id }}/repair-quote.pdf" target="_blank" class="btn btn-primary btn-sm no-print" onclick="onExport(this,'Generating Quote…')" title="Generate the repair quotation on the ICB letterhead">📑 Generate Quote</a>
+    {% elif report_template %}
     <a href="/results/{{ record.id }}/report" target="_blank" class="btn btn-primary btn-sm no-print" onclick="onExport(this,'Generating Quote…')" title="Generate {{ report_template.name }}">📑 Generate Quote</a>
     {% else %}
     <button class="btn btn-primary btn-sm no-print" disabled

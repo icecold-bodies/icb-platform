@@ -24,6 +24,7 @@ import {
   Package,
   Star,
   Building2,
+  FileText,
 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { apiGet, apiPost } from '../../lib/api'
@@ -236,6 +237,26 @@ export function CostingDetail() {
               className="flex items-center gap-1 rounded-md bg-[#7E22CE] px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
             >
               <Wrench size={14} /> Schedule into MES
+            </button>
+          )}
+          {/* v1.48 — the customer-facing repair quotation on the ICB letterhead.
+              Gated on the server's has_repair_quote, not on quote_type: a
+              Calculator 2 repair tick also reads as 'Repair' here but has a
+              body, and the download endpoint refuses it with 409. */}
+          {c.has_repair_quote && c.calculation_id && (
+            <button
+              data-testid="repair-quote-btn"
+              onClick={() =>
+                window.open(
+                  `/api/calculations/${c.calculation_id}/repair-quote.pdf`,
+                  '_blank',
+                  'noopener',
+                )
+              }
+              title="The customer-facing quotation on the ICB letterhead"
+              className="flex items-center gap-1 rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-body hover:bg-surface-alt"
+            >
+              <FileText size={14} /> Repair quotation (PDF)
             </button>
           )}
           <button

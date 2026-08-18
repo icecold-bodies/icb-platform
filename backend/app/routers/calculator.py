@@ -706,7 +706,8 @@ def _append_free_hand_lines(bom_items: list, body: dict,
     return lines
 
 
-def _calculate_repair(body: dict, db: Session) -> tuple[dict, dict, list[dict]]:
+def _calculate_repair(body: dict, db: Session, *,
+                      require_type: bool = False) -> tuple[dict, dict, list[dict]]:
     """Compute a REPAIRS costing — the v1.47 repair surface, which has no body
     behind it (no dimensions, no body options, no insulation, no BOM).
 
@@ -717,7 +718,10 @@ def _calculate_repair(body: dict, db: Session) -> tuple[dict, dict, list[dict]]:
 
     Returns (result, repair_fields, normalised_lines).
     """
-    fields = free_hand.repair_fields(body)
+    # require_type=False by default: a repair must PRICE as soon as it has a
+    # line, so the header rail and the summary move while the user is still
+    # filling the form. The type is enforced at save (api_approve passes True).
+    fields = free_hand.repair_fields(body, require_type=require_type)
     lines = free_hand.parse_lines(body.get("repair_lines"), allow_stock=True, db=db)
     if not lines:
         raise HTTPException(status_code=422,
@@ -980,7 +984,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     # (is_repair=True) so /schedule-repair, RepairPhasePanel and the purple
     # Repair pill all work untouched.
     if free_hand.is_repair_mode(body):
-        result, repair_meta, repair_lines = _calculate_repair(body, db)
+        result, repair_meta, repair_lines = _calculate_repair(body, db, require_type=True)
         result["input_state"] = {
             "is_repair":     True,
             "repair_type":   repair_meta["repair_type"],

@@ -540,3 +540,50 @@ def test_deselect_all_leaves_the_section_selectable(page: Page, laneC_body) -> N
     _wait_for_total(page, baseline + 120.0)
     rows = page.locator("tr.opt-sec-row:not(.fh-row)")
     expect(rows.nth(1).locator("input.opt-row-tick")).to_be_checked()
+
+
+# ── (e) Michael 18 Aug — a repair must price before it has a type ────────────
+
+def test_a_repair_prices_as_soon_as_it_has_a_line(page: Page, laneC_body) -> None:
+    """Reported: adding a free-hand repair line left every total on R0,00.
+
+    The type of repair gated the CALCULATE as well as the save, so the header
+    rail and the price summary stayed empty until the type happened to be typed
+    — the surface looked broken. Pricing is a preview; the type is a commitment
+    made at save time, and only the Approve button waits for it.
+    """
+    base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
+    admin_session(page, base=base)
+    page.goto("/mes/calculator")
+    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    page.select_option("#trailer-select", "repair")
+    expect(page.locator("#repair-add-freehand")).to_be_visible(timeout=T)
+
+    # TYPE OF REPAIR deliberately left empty, exactly as reported.
+    # The ratio is pinned EXPLICITLY rather than cleared: the page restores a
+    # saved ratio after load, so "select None then assert" races that restore —
+    # and the ratio is incidental to what this test proves.
+    page.fill("#f-margin", "10")
+    page.select_option("#f-ratio", "0.55")
+    expect(page.locator("#f-ratio")).to_have_value("0.55", timeout=T)
+    page.click("#repair-add-freehand")
+    expect(page.locator("#modal-free-hand")).not_to_have_class(re.compile(r"hidden"), timeout=T)
+    page.fill("#fh-description", "rubber seal")
+    page.fill("#fh-qty", "1")
+    page.fill("#fh-unit-price", "123.23")
+    page.click("#fh-save-btn")
+
+    # 123.23 materials + 10% margin = 135.55, / 0.55 ratio = 246.45. The rail and
+    # the summary must agree on it — they disagreed until the repair calculate
+    # started sending the ratio to the server (rail said "RATIO R 0,00" beside a
+    # summary reading "Ratio (55%) + R 110,90").
+    _wait_for_total(page, 246.45)
+    expect(page.locator("#bom-area")).to_contain_text("110,90", timeout=T)
+    expect(page.locator("#bom-area")).to_contain_text("123,23", timeout=T)
+    expect(page.locator("#summary-area")).to_contain_text("Materials Cost", timeout=T)
+    assert page.input_value("#f-repair-type") == "", "the type must still be empty"
+
+    # Priced, but NOT saveable — the type is what unlocks Approve.
+    expect(page.locator("#approve-btn")).to_be_disabled()
+    page.fill("#f-repair-type", "Side panel replacement")
+    expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)

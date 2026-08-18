@@ -8567,6 +8567,10 @@ function _repairToggleBodyInputs(showBody) {
 
 function onRepairMetaInput() {
   if (!repairMode) return;
+  // Filling in the type is what unlocks Approve on an already-priced repair.
+  if (lastResult && lastResult.is_repair) {
+    _setDisabled('approve-btn', !_repairMetaValid());
+  }
   const typeEl = document.getElementById('f-repair-type');
   const type = String(typeEl ? typeEl.value : '').trim();
   const err  = document.getElementById('err-repair-type');
@@ -8587,7 +8591,12 @@ function _repairMetaValid() {
 async function runRepairCalc() {
   if (!repairMode) return;
   const included = repairLines.filter(function (l) { return !l.excluded; });
-  if (!_repairMetaValid() || !included.length) {
+  // v1.47 (Michael, 18 Aug) — price as soon as there is a LINE. The type of
+  // repair used to gate this too, so adding a line left MATERIALS / MARGIN /
+  // RATIO / TOTAL on R0,00 and the summary on its empty-state text until the
+  // type happened to be typed: the surface looked broken. The type gates the
+  // SAVE (below, and server-side in api_approve), not the price.
+  if (!included.length) {
     _setDisabled('approve-btn', true);
     return;
   }
@@ -8599,6 +8608,17 @@ async function runRepairCalc() {
     repair_scope:    String(scopeEl ? scopeEl.value : '').trim() || null,
     repair_lines:    repairLines.map(_fhWireLine),
     profit_margin:   +document.getElementById('f-margin').value || 0,
+    // v1.47 — the RATIO and the DISCOUNT must go to the server with the calc.
+    // Without them the server returned ratio_amount 0 while renderSummary
+    // computed the ratio client-side, so the repair rail printed "÷ RATIO
+    // R 0,00" next to a summary reading "Ratio (55%) + R 110,90" — the same
+    // repair, two different totals on one screen. The server is the single
+    // source of truth for this money (it is the same margin/ratio/discount
+    // functions a body costing uses), so it has to be told.
+    ratio_value:     _repairRatio().value,
+    ratio_label:     _repairRatio().label,
+    discount_kind:   discountKind,
+    discount_input:  discountKind ? discountInput : null,
     dimensions:      {},
   };
   const status = document.getElementById('calc-status');
@@ -8609,7 +8629,9 @@ async function runRepairCalc() {
     lastResult = result;
     renderSummary(result);
     renderRepairSurface();
-    _setDisabled('approve-btn', false);
+    // Priced, but only SAVEABLE once the repair has a type — the inline
+    // "Type of repair is required" error under the field says why.
+    _setDisabled('approve-btn', !_repairMetaValid());
     status.textContent = '';
   } catch (e) {
     status.textContent = '';
@@ -8618,6 +8640,15 @@ async function runRepairCalc() {
     console.error('repair calculate failed', e);
     toast('Calculation failed: ' + (e && e.message ? e.message : e), 'error');
   }
+}
+
+// The ratio currently selected, in the shape /api/calculate expects.
+function _repairRatio() {
+  const el = document.getElementById('f-ratio');
+  const raw = parseFloat(el ? el.value : '');
+  if (isNaN(raw) || raw <= 0) return { value: null, label: null };
+  return { value: raw, label: (el.selectedOptions && el.selectedOptions[0]
+                               ? el.selectedOptions[0].text : null) || null };
 }
 
 // The wire shape the server validates. A stock line sends only what the server

@@ -143,35 +143,12 @@
   </div>
 </div>
 
-<!-- Dimensions + Geometry -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-  <div class="card">
-    <div class="card-header"><span class="card-title">Input Dimensions</span></div>
-    <div class="card-body">
-      <div class="geo-grid">
-        <div class="geo-item"><div class="geo-label">Length</div><div class="geo-value">{{ dims.get('length', 0) }} m</div></div>
-        <div class="geo-item"><div class="geo-label">Width</div><div class="geo-value">{{ dims.get('width', 0) }} m</div></div>
-        <div class="geo-item"><div class="geo-label">Height</div><div class="geo-value">{{ dims.get('height', 0) }} m</div></div>
-        <div class="geo-item"><div class="geo-label">Num Axles</div><div class="geo-value">{{ dims.get('num_axles', 0)|int }}</div></div>
-        <div class="geo-item"><div class="geo-label">Num Doors</div><div class="geo-value">{{ dims.get('num_doors', 0)|int }}</div></div>
-        <div class="geo-item"><div class="geo-label">Insulation</div><div class="geo-value">{{ dims.get('insulation_thickness', 0) }} m</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-header"><span class="card-title">Computed Geometry</span></div>
-    <div class="card-body">
-      <div class="geo-grid">
-        {% for k, v in result.geometry.items() %}
-        <div class="geo-item">
-          <div class="geo-label">{{ k.replace('_',' ').title() }}</div>
-          <div class="geo-value">{{ '{:.3f}'.format(v) }}</div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-</div>
+{# v1.47 (Michael, 18 Aug) — the "Input Dimensions" and "Computed Geometry"
+   cards are REMOVED: ICB never used either. Same call as #140, which dropped
+   the surface-area tiles from the cost summary for the same reason. They also
+   read as nonsense on a REPAIR quote, which has no body and so printed a grid
+   of zeros. result.geometry is still computed and still drives the formulas —
+   this only stops displaying it. #}
 
 <!-- Category Summary -->
 {# Build the set of optional-section names once, drives red highlighting both

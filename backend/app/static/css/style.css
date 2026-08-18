@@ -199,6 +199,26 @@ body {
   background: rgba(31,58,95,.5);
   border-top-color: rgba(56,139,253,.3);
 }
+/* Cost Summary — the CUSTOMER / ATTENTION / END USER captions (Michael, 18 Aug).
+   They were the same dim grey as ordinary helper text, so the three pickers read as
+   one undifferentiated block. Bold + the panel's own accent makes each field findable
+   at a glance. --blue-hi is redefined by EVERY theme (dark, compact, light, MES), so
+   this follows the skin instead of pinning a hex that would break in one of them. */
+.cust-panel-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--blue-hi);
+  margin-bottom: 3px;
+}
+/* "(optional)" stays quiet — the emphasis belongs on the field name. */
+.cust-panel-label__note {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--text-dim);
+}
 .panel-header {
   padding: 12px 16px;
   background: var(--bg-panel);

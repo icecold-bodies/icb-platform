@@ -29,6 +29,26 @@ LABEL_TOTAL_INCL_VAT        = "Total Amount:\n(Including V.A.T)"
 LABEL_CARRY_OVER            = "Carry Over:"
 
 
+# ── who gets this document ───────────────────────────────────────────────────
+
+def has_repair_quote_document(rec) -> bool:
+    """True when this costing is a REPAIRS-mode costing, and so has a quotation.
+
+    v1.48 — the single source of truth for that question. The download endpoint
+    refuses anything else with 409, and the surfaces that offer a download
+    button ask this too: a button that appears where the endpoint refuses is a
+    broken link that ends in an official-looking error.
+
+    Note this is NOT `is_repair` alone. Calculator 2's repair tick sets
+    is_repair on a costing that still has a real body (trailer_type_id), and
+    such a costing has no repair lines, no type of repair and no vehicle
+    registration — the document would render as a page of blanks. REPAIRS mode
+    is the pair: the repair flag AND no body.
+    """
+    return (bool(getattr(rec, "is_repair", False))
+            and getattr(rec, "trailer_type_id", None) is None)
+
+
 # ── money ────────────────────────────────────────────────────────────────────
 
 def money(value: float) -> str:

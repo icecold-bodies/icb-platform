@@ -23,6 +23,7 @@ from ..services import (
     get_section_snapshot, get_formula_lib, get_global_vars,
 )
 from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
+from ..services.quote_document import has_repair_quote_document  # v1.48
 from ..templates_config import templates
 from ..quote_numbering import (assign_quote_number, allocate_series_number,
                                SERIES_REPAIR_DOC)
@@ -1403,6 +1404,12 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
         "outdated_prices":   outdated_prices,
         "result_version":    result_version,
         "report_template":   report_template,
+        # v1.48 — a REPAIRS costing has no trailer type, so resolve_report_template
+        # finds nothing and Generate Quote sat greyed out behind "no PDF quote
+        # template has been configured for this body type". It DOES have a quote
+        # document, just not a ReportTemplate one, so the button points at the
+        # R-series quotation instead of being disabled.
+        "repair_quote": has_repair_quote_document(rec),
     })
 
 
@@ -1496,6 +1503,12 @@ async def api_list_calculations(
             "mes_status": mes_status,
             "decline_reason": getattr(r, "decline_reason", None),
             "is_repair":  bool(getattr(r, "is_repair", False)),
+            # v1.48 — does this costing have an ICB-letterhead repair quotation?
+            # NOT the same question as is_repair: Calculator 2's repair tick sets
+            # that flag on a costing that still has a body, and the document
+            # would be a page of blanks. The React detail page offers its
+            # download button on this, so it matches the endpoint exactly.
+            "has_repair_quote": has_repair_quote_document(r),
             # v1.47 — the repair surface's own fields. These live on the costing's
             # result_json / input_state snapshot, NOT in repair_phases_json, which
             # is owned by /schedule-repair and holds the phase-entry LIST.

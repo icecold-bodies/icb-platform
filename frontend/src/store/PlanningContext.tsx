@@ -98,6 +98,7 @@ interface PlanningValue {
   // WO v4.34.2 — explicit job-centric revert (modal path) with an optional reason. Routes through the
   // SAME guarded backend chokepoint as drag-to-pool unschedule; pessimistic (await → refetch).
   revertToUnscheduled: (jobId: number, reason?: string) => Promise<void>
+  rejectJob: (jobId: number, reason: string) => Promise<void>
   // WO v4.29 — window navigation. startWeek=null => rolling current week; an ISO date jumps the
   // 12-week window to that week (server Monday-normalises it).
   startWeek: string | null
@@ -226,6 +227,23 @@ export function PlanningProvider({ children }: { children: ReactNode }) {
     [mode, refetch, toast],
   )
 
+  // v1.49 — reject: the job leaves the board and its costing reads as Rejected.
+  // Distinct from revertToUnscheduled above, which is slot-only and keeps the job
+  // as work still intended. The reason is REQUIRED (the server 409s without one).
+  const rejectJob = useCallback(
+    async (jobId: number, reason: string) => {
+      if (mode !== 'live') return
+      try {
+        await apiPost(`/api/production-jobs/${jobId}/reject`, { reason: reason.trim() })
+        await refetch()
+      } catch (e) {
+        handleApiError(e, toast.push)   // 409 (safety rule / missing reason) → toast
+        throw e
+      }
+    },
+    [mode, refetch, toast],
+  )
+
   // ── window navigation (WO v4.29) ──────────────────────────────────────────────
   const applyStart = useCallback((iso: string | null) => {
     startWeekRef.current = iso
@@ -243,9 +261,9 @@ export function PlanningProvider({ children }: { children: ReactNode }) {
   const prevWindow = useCallback(() => stepWindow(-1), [stepWindow])
 
   const value = useMemo<PlanningValue>(
-    () => ({ mode, lastUpdated, board, refresh: refetch, schedule, move, unschedule, revertToUnscheduled,
+    () => ({ mode, lastUpdated, board, refresh: refetch, schedule, move, unschedule, revertToUnscheduled, rejectJob,
              startWeek, jumpTo, today, nextWindow, prevWindow }),
-    [mode, lastUpdated, board, refetch, schedule, move, unschedule, revertToUnscheduled,
+    [mode, lastUpdated, board, refetch, schedule, move, unschedule, revertToUnscheduled, rejectJob,
      startWeek, jumpTo, today, nextWindow, prevWindow],
   )
 

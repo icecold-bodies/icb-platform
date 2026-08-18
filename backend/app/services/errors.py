@@ -24,5 +24,14 @@ class RevertNotAllowedError(ServiceError):
     """Scheduled → unscheduled revert blocked by a state safety rule (-> 409). WO v4.34.2 §0.3."""
 
 
+class RejectNotAllowedError(ServiceError):
+    """A job has progressed too far to be rejected, or no reason was given (-> 409).
+
+    v1.49 — sibling of RevertNotAllowedError. Revert takes a job off the grid but
+    keeps it as work ICB intends to do; reject says the work is not happening and
+    marks its costing declined.
+    """
+
+
 __all__ = ["ServiceError", "NotFoundError", "InvalidStateError",
            "ChassisEtaError", "CellOccupiedError", "RevertNotAllowedError"]

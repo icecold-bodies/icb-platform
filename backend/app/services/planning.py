@@ -23,7 +23,8 @@ from app.schemas.planning import (
     CapacityCell, PlanningBoard, PlanningJobRef, PlanningSlotItem, SlotStageProgress, WeekRef,
 )
 from app.services.errors import (
-    CellOccupiedError, ChassisEtaError, NotFoundError, RevertNotAllowedError,
+    CellOccupiedError, ChassisEtaError, NotFoundError, RejectNotAllowedError,
+    RevertNotAllowedError,
 )
 
 # WO v4.34.2 §0.3 — the extensible whitelist of job lifecycle statuses a scheduled job may be reverted
@@ -585,6 +586,82 @@ def unschedule(db: Session, *, slot_id: int, user=None, reason: Optional[str] = 
     db.delete(slot)                    # DELETE the assignment row only (chassis + sign-offs preserved)
     db.commit()
     return {"unscheduled_slot_id": slot_id, "production_job_id": jid}
+
+
+def reject_job(db: Session, *, production_job_id: int, user=None,
+               reason: Optional[str] = None) -> dict:
+    """v1.49 — the planner drops a job entirely: it leaves the board and its
+    costing reads as Rejected.
+
+    Distinct from revert_to_unscheduled, which is slot-only — that moves a job
+    from the GRID back to the POOL and it is still work ICB intends to do. This
+    says the work is not happening.
+
+    It is also the sanctioned way OUT of a scheduled repair. A costing with a
+    production job cannot be soft-deleted (routers/calculator.costing_delete_blockers)
+    precisely so that nobody can delete work off the floor by right-clicking a
+    list. Rejecting is the reviewed path: reject here, and the costing becomes
+    deletable because a rejected job no longer counts as scheduled.
+
+    The job row is MARKED, never deleted. Deleting it would cascade away
+    production_jobs_audit — including the very audit row written below — and null
+    out floor_events.production_job_id. The board needs no help to forget it: the
+    unscheduled pool selects status == 'planning', so a rejected job simply stops
+    matching.
+
+    Safety rules are NOT re-implemented here. A job on the grid is routed through
+    the same guarded `unschedule` chokepoint the drag and the revert modal use, so
+    a job that has started in the workshop, has a QC check, or is committed to a
+    bay refuses identically. A job sitting in the pool has no slot and so has not
+    started; it is checked directly against the same job-status whitelist.
+    """
+    job = db.get(ProductionJob, production_job_id)
+    if job is None:
+        raise NotFoundError(f"production job {production_job_id} not found")
+    clean_reason = (reason or "").strip()[:500]
+    if not clean_reason:
+        # Declining a costing has always required a reason; dropping planned work
+        # is no less consequential, and the reason is what the costing shows.
+        raise RejectNotAllowedError("A reason is required to reject a job")
+
+    slot = db.execute(
+        select(PlanningSlot).where(PlanningSlot.production_job_id == production_job_id)
+    ).scalars().first()
+    if slot is not None:
+        # Routes through the guarded chokepoint: §0.3 safety rules + the audit row,
+        # then the slot goes. It commits, which is fine — the job/costing changes
+        # below are a second, independent step and are safe to apply after.
+        unschedule(db, slot_id=slot.id, user=user, reason=clean_reason)
+        job = db.get(ProductionJob, production_job_id)
+    elif job.status not in REVERTIBLE_JOB_STATUSES:
+        raise RejectNotAllowedError(
+            f"job {job.id} is '{job.status}' — only a job still in planning can be rejected")
+
+    previous = job.status
+    db.add(ProductionJobAudit(
+        production_job_id=job.id, action="reject",
+        previous_status=previous, new_status="rejected",
+        user_id=getattr(user, "id", None), user_name=getattr(user, "username", None),
+        reason=clean_reason))
+    job.status = "rejected"
+
+    calc = (db.get(CalculationRecord, job.calculation_record_id)
+            if job.calculation_record_id else None)
+    if calc is not None and calc.status != "declined":
+        # 'declined' is what the costings board already renders as "Rejected"
+        # (the mes_status map), so the planner's word reaches the costing in the
+        # vocabulary the rest of the app already uses — no new status value.
+        calc.status = "declined"
+        calc.decline_reason = clean_reason
+    db.commit()
+    return {
+        "production_job_id": job.id,
+        "job_status": job.status,
+        "previous_status": previous,
+        "calculation_id": getattr(calc, "id", None),
+        "calculation_status": getattr(calc, "status", None),
+        "reason": clean_reason,
+    }
 
 
 def revert_to_unscheduled(db: Session, *, production_job_id: int, user=None,

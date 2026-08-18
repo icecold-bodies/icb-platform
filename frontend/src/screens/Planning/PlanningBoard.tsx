@@ -771,7 +771,7 @@ function BoardSkeleton() {
 // legacy ack pool + chassis tick are NOT here (dead in live per §0.5; 2C-3). ────
 function LivePlanningBoard() {
   const nav = useNavigate()
-  const { board, schedule, move, unschedule, revertToUnscheduled, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
+  const { board, schedule, move, unschedule, revertToUnscheduled, rejectJob, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
   useRefetchOnFocus(refresh)        // WO v4.35 §3.3b — cross-page sync: the board refetches on tab focus
   // WO — same-page sync: the bay-model lanes (BayModelLanes, below) dispatch icb:planning-refetch after a
   // bay mutation (panels arrive/clear, mark body attached, move to QA) that changes whether a job belongs on
@@ -1166,6 +1166,17 @@ function LivePlanningBoard() {
                 setOpenSlot(null)            // success → close; pool now shows it at top (§0.8)
               } catch { /* 409/422 surfaced by the context toast */ }
             }}
+            // v1.49 — reject: the job leaves the board entirely and its costing
+            // reads as Rejected. Same permission as revert (planning.unschedule);
+            // the §0.3 safety rules are server-enforced through the same chokepoint.
+            onReject={async (reason) => {
+              const jid = openSlot.job?.id
+              if (jid == null) return
+              try {
+                await rejectJob(jid, reason)
+                setOpenSlot(null)            // success → close; the job is off the board
+              } catch { /* 409 surfaced by the context toast */ }
+            }}
             onViewProduction={() => {
               // WO v4.32 §3.5 — D7 re-enabled: carry the job into the wired dashboard.
               const jn = openSlot.job?.job_number
@@ -1228,6 +1239,7 @@ function LiveSlotDetail({
   canRevert,
   onMarkReceived,
   onRevert,
+  onReject,
   onViewProduction,
 }: {
   slot: PlanningSlot
@@ -1235,6 +1247,7 @@ function LiveSlotDetail({
   canRevert: boolean
   onMarkReceived: () => void | Promise<void>
   onRevert: (reason: string) => void | Promise<void>
+  onReject: (reason: string) => void | Promise<void>
   onViewProduction: () => void
 }) {
   const job = slot.job!
@@ -1253,6 +1266,15 @@ function LiveSlotDetail({
   async function doRevert() {
     setRevertBusy(true)
     try { await onRevert(revertReason) } finally { setRevertBusy(false) }
+  }
+  // v1.49 — Reject. Two-step on purpose: this is not a re-plan, it declines the
+  // costing too, so the reason is mandatory and the button only arms once typed.
+  const [rejectReason, setRejectReason] = useState('')
+  const [rejectArmed, setRejectArmed] = useState(false)
+  const [rejectBusy, setRejectBusy] = useState(false)
+  async function doReject() {
+    setRejectBusy(true)
+    try { await onReject(rejectReason) } finally { setRejectBusy(false); setRejectArmed(false) }
   }
   return (
     <div className="space-y-3 text-sm">
@@ -1324,6 +1346,62 @@ function LiveSlotDetail({
           >
             {revertBusy ? <Spinner size={14} /> : <span aria-hidden>↩</span>} Move back to Unscheduled
           </button>
+        </div>
+      )}
+
+      {/* v1.49 — Reject. The sanctioned way out of scheduled work, and the only one:
+          a costing with a live production job cannot be deleted from the costings
+          board, deliberately. Sits below Re-plan because it is that action's
+          stronger sibling — revert keeps the job as work ICB still intends to do,
+          this says the work is not happening. */}
+      {canRevert && (
+        <div className="space-y-2 rounded-md border border-status-red/40 p-3" data-testid="reject-section">
+          <div className="text-xs font-semibold uppercase text-status-red">Reject</div>
+          <p className="text-[11px] text-muted">
+            Drops this job from the board and marks its costing <strong>Rejected</strong>.
+            The costing can then be deleted. Nothing on the floor is erased.
+          </p>
+          <textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value.slice(0, 500))}
+            maxLength={500}
+            rows={2}
+            placeholder="Why is this job not happening? (required)"
+            data-testid="reject-reason"
+            className="w-full rounded-md border border-line bg-surface p-2 text-sm"
+          />
+          {!rejectArmed ? (
+            <button
+              onClick={() => setRejectArmed(true)}
+              disabled={!rejectReason.trim()}
+              data-testid="reject-job"
+              title={rejectReason.trim()
+                ? 'Reject this job — its costing becomes Rejected'
+                : 'A reason is required before a job can be rejected'}
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-status-red py-2 font-semibold text-status-red hover:bg-status-red/10 disabled:opacity-50"
+            >
+              <span aria-hidden>✕</span> Reject job
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setRejectArmed(false)}
+                disabled={rejectBusy}
+                data-testid="reject-cancel"
+                className="flex-1 rounded-md border border-line py-2 text-sm font-semibold text-body hover:bg-surface-alt"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={doReject}
+                disabled={rejectBusy}
+                data-testid="reject-confirm"
+                className="flex flex-1 items-center justify-center gap-2 rounded-md bg-status-red py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+              >
+                {rejectBusy ? <Spinner size={14} /> : null} Confirm reject
+              </button>
+            </div>
+          )}
         </div>
       )}
 

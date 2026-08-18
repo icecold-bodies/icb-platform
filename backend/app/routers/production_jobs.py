@@ -80,6 +80,31 @@ def revert_to_unscheduled(job_id: int, body: RevertRequest, db: Session = Depend
         raise HTTPException(status_code=409, detail=str(e))
 
 
+@router.post("/{job_id}/reject")
+def reject_job(job_id: int, body: RevertRequest, db: Session = Depends(get_db),
+               user: User = Depends(require_permission("planning.unschedule"))):
+    """v1.49 — the planner drops a job entirely. It leaves the board and its
+    costing reads as Rejected.
+
+    Distinct from revert-to-unscheduled above, which is slot-only: that returns a
+    job to the pool as work still intended. This says the work is not happening.
+
+    It is also the sanctioned way out of a scheduled repair, which cannot be
+    deleted from the costings board by design — reject here and the costing
+    becomes deletable, because a rejected job no longer counts as scheduled.
+
+    Gated on planning.unschedule (planner/admin): the person who may take work off
+    the plan is the person who may decide it is not happening.
+    """
+    try:
+        return planning_svc.reject_job(
+            db, production_job_id=job_id, user=user, reason=body.reason)
+    except planning_svc.NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except (planning_svc.RejectNotAllowedError, planning_svc.RevertNotAllowedError) as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+
 # WO v4.32 §0.4 — the two dashboard aggregations. Both are literal paths and MUST be declared
 # BEFORE the /{job_id} catch-all below (FastAPI matches in declaration order; after it they
 # would 422 as failed int-parses of "in-progress"/"kpis").

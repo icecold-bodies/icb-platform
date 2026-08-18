@@ -207,7 +207,7 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
   renderSlotDrawer?: RenderSlotDrawer
 }) {
   const nav = useNavigate()
-  const { board, schedule, move, unschedule, revertToUnscheduled, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
+  const { board, schedule, move, unschedule, revertToUnscheduled, rejectJob, lastUpdated, refresh, jumpTo, today, nextWindow, prevWindow } = usePlanning()
   useRefetchOnFocus(refresh)
   const { profile, hasPermission } = useAppData()
   const { costings, ackPlanning, markChassisReceived } = useCostings()
@@ -809,6 +809,20 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
                       setSelectedSlotId(null)
                     } catch { /* surfaced by the context toast */ }
                   }}
+                  // v1.49 — reject: the job leaves the board entirely and its costing
+                  // reads as Rejected. Same permission and the same merge lock as revert.
+                  onReject={async (reason) => {
+                    const jid = selectedLiveSlot.job?.id
+                    if (jid == null) return
+                    if (lockedJobIds && lockedJobIds.has(jid)) {
+                      toast.push({ kind: 'warn', message: `Job ${selectedLiveSlot.job?.job_number} is merged with its chassis — it can't be rejected.` })
+                      return
+                    }
+                    try {
+                      await rejectJob(jid, reason)
+                      setSelectedSlotId(null)
+                    } catch { /* surfaced by the context toast */ }
+                  }}
                   onViewProduction={() => {
                     const jn = selectedLiveSlot.job?.job_number
                     nav(jn ? `/production?jobId=${encodeURIComponent(jn)}` : '/production')
@@ -853,6 +867,20 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
               }
               try {
                 await revertToUnscheduled(jid, reason)
+                setSelectedSlotId(null)
+              } catch { /* surfaced by the context toast */ }
+            }}
+            // v1.49 — reject: the job leaves the board entirely and its costing
+            // reads as Rejected. Same permission and the same merge lock as revert.
+            onReject={async (reason) => {
+              const jid = selectedLiveSlot.job?.id
+              if (jid == null) return
+              if (lockedJobIds && lockedJobIds.has(jid)) {
+                toast.push({ kind: 'warn', message: `Job ${selectedLiveSlot.job?.job_number} is merged with its chassis — it can't be rejected.` })
+                return
+              }
+              try {
+                await rejectJob(jid, reason)
                 setSelectedSlotId(null)
               } catch { /* surfaced by the context toast */ }
             }}

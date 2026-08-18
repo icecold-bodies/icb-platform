@@ -5451,6 +5451,9 @@ window.toggleOptionalSectionCalc1 = function (cb) {
   let ids = [];
   try { ids = JSON.parse(decodeURIComponent(cb.dataset.bomIds || '[]')); } catch (_) { ids = []; }
   window.OptionalSections.toggleSection(tid, 'c1', sectionId, ids, !cb.checked);
+  // The master tick leaves EVERY item deselected (v1.47, Michael) — free-hand
+  // lines included, or the section would come on with them silently costed.
+  _fhSetSectionSelection(sectionId, true);
   // v1.43 — enabling a section that carries a side-doors item offers rear-door removal.
   if (window.OptionalSections.loadEnabled(tid).has(+sectionId)) _maybeOfferRearDoorRemoval(ids);
   _rerenderBOMLocal();
@@ -5483,6 +5486,9 @@ window.bulkOptionalRowsCalc1 = function (ev, sectionId, idsAttr, selectAll) {
   let ids = [];
   try { ids = JSON.parse(decodeURIComponent(idsAttr || '[]')); } catch (_) { ids = []; }
   window.OptionalSections.bulkRows(+tidVal, 'c1', sectionId, ids, !!selectAll);
+  // Free-hand lines live in the section too, so a bulk action has to reach them —
+  // they carry their own excluded flag rather than a bom_id in the exclusion set.
+  _fhSetSectionSelection(sectionId, !selectAll);
   if (selectAll) _maybeOfferRearDoorRemoval(ids);   // v1.43 — bulk include
   _rerenderBOMLocal();
   if (typeof scheduleCalc === 'function') scheduleCalc();
@@ -5645,20 +5651,30 @@ function renderBOMWithCosts(items, bomRef) {
     const _optBomIds   = its.map(x => x.bom_id).filter(id => id != null);
     const _optIdsAttr  = encodeURIComponent(JSON.stringify(_optBomIds));
     const _hdrColor    = _secOptional ? 'var(--red,#e35d6a)' : 'var(--blue-hi)';
-    const _hdrTitle    = _secOptional ? 'Non Standard items — tick to include in costing' : 'Click to collapse / expand';
+    const _hdrTitle    = _secOptional
+      ? 'Non Standard items — switch the section on, then tick the items you want'
+      : 'Click to collapse / expand';
     // Section toggle for optional sections — same native red checkbox
     // as SRD/DRD (calc2-cat-tick style). Checked (red filled X) means
     // EXCLUDED, unchecked (empty box) means included.
+    // v1.47 (Michael, 18 Aug) — the master tick shows the SECTION's on/off state,
+    // not "are all rows excluded". Those used to be the same thing, because
+    // switching a section on also selected every row. Now that switching it on
+    // leaves the rows deselected, deriving the tick from the rows would make it
+    // spring straight back to checked the moment it was clicked — the section
+    // would be on, with the control still showing it off.
+    //   checked  = section OFF (nothing in this section can be costed)
+    //   indeterminate = section ON with some, but not all, rows selected
     const _optExcludedCount = _optBomIds.filter(id => !_secEnabled || _optRowExcl.has(+id)).length;
-    const _optAll = _optBomIds.length > 0 && _optExcludedCount === _optBomIds.length;
-    const _optSome = _optExcludedCount > 0 && !_optAll;
+    const _optAll = !_secEnabled;
+    const _optSome = _secEnabled && _optExcludedCount > 0;
     const _optToggle   = _secOptional
       ? ` <input type="checkbox" class="opt-sec-tick" data-section-id="${_secId}" data-bom-ids="${_optIdsAttr}"
             ${_optAll ? 'checked' : ''}
             ${_optSome ? 'data-indeterminate="1"' : ''}
             onclick="event.stopPropagation()"
             onchange="toggleOptionalSectionCalc1(this)"
-            title="${_optAll ? 'Untick to include every item in this section' : 'Tick to exclude every item in this section'}"
+            title="${_optAll ? 'Untick to switch this section on — then tick the items you want' : 'Tick to switch this section off'}"
             style="cursor:pointer;width:14px;height:14px;vertical-align:middle;margin-right:6px;accent-color:var(--red)">`
       : '';
     // One pill-style bulk toggle — it flips between "Select all" and
@@ -8217,16 +8233,6 @@ function _fhFocus(id) {
 function _fhLines() { return repairMode ? repairLines : freeHandLines; }
 function _fhFind(key) { return _fhLines().find(function (l) { return l.key === key; }) || null; }
 
-// Is this OPTIONAL section currently opted into? Read-only — the opt-in set stays
-// the user's to change from the section heading.
-function _fhSectionEnabled(sectionId) {
-  if (sectionId == null) return true;
-  const tidEl = document.getElementById('trailer-select');
-  const tid = tidEl ? +tidEl.value : NaN;
-  if (!window.OptionalSections || !isFinite(tid)) return true;
-  return window.OptionalSections.loadEnabled(tid).has(+sectionId);
-}
-
 // ── Entry dialog ───────────────────────────────────────────────────────────
 
 function openFreeHandLine(sectionId, sectionName) {
@@ -8234,15 +8240,13 @@ function openFreeHandLine(sectionId, sectionName) {
                  sectionName: sectionName || 'OPTIONAL EXTRAS' };
   _fhEditKey = null;
   _fhFillDialog(null);
-  let note = 'Adds a manual line to ' + _fhTarget.sectionName + '. It is saved on this costing '
-           + 'only — nothing is added to the material list.';
-  // An OPTIONAL section is OFF until the user ticks it, and a line inside a section
-  // that is off does not count. Say so here rather than letting the new line appear
-  // struck-through with no explanation — the section's own flag logic is untouched.
-  if (!_fhSectionEnabled(_fhTarget.sectionId)) {
-    note += '  NOTE: this section is not included in the costing yet — tick the section '
-          + 'heading to make its lines count.';
-  }
+  // v1.47 (Michael, 18 Aug) — the old note here told the user to go and tick the
+  // section heading first, because a line in a switched-off section did not
+  // count. Adding a line now switches the section on for that line alone, so
+  // the instruction is gone along with the problem.
+  const note = 'Adds a manual line to ' + _fhTarget.sectionName
+             + '. It is included in this costing on its own — the other items in '
+             + 'the section are not touched — and nothing is added to the material list.';
   document.getElementById('fh-target-note').textContent = note;
   document.getElementById('fh-modal-title').textContent = '+ Free-hand line';
   document.getElementById('fh-save-btn').textContent = 'Add line';
@@ -8350,6 +8354,13 @@ function submitFreeHandLine() {
     });
   }
   closeModal('modal-free-hand');
+  // A line the user just typed is INCLUDED: they entered a description and a
+  // price in order to cost it. If its section was switched off, this turns the
+  // section on for this line alone (every other row seeded excluded), so the
+  // total moves by exactly the line that was added — which is the whole point
+  // of the free-hand feature and what Michael's report asked for.
+  const _added = _fhEditKey ? _fhFind(_fhEditKey) : _fhLines()[_fhLines().length - 1];
+  if (_added && !_added.excluded) _fhEnableSectionForLine(_added);
   _fhEditKey = null;
   _fhAfterChange();
 }
@@ -8368,7 +8379,45 @@ function toggleFreeHandLine(key, excluded) {
   const line = _fhFind(key);
   if (!line) return;
   line.excluded = !!excluded;
+  if (!excluded) _fhEnableSectionForLine(line);
   _fhAfterChange();
+}
+
+// Set the excluded flag on every free-hand line in one section — the free-hand
+// counterpart of OptionalSections.bulkRows, which only knows about bom_ids.
+function _fhSetSectionSelection(sectionId, excluded) {
+  if (sectionId == null) return;
+  const sid = +sectionId;
+  freeHandLines.forEach(function (l) {
+    if (+l.bom_section_id === sid) l.excluded = !!excluded;
+  });
+}
+
+// Including a free-hand line in a switched-OFF optional section switches that
+// section on for this line ALONE: every BOM row in it is seeded as excluded
+// first, so the total moves by the free-hand line and nothing else. This is the
+// same seeding OptionalSections.toggleRow already does when a BOM row is ticked
+// inside a disabled section — a free-hand line has no bom_id, so it needs its
+// own copy of that step rather than being able to reuse it.
+//
+// A section that is ALREADY on is left completely alone: the user's existing
+// row selections must survive adding a line.
+function _fhEnableSectionForLine(line) {
+  if (!line || line.bom_section_id == null) return;
+  const tidEl = document.getElementById('trailer-select');
+  const tid = tidEl ? +tidEl.value : NaN;
+  if (!window.OptionalSections || !isFinite(tid)) return;
+  const sid = +line.bom_section_id;
+  const enabled = window.OptionalSections.loadEnabled(tid);
+  if (enabled.has(sid)) return;                     // already on — change nothing
+  const ids = ((lastResult && lastResult.items) || [])
+    .filter(function (it) { return +it.bom_section_id === sid && it.bom_id != null; })
+    .map(function (it) { return +it.bom_id; });
+  const excl = window.OptionalSections.loadRowExcl(tid, 'c1');
+  ids.forEach(function (id) { excl.add(id); });
+  enabled.add(sid);
+  window.OptionalSections.saveEnabled(tid, enabled);
+  window.OptionalSections.saveRowExcl(tid, 'c1', excl);
 }
 
 // Any line change re-costs through the normal path, so the total, the summary
@@ -8712,8 +8761,13 @@ function _fhBomRow(it, gid, collapsed, secEnabled) {
   const out  = !!it.excluded;
   const dim  = out ? 'text-decoration:line-through;opacity:.5;' : '';
   const money = function (v) { return hasFullCostAccess ? fmt(v || 0) : '••••'; };
+  // v1.47 (Michael, 18 Aug) — NEVER disabled on a switched-off section. A
+  // disabled tick was the dead end in his report: the line he had just typed
+  // showed struck through with no way to select it, so the only route in was
+  // "Select all" (~300 items) followed by untickng the other 299. Ticking it
+  // now switches the section on for this line alone (see toggleFreeHandLine).
   const tick = line
-    ? '<input type="checkbox" ' + (out ? 'checked' : '') + ' ' + (secEnabled ? '' : 'disabled')
+    ? '<input type="checkbox" ' + (out ? 'checked' : '')
       + ' onclick="event.stopPropagation()"'
       + ' onchange="toggleFreeHandLine(\'' + line.key + '\', this.checked)"'
       + ' title="' + (out ? 'Untick to include this item' : 'Tick to exclude this item') + '"'

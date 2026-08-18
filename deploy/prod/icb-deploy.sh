@@ -76,19 +76,40 @@ else
 fi
 
 step "1. fetch"
-# Fetching writes into an icb-owned .git, so it needs sudo — and mickeyger's
-# sudo is password-required. Ask for the password ONCE here, with a message
-# saying why, rather than letting a bare prompt appear mid-script and look like
-# a hang. The credential is then cached for the rest of the run.
-if ! git -C "$REPO" cat-file -e "${TARGET_REF}^{commit}" 2>/dev/null; then
+# PLANREPO is whichever repo has the objects needed to work out the plan. It is
+# the prod repo in the normal case, and a scratch clone during a --dry-run that
+# would otherwise have to fetch.
+PLANREPO="$REPO"
+if git -C "$REPO" cat-file -e "${TARGET_REF}^{commit}" 2>/dev/null; then
+  ok "$TARGET_REF already present — no fetch needed"
+elif [ "$DRY_RUN" -eq 1 ]; then
+  # A dry run changes nothing, so it must not demand a password. Fetching into
+  # the prod repo would (it is icb-owned), so clone into /tmp instead — which
+  # mickeyger CAN write — using the prod repo as a --reference so only the new
+  # objects come over the wire. Read-only as far as $REPO is concerned.
+  say "  $TARGET_REF is not in prod's object store yet."
+  say "  dry run: resolving it in a scratch clone instead of fetching (no sudo)."
+  SCRATCH=$(mktemp -d /tmp/icb-plan-XXXXXX)
+  trap 'rm -rf "$SCRATCH"' EXIT
+  REMOTE_URL=$(git -C "$REPO" config --get remote.origin.url)
+  if git clone -q --bare --reference "$REPO" "$REMOTE_URL" "$SCRATCH/r" 2>/dev/null \
+     || git clone -q --bare "$REMOTE_URL" "$SCRATCH/r" 2>/dev/null; then
+    PLANREPO="$SCRATCH/r"
+    ok "scratch clone ready (nothing in $REPO was touched)"
+  else
+    die "could not reach $REMOTE_URL to resolve $TARGET_REF for the dry run"
+  fi
+else
+  # Fetching writes into an icb-owned .git, so it needs sudo — and mickeyger's
+  # sudo is password-required. Ask for the password ONCE here, with a message
+  # saying why, rather than letting a bare prompt appear mid-script and look
+  # like a hang. The credential is then cached for the rest of the run.
   say "  $TARGET_REF is not in prod's object store yet — fetching (needs sudo)."
   say "  ${BLD}sudo will ask for your password now.${RST}"
   sudo -v || die "sudo declined — nothing has changed"
   sudo -u icb git -C "$REPO" fetch origin --tags --quiet
-else
-  ok "$TARGET_REF already present — no fetch needed"
 fi
-TARGET=$(git -C "$REPO" rev-parse "${TARGET_REF}^{commit}" 2>/dev/null) \
+TARGET=$(git -C "$PLANREPO" rev-parse "${TARGET_REF}^{commit}" 2>/dev/null) \
   || die "ref '$TARGET_REF' not found even after fetch"
 ok "$TARGET_REF = ${TARGET:0:8}"
 
@@ -96,14 +117,14 @@ if [ "$CURRENT" = "$TARGET" ]; then
   say ""; ok "already at ${TARGET:0:8} — nothing to deploy."
   exit 0
 fi
-git -C "$REPO" merge-base --is-ancestor "$CURRENT" "$TARGET" \
+git -C "$PLANREPO" merge-base --is-ancestor "$CURRENT" "$TARGET" \
   || die "$TARGET_REF is NOT ahead of the deployed commit — this would not be a fast-forward. Use icb-rollback.sh to go backwards."
 
 # ── 2. work out what this deploy actually needs ──────────────────────────────
 step "2. plan"
-CHANGED=$(git -C "$REPO" diff --name-only "$CURRENT".."$TARGET")
-NEW_MIGRATIONS=$(git -C "$REPO" diff --name-only --diff-filter=A "$CURRENT".."$TARGET" -- 'backend/alembic/versions/*' || true)
-N_COMMITS=$(git -C "$REPO" rev-list --count "$CURRENT".."$TARGET")
+CHANGED=$(git -C "$PLANREPO" diff --name-only "$CURRENT".."$TARGET")
+NEW_MIGRATIONS=$(git -C "$PLANREPO" diff --name-only --diff-filter=A "$CURRENT".."$TARGET" -- 'backend/alembic/versions/*' || true)
+N_COMMITS=$(git -C "$PLANREPO" rev-list --count "$CURRENT".."$TARGET")
 
 n_frontend=$(printf '%s\n' "$CHANGED" | grep -c '^frontend/'          || true)
 n_pycode=$(printf  '%s\n' "$CHANGED" | grep -c '^backend/.*\.py$'     || true)
@@ -116,7 +137,7 @@ NEED_RESTART=0; { [ "$n_pycode" -gt 0 ] || [ "$NEED_MIGRATE" -eq 1 ]; } && NEED_
 [ "$FORCE_RESTART" -eq 1 ] && NEED_RESTART=1
 
 say "  ${CURRENT:0:8} -> ${TARGET:0:8}   ($N_COMMITS commit(s), $(printf '%s\n' "$CHANGED" | grep -c . || true) file(s))"
-git -C "$REPO" log --oneline "$CURRENT".."$TARGET" | sed 's/^/    /'
+git -C "$PLANREPO" log --oneline "$CURRENT".."$TARGET" | sed 's/^/    /'
 say ""
 say "  DB migration     $([ "$NEED_MIGRATE" -eq 1 ] && echo "YES — $(printf '%s\n' "$NEW_MIGRATIONS" | xargs -n1 basename | tr '\n' ' ')" || echo 'no  (no new files in backend/alembic/versions/)')"
 say "  SPA rebuild      $([ "$NEED_BUILD"   -eq 1 ] && echo "YES — $n_frontend file(s) under frontend/" || echo 'no  (frontend/ untouched)')"

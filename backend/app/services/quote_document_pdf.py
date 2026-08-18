@@ -75,19 +75,19 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         return max(h + 6, 14)
 
     def _capacity(page_index: int) -> float:
-        top = _LETTERHEAD_H_MM + _HEADER_BLOCK_H_MM if page_index == 0 else _CONT_HEADER_H_MM
+        # Page 1's header is MEASURED, not assumed: the delivery address alone
+        # swings it by three lines. A fixed guess either overflows the page or
+        # leaves a void between the header and the table.
+        top = (_LETTERHEAD_H_MM * mm + _header_height()) if page_index == 0 \
+            else (_CONT_HEADER_H_MM * mm)
         # Every page keeps room for the footer and for a Carry Over line.
-        return (_PAGE_H_MM - 2 * _MARGIN_MM - top - _FOOTER_H_MM - _CARRY_H_MM) * mm
+        return (_PAGE_H_MM - 2 * _MARGIN_MM) * mm - top - (_FOOTER_H_MM + _CARRY_H_MM) * mm
 
     lines = list(ctx.get("lines") or [])
-    pages = paginate_lines(lines, _capacity, _row_height) or [[]]
-    carries = carry_over_for(pages)
 
     buf = BytesIO()
     c = pdfcanvas.Canvas(buf, pagesize=A4)
     c.setTitle(f"{ctx.get('title', 'Quotation')} {ctx.get('document_number', '')}".strip())
-
-    total_pages = len(pages) + _extra_page_count(terms)
 
     def draw_footer(page_no: int):
         y = _MARGIN_MM * mm + _FOOTER_H_MM * mm
@@ -108,9 +108,20 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         c.setFont("Helvetica", 7)
         for i, ln in enumerate(bank.get("lines") or []):
             c.drawString(bx, y - 19 - i * 8, ln)
+        # Called from here so every page that gets a footer also gets its number,
+        # including the terms and acceptance pages, with no extra plumbing.
+        draw_page_number(page_no)
+
+    def draw_page_number(page_no: int):
+        """Top right, above the letterhead — where the sample puts it."""
+        top = (_PAGE_H_MM - _MARGIN_MM + 3.5) * mm
+        right_x = (_PAGE_W_MM - _MARGIN_MM) * mm
+        c.setFillColor(_LABEL_GREY)
         c.setFont("Helvetica", 7)
-        c.drawRightString((_PAGE_W_MM - _MARGIN_MM) * mm, _MARGIN_MM * mm,
-                          f"Page {page_no}/{total_pages}")
+        c.drawRightString(right_x - 34, top, "Page")
+        c.setFillColor(colors.black)
+        c.setFont("Helvetica-Bold", 7.5)
+        c.drawRightString(right_x, top, f"{page_no}/{total_pages}")
 
     def draw_letterhead() -> float:
         """Page 1 art. Falls back to a text heading when the file is absent."""
@@ -146,66 +157,148 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
                           f"Document Date  {ctx.get('document_date', '')}")
         return top - _CONT_HEADER_H_MM * mm
 
+    # ── the sample's header grid ─────────────────────────────────────────────
+    # Labels in small grey caps sit ABOVE their values, in four columns, each
+    # band closed by a light-blue dotted rule. That rule is the sample's most
+    # recognisable feature after the letterhead itself.
+    _LABEL_GREY = colors.HexColor("#8A9099")
+    _RULE_BLUE = colors.HexColor("#9CC3E5")
+    _BAND_LABEL_DY = 9.0     # label baseline below the band top
+    _BAND_VALUE_DY = 20.0    # first value baseline below the band top
+    _BAND_LINE_DY = 8.5      # extra value lines
+    _BAND_GAP = 9.0          # space between the last value and the rule
+    _MISSING = "–"           # en-dash: "ICB never captured this", not content
+
+    def _header_bands() -> list[list[tuple[str, list[str], int]]]:
+        """The header as data: bands of (label, value lines, column index).
+
+        Built here rather than drawn inline so the block's HEIGHT can be measured
+        before anything is drawn — the delivery address alone swings it by three
+        lines, and the paginator needs the real number or page 1 either overflows
+        or leaves the void the first version had.
+        """
+        addr = [ln for ln in str(ctx.get("delivery_address") or "").splitlines() if ln.strip()][:4]
+        contact = [v for v in (ctx.get("your_contact"), ctx.get("your_contact_phone")) if v]
+        bands = [
+            [("Vat Num - Partner", [ctx.get("customer_vat") or _MISSING], 0),
+             ("Tel No.",           [ctx.get("customer_tel") or _MISSING], 1),
+             ("Document Number",   [ctx.get("document_number") or _MISSING], 2),
+             ("Document Date",     [ctx.get("document_date") or _MISSING], 3)],
+            [("Email",             [ctx.get("customer_email") or _MISSING], 0),
+             ("Your Contact",      contact or [_MISSING], 2)],
+        ]
+        third = []
+        if addr:
+            third.append(("Delivery Address", addr, 0))
+        if ctx.get("your_reference"):
+            third.append(("Your Reference", [ctx["your_reference"]], 2))
+        if third:
+            bands.append(third)
+        if ctx.get("job_note"):
+            bands.append([("Job Note", _wrap_plain(str(ctx["job_note"]), 110)[:3], 0)])
+        return bands
+
+    def _band_height(band) -> float:
+        lines = max(len(v) for _l, v, _col in band)
+        return _BAND_VALUE_DY + (lines - 1) * _BAND_LINE_DY + _BAND_GAP
+
+    def _header_height() -> float:
+        """Customer name + every band + the rules, in points."""
+        return 22.0 + sum(_band_height(b) for b in _header_bands())
+
     def draw_header_block(y: float) -> float:
-        """The customer / reference / delivery block on page 1."""
+        """Page 1's customer / reference / delivery grid, drawn like the sample."""
         left = _MARGIN_MM * mm
         right_x = (_PAGE_W_MM - _MARGIN_MM) * mm
-        c.setFont("Helvetica", 7.5)
-        c.drawRightString(right_x, y - 10, f"Document Date   {ctx.get('document_date', '')}")
-        c.drawRightString(right_x, y - 20, f"Document Number   {ctx.get('document_number', '')}")
-        c.drawRightString(right_x, y - 30, f"Vat Num - Partner   {ctx.get('customer_vat', '')}")
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(left, y - 16, ctx.get("customer_name", ""))
-        c.setFont("Helvetica", 7.5)
-        row = y - 28
-        for label, val in (("Tel No.", ctx.get("customer_tel", "")),
-                           ("Email", ctx.get("customer_email", ""))):
-            if val:
-                c.drawString(left, row, f"{label}: {val}")
-                row -= 9
-        mid = (_PAGE_W_MM * 0.42) * mm
-        c.setFont("Helvetica-Bold", 7.5)
-        c.drawString(mid, y - 10, "Your Reference")
-        c.drawString(mid + 42 * mm, y - 10, "Your Contact")
-        c.setFont("Helvetica", 7.5)
-        c.drawString(mid, y - 19, ctx.get("your_reference", ""))
-        c.drawString(mid + 42 * mm, y - 19, ctx.get("your_contact", ""))
-        if ctx.get("your_contact_phone"):
-            c.drawString(mid + 42 * mm, y - 28, ctx["your_contact_phone"])
-        if ctx.get("delivery_address"):
-            c.setFont("Helvetica-Bold", 7.5)
-            c.drawString(mid, y - 30, "Delivery Address")
-            c.setFont("Helvetica", 7.5)
-            for i, ln in enumerate(str(ctx["delivery_address"]).splitlines()[:4]):
-                c.drawString(mid, y - 39 - i * 8, ln)
-        if ctx.get("job_note"):
-            c.setFont("Helvetica", 7.5)
-            c.drawString(left, y - 46, f"Job note: {ctx['job_note'][:110]}")
-        return y - _HEADER_BLOCK_H_MM * mm
+        col_x = [left + content_w * f for f in (0.0, 0.25, 0.50, 0.75)]
+
+        c.setFillColor(colors.black)
+        c.setFont("Helvetica-Bold", 13)
+        c.drawString(left, y - 14, ctx.get("customer_name", ""))
+        y -= 22.0
+
+        for band in _header_bands():
+            for label, values, col in band:
+                x = col_x[col]
+                c.setFillColor(_LABEL_GREY)
+                c.setFont("Helvetica", 6.8)
+                c.drawString(x, y - _BAND_LABEL_DY, label)
+                for i, v in enumerate(values):
+                    # A value ICB never captured is shown as a light dash rather
+                    # than a bold one: the eye should read "not supplied", not
+                    # mistake a heavy em-dash for content.
+                    blank = (v == _MISSING)
+                    c.setFillColor(_LABEL_GREY if blank else colors.black)
+                    c.setFont("Helvetica" if blank else "Helvetica-Bold", 8.2)
+                    c.drawString(x, y - _BAND_VALUE_DY - i * _BAND_LINE_DY, str(v))
+            y -= _band_height(band)
+            # The light-blue dotted rule closing the band.
+            c.setStrokeColor(_RULE_BLUE)
+            c.setLineWidth(0.7)
+            c.setDash(1, 2.6)
+            c.line(left, y + 3.0, right_x, y + 3.0)
+            c.setDash()
+        return y
+
+    from reportlab.platypus import Flowable
+
+    class _Arrow(Flowable):
+        """The sample's small right-pointing marker beside each line item.
+
+        A drawn triangle rather than a character: Helvetica carries no arrow
+        glyph, so a typed one renders as a tofu box — exactly what happened to
+        the Carry Over bar on the first proof. Sized and nudged to sit on the
+        first text line of the description beside it, not the top of the cell.
+        """
+        _W, _H = 4.0, 4.6
+
+        def wrap(self, _aw, _ah):
+            return self._W, self._H
+
+        def draw(self):
+            cv = self.canv
+            cv.setFillColor(colors.HexColor("#C00000"))
+            p = cv.beginPath()
+            p.moveTo(0, -2.0)
+            p.lineTo(self._W, -2.0 + self._H / 2.0)
+            p.lineTo(0, -2.0 + self._H)
+            p.close()
+            cv.drawPath(p, stroke=0, fill=1)
 
     def draw_lines_table(rows: list[dict], y: float, carry_in: float | None) -> float:
-        data = [["Description", "Quantity", "Price", "Total"]]
+        # A narrow leading column carries the sample's right-pointing marker.
+        # It is DRAWN, not typed: Helvetica has no arrow glyph, and the character
+        # forms render as a tofu box — the same trap the Carry Over bar hit.
+        acol = 9.0
+        widths = [acol, col_w[0] - acol, col_w[1], col_w[2], col_w[3]]
+        data = [["", "Description", "Quantity", "Price", "Total"]]
         if carry_in is not None:
             # Carry IN at the head of a continuation page — same wording as the
             # foot of the page before it, which is how the sample reads.
-            data.append([Paragraph(f"<b>{LABEL_CARRY_OVER}</b>", body_style), "", "",
+            data.append(["", Paragraph(f"<b>{LABEL_CARRY_OVER}</b>", body_style), "", "",
                          money(carry_in)])
         for ln in rows:
             data.append([
+                _Arrow(),
                 Paragraph(_esc(ln.get("description") or ""), body_style),
                 "" if ln.get("qty") is None else _num(ln["qty"]),
                 "" if ln.get("price") is None else money(ln["price"]),
                 money(ln.get("total")),
             ])
-        t = Table(data, colWidths=col_w, repeatRows=1)
+        t = Table(data, colWidths=widths, repeatRows=1)
         t.setStyle(TableStyle([
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("FONTSIZE", (0, 0), (-1, -1), 8.5),
-            ("LINEBELOW", (0, 0), (-1, 0), 0.6, colors.black),
-            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+            # The sample brackets its column headings in the same blue as the
+            # header rules, rather than a black underline.
+            ("LINEABOVE", (0, 0), (-1, 0), 0.8, _RULE_BLUE),
+            ("LINEBELOW", (0, 0), (-1, 0), 0.8, _RULE_BLUE),
+            ("ALIGN", (2, 0), (-1, -1), "RIGHT"),
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("TOPPADDING", (0, 0), (-1, -1), 2),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("LEFTPADDING", (0, 0), (0, -1), 0),
+            ("RIGHTPADDING", (0, 0), (0, -1), 2),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
         ]))
         w, h = t.wrap(content_w, y)
         t.drawOn(c, _MARGIN_MM * mm, y - h)
@@ -244,6 +337,13 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         return y - h - 20
 
     # ── draw ──────────────────────────────────────────────────────────────────
+    # Paginate only now: _capacity measures the header, whose helpers are defined
+    # above. total_pages is read by draw_footer at call time, so it is in place
+    # before the first page is stamped.
+    pages = paginate_lines(lines, _capacity, _row_height) or [[]]
+    carries = carry_over_for(pages)
+    total_pages = len(pages) + _extra_page_count(terms)
+
     for i, rows in enumerate(pages):
         if i == 0:
             y = draw_letterhead()
@@ -356,3 +456,21 @@ def _esc(s: str) -> str:
 def _num(v) -> str:
     f = float(v or 0)
     return str(int(f)) if abs(f - int(f)) < 1e-9 else f"{f:.2f}"
+
+
+def _wrap_plain(text: str, width: int) -> list[str]:
+    """Greedy word wrap for the few header values drawn with drawString.
+
+    Not a Paragraph: the header grid is positioned by hand so every value shares
+    one baseline rhythm, and a flowable would bring its own leading.
+    """
+    words, out, cur = str(text).split(), [], ""
+    for w in words:
+        if cur and len(cur) + 1 + len(w) > width:
+            out.append(cur)
+            cur = w
+        else:
+            cur = f"{cur} {w}".strip()
+    if cur:
+        out.append(cur)
+    return out or [""]

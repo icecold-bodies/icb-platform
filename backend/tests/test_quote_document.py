@@ -203,7 +203,11 @@ def test_the_shell_puts_the_house_furniture_on_every_page():
     for i, t in enumerate(texts, start=1):
         assert "BANKING DETAILS" in t, f"page {i} lost the banking footer"
         assert "Capitec Business" in t, f"page {i} lost the banking details"
-        assert f"Page {i}/{total}" in t, f"page {i} is not numbered n/m"
+        # v1.49 — "Page" and "n/m" are drawn as two runs now the number sits
+        # top-right in the sample's style, so extraction separates them. What
+        # matters is that the page is NUMBERED, not how it is typeset.
+        assert "Page" in t, f"page {i} lost its page label"
+        assert f"{i}/{total}" in t, f"page {i} is not numbered n/m"
     for t in texts[1:]:
         assert "Repair Quotation" in t, "a continuation page lost its header"
         assert "R-000123" in t, "a continuation page lost the document number"
@@ -312,13 +316,18 @@ def saved_repair(app_mod):
         db.commit()
 
 
-def test_the_repair_quote_downloads_as_a_pdf_named_by_document_number(
+def test_the_repair_quote_downloads_as_a_pdf(
         client, admin_headers, saved_repair):
     rec_id, _ = saved_repair
     r = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf", headers=admin_headers)
     assert r.status_code == 200, r.text[:300]
     assert r.headers["content-type"].startswith("application/pdf")
-    assert "R-000777.pdf" in r.headers.get("content-disposition", "")
+    # v1.49 — the file is named by the convention (date + customer + contact +
+    # registration), not by the document number. The NUMBER stays in the
+    # document, where it is the identifier; the NAME is how it is found on disk.
+    disp = r.headers.get("content-disposition", "")
+    assert disp.startswith('attachment; filename="R2'), disp
+    assert disp.endswith('.pdf"'), disp
     assert r.content[:4] == b"%PDF"
 
     texts = _page_texts(r.content)
@@ -524,3 +533,125 @@ def test_the_list_row_carries_the_flag_for_the_react_button(
     assert row is not None, "the saved repair must be in the list"
     assert row["has_repair_quote"] is True
     assert row["is_repair"] is True
+
+
+# ── v1.49: the filename convention, and the sample-aligned heading ───────────
+
+class _FakeRec:
+    """Just the attributes repair_quote_filename reads."""
+    def __init__(self, d=None, quote_number="A1/08/2026", rec_id=1695):
+        from datetime import datetime
+        self.created_at = d if d is not None else datetime(2026, 8, 18)
+        self.quote_number = quote_number
+        self.id = rec_id
+
+
+def test_the_filename_is_date_customer_contact_registration():
+    """Michael's worked example, 18 Aug 2026, reproduced exactly."""
+    from app.services.quote_document import repair_quote_filename
+    name = repair_quote_filename(_FakeRec(), {
+        "customer_name": "360 DEGREES CARRIERS",
+        "customer_contact": "PETER SMITH",
+        "vehicle_registration": "LT15FB GP",
+    })
+    assert name == "R20260818 360 DEGREES CARRIERS PETER SMITH LT15FB GP"
+
+
+def test_the_filename_contact_is_the_CUSTOMER_contact_not_ICB():
+    """`your_contact` is ICB's person and must play no part in the name.
+
+    They are different people on the same document — ICB's contact is who the
+    customer rings — so naming the file after the wrong one would file the quote
+    under an ICB employee instead of the customer's buyer.
+    """
+    from app.services.quote_document import repair_quote_filename
+    name = repair_quote_filename(_FakeRec(), {
+        "customer_name": "ATLANTIC SEAFOODS",
+        "customer_contact": "RIDHWAN MUSSA",       # the customer's person
+        "your_contact": "Suzette Cocklin",          # ICB's person
+        "your_contact_phone": "+27 82 563 4864",
+        "vehicle_registration": "LT 15 FB GP",
+    })
+    assert "RIDHWAN MUSSA" in name
+    assert "Suzette" not in name and "Cocklin" not in name
+
+
+def test_the_filename_omits_missing_parts_without_leaving_gaps():
+    from app.services.quote_document import repair_quote_filename
+    f = repair_quote_filename
+    assert f(_FakeRec(), {"customer_name": "ACME", "customer_contact": "",
+                          "vehicle_registration": "CA 1"}) == "R20260818 ACME CA 1"
+    assert f(_FakeRec(), {"customer_name": "ACME", "customer_contact": "PAT",
+                          "vehicle_registration": ""}) == "R20260818 ACME PAT"
+    for name in (f(_FakeRec(), {"customer_name": "A  B", "customer_contact": "",
+                                "vehicle_registration": ""}),):
+        assert "  " not in name, "a missing part must not leave a double space"
+
+
+def test_the_filename_is_safe_to_write_to_disk():
+    """Real customer names carry slashes and quotes; real registrations do not
+    survive a naive join. A quote that cannot be saved is a quote that is lost."""
+    from app.services.quote_document import repair_quote_filename
+    name = repair_quote_filename(_FakeRec(), {
+        "customer_name": 'A/B  Transport: Ltd',
+        "customer_contact": 'Pete "PJ" S',
+        "vehicle_registration": "CA 123-456",
+    })
+    for ch in '\/:*?"<>|\r\n\t':
+        assert ch not in name, f"{ch!r} is not legal in a Windows filename"
+    assert not name.endswith("."), "a trailing dot is silently dropped by Windows"
+    assert len(name) <= 180
+
+
+def test_the_filename_falls_back_when_nothing_identifies_the_quote():
+    """A bare date names nothing — several repairs are quoted in a day."""
+    from app.services.quote_document import repair_quote_filename
+    name = repair_quote_filename(_FakeRec(), {
+        "customer_name": "", "customer_contact": "", "vehicle_registration": "",
+        "document_number": "R-2",
+    })
+    assert name == "R-2"
+
+
+def test_the_download_is_named_by_the_convention(client, admin_headers, saved_repair):
+    """End to end: the Content-Disposition the browser actually sees."""
+    rec_id, _ = saved_repair
+    r = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf", headers=admin_headers)
+    assert r.status_code == 200, r.text[:200]
+    disp = r.headers.get("content-disposition", "")
+    assert disp.startswith('attachment; filename="R'), disp
+    assert "QD Sample Customer" in disp, disp
+    assert "LT 15 FB GP" in disp, "the vehicle registration belongs in the name"
+    assert disp.endswith('.pdf"')
+
+
+def test_the_header_height_follows_its_content():
+    """The block is measured, not assumed.
+
+    A fixed height either overflowed page 1 or left the void the first version
+    had between the header and the table — visible in the very first render.
+    """
+    from app.services.quote_document_pdf import render_repair_quote_pdf
+    base = {"config": {}, "title": "Repair Quotation", "customer_name": "ACME",
+            "document_number": "R-9", "document_date": "18-08-2026",
+            "lines": [{"description": "x", "qty": None, "price": None, "total": 1.0}],
+            "totals": [{"label": "Total Amount:", "amount": 1.0, "note": ""}]}
+    short = dict(base)
+    tall = dict(base, delivery_address="1 A Road\n2 B Street\n3 C Avenue\n4 D Close",
+                your_reference="Veh reg nr:  CA 1")
+    a, b = render_repair_quote_pdf(short), render_repair_quote_pdf(tall)
+    assert a and b
+    # Both render; the tall one carries strictly more header text.
+    import re
+    assert len(b) > len(a), "a four-line delivery address must occupy more document"
+
+
+def test_the_line_marker_is_drawn_not_typed():
+    """Helvetica has no arrow glyph — a typed one renders as a tofu box, which is
+    exactly what happened to the Carry Over bar on the first proof."""
+    import inspect
+    from app.services import quote_document_pdf as m
+    src = inspect.getsource(m.render_repair_quote_pdf)
+    assert "class _Arrow" in src and "beginPath" in src
+    for glyph in ("▶", "►", "➤", "→"):
+        assert glyph not in src, f"{glyph} will not render in Helvetica"

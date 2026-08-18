@@ -4,3 +4,9 @@
 backend/migrations/pgloader/*.sh    text eol=lf
 backend/migrations/pgloader/*.load  text eol=lf
 backend/migrations/pgloader/*.sql   text eol=lf
+
+# Same rule for the prod deploy scripts: these run on the Linux VM, and a CRLF
+# checkout produces "bad interpreter: /usr/bin/env bash^M". Push-ToProd.ps1
+# normalises line endings before shipping them, but they are also run directly
+# from prod's own checkout, where nothing would fix them.
+deploy/prod/*.sh                    text eol=lf

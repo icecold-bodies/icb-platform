@@ -33,9 +33,13 @@ import { zarShort, dmy, lengthSuffix } from '../../lib/format'
 import { Spinner } from '../../components/ui/feedback'
 
 // WO v4.31 §3.3 (§0.6/§0.13) — ONE component, two embed contexts: full-page on /costings (default),
-// and `embedded` (compressed chrome) below the calculator iframe on /costings/new. The embedded
-// variant keeps ALL actions + modals live (permission-gated, NOT display-only); compression is
-// chrome-only: smaller title, no New-Costing self-link, distinct root testid.
+// and `embedded` (compressed chrome: smaller title, no New-Costing self-link, distinct root testid).
+//
+// ⚠ `embedded` has NO caller as of 18 Aug. Its only consumer was the compressed dashboard below
+// the calculator on /costings/new, removed at Michael's request (it duplicated /costings and
+// ambushed anyone scrolling inside an unfinished costing). Left in place rather than ripped out:
+// it is inert while unused, and removing it would churn five branches of the page that now SOLELY
+// owns the costings list. Delete it if no second embed context appears.
 export function CostingsDashboard({ embedded = false }: { embedded?: boolean }) {
   const nav = useNavigate()
   const { mode, costings, statusCounts, acceptStage, refresh, scheduleRepairPhases, acceptCosting, declineCosting } = useCostings()

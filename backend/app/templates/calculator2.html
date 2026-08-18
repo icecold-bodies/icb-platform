@@ -242,8 +242,7 @@
 
     <!-- Customer selector -->
     <div style="padding:6px 12px;border-top:1px solid var(--border);background:var(--bg-panel)">
-      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
-        color:var(--text-dim);margin-bottom:3px">Customer</div>
+      <div class="cust-panel-label">Customer</div>
       <input class="form-control" id="cust-search" placeholder="Search customers…"
         oninput="filterCustomers()" autocomplete="off"
         style="font-size:12px;margin-bottom:4px"/>
@@ -256,8 +255,7 @@
 
     <!-- Attention: contact person picker (customer-contacts WO — parity with calculator.html) -->
     <div id="contact-block" style="padding:6px 12px;border-top:1px solid var(--border);background:var(--bg-panel)">
-      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
-        color:var(--text-dim);margin-bottom:3px">Attention</div>
+      <div class="cust-panel-label">Attention</div>
       <div style="display:flex;gap:6px;align-items:center">
         <select id="contact-select" class="form-control" disabled
           style="flex:1;font-size:12px;background:var(--bg-input);border:1px solid var(--border);
@@ -291,8 +289,7 @@
 
     <!-- End user: the customer's customer (WO v1.47 lane B — parity with calculator.html) -->
     <div id="end-user-block" style="display:none;padding:6px 12px;border-top:1px solid var(--border);background:var(--bg-panel)">
-      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
-        color:var(--text-dim);margin-bottom:3px">End user <span style="text-transform:none;letter-spacing:0">(optional)</span></div>
+      <div class="cust-panel-label">End user <span class="cust-panel-label__note">(optional)</span></div>
       <div style="display:flex;gap:6px;align-items:center">
         <select id="end-user-select" class="form-control" disabled
           style="flex:1;font-size:12px;background:var(--bg-input);border:1px solid var(--border);

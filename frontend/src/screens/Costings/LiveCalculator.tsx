@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ExternalLink, FileSpreadsheet, RadioTower, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
-import { CostingsDashboard } from './CostingsDashboard'
 import { ExportOptionsModal, type RatioOpt } from './ExportOptionsModal'
 
 // WO v4.7 — point at the MES-skin fork (/mes/calculator) instead of /calculator.
@@ -44,11 +43,13 @@ export function LiveCalculator() {
   // session cookie is in place when /calculator loads.
   const { mode, refresh } = useCostings()
 
-  // v1.39.6 — the embedded CostingsDashboard below the calculator loads once on mount and
-  // otherwise never refetches, so a costing saved via the iframe's "Approve & Save Costing"
-  // left the dashboard stale until a manual reload. The legacy calculator now posts a
-  // `mes:costing-saved` message to this parent frame on save (calculator.js _doApprove);
-  // refetch the shared costings list when it arrives. Origin-checked (same-origin embed).
+  // v1.39.6 — the legacy calculator posts `mes:costing-saved` to this parent frame when
+  // "Approve & Save Costing" succeeds (calculator.js _doApprove); refetch the shared costings
+  // list when it arrives. Origin-checked (same-origin embed).
+  //
+  // The dashboard this originally kept fresh was removed from this page on 18 Aug, but the
+  // refetch is KEPT deliberately: CostingsContext is app-wide, so refreshing here means
+  // /mes-app/costings is already current the moment the user navigates to it after saving.
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return
@@ -160,12 +161,11 @@ export function LiveCalculator() {
       </div>
     </div>
 
-    {/* WO v4.31 §3.3 (§0.13) — the SAME CostingsDashboard component, compressed embed BELOW the
-        calculator (iframe keeps the full viewport on load; scroll down for the dashboard).
-        Actions + modals stay live here (permission-gated) — NOT display-only. */}
-    <div className="border-t border-line">
-      <CostingsDashboard embedded />
-    </div>
+    {/* The compressed CostingsDashboard that used to sit BELOW the calculator (WO v4.31 §3.3)
+        was REMOVED on 18 Aug (Michael): scrolling down inside a costing you are still building
+        surfaced the whole costings list under it, which reads as clutter and duplicates the
+        page that owns that job. The full list — with the same actions — lives at
+        /mes-app/costings. */}
 
     <ExportOptionsModal
       open={exportOpen}

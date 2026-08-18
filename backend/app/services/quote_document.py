@@ -176,6 +176,51 @@ def carry_over_for(pages: Sequence[Sequence[dict]]) -> list[float]:
     return out
 
 
+# ── what the downloaded file is called ───────────────────────────────────────
+
+# Characters Windows refuses in a filename, plus the ones that make a mess of a
+# shell. Everything else — including the spaces the convention asks for — stays.
+_FILENAME_BANNED = set('\\/:*?"<>|\r\n\t')
+
+
+def repair_quote_filename(rec, ctx: dict[str, Any]) -> str:
+    """`R20260818 360 DEGREES CARRIERS PETER SMITH LT15FB GP` — no extension.
+
+    The naming convention is date + customer + contact + vehicle registration, so
+    a repair quote can be found in a folder by any of the four things anyone
+    actually remembers about it. Ratified by Michael, 18 Aug 2026.
+
+    The contact is the CUSTOMER's contact person, not ICB's — the document's
+    "Your Contact" block is ICB's person and deliberately plays no part here.
+
+    Parts that are missing are simply left out rather than leaving a gap or an
+    empty placeholder, so a quote captured without a registration still gets a
+    sensible name.
+    """
+    date = rec.created_at.strftime("%Y%m%d") if getattr(rec, "created_at", None) else ""
+    parts = [
+        f"R{date}" if date else "R",
+        ctx.get("customer_name") or "",
+        ctx.get("customer_contact") or "",
+        ctx.get("vehicle_registration") or "",
+    ]
+    cleaned = []
+    for p in parts:
+        # Collapse internal whitespace so a two-space entry cannot produce a
+        # double gap that reads as a missing field.
+        p = " ".join(str(p).split())
+        p = "".join(ch for ch in p if ch not in _FILENAME_BANNED)
+        if p:
+            cleaned.append(p)
+    name = " ".join(cleaned).strip(" .")          # a trailing dot breaks on Windows
+    # The date alone identifies nothing — several repairs are quoted a day. When
+    # every descriptive part is missing, fall back to the document number.
+    if len(cleaned) <= 1:
+        name = ctx.get("document_number") or getattr(rec, "quote_number", "") or f"repair-{rec.id}"
+        name = "".join(ch for ch in str(name) if ch not in _FILENAME_BANNED).strip()
+    return name[:180]                              # keep well inside path limits
+
+
 # ── the whole context ────────────────────────────────────────────────────────
 
 def build_repair_quote_context(rec, db, *, generated_at: str = "") -> dict[str, Any]:
@@ -202,7 +247,13 @@ def build_repair_quote_context(rec, db, *, generated_at: str = "") -> dict[str, 
         "customer_vat": getattr(customer, "vat_number", "") or "",
         "customer_tel": getattr(rec, "contact_telephone", None) or getattr(customer, "telephone", "") or "",
         "customer_email": getattr(rec, "contact_email", None) or getattr(customer, "email", "") or "",
+        # The CUSTOMER's own contact person — the attention-of snapshot taken when
+        # the quote was saved (0035). Distinct from "Your Contact" below, which is
+        # ICB's person, the one the customer rings. Both appear on the document;
+        # only this one names the file.
+        "customer_contact": getattr(rec, "contact_name", None) or "",
         # D8 — all captured per quote on the repair surface.
+        "vehicle_registration": state.get("vehicle_registration") or "",
         "your_reference": (f"Veh reg nr:  {state['vehicle_registration']}"
                            if state.get("vehicle_registration") else ""),
         "delivery_address": state.get("delivery_address") or "",

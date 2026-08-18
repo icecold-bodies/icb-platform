@@ -20,7 +20,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from ..database import CalculationRecord, get_db
 from ..deps import get_current_user, require_admin, user_can
 from ..services.quote_document import (build_repair_quote_context,
-                                       has_repair_quote_document)
+                                       has_repair_quote_document,
+                                       repair_quote_filename)
 from ..services.quote_document_config import (apply_edits, editable_view,
                                               get_config, save_config)
 from ..services.quote_document_pdf import render_repair_quote_pdf
@@ -72,9 +73,10 @@ async def repair_quote_pdf(record_id: int, request: Request,
         rec, db, generated_at=datetime.now().strftime("%d %b %Y %H:%M"))
     pdf = render_repair_quote_pdf(ctx)
 
-    # The document number is the customer-facing identifier, so it names the file.
-    stem = (ctx.get("document_number") or rec.quote_number or f"repair-{rec.id}")
-    safe = "".join(ch for ch in str(stem) if ch not in '\\/:*?"<>|\r\n').strip()
+    # v1.49 — date + customer + contact + vehicle registration, so a saved quote
+    # can be found by any of the four things anyone remembers about a repair. The
+    # document NUMBER stays inside the document, where it is the identifier.
+    safe = repair_quote_filename(rec, ctx)
     return StreamingResponse(
         BytesIO(pdf),
         media_type="application/pdf",

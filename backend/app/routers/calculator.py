@@ -22,6 +22,7 @@ from ..services import (
     compute_chassis_cost, resolve_report_template, strip_excluded_items,
     get_section_snapshot, get_formula_lib, get_global_vars,
 )
+from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
 from ..templates_config import templates
 from ..quote_numbering import assign_quote_number
 from app.formula_engine import calculate_bom, evaluate_formula
@@ -677,6 +678,72 @@ def _apply_discount(result, body):
     return result
 
 
+# ─── Free-hand lines + REPAIRS mode (v1.47 Lane C) ───────────────────────────
+
+def _append_free_hand_lines(bom_items: list, body: dict,
+                            optional_sections_enabled) -> list[dict]:
+    """Append the costing's free-hand OPTIONAL EXTRAS lines to bom_items.
+
+    Returns the normalised lines (for the input_state snapshot), or [] when the
+    payload carries none — in which case bom_items is untouched and the result
+    is byte-identical to a pre-v1.47 calculation.
+
+    A line sitting in an OPTIONAL section that the user has not opted into is
+    soft-excluded, exactly as _build_bom_items treats the real rows there.
+    """
+    lines = free_hand.parse_lines(body.get("free_hand_lines"))
+    if not lines:
+        return []
+    snap = get_section_snapshot()
+    enabled = {int(x) for x in (optional_sections_enabled or [])
+               if str(x).strip().lstrip("-").isdigit()}
+    bom_items.extend(free_hand.to_bom_items(
+        lines,
+        default_category="OPTIONAL EXTRAS",
+        optional_section_ids=enabled,
+        section_optional_by_id=snap.optional_by_id,
+    ))
+    return lines
+
+
+def _calculate_repair(body: dict, db: Session) -> tuple[dict, dict, list[dict]]:
+    """Compute a REPAIRS costing — the v1.47 repair surface, which has no body
+    behind it (no dimensions, no body options, no insulation, no BOM).
+
+    The margin / ratio / discount maths is the SAME code the body path runs
+    (_apply_chassis_and_margin, _apply_discount), so the header rail's
+    MATERIALS → + MARGIN → ÷ RATIO = TOTAL → − DISCOUNT = NET agrees with the
+    rest of the system by construction rather than by reimplementation.
+
+    Returns (result, repair_fields, normalised_lines).
+    """
+    fields = free_hand.repair_fields(body)
+    lines = free_hand.parse_lines(body.get("repair_lines"), allow_stock=True, db=db)
+    if not lines:
+        raise HTTPException(status_code=422,
+                            detail="A repair quote needs at least one line — add a "
+                                   "stock-list item or a free-hand line.")
+    bom_items = free_hand.to_bom_items(lines, default_category=free_hand.REPAIR_SECTION)
+    # No dimensions: build_geometry over {} gives zeros, which is honest for a
+    # repair. The geometry block is KEPT so a repair result has the same SHAPE as
+    # a body result — the summary panel and the document builders read it
+    # directly, and a differently-shaped result would break them. cost_per_sqm is
+    # zeroed rather than left as grand_total ÷ the "or 1" floor-area fallback,
+    # which would print the whole repair as its own cost per m². The per-m² row
+    # is hidden for repairs client-side.
+    result = calculate_bom(bom_items, {}, {}, {}, {})
+    result["cost_per_sqm"] = 0.0
+    # A repair never carries a chassis, whatever a stale client sends.
+    margin_body = {**body, "chassis": None}
+    result = _apply_chassis_and_margin(result, margin_body, db)
+    result = _apply_discount(result, margin_body)
+    result["is_repair"]    = True
+    result["repair_type"]  = fields["repair_type"]
+    result["repair_scope"] = fields["repair_scope"]
+    result["trailer_name"] = "REPAIRS"
+    return result, fields, lines
+
+
 # ─── Calculate ───────────────────────────────────────────────────────────────
 
 @router.post("/api/calculate")
@@ -693,6 +760,18 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401)
     body = await request.json()
     trailer_id = body.get("trailer_type_id")
+
+    # REPAIRS mode (v1.47 Lane C) — no body, so no trailer, no BOM, no geometry.
+    # Returns early on the same result shape the body path produces, so the
+    # summary panel, previews and exports all read it unchanged.
+    if free_hand.is_repair_mode(body):
+        result, _fields, _lines = _calculate_repair(body, db)
+        _stages["repair_lines"] = len(_lines)
+        try:
+            request.state.perf_extra = _stages
+        except Exception:
+            pass
+        return JSONResponse(result)
 
     _t = _time.monotonic()
     tt = db.query(TrailerType).filter_by(id=trailer_id).first()
@@ -724,6 +803,7 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
     optional_sections_enabled = body.get("optional_sections_enabled") or []
 
     bom_items = _build_bom_items(bom_rows, body.get("dimensions", {}), overrides, body_opt_sel, db, excluded_cats, trailer=tt, flag_overrides=flag_overrides, include_all_items=include_all_items, user_excluded_bom_ids=user_excluded_bom_ids, optional_sections_enabled=optional_sections_enabled, formula_overrides=body.get("formula_overrides"))
+    _append_free_hand_lines(bom_items, body, optional_sections_enabled)
     body_vars = _build_body_variables(bom_rows)
     _apply_body_variable_overrides(body_vars, body.get("body_variable_overrides"))
     _t = _mark("build_items_ms", _t)
@@ -893,6 +973,94 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     # "new_version" saves a fresh revision (optionally reusing its quote number).
     edit_record_id = body.get("edit_record_id")
 
+    # ── REPAIRS mode (v1.47 Lane C) ───────────────────────────────────────────
+    # A repair has no body, so none of the BOM / body-option / version machinery
+    # below applies. It saves through the SAME record, quote-numbering and
+    # contact-snapshot path as any costing, carrying the existing repair identity
+    # (is_repair=True) so /schedule-repair, RepairPhasePanel and the purple
+    # Repair pill all work untouched.
+    if free_hand.is_repair_mode(body):
+        result, repair_meta, repair_lines = _calculate_repair(body, db)
+        result["input_state"] = {
+            "is_repair":     True,
+            "repair_type":   repair_meta["repair_type"],
+            "repair_scope":  repair_meta["repair_scope"],
+            "repair_lines":  free_hand.snapshot(repair_lines),
+            "profit_margin": profit_margin,
+            "ratio_value":   body.get("ratio_value"),
+            "ratio_label":   body.get("ratio_label"),
+            "ui_snapshot":   body.get("ui_snapshot"),
+        }
+        async with _approve_lock:
+            if version_action == "overwrite" and edit_record_id:
+                rec = db.query(CalculationRecord).filter_by(id=int(edit_record_id)).first()
+                if not rec:
+                    raise HTTPException(status_code=404, detail="Costing to edit was not found")
+                rec_status = rec.status or ("accepted" if rec.approved_at else "pending")
+                if rec_status != "pending":
+                    raise HTTPException(
+                        status_code=409,
+                        detail=f"Only pending costings can be edited — this one is '{rec_status}'.",
+                    )
+                # A repair save must land on a REPAIR. Without this, a stale or
+                # hand-crafted payload could overwrite a BODY costing's result_json
+                # with a repair result while its trailer_type_id stayed set, leaving
+                # a record that is neither one thing nor the other. (v1.45 lesson:
+                # a save binds to the record on screen, verified server-side at
+                # action time — and symmetrical states need symmetrical guards, so
+                # the body path below carries the mirror of this.)
+                if not (rec.trailer_type_id is None and bool(getattr(rec, "is_repair", False))):
+                    raise HTTPException(
+                        status_code=409,
+                        detail="That costing is not a repair — reopen it from the "
+                               "costings list and save it there.",
+                    )
+                try:
+                    _prev = json.loads(rec.result_json) if rec.result_json else {}
+                except Exception:
+                    _prev = {}
+                result["version"] = int(_prev.get("version", 1) or 1)
+                rec.result_json = json.dumps(result)
+                rec.dimensions_json = json.dumps({})
+                rec.customer_id = customer_id
+                for _k, _v in contact_fields.items():
+                    setattr(rec, _k, _v)
+            else:
+                # Every repair is an independent job — no revision/replace/duplicate
+                # flow. Two repairs for one customer are two separate quotes, not a
+                # revision pair, so the body path's duplicate guard is deliberately
+                # not run here (it would key on customer + NULL trailer and trip on
+                # the customer's second repair).
+                result["version"] = 1
+                rec = CalculationRecord(
+                    trailer_type_id=None,
+                    user_id=user.id,
+                    customer_id=customer_id,
+                    dimensions_json=json.dumps({}),
+                    result_json=json.dumps(result),
+                    is_repair=True,
+                    **contact_fields,
+                )
+                db.add(rec)
+                db.flush()
+                try:
+                    assign_quote_number(rec, db=db, user=user, trailer=None)
+                except Exception:
+                    logging.exception("assign_quote_number failed for repair record %s", rec.id)
+            rec.discount_kind   = result.get("discount_kind")
+            rec.discount_input  = result.get("discount_input")
+            rec.discount_amount = result.get("discount_amount")
+            rec.net_total       = result.get("net_total")
+            db.commit()
+            db.refresh(rec)
+        result["record_id"]    = rec.id
+        result["quote_number"] = rec.quote_number
+        _cust = db.query(Customer).filter_by(id=customer_id).first() if customer_id else None
+        result["customer_name"] = _cust.name if _cust else None
+        result["contact_id"]    = rec.contact_id
+        result["contact_name"]  = rec.contact_name
+        return JSONResponse(result)
+
     tt = db.query(TrailerType).filter_by(id=trailer_id).first()
     if not tt:
         raise HTTPException(status_code=404, detail="Trailer type not found")
@@ -914,6 +1082,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     user_excluded_bom_ids = body.get("user_excluded_bom_ids") or []
     optional_sections_enabled = body.get("optional_sections_enabled") or []
     bom_items = _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_cats, trailer=tt, flag_overrides=flag_overrides, include_all_items=include_all_items, user_excluded_bom_ids=user_excluded_bom_ids, optional_sections_enabled=optional_sections_enabled, formula_overrides=body.get("formula_overrides"))
+    free_hand_lines = _append_free_hand_lines(bom_items, body, optional_sections_enabled)
     body_vars = _build_body_variables(bom_rows)
     _apply_body_variable_overrides(body_vars, body.get("body_variable_overrides"))
     formula_lib = {f.name.lower(): f.expression
@@ -927,6 +1096,10 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     mat_updated = {row.material.name: (row.material.last_updated.isoformat()
                    if row.material.last_updated else None) for row in bom_rows}
     for item in result["items"]:
+        # A free-hand line has no material behind it — never stamp it with a
+        # catalogue date just because its description happens to match a name.
+        if item.get("free_hand"):
+            continue
         item["last_updated"] = mat_updated.get(item["material"])
 
     bom_id_to_name = {str(row.id): row.material.name for row in bom_rows}
@@ -947,6 +1120,13 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         "flag_overrides":            flag_overrides,
         "user_excluded_bom_ids":     user_excluded_bom_ids,
         "optional_sections_enabled": optional_sections_enabled,
+        # v1.47 — free-hand OPTIONAL EXTRAS live ON THE COSTING and nowhere else.
+        # They ride the snapshot so an edit re-hydrates them; nothing is ever
+        # written to the materials master. Note this key is invisible to the
+        # validated-reference fingerprint (canonical_config picks named keys only),
+        # which is the ratified behaviour: extras are not part of identity, so a
+        # free-hand extra's cost surfaces as DRIFT rather than as "no match".
+        "free_hand_lines":           free_hand.snapshot(free_hand_lines),
         "profit_margin":             profit_margin,
         "is_repair":                 is_repair,
         "ratio_value":               body.get("ratio_value"),
@@ -973,6 +1153,15 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 raise HTTPException(
                     status_code=409,
                     detail=f"Only pending costings can be edited — this one is '{rec_status}'.",
+                )
+            # v1.47 — the mirror of the repair path's guard above: a BODY save must
+            # not land on a trailer-less REPAIR, which would leave a record with a
+            # body result_json and no trailer behind it.
+            if rec.trailer_type_id is None and bool(getattr(rec, "is_repair", False)):
+                raise HTTPException(
+                    status_code=409,
+                    detail="That costing is a repair — reopen it from the costings "
+                           "list and save it there.",
                 )
             try:
                 _prev = json.loads(rec.result_json) if rec.result_json else {}
@@ -1222,10 +1411,15 @@ async def api_list_calculations(
                 "planning":          "Planning",
                 "declined":          "Rejected",
             }.get(raw_status, raw_status.title())
+        _input_state = rd.get("input_state") or {}
         result.append({
             "id": r.id,
             "quote_number": r.quote_number or None,
-            "trailer":  r.trailer_type.name if r.trailer_type else "—",
+            # v1.47 — a REPAIRS costing has no body, so it reads as "REPAIRS"
+            # rather than an em-dash. A Calculator-2 repair tick on a real body
+            # keeps that body's name, exactly as before.
+            "trailer":  (r.trailer_type.name if r.trailer_type
+                         else ("REPAIRS" if bool(getattr(r, "is_repair", False)) else "—")),
             "body_length": (float(_len) if _len not in (None, "", 0) else None),
             "customer": r.customer.name if r.customer else "—",
             "contact_name": getattr(r, "contact_name", None),   # attention-of snapshot (0035)
@@ -1245,6 +1439,13 @@ async def api_list_calculations(
             "mes_status": mes_status,
             "decline_reason": getattr(r, "decline_reason", None),
             "is_repair":  bool(getattr(r, "is_repair", False)),
+            # v1.47 — the repair surface's own fields. These live on the costing's
+            # result_json / input_state snapshot, NOT in repair_phases_json, which
+            # is owned by /schedule-repair and holds the phase-entry LIST.
+            # repair_scope is the name the React side already reads (the
+            # RepairPhasePanel Scope block, CostingDetail's repair block).
+            "repair_type":  rd.get("repair_type")  or _input_state.get("repair_type"),
+            "repair_scope": rd.get("repair_scope") or _input_state.get("repair_scope"),
             "pre_job_sent_at":      r.pre_job_sent_at.strftime("%Y-%m-%d %H:%M") if getattr(r, "pre_job_sent_at", None) else None,
             "pre_job_confirmed_at": r.pre_job_confirmed_at.strftime("%Y-%m-%d %H:%M") if getattr(r, "pre_job_confirmed_at", None) else None,
             "job_number_assigned":  getattr(r, "job_number_assigned", None),
@@ -1387,6 +1588,13 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "version":       int(result_data.get("version", 1) or 1),
         "quote_number":  rec.quote_number,
         "is_repair":     bool(getattr(rec, "is_repair", False)),
+        # v1.47 — repair surface + free-hand line re-hydration for /calculator?edit=.
+        # A trailer-less repair reopens straight into the repair surface.
+        "repair_mode":     rec.trailer_type_id is None and bool(getattr(rec, "is_repair", False)),
+        "repair_type":     result_data.get("repair_type")  or input_state.get("repair_type"),
+        "repair_scope":    result_data.get("repair_scope") or input_state.get("repair_scope"),
+        "repair_lines":    input_state.get("repair_lines") or [],
+        "free_hand_lines": input_state.get("free_hand_lines") or [],
         # Price overrides survive on every record (overrides_by_bom); option
         # toggles only on records saved with the input_state snapshot.
         "overrides":               result_data.get("overrides_by_bom")

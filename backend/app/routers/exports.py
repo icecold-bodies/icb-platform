@@ -244,7 +244,7 @@ def _render_xlsx(ctx: dict):
 
             cells_data = [
                 ("", "left"), (item["material"], "left"), (item["material_code"], "left"),
-                (item["formula"], "left"),
+                (_formula_cell(item), "left"),
                 (item["quantity"], "right"), (item["unit"], "center"),
                 (item["unit_price"], "right"), (item["waste_pct"], "right"),
                 (item["line_cost"], "right"),
@@ -548,7 +548,7 @@ def _render_docx(ctx: dict):
                 waste = it.get("waste_pct")
                 cell_text(cells[0], it.get("material") or "", size=8)
                 cell_text(cells[1], it.get("material_code") or "", size=8)
-                cell_text(cells[2], it.get("formula") or "", size=8)
+                cell_text(cells[2], _formula_cell(it), size=8)
                 cell_text(cells[3], money(it.get("quantity")), size=8, right=True)
                 cell_text(cells[4], it.get("unit") or "", size=8)
                 cell_text(cells[5], money(it.get("unit_price")), size=8, right=True)
@@ -861,7 +861,7 @@ def _render_pdf(ctx: dict) -> bytes:
                 "",
                 Paragraph(escape(str(it.get("material") or "")), body),
                 it.get("material_code") or "",
-                Paragraph(escape(str(it.get("formula") or "")), body),
+                Paragraph(escape(_formula_cell(it)), body),
                 _fmt2(it.get("quantity")),
                 it.get("unit") or "",
                 _fmt2(it.get("unit_price")),
@@ -979,6 +979,39 @@ def _spec_pairs(dims: dict) -> list:
     ]
 
 
+# v1.47 — REPAIRS documents. A repair has no dimensions, so the spec block
+# carries the repair's own identity instead of three empty length/width/height
+# rows. Everything else about the document (category totals, price summary,
+# line items, all three formats) is produced by the shared builder unchanged.
+REPAIR_DOC_NAME = "REPAIRS"
+
+
+def _repair_spec_pairs(repair_type, repair_scope) -> list:
+    pairs = [("Type of repair", str(repair_type or "—"))]
+    if repair_scope:
+        pairs.append(("Work description", str(repair_scope)))
+    return pairs
+
+
+def _repair_heading_name(repair_type) -> str:
+    """"REPAIR · Panel replacement" — WO §8: the heading shows REPAIR and the type."""
+    t = str(repair_type or "").strip()
+    return f"REPAIR · {t}" if t else "REPAIR"
+
+
+def _formula_cell(it: dict) -> str:
+    """The Formula column's text for one line item — shared by all three renderers.
+
+    A free-hand line (v1.47) has no formula: its quantity was typed. The column
+    that would otherwise be blank carries the "manual" marker instead, which is
+    the document equivalent of the manual chip the costing page shows. Normal
+    lines are untouched, so unaffected documents stay byte-identical.
+    """
+    if it.get("free_hand"):
+        return "manual"
+    return str(it.get("formula") or "")
+
+
 def _spec_options_from_derived(derived) -> list:
     spec_options: list[tuple[str, str]] = []
     if derived:
@@ -1045,8 +1078,20 @@ def _doc_ctx_for_record(rec: CalculationRecord, db: Session, *, detail, ratios_r
         bom_rows, result.get("input_state") or {}, result.get("body_variables"))
 
     quote_no = rec.quote_number or f"#{rec.id}"
-    heading = f"{quote_no} — {body_type_with_length(trailer_name, dims.get('length'))}"
     is_repair = bool(rec.is_repair)
+    # v1.47 REPAIRS surface: a trailer-less repair. Heading names the repair and
+    # its type; the spec block carries the repair identity instead of dimensions.
+    _in_state = result.get("input_state") or {}
+    repair_mode = is_repair and rec.trailer_type_id is None
+    if repair_mode:
+        repair_type  = result.get("repair_type")  or _in_state.get("repair_type")
+        repair_scope = result.get("repair_scope") or _in_state.get("repair_scope")
+        trailer_name = REPAIR_DOC_NAME
+        heading = f"{quote_no} — {_repair_heading_name(repair_type)}"
+        spec_pairs = _repair_spec_pairs(repair_type, repair_scope)
+    else:
+        heading = f"{quote_no} — {body_type_with_length(trailer_name, dims.get('length'))}"
+        spec_pairs = _spec_pairs(dims)
     sub = f"{trailer_name}  |  Report #{rec.id}  |  {rec.created_at.strftime('%d %B %Y') if rec.created_at else ''}"
     if is_repair:
         sub += "  |  REPAIR QUOTE"
@@ -1058,11 +1103,15 @@ def _doc_ctx_for_record(rec: CalculationRecord, db: Session, *, detail, ratios_r
         heading=heading,
         sub=sub,
         client_name=(rec.customer.name if rec.customer else ""),
+        # v1.47 Lane C — `spec_pairs` is computed above: the dimensions block for a
+        # body, the repair's own identity for a REPAIRS costing (which has no
+        # dimensions). The merge with #141 re-added the old
+        # `spec_pairs=_spec_pairs(dims)` alongside it, which is a duplicate kwarg.
+        spec_pairs=spec_pairs,
         # End-user SNAPSHOT (0040) — never a live join, so re-exporting an old quote
         # after the end-user book changed still prints what was sent.
         end_user_company=rec.end_user_company,
         end_user_contact_name=rec.end_user_contact_name,
-        spec_pairs=_spec_pairs(dims),
         spec_options=_spec_options_from_derived(derived),
         result=result,
         ratios=ratios,
@@ -1156,22 +1205,40 @@ def _doc_ctx_for_preview(body: dict, db: Session):
     ratios = (parse_ratios(body.get("ratios"))
               if "ratios" in body else _default_ratios(result))
 
+    # v1.47 REPAIRS surface — a live repair preview has no body behind it, so the
+    # heading names the repair and the spec block carries the repair identity.
+    # Discriminated exactly as the calculate/approve endpoints do: is_repair with
+    # no trailer_type_id (a Calculator-2 repair tick on a real body keeps its
+    # trailer and previews exactly as before).
+    repair_mode = bool(body.get("is_repair")) and tt is None and tt_id in (None, "")
+    if repair_mode:
+        repair_type  = body.get("repair_type")  or result.get("repair_type")
+        repair_scope = body.get("repair_scope") or result.get("repair_scope")
+        trailer_name = REPAIR_DOC_NAME
+        heading = f"Testing — {_repair_heading_name(repair_type)}"
+        spec_pairs = _repair_spec_pairs(repair_type, repair_scope)
+    else:
+        heading = f"Testing — {body_type_with_length(trailer_name, dims.get('length'))}"
+        spec_pairs = _spec_pairs(dims)
+
     today = datetime.now()
     ctx = build_doc_ctx(
         mode="preview",
-        heading=f"Testing — {body_type_with_length(trailer_name, dims.get('length'))}",
+        heading=heading,
         sub=f"{trailer_name}  |  {today.strftime('%d %B %Y')}",
         client_name=str(body.get("customer_name") or "").strip(),
+        spec_pairs=spec_pairs,
         # Preview has no saved record yet, so the end user rides the payload straight
         # from the picker — what you preview is what the approved export will say.
         end_user_company=body.get("end_user_company"),
         end_user_contact_name=body.get("end_user_contact_name"),
-        spec_pairs=_spec_pairs(dims),
         spec_options=_spec_options_from_derived(derived),
         result=result,
         ratios=ratios,
         detail=detail,
         db=db,
+        heading_color="E02424" if repair_mode else "58A6FF",
+        is_repair=repair_mode,
         generated_at=today.strftime("%d %b %Y %H:%M"),
     )
     safe_name = "".join(ch for ch in trailer_name if ch not in '\\/:*?"<>|\r\n').strip() or "Body Type"

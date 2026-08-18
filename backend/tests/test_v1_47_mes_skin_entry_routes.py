@@ -192,6 +192,16 @@ def test_geometry_still_reaches_the_client():
 
 
 def test_cache_bust_bumped():
-    """A removal the browser never fetches is not a removal (stale-tab class)."""
+    """A removal the browser never fetches is not a removal (stale-tab class).
+
+    Asserted as "at least 157" rather than exactly 157 (v1.47 Lane C): the
+    cache-buster is a SHARED counter that every parallel lane has to bump past
+    the others, so pinning one lane's literal value turns this guard into a
+    tripwire that each later lane must edit. The intent — the browser is forced
+    to refetch after this change — holds for any value from 157 up.
+    """
+    import re
     html = (_TEMPLATES / "calculator.html").read_text(encoding="utf-8")
-    assert "calculator.js?v=157" in html
+    m = re.search(r"calculator\.js\?v=(\d+)", html)
+    assert m, "calculator.js is loaded without a ?v= cache-buster"
+    assert int(m.group(1)) >= 157, f"cache-buster went backwards: {m.group(1)}"

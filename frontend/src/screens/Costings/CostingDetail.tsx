@@ -330,7 +330,8 @@ export function CostingDetail() {
             <BodyOptionsPanel calculationId={c.calculation_id ?? null} mode={mode} />
           </div>
 
-          {((c.extras_list && c.extras_list.length > 0) || (c.quote_type === 'Repair' && c.repair_scope)) && (
+          {((c.extras_list && c.extras_list.length > 0)
+            || (c.quote_type === 'Repair' && (c.repair_scope || c.repair_type))) && (
             <div className="space-y-4 border-t border-line px-5 py-4">
               {c.extras_list && c.extras_list.length > 0 && (
                 <div>
@@ -345,10 +346,15 @@ export function CostingDetail() {
                 </div>
               )}
 
-              {c.quote_type === 'Repair' && c.repair_scope && (
+              {c.quote_type === 'Repair' && (c.repair_scope || c.repair_type) && (
                 <div className="rounded-md border border-[#7E22CE]/30 bg-[#7E22CE]/5 p-3">
                   <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#7E22CE]">Repair scope</div>
-                  <p className="text-sm text-body">{c.repair_scope}</p>
+                  {/* v1.47 — TYPE OF REPAIR is required on the repair surface, the work
+                      description is optional, so the block must render on either. */}
+                  {c.repair_type && (
+                    <p className="text-sm text-body"><strong>Type: </strong>{c.repair_type}</p>
+                  )}
+                  {c.repair_scope && <p className="text-sm text-body">{c.repair_scope}</p>}
                   {c.repair_phase_entry && (
                     <p className="mt-2 text-xs text-muted"><strong>Phase entry plan: </strong>{c.repair_phase_entry}</p>
                   )}

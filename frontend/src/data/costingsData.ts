@@ -125,6 +125,7 @@ export interface Costing {
   sap_retired?: boolean                        // site-level (§0.9) — hides the Planning-ack override
   repair_scope?: string
   repair_phase_entry?: string
+  repair_type?: string                         // v1.47 — TYPE OF REPAIR, captured on the repair surface
   repair_phases?: { phase: string; bay_id: string; estimated_hours: number }[]
   // Work Order v4 — sign-off + planning ack fields.
   pre_job_signoff_sales_at?: string | null
@@ -348,6 +349,12 @@ export interface LiveCalculation {
   status: string
   mes_status: StatusName | string
   is_repair: boolean
+  // v1.47 Lane C — the repair surface's own fields, served off the costing's
+  // result_json / input_state snapshot (NOT repair_phases_json, which the
+  // scheduler owns). Optional: before v1.47 nothing created a repair, so rows
+  // seeded from the mockup carry neither.
+  repair_type?: string | null
+  repair_scope?: string | null
   pre_job_sent_at: string | null
   pre_job_confirmed_at: string | null
   job_number_assigned: string | null
@@ -385,6 +392,13 @@ export function liveToCosting(r: LiveCalculation): Costing {
     body_length: r.body_length ?? null,
     body_category: '',
     quote_type: r.is_repair ? 'Repair' : 'New Build',
+    // v1.47 — carry the repair's scope through so the Repair scope block and the
+    // RepairPhasePanel's Scope line have something to show on a LIVE repair. The
+    // mapper dropped it before v1.47, when nothing could create one.
+    // repair_phase_entry is deliberately NOT filled from repair_type: it means
+    // the planner's phase-entry PLAN, and the detail page labels it as such.
+    repair_scope: r.repair_scope ?? undefined,
+    repair_type: r.repair_type ?? undefined,
     requires_chassis: true,
     extras_count: 0,
     created_by: r.user || '',

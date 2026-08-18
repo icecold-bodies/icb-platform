@@ -10,7 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}GRP Costings{% endblock %} — IceCold</title>
   <meta name="csrf-token" content="{{ request.state.csrf_token if request.state.csrf_token is defined else '' }}">
-  <link rel="stylesheet" href="/static/css/style.css?v=17"/>
+  <link rel="stylesheet" href="/static/css/style.css?v=18"/>
   {% if user %}<link rel="stylesheet" href="/static/css/help_chat.css?v=7"/>{% endif %}
   {% if user %}<link rel="stylesheet" href="/static/css/help_audit.css?v=5"/>{% endif %}
   <!-- Apply theme before paint to avoid flash -->
@@ -26,9 +26,9 @@
   })();
   </script>
   {% if request.state.theme and request.state.theme.css_path %}
-  <link rel="stylesheet" href="{{ request.state.theme.css_path }}?v=11"/>
+  <link rel="stylesheet" href="{{ request.state.theme.css_path }}?v=12"/>
   {% elif theme and theme.css_path %}
-  <link rel="stylesheet" href="{{ theme.css_path }}?v=11"/>
+  <link rel="stylesheet" href="{{ theme.css_path }}?v=12"/>
   {% endif %}
   {# v1.40.1 — MES light skin, loaded AFTER the DB active-theme so it wins the cascade, whenever the
      request is in MES context (see `mes` at the top of this file). Keyed purely off the incoming

@@ -121,6 +121,12 @@ body {
   border-left-color: #2563eb;
   background: #f8fbff;
 }
+/* The CUSTOMER / ATTENTION / END USER captions are bold 10px, so WCAG AA wants 4.5:1.
+   This theme's --blue-hi (#3b82f6) reaches only 3.68:1 on the near-white panel — DIMMER
+   than the --text-dim grey these labels replaced. Use the palette's own --blue (#2563eb,
+   5.17:1). Measured on the composited background, not eyeballed. The dark skins keep
+   --blue-hi, which is light-on-dark and already well clear. */
+.cust-panel-label { color: var(--blue); }
 .calc-panel--summary .panel-header {
   background: #dbeafe;
   border-bottom-color: #bfdbfe;

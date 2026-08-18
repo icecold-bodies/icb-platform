@@ -123,6 +123,19 @@ def seeded(app_mod):
     yield ids
     with SessionLocal() as db:
         from app.database import CalculationRecord
+        from sqlalchemy import text as _text
+        # v1.49 — MES children FIRST. Scheduling a repair now creates/advances a
+        # production job, and fk_production_jobs_calculation_record_id is
+        # RESTRICT, so deleting the calculations first fails the whole teardown
+        # and leaves this module's globally-unique bom_sections behind — which
+        # then breaks the NEXT run at setup, not this one.
+        _owned = (
+            "SELECT id FROM icb_costings.calculations "
+            "WHERE trailer_type_id = :tt OR customer_id = :cu")
+        for _tbl, _col in (("icb_mes.prejob_cards", "calculation_id"),
+                           ("icb_mes.production_jobs", "calculation_record_id")):
+            db.execute(_text(f"DELETE FROM {_tbl} WHERE {_col} IN ({_owned})"),
+                       {"tt": ids["tt"], "cu": ids["customer"]})
         db.query(CalculationRecord).filter(
             (CalculationRecord.trailer_type_id == ids["tt"])
             | (CalculationRecord.customer_id == ids["customer"])).delete(
@@ -480,6 +493,17 @@ def test_created_repair_can_be_scheduled_into_the_mes(client, admin_headers, see
         headers=admin_headers)
     assert made.status_code == 200, made.text
     rec_id = made.json()["record_id"]
+
+    # v1.49 — scheduling now performs the real transition into planning, and a
+    # transition needs a job to move. Follow the flow the UI actually drives:
+    # Accept creates the production job, and only an accepted repair offers the
+    # Schedule button at all (CostingDetail gates it on mes_status 'Repair').
+    # Before v1.49 this endpoint stored a JSON blob and returned 200 from any
+    # state, which is precisely why a "scheduled" repair never reached the board.
+    assert client.post(f"/api/calculations/{rec_id}/accept",
+                       headers=admin_headers).status_code == 200
+    assert client.post(f"/api/production-jobs/from-calculation/{rec_id}",
+                       headers=admin_headers).status_code in (200, 201)
 
     sched = client.post(f"/api/calculations/{rec_id}/schedule-repair",
                         json={"phases": [

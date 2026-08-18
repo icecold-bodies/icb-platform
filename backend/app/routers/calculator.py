@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+from sqlalchemy import text as sqltext   # v1.49 — cross-schema reference checks
 from sqlalchemy.orm import Session
 
 from ..database import (
@@ -862,6 +863,18 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
 
 # ─── Check duplicate ──────────────────────────────────────────────────────────
 
+def _not_deleted():
+    """v1.49 — the soft-delete filter, as one named thing.
+
+    A deleted costing must not merely vanish from the board: it must stop taking
+    part in anything the user cannot see. Duplicate detection is the sharp edge —
+    without this, deleting a costing and saving a fresh one for the same customer
+    and body is refused as a duplicate of a row that is no longer on screen, and
+    there is no way for the user to work out why.
+    """
+    return CalculationRecord.deleted_at.is_(None)
+
+
 def _same_quote_type_filter(is_repair_flag: bool):
     """Filter clause selecting calculations of the same quote type — Repair vs
     normal — so the two keep independent revision sequences. Legacy rows with a
@@ -881,6 +894,7 @@ async def check_duplicate(customer_id: int, trailer_type_id: int,
     existing = (db.query(CalculationRecord)
                 .filter(CalculationRecord.customer_id     == customer_id,
                         CalculationRecord.trailer_type_id == trailer_type_id,
+                        _not_deleted(),
                         _same_quote_type_filter(is_repair))
                 .order_by(CalculationRecord.created_at.desc()).all())
     if not existing:
@@ -1256,6 +1270,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             fresh_count = db.query(CalculationRecord).filter(
                 CalculationRecord.customer_id     == customer_id,
                 CalculationRecord.trailer_type_id == trailer_id,
+                _not_deleted(),
                 _same_quote_type_filter(is_repair),
             ).count()
             if fresh_count > 0:
@@ -1270,6 +1285,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             db.query(CalculationRecord).filter(
                 CalculationRecord.customer_id     == customer_id,
                 CalculationRecord.trailer_type_id == trailer_id,
+                _not_deleted(),
                 _same_quote_type_filter(is_repair),
             ).delete(synchronize_session=False)
             db.commit()
@@ -1424,6 +1440,14 @@ async def api_list_calculations(
     if not user:
         raise HTTPException(status_code=401)
     q = db.query(CalculationRecord)
+    # v1.49 — soft-deleted costings are OFF the board unless explicitly asked for.
+    # This is the default on every other filter too, so a deleted costing cannot
+    # reappear via "week", "repair", a status chip or anything else; only the
+    # "Deleted" pill shows them, and only them.
+    if filter == "deleted":
+        q = q.filter(CalculationRecord.deleted_at.isnot(None))
+    else:
+        q = q.filter(CalculationRecord.deleted_at.is_(None))
     now_utc = datetime.now(timezone.utc)
     if filter == "week":
         q = q.filter(CalculationRecord.created_at >= now_utc - timedelta(days=7))
@@ -1464,7 +1488,14 @@ async def api_list_calculations(
         # status to the labels the MES React mockup uses on its Costings Dashboard.
         # A Repair quote reads as "Repair" once it has been accepted; until then it
         # follows the normal status flow with an additional Repair badge in the UI.
-        if bool(getattr(r, "is_repair", False)) and raw_status in ("accepted", "pre_job_sent", "pre_job_confirmed", "planning"):
+        #
+        # v1.49 — 'planning' is NO LONGER swallowed by that override. The Planning
+        # board drops any costing whose status is not exactly 'Planning'
+        # (PlanningBoard.tsx), so while a scheduled repair reported "Repair" it
+        # could never appear there however correct the rest of the chain was. The
+        # Repair badge is driven by quote_type, not by this field, so nothing
+        # loses its badge — a scheduled repair simply now reads as what it is.
+        if bool(getattr(r, "is_repair", False)) and raw_status in ("accepted", "pre_job_sent", "pre_job_confirmed"):
             mes_status = "Repair"
         else:
             mes_status = {
@@ -1503,6 +1534,10 @@ async def api_list_calculations(
             "mes_status": mes_status,
             "decline_reason": getattr(r, "decline_reason", None),
             "is_repair":  bool(getattr(r, "is_repair", False)),
+            # v1.49 — soft-delete state. Present on every row so the client can
+            # style a restored/deleted row without a second round trip.
+            "deleted_at": r.deleted_at.strftime("%Y-%m-%d %H:%M") if getattr(r, "deleted_at", None) else None,
+            "deleted_by": getattr(r, "deleted_by", None),
             # v1.48 — does this costing have an ICB-letterhead repair quotation?
             # NOT the same question as is_repair: Calculator 2's repair tick sets
             # that flag on a costing that still has a body, and the document
@@ -1592,16 +1627,116 @@ async def api_mark_calculation_declined(record_id: int, request: Request, db: Se
     }
 
 
+def costing_delete_blockers(db: Session, record_id: int) -> list[str]:
+    """Why this costing may not be deleted — empty list means it is safe to go.
+
+    v1.49. Michael's rule: a repair that has NOT been scheduled can be deleted; one
+    that HAS been scheduled cannot, and is rejected from the Planning board instead.
+
+    EXACTLY three things in either schema reference a costing (verified against
+    information_schema, not inferred from the models — the two that matter are
+    cross-schema and declared in MIGRATIONS, so a grep of database.py finds
+    neither):
+
+        icb_costings.validated_references.calculation_id   ON DELETE CASCADE
+        icb_mes.prejob_cards.calculation_id                ON DELETE RESTRICT
+        icb_mes.production_jobs.calculation_record_id      NO FOREIGN KEY AT ALL
+
+    Those last two are what "scheduled" means in practice, and they are also why
+    the delete is SOFT. Had it stayed a hard delete they would have failed in
+    opposite directions: the Pre-Job Card raises a ForeignKeyViolation (a 500 with
+    a Postgres message), while the production job raises nothing at all — the FK
+    migration 0003 describes is absent from the live database, so the row would
+    simply be left pointing at a costing that no longer exists.
+
+    Checked here even though the delete is now soft, because "scheduled" is a
+    product rule, not a database accident: a job on the floor must not be able to
+    lose the quote it came from, however gently.
+    """
+    blockers: list[str] = []
+    card = db.execute(sqltext(
+        "SELECT id FROM icb_mes.prejob_cards WHERE calculation_id = :i LIMIT 1"
+    ), {"i": record_id}).first()
+    if card:
+        blockers.append(f"it has Pre-Job Card #{card[0]}")
+    job = db.execute(sqltext(
+        "SELECT id, job_number FROM icb_mes.production_jobs "
+        "WHERE calculation_record_id = :i LIMIT 1"
+    ), {"i": record_id}).first()
+    if job:
+        blockers.append(f"it is scheduled as production job {job[1] or f'#{job[0]}'}")
+    return blockers
+
+
 @router.delete("/api/calculations/{record_id}")
 async def api_delete_calculation(record_id: int, request: Request, db: Session = Depends(get_db)):
+    """SOFT-delete a costing. Admin only, and only while nothing has scheduled it.
+
+    Ratified by Michael, 18 Aug 2026: a deleted costing "only disappears from the
+    costing board. It will only show if the user selects a 'Deleted' pill". So the
+    row stays and every reference to it keeps resolving — this stamps deleted_at.
+
+    Through v1.48 this route was a bare `db.delete(rec)`. That was unsafe in two
+    different directions at once (see costing_delete_blockers), and it is why the
+    soft delete is the right shape rather than merely the gentler one.
+
+    The route, the method and the admin gate are unchanged, so the legacy
+    dashboard's existing right-click keeps working against it.
+    """
     from ..deps import require_admin
-    require_admin(request, db)
+    user = require_admin(request, db)
     rec = db.query(CalculationRecord).filter_by(id=record_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Calculation not found")
-    db.delete(rec)
+    if getattr(rec, "deleted_at", None):
+        # Idempotent: a double right-click, or two admins on the same row, must
+        # not read as a failure.
+        return {"ok": True, "already_deleted": True,
+                "deleted": rec.quote_number or f"#{rec.id}"}
+
+    blockers = costing_delete_blockers(db, record_id)
+    if blockers:
+        # 409, and `detail` is a sentence written for the person who right-clicked
+        # — the UI shows it verbatim.
+        raise HTTPException(
+            status_code=409,
+            detail=("This costing cannot be deleted because "
+                    + " and ".join(blockers)
+                    + ". Reject it from the Planning board instead."))
+
+    rec.deleted_at = datetime.now(timezone.utc)
+    rec.deleted_by = getattr(user, "username", None)
     db.commit()
-    return {"ok": True}
+    logging.getLogger(__name__).warning(
+        "COSTING SOFT-DELETED id=%s quote=%s repair=%s by=%s",
+        record_id, rec.quote_number, bool(getattr(rec, "is_repair", False)),
+        rec.deleted_by)
+    return {"ok": True, "deleted": rec.quote_number or f"#{rec.id}"}
+
+
+@router.post("/api/calculations/{record_id}/restore")
+async def api_restore_calculation(record_id: int, request: Request, db: Session = Depends(get_db)):
+    """Put a soft-deleted costing back on the board. Admin only.
+
+    The whole point of a soft delete is that it is reversible; without this the
+    "Deleted" pill would be a graveyard with no way out, and the only recovery
+    would be a DBA. `status` was never overwritten, so the costing returns to the
+    exact lifecycle state it was in.
+    """
+    from ..deps import require_admin
+    user = require_admin(request, db)
+    rec = db.query(CalculationRecord).filter_by(id=record_id).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="Calculation not found")
+    if not getattr(rec, "deleted_at", None):
+        return {"ok": True, "already_live": True}
+    rec.deleted_at = None
+    rec.deleted_by = None
+    db.commit()
+    logging.getLogger(__name__).warning(
+        "COSTING RESTORED id=%s quote=%s by=%s",
+        record_id, rec.quote_number, getattr(user, "username", "?"))
+    return {"ok": True, "restored": rec.quote_number or f"#{rec.id}"}
 
 
 @router.get("/api/calculations/{record_id}")

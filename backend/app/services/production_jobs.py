@@ -41,6 +41,10 @@ class RepairQuoteCannotSendPreJobError(ServiceError):
     """Repair quotes skip the pre-job flow (Addendum v1.2.1) (-> 422)."""
 
 
+class RepairHasNoJobError(ServiceError):
+    """schedule-repair before the repair was accepted, so no job exists (-> 422)."""
+
+
 class WrongStatusForTransitionError(ServiceError):
     """Lifecycle action invalid for the job's current status (-> 422)."""
 
@@ -449,6 +453,70 @@ def record_planning_ack(db: Session, job_id: int, chassis_eta: Optional[date],
         calc.status = "planning"
     db.commit()
     return get_with_costing(db, job_id)
+
+
+def schedule_repair(db: Session, calculation_id: int, phases: list[dict], user) -> JobRow:
+    """Put a scheduled REPAIR onto the Planning board. v1.49.
+
+    Until now /schedule-repair stored the phase list on the costing and stopped.
+    Nothing else moved, so the repair never appeared on the board and never
+    pulsed — the board's unscheduled pool selects `ProductionJob.status ==
+    "planning"` (services/planning.py) and the job was still 'accepted'.
+
+    Repairs cannot reach 'planning' the way a body does: that route runs through
+    the Pre-Job Card and both sign-offs, and repairs deliberately skip it
+    (RepairQuoteCannotSendPreJobError). Scheduling IS therefore the repair's
+    transition into planning, and this is its equivalent of record_planning_ack —
+    whose lock-step it copies deliberately, comment and all: the costing's status
+    moves with the job's, or the Costings dashboard and the board disagree about
+    the same piece of work.
+
+    The phase list is written to the JOB as well as the costing. It was only ever
+    stored on icb_costings.calculations, so icb_mes.production_jobs.repair_phases_json
+    sat NULL and nothing on the MES side could act on the phases the planner had
+    chosen — which is what makes "straight to pre-assembly, no vacuum or press"
+    expressible at all.
+
+    Slots are deliberately NOT created here. A repair lands in the UNSCHEDULED
+    POOL, exactly like an acknowledged body job, and the planner drags it onto a
+    week and lane. A phase entry carries a bay and hours but no week, day or slot
+    position, so inventing a placement would put work on the floor plan that
+    nobody chose.
+    """
+    calc = db.get(CalculationRecord, calculation_id)
+    if calc is None:
+        raise NotFoundError(f"calculation {calculation_id} not found")
+    job = (db.query(ProductionJob)
+             .filter(ProductionJob.calculation_record_id == calculation_id)
+             .first())
+    if job is None:
+        # The job is normally created when the costing is accepted — but by a
+        # SECOND client call (/production-jobs/from-calculation) that follows
+        # /accept. Depending on that call having happened makes scheduling fail
+        # for a costing the user can see is accepted, with nothing to do about it;
+        # the journey does exactly that, and it is a real user path, not a test
+        # artefact. So create it here through the SAME service, which resolves the
+        # branch, assigns the number and is idempotent — this is not a bypass.
+        if calc.status != "accepted":
+            raise RepairHasNoJobError(
+                "This repair has no production job yet — accept the costing first.")
+        (job, _c, _cu, _v), _created = accept_calculation(db, calculation_id, user)
+
+    blob = json.dumps(phases)
+    calc.repair_phases_json = blob
+    job.repair_phases_json = blob
+    if not calc.job_number_assigned:
+        # Mirrors the body path in routers/pre_job_card.py: the job number is the
+        # quote number's core, assigned as the work becomes real.
+        calc.job_number_assigned = (calc.quote_number or "").lstrip("Q-").strip() or str(calc.id)
+    job.status = "planning"
+    # Same lock-step as record_planning_ack: keep the costing's status with the
+    # job's so the Costings dashboard shows 'Planning' and the costing surfaces
+    # as an unscheduled Planning card.
+    if calc.status != "declined":
+        calc.status = "planning"
+    db.commit()
+    return get_with_costing(db, job.id)
 
 
 def mark_chassis_received(db: Session, job_id: int, user) -> JobRow:

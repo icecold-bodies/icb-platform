@@ -1659,9 +1659,12 @@ def costing_delete_blockers(db: Session, record_id: int) -> list[str]:
     ), {"i": record_id}).first()
     if card:
         blockers.append(f"it has Pre-Job Card #{card[0]}")
+    # v1.49 — a REJECTED job no longer counts as scheduled. Rejecting from the
+    # Planning board is the sanctioned way out of a scheduled repair, and it would
+    # be a dead end if the costing stayed undeletable afterwards.
     job = db.execute(sqltext(
         "SELECT id, job_number FROM icb_mes.production_jobs "
-        "WHERE calculation_record_id = :i LIMIT 1"
+        "WHERE calculation_record_id = :i AND coalesce(status, '') <> 'rejected' LIMIT 1"
     ), {"i": record_id}).first()
     if job:
         blockers.append(f"it is scheduled as production job {job[1] or f'#{job[0]}'}")

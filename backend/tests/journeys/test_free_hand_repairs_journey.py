@@ -791,3 +791,100 @@ def test_saving_a_repair_lands_on_the_costings_board_with_the_row_highlighted(pa
     assert box and 0 <= box["y"] <= vh, "the highlighted row must be scrolled into the viewport"
     # It is the repair just saved.
     expect(row).to_contain_text(re.compile(r"Repair", re.I))
+
+
+def test_editing_a_saved_repair_unlocks_its_lines_and_its_save_button(page: Page, laneC_body) -> None:
+    """v1.49 (Michael, 19 Aug): "when the user edits a repair the line items can
+    not be deleted or edited. The Approve & Save is then not available."
+
+    A regression from the release before it. The save-once gate and the line
+    lock both keyed on lastRecordId - but that variable does not mean "just
+    saved", it means "there is a saved record behind this screen", which is
+    equally true when a saved repair is opened for EDIT (the surface needs the
+    id to offer the repair quotation). So Edit looked exactly like just-saved
+    and refused everything Edit exists to do. The gate is justSavedHere now.
+
+    ?stay=1 - a standalone calculator leaves for the costings board about a
+    second after a save; this journey keeps asserting on the surface.
+    """
+    base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
+    admin_session(page, base=base)
+    page.goto("/mes/calculator?stay=1")
+    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+
+    page.select_option("#trailer-select", "repair")
+    expect(page.locator("#repair-add-freehand")).to_be_visible(timeout=T)
+    page.fill("#f-repair-type", "Edit after save")
+
+    # TWO lines, so one can be removed later and the repair still prices.
+    for _desc, _price in (("first seal", "120"), ("second seal", "80")):
+        page.click("#repair-add-freehand")
+        expect(page.locator("#modal-free-hand")).not_to_have_class(re.compile(r"\bhidden\b"), timeout=T)
+        page.fill("#fh-description", _desc)
+        page.fill("#fh-qty", "1")
+        page.fill("#fh-unit-price", _price)
+        page.click("#fh-save-btn")
+        expect(page.locator("#modal-free-hand")).to_have_class(re.compile(r"\bhidden\b"), timeout=T)
+
+    edit_btn = page.locator("#repair-lines-body button[title='Edit this line']")
+    del_btn = page.locator("#repair-lines-body button[title='Remove this line']")
+    expect(page.locator("#repair-lines-body tr")).to_have_count(2, timeout=T)
+    expect(edit_btn).to_have_count(2)
+
+    page.select_option("#cust-select", value=str(laneC_body["customer"]))
+    expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)
+    page.click("#approve-btn")
+
+    # The BARE identifier - calculator.js declares it with a top-level `let`,
+    # which is not a property of window. (page.evaluate, not wait_for_function:
+    # the CSP has no unsafe-eval.)
+    rec_id = None
+    for _ in range(int(T / 250)):
+        page.wait_for_timeout(250)
+        rec_id = page.evaluate("() => (typeof lastRecordId !== 'undefined') ? lastRecordId : null")
+        if rec_id:
+            break
+    assert rec_id, "the repair did not save"
+
+    # Saved: rule 2 and the line lock both bite. This half must keep working.
+    expect(page.locator("#approve-btn")).to_be_disabled()
+    expect(page.locator("#approve-btn")).to_contain_text("Saved")
+    expect(edit_btn).to_have_count(0)
+    expect(del_btn).to_have_count(0)
+
+    # --- Now EDIT it. Everything the lock withheld has to come back. ---
+    page.goto(f"/mes/calculator?edit={rec_id}&stay=1")
+    expect(page.locator("#repair-add-freehand")).to_be_visible(timeout=T)
+    rows = page.locator("#repair-lines-body tr")
+    expect(rows).to_have_count(2, timeout=T)
+    expect(edit_btn).to_have_count(2)
+    expect(del_btn).to_have_count(2)
+    # The button renders `disabled` in the template, so this is a real
+    # disabled -> enabled edge, not a level that was already true.
+    expect(page.locator("#approve-btn")).not_to_contain_text("Saved")
+    expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)
+    shot(page, "repair_edit_unlocked", JOURNEY)
+
+    # A line can actually be REMOVED - the thing Michael could not do.
+    _settle(page)
+    del_btn.first.click()
+    expect(rows).to_have_count(1, timeout=T)
+    # ... and EDITED: the dialog opens instead of a "this costing is saved" refusal.
+    _settle(page)
+    edit_btn.first.click()
+    expect(page.locator("#modal-free-hand")).not_to_have_class(re.compile(r"\bhidden\b"), timeout=T)
+    page.fill("#fh-unit-price", "95")
+    page.click("#fh-save-btn")
+    expect(page.locator("#modal-free-hand")).to_have_class(re.compile(r"\bhidden\b"), timeout=T)
+    expect(rows).to_have_count(1, timeout=T)
+
+    # Saving the edit re-arms the lock - rule 2 still holds where it should.
+    _settle(page)
+    expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)
+    page.click("#approve-btn")
+    overwrite = page.locator("#modal-edit-save button[onclick*='overwrite']")
+    expect(overwrite).to_be_visible(timeout=T)
+    overwrite.click()
+    expect(page.locator("#approve-btn")).to_be_disabled(timeout=T)
+    expect(page.locator("#approve-btn")).to_contain_text("Saved")
+    expect(del_btn).to_have_count(0)

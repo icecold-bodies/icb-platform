@@ -44,6 +44,14 @@
 {% endblock %}
 {% block topbar_actions %}
   <a href="{{ _calc }}?from={{ record.id }}" class="btn btn-outline btn-sm no-print" title="Re-open with same dimensions in calculator">⧉ Duplicate</a>
+  {# v1.49 (Michael, 19 Aug) — a DELETED costing offers Duplicate and Print
+     ONLY. Export and Generate Quote are withheld rather than left to 409 on
+     click: the server refuses them (rule 1), but a button that exists and
+     then errors with raw JSON is not a rule the user can see. #}
+  {% if record.deleted_at %}
+  <span class="badge" style="background:var(--red);color:#fff;font-size:11px;padding:3px 8px;border-radius:10px;margin-left:6px"
+        title="Deleted{% if record.deleted_by %} by {{ record.deleted_by }}{% endif %} — export and quote are unavailable. Duplicate to make a new costing from it, or ask an admin to restore it.">DELETED</span>
+  {% else %}
   {# v1.44 R5b — ONE Export button for all three formats; the options dialog
      picks format + detail + ratios (Excel keeps its highlight option). #}
   {% if user_can(user, 'export.excel') or user_can(user, 'export.word') or user_can(user, 'export.pdf') %}
@@ -63,6 +71,7 @@
             title="No PDF quote template has been configured for this body type. Please contact your system administrator or developer.">📑 Generate Quote</button>
     {% endif %}
   {% endif %}
+  {% endif %}{# /not deleted #}
   <button class="btn btn-outline btn-sm no-print" onclick="window.print()">🖨 Print</button>
 {% endblock %}
 

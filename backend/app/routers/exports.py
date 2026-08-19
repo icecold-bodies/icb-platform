@@ -1476,11 +1476,26 @@ def _refuse_if_deleted(rec: CalculationRecord) -> None:
     same rule with the same wording.
     """
     if getattr(rec, "deleted_at", None):
-        raise HTTPException(
-            status_code=409,
-            detail=("This costing has been deleted and cannot be exported. Use "
-                    "Duplicate to create a new costing from it, or ask an admin to "
-                    "restore it."))
+        raise DeletedCostingRefusal(rec)
+
+
+DELETED_EXPORT_MESSAGE = ("This costing has been deleted and cannot be exported. Use "
+                          "Duplicate to create a new costing from it, or ask an admin to "
+                          "restore it.")
+
+
+class DeletedCostingRefusal(HTTPException):
+    """A 409 that renders as a small HTML page when the caller is a browser tab.
+
+    These endpoints open in a NEW TAB (target=_blank), so an API-shaped
+    {"detail": ...} body lands in front of the user as raw JSON - which is what
+    Michael saw. The buttons are now withheld on every surface, but a stale tab
+    or a typed URL can still reach here, and it should read as a sentence.
+    Non-browser callers (Accept: application/json) keep the JSON contract.
+    """
+    def __init__(self, rec):
+        super().__init__(status_code=409, detail=DELETED_EXPORT_MESSAGE)
+        self.rec = rec
 
 
 @router.get("/results/{record_id}/export/excel")

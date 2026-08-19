@@ -151,6 +151,38 @@ from .services.chassis_integrity import ChassisIntegrityError  # noqa: E402
 @app.exception_handler(ChassisIntegrityError)
 async def _chassis_integrity_handler(request: Request, exc: ChassisIntegrityError):
     return JSONResponse({"detail": str(exc)}, status_code=getattr(exc, "status_code", 422))
+
+
+# v1.49 (Michael, 19 Aug) — an export/quote of a DELETED costing is refused with
+# 409. Those routes open in a NEW TAB, so the refusal must read as a page there,
+# not as raw {"detail": ...} JSON. API callers keep the JSON contract.
+from .routers.exports import DeletedCostingRefusal  # noqa: E402
+from fastapi.responses import HTMLResponse  # noqa: E402
+from html import escape as _esc  # noqa: E402
+
+
+@app.exception_handler(DeletedCostingRefusal)
+async def _deleted_costing_refusal_handler(request: Request, exc: DeletedCostingRefusal):
+    accept = (request.headers.get("accept") or "").lower()
+    if "text/html" in accept and "application/json" not in accept.split(",")[0]:
+        rec = getattr(exc, "rec", None)
+        label = _esc(getattr(rec, "quote_number", None) or f"#{getattr(rec, 'id', '')}")
+        who = _esc(getattr(rec, "deleted_by", None) or "")
+        when = getattr(rec, "deleted_at", None)
+        when_s = _esc(when.strftime("%d %b %Y %H:%M")) if when else ""
+        body = f"""<!doctype html><html><head><meta charset="utf-8">
+<title>Costing deleted</title>
+<style>body{{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;color:#1f2937;margin:0;background:#f8fafc}}
+.card{{max-width:560px;margin:12vh auto;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:26px 30px;box-shadow:0 1px 3px rgba(0,0,0,.06)}}
+h1{{font-size:18px;margin:0 0 8px}} .pill{{display:inline-block;background:#fee2e2;color:#b91c1c;font-weight:700;font-size:11px;letter-spacing:.04em;padding:2px 8px;border-radius:10px;vertical-align:middle;margin-left:6px}}
+p{{margin:8px 0}} .muted{{color:#6b7280;font-size:13px}} a{{color:#2563eb}}</style></head><body>
+<div class="card"><h1>Costing {label}<span class="pill">DELETED</span></h1>
+<p>{_esc(exc.detail)}</p>
+<p class="muted">Deleted{(' by ' + who) if who else ''}{(' on ' + when_s) if when_s else ''}.</p>
+<p><a href="javascript:window.close()">Close this tab</a> · <a href="/mes-app/costings">Back to costings</a></p>
+</div></body></html>"""
+        return HTMLResponse(body, status_code=409)
+    return JSONResponse({"detail": exc.detail}, status_code=409)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 # CORS for the Icecold Bodies MES React mockup (Vite dev 5173, Vite preview 4173).
 # Lets the mockup fetch /api/calculations + the new pre-job-card endpoints during

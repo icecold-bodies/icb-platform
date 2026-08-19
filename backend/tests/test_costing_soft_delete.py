@@ -93,7 +93,14 @@ def repair():
         rec = CalculationRecord(
             trailer_type_id=None, customer_id=cust.id, is_repair=True,
             quote_number=f"{_MARK}/08/2026", dimensions_json="{}",
-            result_json=json.dumps({"items": [], "grand_total": 0.0}))
+            # The display keys results.html reads: one test renders that page.
+            result_json=json.dumps({
+                "items": [], "category_totals": {}, "category_multipliers": {},
+                "materials_total": 0.0, "cost_per_sqm": 0.0, "geometry": {},
+                "chassis": None, "profit_amount": 0.0, "profit_margin": 0.0,
+                "ratio_value": 1.0, "ratio_label": "100%", "ratio_amount": 0.0,
+                "grand_total": 0.0, "selling_price": 0.0, "net_total": 0.0,
+            }))
         db.add(rec)
         db.commit()
         ids = (rec.id, cust.id)
@@ -265,3 +272,53 @@ def test_restoring_makes_it_exportable_again(api, repair):
     r = api.get(f"/api/calculations/{rec_id}/repair-quote.pdf")
     assert r.status_code == 200, r.text[:200]
     assert r.headers["content-type"].startswith("application/pdf")
+
+
+# ── v1.49 follow-up (Michael, 19 Aug): the buttons must not exist, and a refusal
+#    that does reach a browser tab must be a page, not raw JSON ─────────────────
+
+def test_the_summary_page_offers_no_export_or_quote_for_a_deleted_costing(api, repair):
+    """Michael hit Export and Generate Quote on a deleted repair and got raw JSON.
+    The server was right to refuse; the buttons should not have been there."""
+    rec_id, _ = repair
+    api.delete(f"/api/calculations/{rec_id}")
+    r = api.get(f"/results/{rec_id}", headers={"Accept": "text/html"})
+    assert r.status_code == 200, r.text[:200]
+    html = r.text
+    assert 'id="excel-export-btn"' not in html, "Export must be withheld on a deleted costing"
+    assert "repair-quote.pdf" not in html, "Generate Quote must be withheld on a deleted costing"
+    assert "/report" not in html.split("topbar_actions")[-1][:4000] or "Generate Quote" not in html
+    assert "DELETED" in html, "the page should say why the actions are missing"
+    assert f"?from={rec_id}" in html, "Duplicate must remain — it is the way back"
+
+
+def test_a_browser_tab_gets_a_readable_page_not_json(api, repair):
+    """The export routes open in a NEW TAB. Michael saw {"detail": ...} there."""
+    rec_id, _ = repair
+    api.delete(f"/api/calculations/{rec_id}")
+    for url in (f"/api/calculations/{rec_id}/repair-quote.pdf",
+                f"/results/{rec_id}/export/pdf"):
+        r = api.get(url, headers={"Accept": "text/html,application/xhtml+xml"})
+        assert r.status_code == 409, f"{url}: {r.status_code}"
+        assert r.headers["content-type"].startswith("text/html"), f"{url} answered {r.headers['content-type']}"
+        assert "cannot be exported" in r.text and "DELETED" in r.text
+        assert '{"detail"' not in r.text, "a browser tab must not see raw JSON"
+
+
+def test_an_api_caller_still_gets_json(api, repair):
+    """The React app and any script keep the JSON contract."""
+    rec_id, _ = repair
+    api.delete(f"/api/calculations/{rec_id}")
+    r = api.get(f"/results/{rec_id}/export/pdf", headers={"Accept": "application/json"})
+    assert r.status_code == 409
+    assert r.json()["detail"].startswith("This costing has been deleted")
+
+
+def test_the_deleted_row_carries_deleted_at_for_the_react_page(api, repair):
+    """CostingDetail hides Export + the quotation on this field; it must be on
+    the row the Deleted view fetches."""
+    rec_id, _ = repair
+    api.delete(f"/api/calculations/{rec_id}")
+    row = next(x for x in api.get("/api/calculations?filter=deleted&limit=200").json()
+               if x["id"] == rec_id)
+    assert row["deleted_at"] and row["deleted_by"]

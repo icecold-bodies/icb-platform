@@ -40,6 +40,18 @@ FULL_USER = "journey_full_vref"     # role 'full' = Nadie: has BOTH new keys
 _EMBED = "iframe[title='Calculator (live costing app)']"
 
 
+def _stay_on_calculator_after_save(page) -> None:
+    """v1.49 — after a save, /costings/new shows a 5s countdown to the costings
+    board (the new row highlighted). Flows that keep working the SAVED costing on
+    this page — export, validated references — click "Stay here", exactly as a
+    user doing that work would. No-op if the banner never appears (the save was
+    refused, or a no-customer modal is up and the save has not happened yet)."""
+    try:
+        page.locator("[data-testid='saved-stay']").click(timeout=8_000)
+    except Exception:
+        pass
+
+
 def _purge(db) -> None:
     from sqlalchemy import text
     db.execute(text(
@@ -327,6 +339,7 @@ def test_mark_recall_drift_and_retire(page: Page, live_server: str,
 
     # Approve & Save first — a reference must point at a SAVED costing.
     frame.locator("#approve-btn").click()
+    _stay_on_calculator_after_save(page)   # v1.49 - this flow keeps working the saved costing here
     no_cust = frame.locator("#modal-no-customer")
     try:
         expect(no_cust).to_be_visible(timeout=4_000)
@@ -485,6 +498,7 @@ def test_switching_body_type_after_saving_does_not_mis_attach_a_reference(
 
     # Save a costing on the FIRST body.
     frame.locator("#approve-btn").click()
+    _stay_on_calculator_after_save(page)   # v1.49 - this flow keeps working the saved costing here
     try:
         expect(frame.locator("#modal-no-customer")).to_be_visible(timeout=4_000)
         frame.locator("#modal-no-customer .btn-outline").click()
@@ -601,6 +615,8 @@ def test_save_first_dialog_names_the_dimension_change(
     frame = _open_embed(page, live_server, str(ids["trailer"]))
 
     frame.locator("#approve-btn").click()
+
+    _stay_on_calculator_after_save(page)   # v1.49 - this flow keeps working the saved costing here
     try:
         expect(frame.locator("#modal-no-customer")).to_be_visible(timeout=4_000)
         frame.locator("#modal-no-customer .btn-outline").click()

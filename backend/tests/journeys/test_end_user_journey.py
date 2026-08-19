@@ -36,6 +36,18 @@ FULL_USER = "journey_full_enduser"     # role 'full' = Nadie
 _EMBED = "iframe[title='Calculator (live costing app)']"
 
 
+def _stay_on_calculator_after_save(page) -> None:
+    """v1.49 — after a save, /costings/new shows a 5s countdown to the costings
+    board (the new row highlighted). Flows that keep working the SAVED costing on
+    this page — export, validated references — click "Stay here", exactly as a
+    user doing that work would. No-op if the banner never appears (the save was
+    refused, or a no-customer modal is up and the save has not happened yet)."""
+    try:
+        page.locator("[data-testid='saved-stay']").click(timeout=8_000)
+    except Exception:
+        pass
+
+
 def _purge(db) -> None:
     from sqlalchemy import text
     db.execute(text(
@@ -177,6 +189,7 @@ def _approve(page: Page, frame) -> None:
             lambda r: "/api/approve" in r.url and r.request.method == "POST",
             timeout=30_000) as ri:
         frame.locator("#approve-btn").click()
+        _stay_on_calculator_after_save(page)   # v1.49 - this flow keeps working the saved costing here
         no_cust = frame.locator("#modal-no-customer:not(.hidden)")
         try:
             expect(no_cust).to_be_visible(timeout=2_000)

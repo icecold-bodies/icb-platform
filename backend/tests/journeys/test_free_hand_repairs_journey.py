@@ -760,6 +760,15 @@ def test_saving_a_repair_lands_on_the_costings_board_with_the_row_highlighted(pa
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=T)
     frame.locator("#approve-btn").click()
 
+    # A visible, cancellable countdown appears on the parent page (export and
+    # validated-reference work still happens here, so it is not an instant
+    # jump). Both buttons must be there; "Go now" takes us straight to the board.
+    banner = page.locator("[data-testid='saved-banner']")
+    expect(banner).to_be_visible(timeout=T)
+    expect(banner).to_contain_text("Going to the costings board")
+    expect(page.locator("[data-testid='saved-stay']")).to_be_visible()
+    page.locator("[data-testid='saved-go-now']").click()
+
     # The parent navigates to the board with ?highlight=<quote>...
     page.wait_for_url(re.compile(r"/mes-app/costings\?highlight="), timeout=T)
     # ...and that row is on the page, marked, and scrolled into view.

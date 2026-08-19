@@ -221,3 +221,47 @@ def test_the_guard_does_not_depend_on_the_database_having_the_foreign_key():
     body = src.split('"""')[2]          # skip the docstring; it discusses deletes
     for verb in ("db.delete", "UPDATE ", "INSERT ", "DELETE FROM"):
         assert verb not in body, f"the guard must not mutate anything (found {verb!r})"
+
+
+# ── v1.49 rule 1 (Michael, 19 Aug): a deleted costing cannot be exported again ─
+
+def test_a_deleted_costing_cannot_be_exported_in_any_format(api, repair):
+    """It is still reachable under the Deleted pill, so its export URLs exist;
+    and an export is a document on ICB's letterhead leaving the building.
+    Every format goes through one chokepoint, so one 409 covers them all."""
+    rec_id, _ = repair
+    api.delete(f"/api/calculations/{rec_id}")
+    for fmt in ("excel", "word", "pdf"):
+        r = api.get(f"/results/{rec_id}/export/{fmt}")
+        assert r.status_code == 409, f"{fmt}: expected 409, got {r.status_code}"
+        assert "deleted" in r.json()["detail"].lower()
+        assert "Duplicate" in r.json()["detail"], "the way back must be named"
+
+
+def test_a_deleted_repair_cannot_generate_its_quotation(api, repair):
+    """The repair quotation is the customer-facing document; a deleted repair
+    must not be able to produce one from the Deleted view."""
+    rec_id, _ = repair
+    api.delete(f"/api/calculations/{rec_id}")
+    r = api.get(f"/api/calculations/{rec_id}/repair-quote.pdf")
+    assert r.status_code == 409, r.text[:200]
+    assert "deleted" in r.json()["detail"].lower()
+
+
+def test_a_deleted_costing_cannot_run_the_quote_report(api, repair):
+    """/results/{id}/report resolved its own record and bypassed the shared
+    loader - it is an export too and must refuse the same way."""
+    rec_id, _ = repair
+    api.delete(f"/api/calculations/{rec_id}")
+    r = api.get(f"/results/{rec_id}/report")
+    assert r.status_code == 409, r.text[:200]
+
+
+def test_restoring_makes_it_exportable_again(api, repair):
+    """The rule is about DELETED costings; a restored one is live work again."""
+    rec_id, _ = repair
+    api.delete(f"/api/calculations/{rec_id}")
+    api.post(f"/api/calculations/{rec_id}/restore")
+    r = api.get(f"/api/calculations/{rec_id}/repair-quote.pdf")
+    assert r.status_code == 200, r.text[:200]
+    assert r.headers["content-type"].startswith("application/pdf")

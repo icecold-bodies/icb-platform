@@ -64,6 +64,14 @@ async def repair_quote_pdf(record_id: int, request: Request,
     rec = db.query(CalculationRecord).filter_by(id=record_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Costing not found")
+    if getattr(rec, "deleted_at", None):
+        # v1.49 (Michael's rule 1): a deleted repair cannot generate its quotation
+        # again from the Deleted view. Same rule and wording as the exports.
+        raise HTTPException(
+            status_code=409,
+            detail=("This costing has been deleted and cannot be exported. Use "
+                    "Duplicate to create a new costing from it, or ask an admin to "
+                    "restore it."))
     if not has_repair_quote_document(rec):
         raise HTTPException(
             status_code=409,

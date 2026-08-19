@@ -1392,6 +1392,14 @@ function _pidCopy(id, btn) {
     </div>
     <div class="modal-body">
       <div id="fh-target-note" style="font-size:11px;color:var(--text-dim);margin-bottom:10px"></div>
+      {# v1.49 (Michael's rule 3) - the error used to render UNDER the Notes box,
+         the last field in the form, so ANY refusal (a blank quantity after a
+         stock pick, a missing type of repair) read as "Notes is required".
+         Nothing has ever required Notes; the message was just sitting next to
+         it. It now sits ABOVE the fields, and every message names its field. #}
+      <div id="fh-error" role="alert" style="display:none;font-size:12px;color:var(--red);
+           background:var(--red-bg,rgba(220,38,38,.07));border:1px solid var(--red);
+           border-radius:6px;padding:6px 8px;margin-bottom:10px"></div>
       <div class="form-group stacked">
         <label class="form-label" for="fh-description">Description *</label>
         <input class="form-control" type="text" id="fh-description" maxlength="200"
@@ -1415,13 +1423,12 @@ function _pidCopy(id, btn) {
         </div>
       </div>
       <div class="form-group stacked">
-        <label class="form-label" for="fh-notes">Notes</label>
+        <label class="form-label" for="fh-notes">Notes <span style="font-weight:400;color:var(--text-dim)">(optional)</span></label>
         <textarea class="form-control" id="fh-notes" rows="2" maxlength="1000"
                   placeholder="Optional" style="resize:vertical;font-size:12px"></textarea>
       </div>
       <div id="fh-line-total" style="font-family:var(--font-mono);font-size:13px;font-weight:600;
            color:var(--text-head);text-align:right;padding-top:4px"></div>
-      <div id="fh-error" style="display:none;font-size:12px;color:var(--red);margin-top:6px"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-free-hand')">Cancel</button>
@@ -1467,7 +1474,7 @@ const CURRENT_USER_ID   = {{ user.id }};
 const CURRENT_USER_NAME = {{ user.username | tojson }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
-<script defer src="/static/js/calculator.js?v=163"></script>
+<script defer src="/static/js/calculator.js?v=164"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

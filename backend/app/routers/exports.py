@@ -1459,7 +1459,28 @@ def _get_record_or_404(record_id: int, db: Session) -> CalculationRecord:
     rec = db.query(CalculationRecord).filter_by(id=record_id).first()
     if not rec:
         raise HTTPException(status_code=404)
+    _refuse_if_deleted(rec)
     return rec
+
+
+def _refuse_if_deleted(rec: CalculationRecord) -> None:
+    """v1.49 (Michael's rule 1): a soft-deleted costing cannot be exported again.
+
+    It is still visible under the Deleted pill, so a URL to its export is
+    reachable; and export means a document with ICB's letterhead leaves the
+    building. Deleted work must not be able to produce one. The way back is the
+    Duplicate button, which makes a NEW costing from it - or Restore, for admins.
+
+    Every export format and the quote report route through here, so the rule
+    has one home. The repair quotation (routers/quote_document.py) applies the
+    same rule with the same wording.
+    """
+    if getattr(rec, "deleted_at", None):
+        raise HTTPException(
+            status_code=409,
+            detail=("This costing has been deleted and cannot be exported. Use "
+                    "Duplicate to create a new costing from it, or ask an admin to "
+                    "restore it."))
 
 
 @router.get("/results/{record_id}/export/excel")
@@ -1549,6 +1570,8 @@ async def report_for_record(record_id: int, request: Request, db: Session = Depe
         raise HTTPException(status_code=403, detail="Permission denied: quote.generate")
 
     rec = db.query(CalculationRecord).filter_by(id=record_id).first()
+    if rec:
+        _refuse_if_deleted(rec)   # v1.49 rule 1 - the quote report is an export too
     if not rec:
         raise HTTPException(status_code=404, detail="Costing record not found")
 

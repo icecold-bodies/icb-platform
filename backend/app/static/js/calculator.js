@@ -1,4 +1,11 @@
 let lastRecordId = null;
+// v1.49 (Michael, 19 Aug) — "the costing on screen was SAVED by this screen,
+// just now". The save-once gate and the line lock key on THIS, not on
+// lastRecordId. lastRecordId means "there is a saved record behind this screen",
+// which is also true when a saved costing is opened for EDIT — where the lines
+// must stay editable and Approve & Save must work, that being the entire point
+// of Edit. Keying the lock on lastRecordId locked the Edit screen solid.
+let justSavedHere = false;
 let lastResult = null;
 let lastCalcPayload = null;  // stored for approve
 
@@ -2415,11 +2422,20 @@ async function _openSavedRepair(payload, recordId, forEdit) {
     editingRecordId    = recordId;
     editingQuoteNumber = payload.quote_number || null;
     editingVersion     = payload.version || 1;
+    // Kept so the surface can offer the repair QUOTATION (its document number
+    // was issued at save time) and "View full results". It does NOT mean the
+    // user just saved — see justSavedHere, and _resetSavedOnce below.
     lastRecordId       = recordId;
   } else {
     editingRecordId = null;
     lastRecordId    = null;
   }
+  // v1.49 — NEITHER path is a just-saved screen: Edit is an explicit request to
+  // change this repair, Duplicate is a new costing built from it. Both get their
+  // lines and their save button back. This is also the one repair path that
+  // previously skipped the reset entirely, so Duplicate-from-a-repair kept the
+  // button reading "Saved" from the costing before it.
+  _resetSavedOnce();
   onRepairMetaInput();
   renderRepairSurface();
   await runRepairCalc();
@@ -5455,6 +5471,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       discount_input: discountKind ? discountInput : null,
     });
     lastRecordId   = result.record_id;
+    justSavedHere  = true;   // v1.49 rule 2 — arms the save-once gate + the line lock
     lastResult     = result;
     lastBodyVars   = result.body_variables           || {};
     lastFormulaLib = result.formula_library_resolved || {};
@@ -5511,14 +5528,24 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     btn.disabled = false;
   } finally {
     doneBusy();
-    if (lastRecordId) _markSavedOnce();   // hideBusy restored the old label/state; re-pin
+    if (justSavedHere) {
+      _markSavedOnce();   // hideBusy restored the old label/state; re-pin
+      // ...and redraw the repair lines. Whether a line carries its edit/remove
+      // controls is decided at RENDER time, and a save redraws the summary but
+      // not the lines - so without this they sat there looking live after the
+      // save and only refused on click. renderRepairSurface self-guards on
+      // repairMode, so this is a no-op for a body costing.
+      renderRepairSurface();
+    }
   }
 }
 
-// v1.49 (rule 2) - the inverse: a FRESH costing (Duplicate, Edit, body change,
-// REPAIRS mode) gets its save button back. Called at every site that clears
-// lastRecordId, so the label and gate cannot drift from the "saved" signal.
+// v1.49 (rule 2) - the inverse: a screen that is NOT a just-saved costing
+// (Duplicate, Edit, body change, REPAIRS mode) gets its save button and its
+// lines back. Called at every site that starts a costing the user may still
+// change, so the label, the gate and the line lock cannot drift apart.
 function _resetSavedOnce() {
+  justSavedHere = false;
   const b = document.getElementById('approve-btn');
   if (!b) return;
   b.title = '';
@@ -6389,13 +6416,12 @@ function escHtml(s) {
 function _setDisabled(id, disabled) {
   const el = document.getElementById(id);
   if (!el) return;
-  // v1.49 (Michael's rule 2): once a costing is SAVED it may not be saved
-  // again from this screen. lastRecordId is already the "saved" signal - it is
-  // set by approveCosting and cleared by every path that starts fresh (new
-  // costing, mode switch, duplicate) - so it is the gate. Every recalc used to
-  // re-enable the button through here and let the user save the same repair
-  // for the same client and items again and again.
-  if (id === 'approve-btn' && !disabled && lastRecordId) return;
+  // v1.49 (Michael's rule 2): once a costing is SAVED it may not be saved again
+  // from this screen. Every recalc used to re-enable the button through here and
+  // let the user save the same repair for the same client and items again and
+  // again. The gate is justSavedHere - NOT lastRecordId, which is also set when
+  // a costing is opened for EDIT and would leave that screen unsaveable.
+  if (id === 'approve-btn' && !disabled && justSavedHere) return;
   el.disabled = disabled;
 }
 
@@ -6570,6 +6596,11 @@ async function recallValidatedReference(refId) {
     editingQuoteNumber = null;
     editReplay         = null;
     lastRecordId       = null;
+    // ...which makes this a fresh-start site like Duplicate and Edit, so it owes
+    // the same reset. It was the one that never called it: before v1.49 that only
+    // left a stale "Saved" label behind, but the save-once gate would now be stuck
+    // on for a recall done straight after a save.
+    _resetSavedOnce();
 
     await runCalc();
 
@@ -8447,8 +8478,11 @@ function openRepairFreeHandLine() {
 // Editing, removing, adding or ticking a line after the save would change the
 // screen but not the record, and the user is about to be sent to the costings
 // board anyway. Duplicate is the way to a new, editable costing from it.
+//
+// justSavedHere, NOT lastRecordId: opening a saved repair for EDIT sets
+// lastRecordId too, and locking THAT screen made Edit do nothing at all.
 function _linesLocked(action) {
-  if (!lastRecordId) return false;
+  if (!justSavedHere) return false;
   toast('This costing is saved - its lines cannot be ' + (action || 'changed') + '. Use Duplicate to make a new costing from it.', 'warn');
   return true;
 }
@@ -8990,7 +9024,7 @@ function renderRepairSurface() {
       + (out ? '<span style="color:var(--text-dim)">—</span>'
              : money(it ? it.line_cost : l.qty * l.unit_price)) + '</td>'
       + '<td style="padding:5px 4px;white-space:nowrap;text-align:right">'
-      + (lastRecordId ? '' :        // v1.49 - saved: no edit / remove
+      + (justSavedHere ? '' :       // v1.49 - saved: no edit / remove (NOT in Edit)
           '<button type="button" onclick="editFreeHandLine(\'' + l.key + '\')" title="Edit this line"'
       + ' style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:12px;padding:1px 4px">✎</button>'
       + '<button type="button" onclick="removeFreeHandLine(\'' + l.key + '\')" title="Remove this line"'
@@ -9070,7 +9104,7 @@ function _fhBomRow(it, gid, collapsed, secEnabled) {
       + ' title="' + (out ? 'Untick to include this item' : 'Tick to exclude this item') + '"'
       + ' style="cursor:pointer;width:13px;height:13px;vertical-align:middle;margin-right:6px;accent-color:var(--red,#e35d6a)">'
     : '';
-  const actions = (line && !lastRecordId)   // v1.49 - saved: no edit / remove
+  const actions = (line && !justSavedHere)  // v1.49 - saved: no edit / remove (NOT in Edit)
     ? '<button type="button" onclick="event.stopPropagation();editFreeHandLine(\'' + line.key + '\')"'
       + ' title="Edit this line" style="background:none;border:none;cursor:pointer;'
       + 'color:var(--text-dim);font-size:11px;padding:0 3px">✎</button>'

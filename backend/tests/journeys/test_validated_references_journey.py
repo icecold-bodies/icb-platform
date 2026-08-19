@@ -383,6 +383,14 @@ def test_mark_recall_drift_and_retire(page: Page, live_server: str,
     # A POINTER, never a copy: it names a saved costing on this body type.
     assert ref.calculation_id and ref.trailer_type_id == ids["trailer"]
 
+    # v1.49 — recalling one right here, with NO reload, must hand the save button
+    # back. The costing was saved a moment ago, so the save-once gate is on; a
+    # recall is a fresh COPY, which lifts it. The reload below would mask a gate
+    # that stayed stuck in-session, so assert it on this side of the reload.
+    expect(frame.locator("#approve-btn")).to_be_disabled()
+    frame.locator("#vref-select").select_option(index=1)
+    expect(frame.locator("#vref-recalled-note")).to_be_visible(timeout=T)
+    expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
 
     # ── recall: reload the page, pick the reference, expect the green tick ────
     # Same browser context on purpose. Splitting this across pytest tests meant

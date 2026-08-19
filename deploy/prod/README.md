@@ -10,31 +10,37 @@ of *what a release contains and why*; this is the *how*.
 
 ## From Windows (normal case)
 
-```powershell
-cd C:\Users\micge\Documents\icb-platform\deploy\prod
-.\Push-ToProd.ps1 -Status
-.\Push-ToProd.ps1 v1.49.1 -DryRun
-.\Push-ToProd.ps1 v1.49.1
-```
+Scripts do not run by name on this machine: PowerShell's execution policy is the Windows
+default (**Restricted** - every scope reads `Undefined`), so `.\Push-ToProd.ps1` fails with
+"running scripts is disabled on this system", and cmd.exe cannot run a `.ps1` at all -
+typing it there does nothing, silently.
+
+So use the shim, which carries a per-process bypass and changes no machine setting. **It
+works from cmd.exe and from PowerShell:**
+
+    cd C:\Users\micge\Documents\icb-platform\deploy\prod
+    push-to-prod.cmd -Status
+    push-to-prod.cmd v1.49.1 -DryRun
+    push-to-prod.cmd v1.49.1
+
+In PowerShell write `.\push-to-prod.cmd` - PowerShell will not run a command from the
+current directory without the `.\`. cmd.exe does not need it.
+
+The long form, if you would rather not use the shim - also valid in both shells:
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File Push-ToProd.ps1 v1.49.1 -DryRun
 
 `-Status` and `-DryRun` are read-only, need no password, and are always safe to run first.
 
-**Do not join those lines with `&&`.** The default console here is Windows PowerShell 5.1,
-where `&&` is a parse error:
-
-    The token '&&' is not a valid statement separator in this version
-
-Use separate lines, or `;`, which works in both shells. PowerShell 7 (`pwsh`) is installed
-and does support `&&` — but nothing here needs it, so the one-per-line form is the one to
-copy.
-
-`Push-ToProd.ps1` sends the shell script over ssh each run, so **you are always running the
-version in your working copy** — prod does not need to have pulled it first. It allocates a
-TTY so `sudo` can prompt.
+Do NOT join lines with `&&` in Windows PowerShell 5.1 - it is a parse error there
+("The token '&&' is not a valid statement separator in this version"). Use separate lines,
+or `;`. cmd.exe and pwsh 7 both accept `&&`, which is part of why it is worth avoiding: the
+same line behaves three different ways on this one machine.
 
 ## On the VM
 
-If you are already sitting on the box:
+These are LINUX commands, to be run **after** `ssh icb-mes-prod`. Pasting them into a
+Windows shell gives "'~' is not recognized" or "not recognized as the name of a cmdlet".
 
 ```bash
 cd /opt/icb-platform/deploy/prod

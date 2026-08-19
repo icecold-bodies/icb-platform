@@ -77,16 +77,25 @@ function Send-AndRun {
     $path = Join-Path $here $LocalScript
     if (-not (Test-Path $path)) { throw "missing script: $path" }
 
-    # Normalise CRLF -> LF and ship as base64. A Windows-authored .sh with CRLF
-    # dies on the VM with "bad interpreter: \r", and base64 sidesteps every
-    # quoting and line-ending hazard in the ssh command line.
-    $text = (Get-Content -Raw $path) -replace "`r`n", "`n"
-    $b64  = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($text))
+    # Normalise CRLF -> LF - a Windows-authored .sh with CRLF dies on the VM with
+    # "bad interpreter: \r" - and ship the bytes over ssh's STDIN, not on its
+    # command line. The first version put a base64 blob inside the ssh argument;
+    # that fits for the 100-line status script and blows the Windows command-line
+    # limit for the 330-line deploy script, so -Status worked and the actual
+    # deploy died with "unexpected EOF while looking for matching quote". Piping
+    # has no length limit and no quoting hazard at all.
+    $text  = (Get-Content -Raw $path) -replace "`r`n", "`n"
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($text)
     $remote = "/tmp/$([IO.Path]::GetFileNameWithoutExtension($LocalScript))-$(Get-Random).sh"
 
-    Write-Host "-> sending $LocalScript to ${Target}:$remote" -ForegroundColor DarkGray
-    & ssh $Target "printf '%s' '$b64' | base64 -d > $remote && chmod +x $remote"
-    if ($LASTEXITCODE -ne 0) { throw "could not copy the script to $Target (exit $LASTEXITCODE)" }
+    Write-Host "-> sending $LocalScript to ${Target}:$remote ($($bytes.Length) bytes)" -ForegroundColor DarkGray
+    $tmp = [IO.Path]::GetTempFileName()
+    try {
+        [IO.File]::WriteAllBytes($tmp, $bytes)
+        # cmd /c so the '<' is a real stdin redirection in both cmd and PowerShell hosts.
+        & cmd.exe /c "ssh $Target `"cat > $remote && chmod +x $remote`" < `"$tmp`""
+        if ($LASTEXITCODE -ne 0) { throw "could not copy the script to $Target (exit $LASTEXITCODE)" }
+    } finally { Remove-Item $tmp -Force -ErrorAction SilentlyContinue }
 
     $cmd = (@($remote) + $ScriptArgs) -join ' '
     Write-Host "-> $Target : $cmd`n" -ForegroundColor DarkGray
@@ -127,11 +136,18 @@ switch ($PSCmdlet.ParameterSetName) {
                 throw "'$Tag' is not a tag on origin. Push it first:  git push origin $Tag"
             }
             if ($onOrigin) {
-                # rev-parse prints the ref name back on failure instead of a SHA,
-                # so trust the exit code, not stdout - otherwise an unfetched tag
-                # is silently compared as if it were a commit id. And truncate by
-                # length, since Substring(0,8) throws on anything shorter.
-                $local = (& git rev-parse "$Tag^{commit}" 2>$null)
+                # Compare the TAG OBJECT on both sides - `git rev-parse $Tag`, NOT
+                # `$Tag^{commit}`. Every tag this project cuts is ANNOTATED, and for
+                # an annotated tag ls-remote reports the tag object's SHA, while
+                # ^{commit} dereferences to the commit it points at. Comparing one to
+                # the other fired "tag differs between local and origin" on EVERY
+                # release, including a tag that was byte-for-byte identical on both
+                # sides. (Michael hit it on the very first real deploy attempt; the
+                # Deploy path of this wrapper had only ever been exercised via
+                # -Status.) Also trust the exit code, not stdout - rev-parse echoes
+                # the ref name back on failure - and truncate by length, since
+                # Substring(0,8) throws on anything shorter.
+                $local = (& git rev-parse $Tag 2>$null)
                 if ($LASTEXITCODE -ne 0) { $local = $null }
                 $remoteSha = ($onOrigin -split '\s+')[0]
                 $short = { param($s) if ($s -and $s.Length -ge 8) { $s.Substring(0, 8) } else { $s } }

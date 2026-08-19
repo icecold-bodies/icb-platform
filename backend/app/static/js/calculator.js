@@ -2445,6 +2445,7 @@ async function prefillCalculation(recordId) {
     // edit-ratio restorer so copy matches edit and never falls through to the 55% new-costing default.
     restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
     lastRecordId = null;
+    _resetSavedOnce();   // v1.49 rule 2 - a fresh costing may be saved
     // v1.46 — Calculator 1's Print / Full Report buttons were removed; Calculator 2
     // still has them and shares this file, so these stay but must tolerate absence.
     _setDisabled('print-btn', true);
@@ -2528,6 +2529,7 @@ async function editCalculation(recordId) {
       await loadBOM({ preserveInputs: true });
       applyCalculationInputs(payload);
       lastRecordId = null;
+      _resetSavedOnce();   // v1.49 rule 2 - a fresh costing may be saved
         await runCalc();
       return;
     }
@@ -3033,6 +3035,7 @@ async function loadBOM(options = {}) {
     // never appeared. (Print / Full Report read the same id and were equally
     // wrong to keep it.)
     lastRecordId = null;
+    _resetSavedOnce();   // v1.49 rule 2 - a fresh costing may be saved
     priceOverrides = {};
     bodyOptionSelections = {};
     drdSrdEnabled = {};
@@ -5312,7 +5315,7 @@ async function runCalc() {
     _publishHelpContext(result);  // exposes liveResult + body for the AI Help chat
     renderSummary(result);
     renderBOMWithCosts(result.items, bomData);
-    document.getElementById('approve-btn').disabled = false;
+    _setDisabled('approve-btn', false);   // v1.49 - routes through the saved-once gate
     status.textContent = '';
     saveLastSession();
     // v1.45 — the mark action needs a computed result; the drift verdict is
@@ -5460,6 +5463,10 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     renderSummary(result);
     _setDisabled('print-btn', false);
     _setDisabled('view-btn', false);
+    // v1.49 (rule 2): saved once - stays saved. showBusy() would restore the
+    // button to its pre-click state (enabled), so pin it AFTER doneBusy runs.
+    // Duplicate is the way to make another costing from this one.
+    _markSavedOnce();
     clearOverrideSession();
     const custName    = result.customer_name ? ` for ${result.customer_name}` : '';
     const verLabel    = result.version && result.version > 1 ? ` · Rev${result.version}` : '';
@@ -5498,7 +5505,32 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     btn.disabled = false;
   } finally {
     doneBusy();
+    if (lastRecordId) _markSavedOnce();   // hideBusy restored the old label/state; re-pin
   }
+}
+
+// v1.49 (rule 2) - the inverse: a FRESH costing (Duplicate, Edit, body change,
+// REPAIRS mode) gets its save button back. Called at every site that clears
+// lastRecordId, so the label and gate cannot drift from the "saved" signal.
+function _resetSavedOnce() {
+  const b = document.getElementById('approve-btn');
+  if (!b) return;
+  b.title = '';
+  if (/Saved/.test(b.textContent)) {
+    b.innerHTML = '<span id="approve-spin" class="spinner" style="display:none"></span> ✓ Approve &amp; Save Costing';
+  }
+  // Stays disabled until the next calc enables it - same as a first load.
+  b.disabled = true;
+}
+
+// v1.49 (Michael's rule 2). After a save the button is disabled and reads
+// "Saved" with a title explaining how to make another one. Idempotent.
+function _markSavedOnce() {
+  const b = document.getElementById('approve-btn');
+  if (!b) return;
+  b.disabled = true;
+  b.title = 'This costing is saved. Use Duplicate to create another from it.';
+  if (!/Saved/.test(b.textContent)) b.textContent = 'Saved';
 }
 
 // Per-section "show hidden lines" toggle state, keyed by trailer id. Tracks
@@ -6314,7 +6346,15 @@ function escHtml(s) {
 // (v1.46 removed Print / Full Report from Calculator 1; Calculator 2 kept them).
 function _setDisabled(id, disabled) {
   const el = document.getElementById(id);
-  if (el) el.disabled = disabled;
+  if (!el) return;
+  // v1.49 (Michael's rule 2): once a costing is SAVED it may not be saved
+  // again from this screen. lastRecordId is already the "saved" signal - it is
+  // set by approveCosting and cleared by every path that starts fresh (new
+  // costing, mode switch, duplicate) - so it is the gate. Every recalc used to
+  // re-enable the button through here and let the user save the same repair
+  // for the same client and items again and again.
+  if (id === 'approve-btn' && !disabled && lastRecordId) return;
+  el.disabled = disabled;
 }
 
 
@@ -8420,9 +8460,13 @@ function submitFreeHandLine() {
   const qty         = _fhNum(document.getElementById('fh-qty').value);
   const unitPrice   = _fhNum(document.getElementById('fh-unit-price').value);
 
-  if (!isStock && !description) return fail('A description is required.');
-  if (isNaN(qty))               return fail('Quantity must be a number of 0 or more.');
-  if (isNaN(unitPrice))         return fail('Unit price must be a number of 0 or more.');
+  // v1.49 (rule 3): each refusal names its field AND focuses it. The error box
+  // now sits at the top of the form; focusing the offending input is what stops
+  // a blank quantity being read as a problem with the Notes box beneath it.
+  const failAt = function (msg, id) { fail(msg); const el = document.getElementById(id); if (el) el.focus(); };
+  if (!isStock && !description) return failAt('Description is required.', 'fh-description');
+  if (isNaN(qty))               return failAt('Quantity is required - enter a number of 0 or more.', 'fh-qty');
+  if (isNaN(unitPrice))         return failAt('Unit price is required - enter a number of 0 or more.', 'fh-unit-price');
 
   if (existing) {
     existing.qty   = qty;
@@ -8614,6 +8658,7 @@ function enterRepairMode() {
   if (cnt) cnt.textContent = '';
   bomData = [];
   lastRecordId = null;
+  _resetSavedOnce();   // v1.49 rule 2 - a fresh costing may be saved
   lastResult = null;
   priceOverrides = {};
   discountKind = null; discountInput = 0;

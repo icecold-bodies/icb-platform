@@ -78,7 +78,7 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         # Page 1's header is MEASURED, not assumed: the delivery address alone
         # swings it by three lines. A fixed guess either overflows the page or
         # leaves a void between the header and the table.
-        top = (_LETTERHEAD_H_MM * mm + _header_height()) if page_index == 0 \
+        top = (_letterhead_height() + 15 + _header_height()) if page_index == 0 \
             else (_CONT_HEADER_H_MM * mm)
         # Every page keeps room for the footer and for a Carry Over line.
         return (_PAGE_H_MM - 2 * _MARGIN_MM) * mm - top - (_FOOTER_H_MM + _CARRY_H_MM) * mm
@@ -123,15 +123,52 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         c.setFont("Helvetica-Bold", 7.5)
         c.drawRightString(right_x, top, f"{page_no}/{total_pages}")
 
+    def _letterhead_height() -> float:
+        """The letterhead's drawn height in points, from the IMAGE's own aspect.
+
+        v1.49 - it was a fixed 22mm. The art is ~5.4:1, so with its aspect
+        preserved a 22mm box could only ever reach 119mm wide: the letterhead
+        rendered at 64% of the page, exactly what Michael saw. Deriving the
+        height from the content WIDTH means it spans the page whatever artwork
+        is dropped in later - the placeholder today, the original when it lands.
+        """
+        img = _static_path(branding.get("letterhead_image") or "")
+        if not img:
+            return 20.0
+        try:
+            from reportlab.lib.utils import ImageReader
+            iw, ih = ImageReader(img).getSize()
+            if iw and ih:
+                return content_w * (ih / iw)
+        except Exception:
+            pass
+        return _LETTERHEAD_H_MM * mm
+
     def draw_letterhead() -> float:
-        """Page 1 art. Falls back to a text heading when the file is absent."""
+        """Page 1 art, full content width. Falls back to a text heading when the
+        file is absent."""
         top = (_PAGE_H_MM - _MARGIN_MM) * mm
         img = _static_path(branding.get("letterhead_image") or "")
         if img:
-            h = _LETTERHEAD_H_MM * mm
+            h = _letterhead_height()
             c.drawImage(img, _MARGIN_MM * mm, top - h, width=content_w, height=h,
                         preserveAspectRatio=True, anchor="nw", mask="auto")
-            return top - h
+            # The sample carries a registration line directly under the art:
+            #   Co. Reg. Nr:  2000/025936/07              VAT Nr:  451 019 0848
+            # Small grey labels, black values, ends flush with the art's edges.
+            y = top - h - 9
+            left = _MARGIN_MM * mm
+            right_x = (_PAGE_W_MM - _MARGIN_MM) * mm
+            c.setFillColor(_LABEL_GREY)
+            c.setFont("Helvetica", 7)
+            c.drawString(left + 4, y, "Co. Reg. Nr:")
+            c.setFillColor(colors.black)
+            c.drawString(left + 50, y, str(branding.get("co_reg_nr", "")))
+            c.setFillColor(_LABEL_GREY)
+            c.drawRightString(right_x - 62, y, "VAT Nr:")
+            c.setFillColor(colors.black)
+            c.drawRightString(right_x, y, str(branding.get("vat_nr", "")))
+            return y - 6
         c.setFont("Helvetica-Bold", 14)
         c.drawString(_MARGIN_MM * mm, top - 14, branding.get("company_name", "Icecold Bodies"))
         return top - 20

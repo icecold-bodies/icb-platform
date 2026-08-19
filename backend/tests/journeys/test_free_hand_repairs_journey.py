@@ -379,6 +379,31 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
             break
     assert rec_id, "the repair did not save"
 
+    # v1.49 (Michael's rule 2, 19 Aug): SAVED ONCE MEANS SAVED. The button used
+    # to come straight back after a save - and again after every recalc - so a
+    # user could save the same repair for the same client and items repeatedly.
+    # It must now stay disabled, and say so; Duplicate is the way to make another.
+    expect(page.locator("#approve-btn")).to_be_disabled()
+    expect(page.locator("#approve-btn")).to_have_text(re.compile("Saved"))
+    # ...and a recalc (toggle a line off and back on) must NOT re-arm it.
+    tick = page.locator("#repair-lines-body input[type=checkbox]").first
+    tick.check()
+    page.wait_for_timeout(1500)
+    tick.uncheck()
+    page.wait_for_timeout(1500)
+    expect(page.locator("#approve-btn")).to_be_disabled()
+    n_before = None
+    with __import__("app.database", fromlist=["SessionLocal"]).SessionLocal() as _db:
+        from app.database import CalculationRecord as _CR
+        n_before = _db.query(_CR).filter_by(customer_id=laneC_body["customer"], is_repair=True).count()
+    # Clicking a disabled button does nothing; force-firing the handler must not
+    # produce a second row either (belt AND braces: the gate is the button).
+    page.evaluate("() => { const b = document.getElementById('approve-btn'); if (!b.disabled) b.click(); }")
+    page.wait_for_timeout(1500)
+    with __import__("app.database", fromlist=["SessionLocal"]).SessionLocal() as _db:
+        from app.database import CalculationRecord as _CR
+        assert _db.query(_CR).filter_by(customer_id=laneC_body["customer"], is_repair=True).count() == n_before,             "a second save of the same repair got through"
+
     # It saved with the EXISTING repair identity: is_repair, no trailer.
     from app.database import SessionLocal, CalculationRecord
     with SessionLocal() as db:
@@ -639,3 +664,52 @@ def test_ticking_a_repair_line_off_drops_the_totals_to_zero(page: Page, laneC_bo
     page.locator("#repair-lines-body input[type=checkbox]").first.uncheck()
     _wait_for_total(page, 2975.53)
     expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)
+
+
+def test_a_refused_line_names_its_field_and_never_blames_notes(page: Page, laneC_body) -> None:
+    """v1.49 (Michael's rule 3, 19 Aug): "occasionally the NOTES section is
+    required ... this happens mostly when the user has selected from the stock
+    list. This NOTE section should always be optional."
+
+    Nothing has ever required Notes - server or client. What happened: the error
+    box rendered directly UNDER the Notes textarea, the last field in the form,
+    so a refusal for a blank quantity after a stock pick read as "Notes is
+    required". The box now sits ABOVE the fields, every message names its field,
+    and the offending field is focused.
+    """
+    base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
+    admin_session(page, base=base)
+    page.goto("/mes/calculator")
+    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    page.select_option("#trailer-select", "repair")
+    expect(page.locator("#repair-add-freehand")).to_be_visible(timeout=T)
+
+    # Notes is optional - the label says so.
+    page.click("#repair-add-freehand")
+    expect(page.locator("#modal-free-hand")).not_to_have_class(re.compile(r"\bhidden\b"), timeout=T)
+    expect(page.locator("label[for='fh-notes']")).to_contain_text("optional")
+
+    # A line with a description but a BLANK quantity, and Notes left empty.
+    page.fill("#fh-description", "Rubber seal")
+    page.fill("#fh-qty", "")
+    page.fill("#fh-unit-price", "45")
+    page.click("#fh-save-btn")
+
+    err = page.locator("#fh-error")
+    expect(err).to_be_visible()
+    msg = err.inner_text()
+    assert "Quantity" in msg, f"the refusal must name the real field, got: {msg!r}"
+    assert "note" not in msg.lower(), f"nothing may blame Notes, got: {msg!r}"
+    # The box is ABOVE the description field, not under Notes.
+    err_top = err.bounding_box()["y"]
+    desc_top = page.locator("#fh-description").bounding_box()["y"]
+    notes_top = page.locator("#fh-notes").bounding_box()["y"]
+    assert err_top < desc_top < notes_top, "the error must sit above the fields, not beneath Notes"
+    # And the eye is taken to the field that is actually wrong.
+    assert page.evaluate("() => document.activeElement && document.activeElement.id") == "fh-qty"
+
+    # Fill the quantity, still no Notes: it saves.
+    page.fill("#fh-qty", "3")
+    page.click("#fh-save-btn")
+    expect(page.locator("#modal-free-hand")).to_have_class(re.compile(r"\bhidden\b"), timeout=T)
+    expect(page.locator("#repair-lines-body tr")).to_have_count(1, timeout=T)

@@ -40,7 +40,7 @@ import { PreJobCardModal } from './PreJobCardModal'
 import { RepairPhasePanel } from './RepairPhasePanel'
 import { PreJobSignoffModal } from './PreJobSignoffModal'
 import { BottleneckIndicator } from './BottleneckIndicator'
-import type { Costing, PrejobCardSummary } from '../../data/costingsData'
+import { liveToCosting, type Costing, type LiveCalculation, type PrejobCardSummary } from '../../data/costingsData'
 import type { Status } from '../../data/types'
 
 // v1.45 — a validated reference is a POINTER at a saved costing (label +
@@ -77,7 +77,26 @@ export function CostingDetail() {
   const [validatedRef, setValidatedRef] = useState<ValidatedRef | null>(null)
   const [vrefBusy, setVrefBusy] = useState(false)
 
-  const c = costings.find((x) => x.quote_number === decodeURIComponent(quote))
+  // v1.49 — a soft-deleted costing is NOT in the live list (the server withholds
+  // it), but the Deleted pill navigates here. Fall back to the deleted list so
+  // the page renders — with export and quotation withheld and a Deleted badge —
+  // instead of "not found". `costings` itself stays live-only: many consumers
+  // (KPIs, planning, production) rely on that.
+  const [deletedFallback, setDeletedFallback] = useState<Costing | null>(null)
+  const liveHit = costings.find((x) => x.quote_number === decodeURIComponent(quote))
+  useEffect(() => {
+    if (liveHit || mode !== 'live') { setDeletedFallback(null); return }
+    let alive = true
+    apiGet<LiveCalculation[]>('/api/calculations?filter=deleted&limit=200')
+      .then((rows) => {
+        if (!alive) return
+        const hit = rows.map(liveToCosting).find((x) => x.quote_number === decodeURIComponent(quote))
+        setDeletedFallback(hit ?? null)
+      })
+      .catch(() => { if (alive) setDeletedFallback(null) })
+    return () => { alive = false }
+  }, [liveHit, mode, quote])
+  const c = liveHit ?? deletedFallback ?? undefined
   // §0.21 — the live Pre-Job Card summary rides on the costing (CostingsContext merges
   // /api/prejob-cards/summaries into every row). When present it supersedes the legacy
   // job-level sign-off widget; one card → one sign-off surface across all costings views.
@@ -182,6 +201,11 @@ export function CostingDetail() {
             {c.quote_type === 'Repair' && (
               <span className="rounded bg-[#7E22CE]/10 px-2 py-0.5 text-[11px] font-bold uppercase text-[#7E22CE]">Repair</span>
             )}
+            {c.deleted_at && (
+              <span data-testid="deleted-badge"
+                    title={`Deleted ${c.deleted_by ? 'by ' + c.deleted_by + ' ' : ''}on ${c.deleted_at}. Export and quotation are unavailable — Duplicate to make a new costing, or ask an admin to restore it.`}
+                    className="rounded bg-status-red/10 px-2 py-0.5 text-[11px] font-bold uppercase text-status-red">Deleted</span>
+            )}
             {c.status === 'Pre-Job Sent' && !prejobCard && (
               <BottleneckIndicator
                 salesAt={c.pre_job_signoff_sales_at ?? null}
@@ -243,7 +267,7 @@ export function CostingDetail() {
               Gated on the server's has_repair_quote, not on quote_type: a
               Calculator 2 repair tick also reads as 'Repair' here but has a
               body, and the download endpoint refuses it with 409. */}
-          {c.has_repair_quote && c.calculation_id && (
+          {c.has_repair_quote && c.calculation_id && !c.deleted_at && (
             <button
               data-testid="repair-quote-btn"
               onClick={() =>
@@ -259,7 +283,11 @@ export function CostingDetail() {
               <FileText size={14} /> Repair quotation (PDF)
             </button>
           )}
-          <button
+          {/* v1.49 (Michael, 19 Aug) — a DELETED costing gets no Export and no
+              quotation. The server refuses both (rule 1), but a button that
+              exists and then errors with raw JSON is not a rule the user can
+              see. Duplicate remains the way to a new costing from it. */}
+          {!c.deleted_at && <button
             data-testid="export-open-btn"
             onClick={async () => {
               if (!c.calculation_id) {
@@ -283,7 +311,7 @@ export function CostingDetail() {
             className="flex items-center gap-1 rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-body hover:bg-surface-alt"
           >
             <Package size={14} /> Export
-          </button>
+          </button>}
           <button
             onClick={() =>
               c.calculation_id

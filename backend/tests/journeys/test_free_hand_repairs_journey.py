@@ -743,8 +743,19 @@ def test_saving_a_repair_lands_on_the_costings_board_with_the_row_highlighted(pa
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
 
-    frame.locator("#trailer-select").select_option("repair")
-    expect(frame.locator("#repair-add-freehand")).to_be_visible(timeout=T)
+    # select_option -> the surface swap is one-shot and can be lost while the
+    # EMBED settles (banked v1.44 flake class; the email journey's
+    # _select_trailer_and_wait_bom does the same). Re-select until REPAIRS
+    # renders. Ubuntu CI hit this once; Windows did not.
+    add_btn = frame.locator("#repair-add-freehand")
+    for _ in range(4):
+        frame.locator("#trailer-select").select_option("repair")
+        try:
+            expect(add_btn).to_be_visible(timeout=8_000)
+            break
+        except AssertionError:
+            continue
+    expect(add_btn).to_be_visible(timeout=T)
     frame.locator("#f-repair-type").fill("Board landing test")
     frame.locator("#repair-add-freehand").click()
     expect(frame.locator("#modal-free-hand")).not_to_have_class(re.compile(r"\bhidden\b"), timeout=T)

@@ -6596,6 +6596,11 @@ async function recallValidatedReference(refId) {
     editingQuoteNumber = null;
     editReplay         = null;
     lastRecordId       = null;
+    // ...which makes this a fresh-start site like Duplicate and Edit, so it owes
+    // the same reset. It was the one that never called it: before v1.49 that only
+    // left a stale "Saved" label behind, but the save-once gate would now be stuck
+    // on for a recall done straight after a save.
+    _resetSavedOnce();
 
     await runCalc();
 

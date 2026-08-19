@@ -271,7 +271,7 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
     # by exactly qty × price.
     row = page.locator("tr.fh-row")
     expect(row).to_have_count(1, timeout=T)
-    expect(row).to_contain_text("Rubber seal kit")
+    expect(row).to_contain_text("RUBBER SEAL KIT")   # v1.49 - upper-cased on the surface
     expect(row).to_contain_text("manual")
     _wait_for_total(page, baseline + 900.0)
     shot(page, "free_hand_extra_added", JOURNEY)
@@ -299,7 +299,10 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
 def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) -> None:
     base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
     admin_session(page, base=base)
-    page.goto("/mes/calculator")
+    # ?stay=1 - v1.49 sends a standalone calculator to the costings board ~1s
+    # after a save; this journey keeps asserting on the saved surface, so it
+    # opts out. The navigation itself is covered by its own journey below.
+    page.goto("/mes/calculator?stay=1")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
 
     # REPAIRS is its own entry under a divider — a MODE, not a body template.
@@ -385,11 +388,10 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     # It must now stay disabled, and say so; Duplicate is the way to make another.
     expect(page.locator("#approve-btn")).to_be_disabled()
     expect(page.locator("#approve-btn")).to_have_text(re.compile("Saved"))
-    # ...and a recalc (toggle a line off and back on) must NOT re-arm it.
-    tick = page.locator("#repair-lines-body input[type=checkbox]").first
-    tick.check()
-    page.wait_for_timeout(1500)
-    tick.uncheck()
+    # ...and nothing that used to re-arm it may do so. Ticking a line was the
+    # obvious recalc path; since the lock (below) it is refused outright, so
+    # drive the recalc directly and prove the gate still holds regardless.
+    page.evaluate("() => { if (typeof runRepairCalc === 'function') runRepairCalc(); }")
     page.wait_for_timeout(1500)
     expect(page.locator("#approve-btn")).to_be_disabled()
     n_before = None
@@ -403,6 +405,17 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     with __import__("app.database", fromlist=["SessionLocal"]).SessionLocal() as _db:
         from app.database import CalculationRecord as _CR
         assert _db.query(_CR).filter_by(customer_id=laneC_body["customer"], is_repair=True).count() == n_before,             "a second save of the same repair got through"
+
+    # v1.49 (Michael, 19 Aug): after the save the LINES ARE LOCKED. The per-line
+    # edit / remove controls are gone, and forcing the mutators does nothing but
+    # warn. (Standalone, the page then navigates to the board - see below - so
+    # assert this before that fires; embedded, the parent frame navigates.)
+    expect(page.locator("#repair-lines-body button[title='Edit this line']")).to_have_count(0)
+    expect(page.locator("#repair-lines-body button[title='Remove this line']")).to_have_count(0)
+    n_lines = page.locator("#repair-lines-body tr").count()
+    page.evaluate("() => { const k = (repairLines[0]||{}).key; if (k) removeFreeHandLine(k); }")
+    page.wait_for_timeout(300)
+    assert page.locator("#repair-lines-body tr").count() == n_lines, "a saved repair's lines must not be removable"
 
     # It saved with the EXISTING repair identity: is_repair, no trailer.
     from app.database import SessionLocal, CalculationRecord
@@ -713,3 +726,48 @@ def test_a_refused_line_names_its_field_and_never_blames_notes(page: Page, laneC
     page.click("#fh-save-btn")
     expect(page.locator("#modal-free-hand")).to_have_class(re.compile(r"\bhidden\b"), timeout=T)
     expect(page.locator("#repair-lines-body tr")).to_have_count(1, timeout=T)
+
+
+def test_saving_a_repair_lands_on_the_costings_board_with_the_row_highlighted(page: Page, laneC_body) -> None:
+    """v1.49 (Michael, 19 Aug): "when the user has approved ... take the user to
+    the costings page /mes-app/costings and highlight the repair he has just done."
+
+    The REAL user path: the calculator embedded at /mes-app/costings/new. The
+    save posts mes:costing-saved to the parent frame, which refreshes the list
+    and navigates to /costings?highlight=<quote>; the board scrolls that row into
+    view and pulses it. Uses ?stay-free defaults - this is the navigation itself.
+    """
+    base = os.environ.get("MES_BASE", _DEFAULT_BASE).rstrip("/")
+    admin_session(page, base=base)
+    page.goto("/mes-app/costings/new")
+    frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
+    expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
+
+    frame.locator("#trailer-select").select_option("repair")
+    expect(frame.locator("#repair-add-freehand")).to_be_visible(timeout=T)
+    frame.locator("#f-repair-type").fill("Board landing test")
+    frame.locator("#repair-add-freehand").click()
+    expect(frame.locator("#modal-free-hand")).not_to_have_class(re.compile(r"\bhidden\b"), timeout=T)
+    frame.locator("#fh-description").fill("landing seal")      # typed lower case on purpose
+    frame.locator("#fh-qty").fill("1")
+    frame.locator("#fh-unit-price").fill("120")
+    frame.locator("#fh-save-btn").click()
+    expect(frame.locator("#repair-lines-body tr")).to_have_count(1, timeout=T)
+    # v1.49: the description reads UPPER CASE on the surface
+    expect(frame.locator("#repair-lines-body tr").first).to_contain_text("LANDING SEAL")
+
+    frame.locator("#cust-select").select_option(value=str(laneC_body["customer"]))
+    expect(frame.locator("#approve-btn")).to_be_enabled(timeout=T)
+    frame.locator("#approve-btn").click()
+
+    # The parent navigates to the board with ?highlight=<quote>...
+    page.wait_for_url(re.compile(r"/mes-app/costings\?highlight="), timeout=T)
+    # ...and that row is on the page, marked, and scrolled into view.
+    row = page.locator("[data-testid='costing-row'][data-highlighted='true']")
+    expect(row).to_have_count(1, timeout=T)
+    expect(row).to_have_class(re.compile(r"animate-pulseRing"))
+    box = row.bounding_box()
+    vh = page.evaluate("() => window.innerHeight")
+    assert box and 0 <= box["y"] <= vh, "the highlighted row must be scrolled into the viewport"
+    # It is the repair just saved.
+    expect(row).to_contain_text(re.compile(r"Repair", re.I))

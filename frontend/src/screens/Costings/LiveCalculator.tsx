@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ExternalLink, FileSpreadsheet, RadioTower, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { ExportOptionsModal, type RatioOpt } from './ExportOptionsModal'
@@ -42,6 +42,7 @@ export function LiveCalculator() {
   // finish (mode flips off 'loading') before mounting the iframe so the
   // session cookie is in place when /calculator loads.
   const { mode, refresh } = useCostings()
+  const nav = useNavigate()
 
   // v1.39.6 — the legacy calculator posts `mes:costing-saved` to this parent frame when
   // "Approve & Save Costing" succeeds (calculator.js _doApprove); refetch the shared costings
@@ -53,7 +54,16 @@ export function LiveCalculator() {
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return
-      if (e.data?.type === 'mes:costing-saved') void refresh()
+      if (e.data?.type === 'mes:costing-saved') {
+        // v1.49 (Michael, 19 Aug): once a costing is APPROVED & SAVED the user
+        // is taken to the costings board with the new row highlighted, rather
+        // than left on a surface where the lines can still be edited and
+        // deleted. Refresh first so the row is there when the board mounts.
+        void refresh().then(() => {
+          const q = e.data?.quoteNumber
+          nav(q ? `/costings?highlight=${encodeURIComponent(q)}` : '/costings')
+        })
+      }
       if (e.data?.type === 'mes:export-options') {
         if (openTimer.current != null) { window.clearTimeout(openTimer.current); openTimer.current = null }
         setDialog({ ratios: e.data.ratios ?? [], selected: e.data.selected ?? null,

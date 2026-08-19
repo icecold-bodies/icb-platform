@@ -199,7 +199,9 @@ def test_free_hand_line_adds_qty_times_price_to_the_totals(client, admin_headers
     it = _item_by_key(after, "k1")
     assert it is not None, "the free-hand line is missing from items"
     assert it["free_hand"] is True
-    assert it["material"] == "Rubber seal kit"
+    # v1.49 (Michael, 19 Aug): the description is stored UPPER CASE however it
+    # was typed - the fixture sends "Rubber seal kit" on purpose.
+    assert it["material"] == "RUBBER SEAL KIT"
     assert it["quantity"] == pytest.approx(2.0)
     assert it["unit_price"] == pytest.approx(450.0)
     assert it["line_cost"] == pytest.approx(900.0)
@@ -320,7 +322,7 @@ def test_free_hand_line_survives_the_save_snapshot(client, admin_headers, seeded
     assert got.status_code == 200, got.text
     lines = got.json()["free_hand_lines"]
     assert len(lines) == 1
-    assert lines[0]["description"] == "Rubber seal kit"
+    assert lines[0]["description"] == "RUBBER SEAL KIT"   # v1.49 - upper-cased on the way in
     assert lines[0]["qty"] == pytest.approx(2.0)
     assert lines[0]["unit_price"] == pytest.approx(450.0)
     assert lines[0]["notes"] == "ex stock Cape Town"
@@ -716,7 +718,7 @@ def test_reopening_a_body_costing_returns_its_free_hand_extras(
     d = client.get(f"/api/calculations/{rec_id}", headers=admin_headers).json()
     lines = d["free_hand_lines"]
     assert len(lines) == 1, "the manual line must survive the round trip"
-    assert lines[0]["description"] == "Rubber seal kit"
+    assert lines[0]["description"] == "RUBBER SEAL KIT"   # v1.49 - upper-cased on the way in
     assert lines[0]["qty"] == pytest.approx(2.0)
     assert lines[0]["unit_price"] == pytest.approx(450.0)
     assert lines[0]["notes"] == "ex stock Cape Town"
@@ -728,3 +730,20 @@ def test_reopening_a_body_costing_returns_its_free_hand_extras(
     ), headers=admin_headers)
     assert again.status_code == 200, again.text
     assert again.json()["grand_total"] == pytest.approx(saved_total)
+
+
+def test_a_free_hand_description_is_stored_upper_case_however_typed(client, admin_headers, seeded):
+    """Michael, 19 Aug: repair line descriptions default to upper case.
+
+    Normalised server-side at the one place every free-hand line passes through,
+    so it holds however the text arrived - typed, pasted, or from a script. The
+    client also upper-cases the input as the user types; this pins the server.
+    """
+    r = client.post("/api/calculate", json=_body(
+        seeded,
+        free_hand_lines=[_fh(description="mixed Case  Text", bom_section_id=seeded["opt_sec"],
+                             category=OPT_SECTION)],
+    ), headers=admin_headers)
+    assert r.status_code == 200, r.text
+    it = _item_by_key(r.json(), "k1")
+    assert it["material"] == "MIXED CASE  TEXT"

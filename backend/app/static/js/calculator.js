@@ -5499,6 +5499,12 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
           window.location.origin,
         );
       } catch (e) { /* detached / cross-origin parent — non-fatal */ }
+    } else if (result.quote_number && !new URLSearchParams(location.search).has('stay')) {
+      // v1.49 (Michael, 19 Aug): standalone (not embedded), the calculator takes
+      // the user to the costings board itself, with the new row highlighted -
+      // after a visible, cancellable countdown, matching the embedded page.
+      // ?stay=1 suppresses it entirely (journeys that keep asserting here).
+      _savedCountdown(result.quote_number);
     }
   } catch(e) {
     toast('Approve failed: ' + e.message, 'error');
@@ -5521,6 +5527,42 @@ function _resetSavedOnce() {
   }
   // Stays disabled until the next calc enables it - same as a first load.
   b.disabled = true;
+}
+
+// v1.49 - standalone post-save countdown to the costings board. A bar under
+// the topbar: "Saved A1/08/2026. Going to the costings board in 5s... [Go now] [Stay here]".
+// Cancellable because a person may still want Export / View here; the lines are
+// already locked, so staying cannot change the record.
+function _savedCountdown(quoteNumber) {
+  let left = 5;
+  const target = '/mes-app/costings?highlight=' + encodeURIComponent(quoteNumber);
+  const bar = document.createElement('div');
+  bar.id = 'saved-banner';
+  bar.setAttribute('data-testid', 'saved-banner');
+  bar.style.cssText = 'position:sticky;top:0;z-index:50;display:flex;gap:10px;align-items:center;'
+    + 'justify-content:space-between;padding:8px 14px;font-size:13px;'
+    + 'background:rgba(16,185,129,.10);border-bottom:1px solid rgba(16,185,129,.4)';
+  const txt = document.createElement('span');
+  const go = document.createElement('button'); go.className = 'btn btn-primary btn-sm'; go.textContent = 'Go now';
+  go.setAttribute('data-testid', 'saved-go-now');
+  const stay = document.createElement('button'); stay.className = 'btn btn-outline btn-sm'; stay.textContent = 'Stay here';
+  stay.setAttribute('data-testid', 'saved-stay');
+  const right = document.createElement('span'); right.style.cssText = 'display:flex;gap:6px';
+  right.appendChild(go); right.appendChild(stay);
+  bar.appendChild(txt); bar.appendChild(right);
+  const host = document.querySelector('.page, main, body') || document.body;
+  host.insertBefore(bar, host.firstChild);
+  let timer = null;
+  const render = function () {
+    txt.innerHTML = '<strong>Saved ' + String(quoteNumber).replace(/</g, '&lt;') + '.</strong> Going to the costings board in ' + left + 's…';
+  };
+  const tick = function () {
+    if (left <= 0) { window.location.assign(target); return; }
+    render(); left -= 1; timer = setTimeout(tick, 1000);
+  };
+  go.onclick = function () { if (timer) clearTimeout(timer); window.location.assign(target); };
+  stay.onclick = function () { if (timer) clearTimeout(timer); bar.remove(); };
+  tick();
 }
 
 // v1.49 (Michael's rule 2). After a save the button is disabled and reads
@@ -8389,6 +8431,7 @@ function openFreeHandLine(sectionId, sectionName) {
 }
 
 function openRepairFreeHandLine() {
+  if (_linesLocked('added to')) return;
   _fhTarget  = null;
   _fhEditKey = null;
   _fhFillDialog(null);
@@ -8400,7 +8443,18 @@ function openRepairFreeHandLine() {
   _fhFocus('fh-description');
 }
 
+// v1.49 (Michael, 19 Aug): once a costing is SAVED its lines are locked here.
+// Editing, removing, adding or ticking a line after the save would change the
+// screen but not the record, and the user is about to be sent to the costings
+// board anyway. Duplicate is the way to a new, editable costing from it.
+function _linesLocked(action) {
+  if (!lastRecordId) return false;
+  toast('This costing is saved - its lines cannot be ' + (action || 'changed') + '. Use Duplicate to make a new costing from it.', 'warn');
+  return true;
+}
+
 function editFreeHandLine(key) {
+  if (_linesLocked('edited')) return;
   const line = _fhFind(key);
   if (!line) return;
   _fhEditKey = key;
@@ -8504,6 +8558,7 @@ function submitFreeHandLine() {
 }
 
 function removeFreeHandLine(key) {
+  if (_linesLocked('removed')) return;
   const lines = _fhLines();
   const i = lines.findIndex(function (l) { return l.key === key; });
   if (i < 0) return;
@@ -8514,6 +8569,7 @@ function removeFreeHandLine(key) {
 // Include / exclude, matching the tick semantics of the section the line sits in:
 // checked = EXCLUDED (the calculator's red-checkbox convention).
 function toggleFreeHandLine(key, excluded) {
+  if (_linesLocked('ticked')) { renderRepairSurface(); return; }
   const line = _fhFind(key);
   if (!line) return;
   line.excluded = !!excluded;
@@ -8934,10 +8990,11 @@ function renderRepairSurface() {
       + (out ? '<span style="color:var(--text-dim)">—</span>'
              : money(it ? it.line_cost : l.qty * l.unit_price)) + '</td>'
       + '<td style="padding:5px 4px;white-space:nowrap;text-align:right">'
-      + '<button type="button" onclick="editFreeHandLine(\'' + l.key + '\')" title="Edit this line"'
+      + (lastRecordId ? '' :        // v1.49 - saved: no edit / remove
+          '<button type="button" onclick="editFreeHandLine(\'' + l.key + '\')" title="Edit this line"'
       + ' style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:12px;padding:1px 4px">✎</button>'
       + '<button type="button" onclick="removeFreeHandLine(\'' + l.key + '\')" title="Remove this line"'
-      + ' style="background:none;border:none;cursor:pointer;color:var(--red,#e35d6a);font-size:12px;padding:1px 4px">✕</button>'
+      + ' style="background:none;border:none;cursor:pointer;color:var(--red,#e35d6a);font-size:12px;padding:1px 4px">✕</button>')
       + '</td></tr>';
   }).join('');
 
@@ -9013,7 +9070,7 @@ function _fhBomRow(it, gid, collapsed, secEnabled) {
       + ' title="' + (out ? 'Untick to include this item' : 'Tick to exclude this item') + '"'
       + ' style="cursor:pointer;width:13px;height:13px;vertical-align:middle;margin-right:6px;accent-color:var(--red,#e35d6a)">'
     : '';
-  const actions = line
+  const actions = (line && !lastRecordId)   // v1.49 - saved: no edit / remove
     ? '<button type="button" onclick="event.stopPropagation();editFreeHandLine(\'' + line.key + '\')"'
       + ' title="Edit this line" style="background:none;border:none;cursor:pointer;'
       + 'color:var(--text-dim);font-size:11px;padding:0 3px">✎</button>'

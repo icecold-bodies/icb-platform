@@ -173,8 +173,15 @@ def parse_lines(raw, *, allow_stock: bool = False, allow_total_only: bool = Fals
             total_only = False
         else:
             mat_id      = None
+            # v1.49 (Michael, 19 Aug): a repair line's description is UPPER CASE.
+            # Normalised HERE, at the one place every free-hand line passes
+            # through, so it holds however the text arrived - typed in the
+            # modal, pasted, or sent by a script. The client also upper-cases
+            # the input as the user types, so what they see is what is stored.
+            # Stock lines take the catalogue name verbatim (that name is master
+            # data, and already upper case in practice) - not touched here.
             description = _text(item.get("description"), field="Description",
-                                cap=MAX_DESCRIPTION, required=True)
+                                cap=MAX_DESCRIPTION, required=True).upper()
             unit        = _text(item.get("unit"), field="Unit", cap=MAX_UNIT) or "each"
             _raw_qty   = item.get("qty")
             _raw_price = item.get("unit_price")

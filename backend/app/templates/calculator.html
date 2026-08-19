@@ -1402,8 +1402,14 @@ function _pidCopy(id, btn) {
            border-radius:6px;padding:6px 8px;margin-bottom:10px"></div>
       <div class="form-group stacked">
         <label class="form-label" for="fh-description">Description *</label>
+        {# v1.49 - repair line descriptions are UPPER CASE (Michael, 19 Aug).
+           text-transform shows it as typed; the JS upper-cases the VALUE on
+           input so the stored text matches the display, and the server
+           normalises again regardless. #}
         <input class="form-control" type="text" id="fh-description" maxlength="200"
-               placeholder="e.g. Rubber seal kit" autocomplete="off"/>
+               placeholder="E.G. RUBBER SEAL KIT" autocomplete="off"
+               style="text-transform:uppercase"
+               oninput="this.value = this.value.toUpperCase()"/>
       </div>
       <div style="display:flex;gap:8px">
         <div class="form-group stacked" style="flex:1">
@@ -1474,7 +1480,7 @@ const CURRENT_USER_ID   = {{ user.id }};
 const CURRENT_USER_NAME = {{ user.username | tojson }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
-<script defer src="/static/js/calculator.js?v=164"></script>
+<script defer src="/static/js/calculator.js?v=166"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

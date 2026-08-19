@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Search,
   Plus,
@@ -44,6 +44,13 @@ import { Spinner } from '../../components/ui/feedback'
 // scrolling inside an unfinished costing — so the prop and its five branches went with it.
 export function CostingsDashboard() {
   const nav = useNavigate()
+  // v1.49 (Michael, 19 Aug): after "Approve & Save" the calculator sends the
+  // user here with ?highlight=<quote>. Scroll that row into view and pulse it
+  // for a few seconds, then drop the param so a reload does not re-pulse.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const highlightQuote = searchParams.get('highlight')
+  const [pulsing, setPulsing] = useState<string | null>(null)
+  const highlightRef = useRef<HTMLTableRowElement | null>(null)
   const { mode, costings, statusCounts, acceptStage, refresh, scheduleRepairPhases, acceptCosting, declineCosting } = useCostings()
   const { profile, hasPermission, isAdmin } = useAppData()
   // v1.49 — admin-only right-click delete. ctxMenu holds the row the menu was
@@ -64,6 +71,30 @@ export function CostingsDashboard() {
     const t = setTimeout(() => setToast(''), 3200)
     return () => clearTimeout(t)
   }, [toast])
+
+  useEffect(() => {
+    if (!highlightQuote) return
+    setPulsing(highlightQuote)
+    // The row may not be rendered yet (list still refetching) - retry briefly.
+    let tries = 0
+    const tick = window.setInterval(() => {
+      const el = highlightRef.current
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        window.clearInterval(tick)
+      } else if (++tries > 20) {
+        window.clearInterval(tick)
+      }
+    }, 150)
+    const off = window.setTimeout(() => {
+      setPulsing(null)
+      const next = new URLSearchParams(searchParams)
+      next.delete('highlight')
+      setSearchParams(next, { replace: true })
+    }, 6000)
+    return () => { window.clearInterval(tick); window.clearTimeout(off) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightQuote])
 
   async function doDelete(c: Costing) {
     if (!c.calculation_id) {
@@ -345,9 +376,13 @@ export function CostingsDashboard() {
               {rows.map((c, i) => (
                 <tr
                   key={c.quote_number}
+                  ref={c.quote_number === pulsing ? highlightRef : undefined}
                   data-testid="costing-row"
+                  data-highlighted={c.quote_number === pulsing ? 'true' : undefined}
                   className={`cursor-pointer border-b border-line hover:bg-primary-light/40 ${
-                    i % 2 ? 'bg-surface-alt' : 'bg-white'
+                    c.quote_number === pulsing
+                      ? 'animate-pulseRing bg-primary-light/60 ring-2 ring-primary'
+                      : i % 2 ? 'bg-surface-alt' : 'bg-white'
                   }`}
                   onClick={() => nav(`/costings/${encodeURIComponent(c.quote_number)}`)}
                   onContextMenu={(e) => {

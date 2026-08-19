@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ExternalLink, FileSpreadsheet, RadioTower, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { ExportOptionsModal, type RatioOpt } from './ExportOptionsModal'
@@ -31,6 +31,13 @@ export function LiveCalculator() {
   // /api/export/preview itself and triggers the download. Same-origin iframe.
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const [exportOpen, setExportOpen] = useState(false)
+  // v1.49 — after a save, a short visible countdown to the costings board with
+  // the new row highlighted. Cancellable: the export/email dialog and the
+  // validated-reference actions live on THIS page and work the saved costing,
+  // so yanking the page the instant the save returns would break real work
+  // (and did break three journeys). "Stay" keeps the page; the lines are
+  // already locked by the calculator, so staying cannot edit the record.
+  const [saved, setSaved] = useState<{ quote: string | null; left: number } | null>(null)
   const [dialog, setDialog] = useState<{
     ratios: RatioOpt[]; selected: number | null; hasResult: boolean; contactEmail?: string
   } | null>(null)
@@ -42,6 +49,7 @@ export function LiveCalculator() {
   // finish (mode flips off 'loading') before mounting the iframe so the
   // session cookie is in place when /calculator loads.
   const { mode, refresh } = useCostings()
+  const nav = useNavigate()
 
   // v1.39.6 — the legacy calculator posts `mes:costing-saved` to this parent frame when
   // "Approve & Save Costing" succeeds (calculator.js _doApprove); refetch the shared costings
@@ -53,7 +61,16 @@ export function LiveCalculator() {
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return
-      if (e.data?.type === 'mes:costing-saved') void refresh()
+      if (e.data?.type === 'mes:costing-saved') {
+        // v1.49 (Michael, 19 Aug): once a costing is APPROVED & SAVED the user
+        // is taken to the costings board with the new row highlighted. Refresh
+        // first so the row is there when the board mounts; then a visible,
+        // cancellable countdown (see the effect below) rather than an instant
+        // jump — this page still hosts export/email and validated-reference
+        // actions on the saved costing.
+        const q: string | null = e.data?.quoteNumber ?? null
+        void refresh().then(() => setSaved({ quote: q, left: 5 }))
+      }
       if (e.data?.type === 'mes:export-options') {
         if (openTimer.current != null) { window.clearTimeout(openTimer.current); openTimer.current = null }
         setDialog({ ratios: e.data.ratios ?? [], selected: e.data.selected ?? null,
@@ -71,6 +88,16 @@ export function LiveCalculator() {
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
   }, [refresh])
+
+  useEffect(() => {
+    if (!saved) return
+    if (saved.left <= 0) {
+      nav(saved.quote ? `/costings?highlight=${encodeURIComponent(saved.quote)}` : '/costings')
+      return
+    }
+    const t = window.setTimeout(() => setSaved((x) => (x ? { ...x, left: x.left - 1 } : x)), 1000)
+    return () => window.clearTimeout(t)
+  }, [saved, nav])
 
   const openPreviewDialog = () => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'mes:export-options?' }, window.location.origin)
@@ -93,6 +120,26 @@ export function LiveCalculator() {
   return (
     <>
     <div className="flex h-[calc(100vh-96px)] flex-col">
+      {saved && (
+        <div data-testid="saved-banner"
+             className="flex flex-wrap items-center justify-between gap-2 border-b border-status-green/40 bg-status-green/10 px-4 py-2 text-sm text-body">
+          <span>
+            <strong>Saved{saved.quote ? ` ${saved.quote}` : ''}.</strong> Going to the costings board in {saved.left}s…
+          </span>
+          <span className="flex items-center gap-2">
+            <button data-testid="saved-go-now"
+                    onClick={() => setSaved({ ...saved, left: 0 })}
+                    className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-white hover:bg-primary-dark">
+              Go now
+            </button>
+            <button data-testid="saved-stay"
+                    onClick={() => setSaved(null)}
+                    className="rounded-md border border-line bg-white px-3 py-1 text-xs font-semibold text-body hover:bg-surface-alt">
+              Stay here
+            </button>
+          </span>
+        </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface-alt px-4 py-2 text-sm">
         <div className="flex items-center gap-2">
           <RadioTower size={15} className="text-status-green" />

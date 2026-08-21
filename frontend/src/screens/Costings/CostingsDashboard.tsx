@@ -433,20 +433,33 @@ export function CostingsDashboard() {
                   {/* Nadie (20 Aug) — the END USER (the customer's own customer,
                       snapshotted on the costing in #141) in brackets after the
                       customer, so a reseller's quotes tell themselves apart on the
-                      board. With no end user the cell is byte-identical to before:
-                      no brackets, no separator, not even a stray space, because
-                      the whole suffix is conditional rather than an empty string.
-                      max-w + truncate keeps a long pair on one line — the row must
-                      never wrap — and title carries the untruncated value. */}
-                  <td data-testid="costing-customer" className="max-w-[220px] truncate px-3 py-2"
-                      title={c.end_user_company
-                        ? `${c.customer_name} (${c.end_user_company})`
-                        : c.customer_name}>
-                    {c.customer_name}
-                    {c.end_user_company && (
+                      board.
+
+                      With no end user this cell is byte-identical to before the
+                      feature existed — and that is asserted on the ATTRIBUTES, not
+                      just the text. The truncation and the title belong to the
+                      bracketed pair, so they are applied ONLY when there is one:
+                      hung on the cell unconditionally, they clipped long CUSTOMER
+                      names that had always rendered in full ("360 DEGREES CARRIERS
+                      (PTY) LTD" → "360 DEGREES CARRIERS (PTY)…") and put a tooltip
+                      on every row. Nadie asked for the end user to be visible, not
+                      for the customer column to start hiding things.
+
+                      When there IS an end user, max-w + truncate keep the pair on
+                      one line — the row must never wrap — and title carries the
+                      untruncated value. */}
+                  {c.end_user_company ? (
+                    <td data-testid="costing-customer"
+                        className="max-w-[260px] truncate px-3 py-2"
+                        title={`${c.customer_name} (${c.end_user_company})`}>
+                      {c.customer_name}
                       <span className="text-muted"> ({c.end_user_company})</span>
-                    )}
-                  </td>
+                    </td>
+                  ) : (
+                    <td data-testid="costing-customer" className="px-3 py-2">
+                      {c.customer_name}
+                    </td>
+                  )}
                   <td className="max-w-[150px] truncate px-3 py-2" title={c.contact_name ?? undefined}>
                     {c.contact_name ?? ''}
                   </td>

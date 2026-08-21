@@ -115,6 +115,49 @@
                         style="resize:vertical;font-size:12px;line-height:1.5"></textarea>
             </div>
 
+            <!-- v1.50 P3 — the OPTIONAL "vehicle being repaired" block. Exists
+                 ONLY so "+ From body category" can compute quantities with the
+                 body costing's geometry. It never sets trailer_type_id on the
+                 costing: the repair stays a repair (is_repair_mode keys on that
+                 absence), with no BOM pull and no body-option logic. -->
+            <div style="border-top:1px solid var(--border);margin:10px 0 0;padding-top:8px"
+                 id="repair-vehicle-wrap">
+              <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
+                color:var(--text-dim);margin-bottom:2px">Vehicle being repaired (optional)</div>
+              <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px">
+                Only used to compute quantities for "+ From body category" —
+                the costing stays a repair quote.</div>
+              <div class="form-group stacked">
+                <label class="form-label" for="f-repair-vt">Body type</label>
+                <select id="f-repair-vt" onchange="onRepairVehicleTypeChange()">
+                  <option value="">— Select —</option>
+                  {% for t in trailers %}
+                  <option value="{{ t.id }}" data-name="{{ t.name }}"
+                          data-l="{{ t.default_length if t.default_length is not none else '' }}"
+                          data-w="{{ t.default_width if t.default_width is not none else '' }}"
+                          data-h="{{ t.default_height if t.default_height is not none else '' }}">{{ t.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div style="display:flex;gap:6px">
+                <div class="form-group stacked" style="flex:1">
+                  <label class="form-label" for="f-repair-len">Length (m)</label>
+                  <input class="form-control" type="number" id="f-repair-len" step="0.1" min="0.1"
+                         oninput="onRepairVehicleInput()"/>
+                </div>
+                <div class="form-group stacked" style="flex:1">
+                  <label class="form-label" for="f-repair-wid">Width (m)</label>
+                  <input class="form-control" type="number" id="f-repair-wid" step="0.05" min="0.01"
+                         oninput="onRepairVehicleInput()"/>
+                </div>
+                <div class="form-group stacked" style="flex:1">
+                  <label class="form-label" for="f-repair-hei">Height (m)</label>
+                  <input class="form-control" type="number" id="f-repair-hei" step="0.05" min="0.01"
+                         oninput="onRepairVehicleInput()"/>
+                </div>
+              </div>
+            </div>
+
             <!-- v1.47 Lane D (addendum D8) — the fields the ICB quotation
                  document prints in its header. All per-quote: the same customer's
                  next repair is a different vehicle, and the customer record holds
@@ -1478,6 +1521,77 @@ function _pidCopy(id, btn) {
     </div>
   </div>
 </div>
+
+<!-- ══ v1.50 P3 — the shared tick-list picker (REPAIRS surface) ═══════════════
+     ONE modal serves the three flows that show "a list of lines with tick
+     boxes": pulling a body category (pick categories → preview computed lines),
+     using a template (pick one → preview its lines at today's prices), and
+     saving ticked repair lines as a new template. The steps are sibling divs;
+     repairSources.js-side code shows one at a time. Ticked = INCLUDED here
+     (picker semantics) — distinct from the costing table's red exclude ticks. -->
+<div class="modal-backdrop hidden" id="modal-line-pick">
+  <div class="modal" style="max-width:760px;width:95vw">
+    <div class="modal-header">
+      <span class="modal-title" id="lp-title">+ From body category</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-line-pick')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="lp-note" style="font-size:11px;color:var(--text-dim);margin-bottom:8px"></div>
+      <div id="lp-error" role="alert" style="display:none;font-size:12px;color:var(--red);
+           background:var(--red-bg,rgba(220,38,38,.07));border:1px solid var(--red);
+           border-radius:6px;padding:6px 8px;margin-bottom:8px"></div>
+      <!-- save-as-template only: the template's own identity -->
+      <div id="lp-save-fields" style="display:none;margin-bottom:8px">
+        <div class="form-group stacked">
+          <label class="form-label" for="lp-tpl-name">Template name *</label>
+          <input class="form-control" type="text" id="lp-tpl-name" maxlength="200"
+                 placeholder="e.g. Standard side repair" autocomplete="off"/>
+        </div>
+        <div class="form-group stacked">
+          <label class="form-label" for="lp-tpl-desc">Description
+            <span style="font-weight:400;color:var(--text-dim)">(optional)</span></label>
+          <input class="form-control" type="text" id="lp-tpl-desc" maxlength="1000"
+                 placeholder="What this bundle is for" autocomplete="off"/>
+        </div>
+      </div>
+      <div id="lp-list" style="max-height:48vh;overflow:auto;border:1px solid var(--border);
+           border-radius:var(--radius);background:var(--bg-input)">
+        <div style="padding:16px;text-align:center;color:var(--text-dim);font-size:12px">Loading…</div>
+      </div>
+      <div id="lp-summary" style="font-size:11px;color:var(--text-dim);margin-top:6px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-line-pick')">Cancel</button>
+      <button class="btn btn-primary" id="lp-primary-btn" style="display:none"
+              onclick="lpPrimaryAction()">Add selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ v1.50 P3 — manage repair templates (rename / retire / restore) ═════════
+     The light admin surface (Default 10): reachable from the repair surface's
+     source menu, gated by costings.repair_templates_manage. -->
+<div class="modal-backdrop hidden" id="modal-tpl-manage">
+  <div class="modal" style="max-width:720px;width:95vw">
+    <div class="modal-header">
+      <span class="modal-title">Manage repair templates</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-tpl-manage')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">
+        Templates are shared with the whole team. Retiring one hides it from the
+        picker without deleting it — restore brings it back. Prices are never
+        stored: every use prices from the current material list.</div>
+      <div id="tplm-list" style="max-height:52vh;overflow:auto;border:1px solid var(--border);
+           border-radius:var(--radius);background:var(--bg-input)">
+        <div style="padding:16px;text-align:center;color:var(--text-dim);font-size:12px">Loading…</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-tpl-manage')">Close</button>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -1489,9 +1603,12 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 // v1.47 Lane D — defaults "Your Contact" on the repair surface (D8).
 const CURRENT_USER_NAME = {{ user.username | tojson }};
+// v1.50 P3 — shows the template create/manage actions. Display only: the
+// server enforces costings.repair_templates_manage on every write regardless.
+const canManageRepairTemplates = {{ 'true' if user_can(user, 'costings.repair_templates_manage') else 'false' }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
-<script defer src="/static/js/calculator.js?v=168"></script>
+<script defer src="/static/js/calculator.js?v=169"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

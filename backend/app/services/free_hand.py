@@ -155,6 +155,11 @@ def parse_lines(raw, *, allow_stock: bool = False, allow_total_only: bool = Fals
         # have the reply's items map back to its own rows.
         key = _text(item.get("key"), field="Line key", cap=64) or f"fh{idx}"
 
+        # v1.50 P3 — where the line came from, if it was pulled in rather than
+        # typed: a body-category name ("SIDES") or a template's stored origin.
+        # Display + grouping metadata only; it never touches the money.
+        origin = _text(item.get("origin"), field="Origin", cap=200) or None
+
         if kind == "stock":
             mat_id = item.get("material_id")
             try:
@@ -172,7 +177,18 @@ def parse_lines(raw, *, allow_stock: bool = False, allow_total_only: bool = Fals
             line_total = round(qty * unit_price, 2)
             total_only = False
         else:
-            mat_id      = None
+            # v1.50 P3 — a free-hand line may carry a material_id as PROVENANCE
+            # metadata: a line pulled from a body category knows which material
+            # it priced from, and save-as-template uses that to re-price the
+            # line live at use time. It is metadata ONLY — the price below is
+            # still the client-supplied snapshot, and nothing downstream treats
+            # the line as a catalogue row (the client keys stock behaviour on
+            # kind, never on material_id).
+            mat_id = item.get("material_id")
+            try:
+                mat_id = int(mat_id) if mat_id not in (None, "") else None
+            except (TypeError, ValueError):
+                mat_id = None
             # v1.49 (Michael, 19 Aug): a repair line's description is UPPER CASE.
             # Normalised HERE, at the one place every free-hand line passes
             # through, so it holds however the text arrived - typed in the
@@ -223,6 +239,7 @@ def parse_lines(raw, *, allow_stock: bool = False, allow_total_only: bool = Fals
             "material_id":    mat_id,
             "bom_section_id": section_id,
             "category":       _text(item.get("category"), field="Section", cap=200) or None,
+            "origin":         origin,
             "excluded":       bool(item.get("excluded")),
         })
     return out
@@ -307,6 +324,7 @@ def snapshot(lines: list[dict]) -> list[dict]:
             "material_id":    ln.get("material_id"),
             "bom_section_id": ln.get("bom_section_id"),
             "category":       ln.get("category"),
+            "origin":         ln.get("origin"),
             "excluded":       ln["excluded"],
         }
         for ln in lines
@@ -376,3 +394,51 @@ def repair_fields(body: dict, *, require_type: bool = True) -> dict:
         "payment_terms": _text(body.get("payment_terms"), field="Payment terms",
                                cap=MAX_PAYMENT_TERMS) or DEFAULT_PAYMENT_TERMS,
     }
+
+
+# Body dimensions are metres; the biggest bodies are ~15 m. Anything past this
+# is a typo, and a typo here silently inflates every pulled quantity.
+MAX_VEHICLE_DIM = 100.0
+
+
+def repair_vehicle_fields(body: dict) -> dict | None:
+    """The OPTIONAL "vehicle being repaired" block (v1.50 P3).
+
+    Body type + length/width/height, captured on the repair surface so
+    "+ From body category" can compute quantities with the body costing's own
+    geometry. It exists ONLY for that: it is stored under its own
+    ``repair_vehicle`` key in ``input_state`` and deliberately NEVER sets
+    ``trailer_type_id`` on the costing — ``is_repair_mode`` keys on that
+    absence, and this block must not flip a repair onto the body-costing path.
+
+    Returns a normalised dict, or None when the block is absent/empty. A
+    malformed value degrades to None rather than 422: the block is optional
+    display-and-recall state, and a stale client must never be able to wedge a
+    repair SAVE on it. (The category-preview endpoint does its own hard
+    validation at compute time — that is where wrong dims give wrong money.)
+    """
+    raw = body.get("repair_vehicle")
+    if not isinstance(raw, dict) or not raw:
+        return None
+    out: dict = {}
+    tid = raw.get("trailer_type_id")
+    try:
+        tid = int(tid) if tid not in (None, "") else None
+    except (TypeError, ValueError):
+        tid = None
+    if tid is not None:
+        out["trailer_type_id"] = tid
+        name = _text(raw.get("trailer_name"), field="Body type", cap=300)
+        if name:
+            out["trailer_name"] = name
+    for dim in ("length", "width", "height"):
+        v = raw.get(dim)
+        if v in (None, ""):
+            continue
+        try:
+            f = float(str(v).replace(",", "."))
+        except (TypeError, ValueError):
+            continue
+        if 0 < f <= MAX_VEHICLE_DIM:
+            out[dim] = f
+    return out or None

@@ -2390,6 +2390,7 @@ function _restoreLines(saved) {
       material_id: l.material_id != null ? +l.material_id : null,
       bom_section_id: l.bom_section_id != null ? +l.bom_section_id : null,
       category: l.category || null,
+      origin: l.origin || null,   // v1.50 P3 — the body-category / template chip
       excluded: !!l.excluded,
     };
   });
@@ -2418,6 +2419,9 @@ async function _openSavedRepair(payload, recordId, forEdit) {
   // repair with none shows the issued-on-save placeholder, which is exactly
   // what its next save will do.
   _setRepairDocNumber(forEdit ? (payload.repair_document_number || null) : null);
+  // v1.50 P3 — the "vehicle being repaired" block rides input_state and comes
+  // back on edit/duplicate, so "+ From body category" is ready to use again.
+  _setRepairVehicleInputs(payload.repair_vehicle || null);
   set('f-margin', payload.profit_margin ?? 0);
   restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
   setCustomer(payload.customer_id, payload.contact_id ?? null, payload.end_user_id ?? null);
@@ -5408,7 +5412,23 @@ async function approveCosting() {
   // Two repairs for one customer are two separate quotes, so the duplicate /
   // revision flow (which keys on customer + body type) is skipped: the server
   // saves every repair as version 1 with its own quote number.
-  if (repairMode) { await _doApprove(null, null); return; }
+  //
+  // v1.50 P3 — refresh the repair's OWN fields from the surface at save time.
+  // lastCalcPayload captures them at CALC time, but typing the type (or the
+  // vehicle block, or a document header field) does not re-cost — deliberately,
+  // v1.47: the type gates the SAVE, not the price. So a user who filled those
+  // in AFTER the last line change was saving a STALE payload: the server
+  // 422'd "Type of repair is required" against a form that plainly showed one.
+  if (repairMode) {
+    Object.assign(_pendingApproveBase, {
+      repair_type: String(document.getElementById('f-repair-type')?.value || '').trim(),
+      repair_scope: String(document.getElementById('f-repair-scope')?.value || '').trim() || null,
+      ..._repairDocFields(),
+      repair_vehicle: _readRepairVehicle(),
+    });
+    await _doApprove(null, null);
+    return;
+  }
 
   // Check for existing costings for this customer + trailer (all-time)
   try {
@@ -8791,6 +8811,7 @@ function enterRepairMode() {
     + 'Add repair lines to see the price summary</div>';
   document.getElementById('grand-total').textContent = '—';
   _setDisabled('approve-btn', true);
+  _setRepairVehicleInputs(null);   // v1.50 P3 — a fresh repair has no vehicle yet
   onRepairMetaInput();
 }
 
@@ -8798,6 +8819,7 @@ function exitRepairMode() {
   if (!repairMode) return;
   repairMode  = false;
   repairLines = [];
+  _setRepairVehicleInputs(null);   // v1.50 P3
   _repairToggleBodyInputs(true);
 }
 
@@ -8891,6 +8913,10 @@ async function runRepairCalc() {
     ratio_label:     _repairRatio().label,
     discount_kind:   discountKind,
     discount_input:  discountKind ? discountInput : null,
+    // v1.50 P3 — the vehicle block (body type + dims). Its own key, NEVER the
+    // top-level trailer_type_id/dimensions: those must stay null/{} or the
+    // server would treat this as a body costing.
+    repair_vehicle:  _readRepairVehicle(),
     dimensions:      {},
   };
   const status = document.getElementById('calc-status');
@@ -8969,14 +8995,20 @@ function _repairClearTotals() {
 
 // The wire shape the server validates. A stock line sends only what the server
 // cannot resolve for itself (material_id, qty, notes) — never a price.
+// v1.50 P3: origin (the body-category / template chip) rides both kinds; a
+// free-hand line also carries material_id as provenance METADATA (a body-
+// category pull), which save-as-template uses to re-price the line live.
 function _fhWireLine(l) {
   if (l.kind === 'stock') {
     return { kind: 'stock', key: l.key, material_id: l.material_id,
-             qty: l.qty, notes: l.notes, excluded: l.excluded };
+             qty: l.qty, notes: l.notes, origin: l.origin || null,
+             excluded: l.excluded };
   }
   return { kind: 'free_hand', key: l.key, description: l.description, qty: l.qty,
            unit: l.unit, unit_price: l.unit_price, notes: l.notes,
+           material_id: l.material_id || null,
            bom_section_id: l.bom_section_id, category: l.category,
+           origin: l.origin || null,
            excluded: l.excluded };
 }
 
@@ -9028,11 +9060,15 @@ function renderRepairSurface() {
     const it   = byKey[l.key];
     const out  = l.excluded;
     const dim  = out ? 'text-decoration:line-through;opacity:.5;' : '';
-    const chip = l.kind === 'stock'
-      ? '<span title="From the material list — priced at the list price"'
-        + ' style="display:inline-block;margin-left:6px;font-size:9px;background:rgba(88,166,255,.16);'
-        + 'color:var(--blue-hi);border-radius:3px;padding:1px 5px;letter-spacing:.3px;text-decoration:none">stock</span>'
-      : _fhManualChip();
+    // v1.50 P3 — a pulled line wears its ORIGIN (the body category or template
+    // it came from); the origin replaces the "manual" chip on a free-hand line
+    // (it says more), while a stock line keeps its "stock" chip alongside.
+    const chip = (l.origin ? _fhOriginChip(l.origin) : '')
+      + (l.kind === 'stock'
+        ? '<span title="From the material list — priced at the list price"'
+          + ' style="display:inline-block;margin-left:6px;font-size:9px;background:rgba(88,166,255,.16);'
+          + 'color:var(--blue-hi);border-radius:3px;padding:1px 5px;letter-spacing:.3px;text-decoration:none">stock</span>'
+        : (l.origin ? '' : _fhManualChip()));
     return '<tr style="border-bottom:1px solid rgba(48,54,61,.4);' + dim + '">'
       + '<td style="padding:5px 8px">'
       + '<div style="font-size:12px">'
@@ -9079,6 +9115,17 @@ function renderRepairSurface() {
     + ' onclick="openStockPicker()">+ From stock list</button>'
     + '<button type="button" class="btn btn-outline btn-sm" id="repair-add-freehand"'
     + ' onclick="openRepairFreeHandLine()">+ Free-hand line</button>'
+    // v1.50 P3 — the source dropdown: body categories + templates. One control
+    // (ratified), items enabled/dimmed at open time; a dimmed item still
+    // explains itself on click — never a silent no-op.
+    + '<div style="position:relative;display:inline-block">'
+    + '<button type="button" class="btn btn-outline btn-sm" id="repair-add-source"'
+    + ' onclick="toggleRepairSourceMenu(event)">+ From body category ▾</button>'
+    + '<div id="repair-source-menu" style="display:none;position:absolute;left:0;top:100%;'
+    + 'margin-top:3px;z-index:60;min-width:230px;background:var(--bg-panel);'
+    + 'border:1px solid var(--border);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.35);'
+    + 'padding:4px" onclick="event.stopPropagation()"></div>'
+    + '</div>'
     // v1.47 Lane D — the customer-facing quotation on the ICB letterhead. Only
     // offered once the repair is SAVED: the document carries a document number
     // from its own R-series, and that is issued at save time.
@@ -9169,6 +9216,649 @@ function _fhSectionBtn(secId, secName) {
     + '<span class="costing-state-pill calc-bulk-pill"'
     + ' style="background:rgba(240,165,0,.16);color:#f0a500;border:1px solid rgba(240,165,0,.5)">'
     + '+ Free-hand line</span></button>';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// v1.50 P3 — REPAIR LINE SOURCES: body categories + reusable templates.
+// A repair that replaces a whole body section pulls that section's lines from
+// the body template ("+ From body category"); the familiar bundle every repair
+// needs is saved once and reused ("+ From template"). Quantities come from the
+// SERVER's own body-costing engine (POST /api/repair/category-preview — the
+// same _build_bom_items + calculate_bom a body costing runs); template prices
+// resolve LIVE from the material list at the moment of use. Nothing here
+// recomputes money client-side.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── The "vehicle being repaired" block ─────────────────────────────────────
+// Body type + dims, used ONLY to compute pulled quantities. Sent to the server
+// under its own repair_vehicle key — top-level trailer_type_id stays null so
+// the costing remains a repair.
+
+function _repairVehicleEl(id) { return document.getElementById(id); }
+
+function onRepairVehicleTypeChange() {
+  const sel = _repairVehicleEl('f-repair-vt');
+  const opt = sel && sel.selectedOptions ? sel.selectedOptions[0] : null;
+  // Prefill EMPTY dims from the body type's defaults — never overwrite typed ones.
+  if (opt && opt.value) {
+    [['f-repair-len', 'l'], ['f-repair-wid', 'w'], ['f-repair-hei', 'h']].forEach(function (p) {
+      const el = _repairVehicleEl(p[0]);
+      const d = opt.getAttribute('data-' + p[1]);
+      if (el && !el.value && d) el.value = d;
+    });
+  }
+  onRepairVehicleInput();
+}
+
+function onRepairVehicleInput() { /* readiness is read fresh at menu-open + click */ }
+
+function _readRepairVehicle() {
+  const sel = _repairVehicleEl('f-repair-vt');
+  const tid = sel ? +sel.value : NaN;
+  const opt = sel && sel.selectedOptions ? sel.selectedOptions[0] : null;
+  const num = function (id) {
+    const el = _repairVehicleEl(id);
+    const v = parseFloat(el ? el.value : '');
+    return (isFinite(v) && v > 0) ? v : null;
+  };
+  const out = {
+    trailer_type_id: isFinite(tid) && tid > 0 ? tid : null,
+    trailer_name: opt && opt.value ? (opt.getAttribute('data-name') || opt.text) : null,
+    length: num('f-repair-len'), width: num('f-repair-wid'), height: num('f-repair-hei'),
+  };
+  if (!out.trailer_type_id && out.length == null && out.width == null && out.height == null) {
+    return null;
+  }
+  return out;
+}
+
+function _repairVehicleReady() {
+  const v = _readRepairVehicle();
+  return !!(v && v.trailer_type_id && v.length && v.width && v.height);
+}
+
+function _setRepairVehicleInputs(v) {
+  const set = function (id, val) {
+    const el = _repairVehicleEl(id);
+    if (el) el.value = val == null ? '' : val;
+  };
+  set('f-repair-vt', v && v.trailer_type_id ? v.trailer_type_id : '');
+  set('f-repair-len', v ? v.length : null);
+  set('f-repair-wid', v ? v.width : null);
+  set('f-repair-hei', v ? v.height : null);
+}
+
+// ── The source menu ────────────────────────────────────────────────────────
+
+function toggleRepairSourceMenu(ev) {
+  if (ev) ev.stopPropagation();
+  const menu = document.getElementById('repair-source-menu');
+  if (!menu) return;
+  if (menu.style.display !== 'none') { menu.style.display = 'none'; return; }
+  _renderRepairSourceMenu(menu);
+  menu.style.display = '';
+}
+
+function _renderRepairSourceMenu(menu) {
+  const item = function (label, handler, opts) {
+    opts = opts || {};
+    // Close the menu first: the container stops propagation (so the document
+    // closer never sees this click), which would otherwise leave it hanging
+    // open over the modal the item just opened.
+    return '<div onclick="toggleRepairSourceMenu();' + handler + '"'
+      + ' style="padding:7px 10px;font-size:12px;border-radius:4px;cursor:pointer;'
+      + (opts.dim ? 'color:var(--text-dim);opacity:.65;' : 'color:var(--text-head);')
+      + '" onmouseover="this.style.background=\'var(--bg-raise)\'"'
+      + ' onmouseout="this.style.background=\'\'">' + label
+      + (opts.hint ? '<div style="font-size:10px;color:var(--text-dim);margin-top:1px">'
+                     + opts.hint + '</div>' : '')
+      + '</div>';
+  };
+  const ready = _repairVehicleReady();
+  let html = item('From body category…', 'openCategoryPicker()', {
+    dim: !ready,
+    hint: ready ? null : 'Set the vehicle’s body type and dimensions first',
+  });
+  html += item('From template…', 'openTemplatePicker()');
+  if (typeof canManageRepairTemplates !== 'undefined' && canManageRepairTemplates) {
+    html += '<div style="border-top:1px solid var(--border);margin:4px 2px"></div>';
+    html += item('Save lines as a template…', 'openSaveAsTemplate()',
+                 { dim: !repairLines.length,
+                   hint: repairLines.length ? null : 'Add lines to the repair first' });
+    html += item('Manage templates…', 'openTemplateManager()');
+  }
+  menu.innerHTML = html;
+}
+
+// Close the menu on any outside click. Document-level and idempotent, so it is
+// safe to attach once at load — nothing here binds to elements that re-render.
+document.addEventListener('click', function () {
+  const menu = document.getElementById('repair-source-menu');
+  if (menu) menu.style.display = 'none';
+});
+
+// ── The shared tick-list picker (modal-line-pick) ──────────────────────────
+// One modal, three flows: category preview, template preview, save-as-template.
+// Ticked = INCLUDED (picker semantics — the red table ticks are the opposite
+// and stay untouched). All money shown is the SERVER's.
+
+let _lpMode = null;    // 'category' | 'template' | 'save'
+let _lpStep = null;    // 'cats' | 'tpls' | 'lines'
+let _lpRows = [];      // [{ticked, disabled, group, line:{...}}]
+let _lpCats = [];      // [{name, checked}]
+let _lpTplId = null;   // template being previewed
+
+function _lpMoney(v) { return hasFullCostAccess ? fmt(v || 0) : '••••'; }
+
+function _lpError(msg) {
+  const el = document.getElementById('lp-error');
+  if (!el) return;
+  if (!msg) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.textContent = msg;
+  el.style.display = '';
+}
+
+function _lpOpen(mode, title, note) {
+  _lpMode = mode;
+  _lpRows = [];
+  _lpError(null);
+  document.getElementById('lp-title').textContent = title;
+  document.getElementById('lp-note').textContent = note || '';
+  document.getElementById('lp-save-fields').style.display = mode === 'save' ? '' : 'none';
+  document.getElementById('lp-summary').textContent = '';
+  const btn = document.getElementById('lp-primary-btn');
+  btn.style.display = 'none';
+  document.getElementById('lp-list').innerHTML =
+    '<div style="padding:16px;text-align:center;color:var(--text-dim);font-size:12px">Loading…</div>';
+  openModal('modal-line-pick');
+}
+
+function lpPrimaryAction() {
+  if (_lpMode === 'category' && _lpStep === 'cats') return _lpPreviewCategories();
+  if (_lpMode === 'save') return _lpSaveTemplate();
+  return _lpAddSelected();
+}
+
+// ── Flow 1: from body category ─────────────────────────────────────────────
+
+async function openCategoryPicker() {
+  if (_linesLocked('added to')) return;
+  if (!_repairVehicleReady()) {
+    toast('Set the vehicle’s body type and dimensions first — the block sits '
+          + 'under Type of repair.', 'warn');
+    return;
+  }
+  const v = _readRepairVehicle();
+  _lpOpen('category', '+ From body category',
+          'Pick the sections of ' + (v.trailer_name || 'this body type')
+          + ' to pull in. Quantities are computed for '
+          + v.length + ' × ' + v.width + ' × ' + v.height + ' m by the same '
+          + 'engine a body costing uses.');
+  _lpStep = 'cats';
+  try {
+    const data = await api('GET', '/api/repair/body-categories?trailer_type_id=' + v.trailer_type_id);
+    _lpCats = (data.categories || []).map(function (c) {
+      return { name: c.name, checked: false };
+    });
+    _lpRenderCategories();
+  } catch (e) {
+    document.getElementById('lp-list').innerHTML = '';
+    _lpError('Could not load the categories: ' + e.message);
+  }
+}
+
+function _lpRenderCategories() {
+  const wrap = document.getElementById('lp-list');
+  if (!_lpCats.length) {
+    wrap.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-dim);'
+      + 'font-size:12px">This body type has no categories</div>';
+    return;
+  }
+  wrap.innerHTML = _lpCats.map(function (c, i) {
+    return '<label style="display:flex;gap:8px;align-items:center;padding:7px 10px;cursor:pointer;'
+      + 'border-bottom:1px solid rgba(48,54,61,.5);font-size:12px;color:var(--text-head)">'
+      + '<input type="checkbox" ' + (c.checked ? 'checked' : '')
+      + ' onchange="lpToggleCat(' + i + ', this.checked)"'
+      + ' style="cursor:pointer;width:13px;height:13px;accent-color:var(--blue)">'
+      + escHtml(c.name) + '</label>';
+  }).join('');
+  _lpUpdateCatButton();
+}
+
+function lpToggleCat(i, checked) {
+  if (_lpCats[i]) _lpCats[i].checked = !!checked;
+  _lpUpdateCatButton();
+}
+
+function _lpUpdateCatButton() {
+  const n = _lpCats.filter(function (c) { return c.checked; }).length;
+  const btn = document.getElementById('lp-primary-btn');
+  btn.style.display = '';
+  btn.disabled = !n;
+  btn.textContent = 'Preview lines';
+  document.getElementById('lp-summary').textContent =
+    n ? n + (n === 1 ? ' category' : ' categories') + ' picked' : 'Pick at least one category';
+}
+
+async function _lpPreviewCategories() {
+  const v = _readRepairVehicle();
+  const chosen = _lpCats.filter(function (c) { return c.checked; })
+                        .map(function (c) { return c.name; });
+  if (!chosen.length || !v) return;
+  _lpError(null);
+  const btn = document.getElementById('lp-primary-btn');
+  btn.disabled = true;
+  btn.textContent = 'Computing…';
+  try {
+    const data = await api('POST', '/api/repair/category-preview', {
+      trailer_type_id: v.trailer_type_id,
+      dimensions: { length: v.length, width: v.width, height: v.height },
+      categories: chosen,
+    });
+    _lpRows = (data.lines || []).map(function (ln) {
+      return { ticked: true, disabled: false, group: ln.category, line: ln };
+    });
+    _lpStep = 'lines';
+    document.getElementById('lp-note').textContent =
+      'Every line starts ticked — untick what the repair does not need, then Add selected. '
+      + 'Added lines are ordinary repair lines: edit, re-price or remove them freely.';
+    _lpRenderLines();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Preview lines';
+    _lpError(e.message);
+  }
+}
+
+// ── Flow 2: from template ──────────────────────────────────────────────────
+
+async function openTemplatePicker() {
+  if (_linesLocked('added to')) return;
+  _lpOpen('template', '+ From template',
+          'Pick a saved bundle. Its lines are priced at TODAY’s material-list '
+          + 'prices — templates never store money.');
+  _lpStep = 'tpls';
+  try {
+    const tpls = await api('GET', '/api/repair-templates');
+    _lpRenderTemplates(tpls);
+  } catch (e) {
+    document.getElementById('lp-list').innerHTML = '';
+    _lpError('Could not load the templates: ' + e.message);
+  }
+}
+
+function _lpRenderTemplates(tpls) {
+  const wrap = document.getElementById('lp-list');
+  if (!tpls.length) {
+    wrap.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-dim);font-size:12px">'
+      + 'No templates yet' + (typeof canManageRepairTemplates !== 'undefined' && canManageRepairTemplates
+        ? ' — tick lines on a repair and use “Save lines as a template”' : '') + '</div>';
+    return;
+  }
+  wrap.innerHTML = tpls.map(function (t) {
+    return '<div onclick="lpPickTemplate(' + t.id + ')" title="Preview this template"'
+      + ' style="display:flex;gap:8px;align-items:baseline;padding:7px 10px;cursor:pointer;'
+      + 'border-bottom:1px solid rgba(48,54,61,.5)"'
+      + ' onmouseover="this.style.background=\'var(--bg-raise)\'"'
+      + ' onmouseout="this.style.background=\'\'">'
+      + '<span style="flex:1;font-size:12px;color:var(--text-head)">' + escHtml(t.name) + '</span>'
+      + (t.description ? '<span style="font-size:10px;color:var(--text-dim)">'
+         + escHtml(t.description) + '</span>' : '')
+      + '<span style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono)">'
+      + t.line_count + (t.line_count === 1 ? ' line' : ' lines') + '</span>'
+      + '</div>';
+  }).join('');
+  document.getElementById('lp-summary').textContent = tpls.length
+    + (tpls.length === 1 ? ' template' : ' templates');
+}
+
+async function lpPickTemplate(id) {
+  _lpError(null);
+  try {
+    const data = await api('GET', '/api/repair-templates/' + id + '/expand');
+    _lpTplId = id;
+    _lpRows = (data.lines || []).map(function (ln) {
+      return { ticked: !ln.unavailable, disabled: !!ln.unavailable, group: null, line: ln };
+    });
+    _lpStep = 'lines';
+    document.getElementById('lp-title').textContent = '+ From template · ' + data.name;
+    document.getElementById('lp-note').textContent =
+      'Prices shown are today’s material-list prices. A line without one is '
+      + 'priced when you type it on the repair. Untick what you do not need, then Add selected.';
+    _lpRenderLines();
+  } catch (e) {
+    _lpError(e.message);
+  }
+}
+
+// ── Flow 3: save the ticked repair lines as a template ─────────────────────
+
+function openSaveAsTemplate() {
+  if (!repairLines.length) {
+    toast('Add lines to the repair first — a template saves the lines you tick.', 'warn');
+    return;
+  }
+  _lpOpen('save', 'Save as template',
+          'Tick the lines this template should carry. Quantities are saved as '
+          + 'defaults; PRICES ARE NOT SAVED — every use prices from the material '
+          + 'list of that day.');
+  document.getElementById('lp-tpl-name').value = '';
+  document.getElementById('lp-tpl-desc').value = '';
+  _lpStep = 'lines';
+  _lpRows = repairLines.map(function (l) {
+    return { ticked: !l.excluded, disabled: false, group: null, line: l };
+  });
+  _lpRenderLines();
+  const nameEl = document.getElementById('lp-tpl-name');
+  if (nameEl) nameEl.focus();
+}
+
+// ── Shared line list rendering ─────────────────────────────────────────────
+
+function _lpRenderLines() {
+  const wrap = document.getElementById('lp-list');
+  const save = _lpMode === 'save';
+  let html = '<table style="width:100%;border-collapse:collapse"><thead>'
+    + '<tr style="border-bottom:1px solid var(--border)">'
+    + '<th style="text-align:left;padding:4px 8px;font-size:10px;letter-spacing:1px;'
+    + 'text-transform:uppercase;color:var(--text-dim)">Add?</th>'
+    + '<th style="text-align:left;padding:4px 8px;font-size:10px;letter-spacing:1px;'
+    + 'text-transform:uppercase;color:var(--text-dim)">Line</th>'
+    + '<th style="text-align:right;padding:4px 8px;font-size:10px;letter-spacing:1px;'
+    + 'text-transform:uppercase;color:var(--text-dim)">Qty</th>'
+    + '<th style="text-align:right;padding:4px 8px;font-size:10px;letter-spacing:1px;'
+    + 'text-transform:uppercase;color:var(--text-dim)">' + (save ? 'Price' : 'Unit price') + '</th>'
+    + (save ? '' : '<th style="text-align:right;padding:4px 8px;font-size:10px;'
+       + 'letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)">Line total</th>')
+    + '</tr></thead><tbody>';
+  let lastGroup = null;
+  _lpRows.forEach(function (row, i) {
+    if (row.group && row.group !== lastGroup) {
+      lastGroup = row.group;
+      html += '<tr><td colspan="5" style="padding:6px 8px 3px;font-size:10px;letter-spacing:1px;'
+        + 'text-transform:uppercase;color:var(--blue-hi);font-weight:700">'
+        + escHtml(row.group) + '</td></tr>';
+    }
+    const ln = row.line;
+    const dim = row.ticked ? '' : 'opacity:.55;';
+    let priceCell, totalCell;
+    if (save) {
+      // No money is saved into a template — say where the price will come from.
+      priceCell = '<span style="font-size:10px;color:var(--text-dim)">'
+        + (ln.material_id ? 'list price at use' : 'typed at use') + '</span>';
+      totalCell = '';
+    } else if (ln.unavailable) {
+      priceCell = '<span style="font-size:10px;color:var(--red,#e35d6a)">no longer in the list</span>';
+      totalCell = '<td style="padding:5px 8px;text-align:right;color:var(--text-dim)">—</td>';
+    } else if (ln.unit_price == null) {
+      priceCell = '<span style="font-size:10px;color:var(--text-dim)">typed at use</span>';
+      totalCell = '<td style="padding:5px 8px;text-align:right;color:var(--text-dim)">—</td>';
+    } else {
+      priceCell = '<span style="font-family:var(--font-mono);font-size:12px">'
+        + _lpMoney(ln.unit_price) + '</span>';
+      const tot = ln.line_total != null ? ln.line_total : (ln.qty || 0) * ln.unit_price;
+      totalCell = '<td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);'
+        + 'font-size:12px;font-weight:600;white-space:nowrap">' + _lpMoney(tot) + '</td>';
+    }
+    html += '<tr style="border-bottom:1px solid rgba(48,54,61,.4);' + dim + '">'
+      + '<td style="padding:5px 8px;width:38px">'
+      + '<input type="checkbox" ' + (row.ticked ? 'checked' : '') + (row.disabled ? ' disabled' : '')
+      + ' onchange="lpToggleRow(' + i + ', this.checked)"'
+      + ' style="cursor:pointer;width:13px;height:13px;accent-color:var(--blue)"></td>'
+      + '<td style="padding:5px 8px;font-size:12px;color:var(--text-head)">'
+      + escHtml(ln.description || '')
+      + (ln.origin ? ' ' + _fhOriginChip(ln.origin) : '')
+      + (ln.formula_error
+         ? ' <span title="The body template’s formula could not compute here — check the quantity"'
+           + ' style="font-size:10px;color:var(--red,#e35d6a)">⚠ check qty</span>' : '')
+      + (ln.notes ? '<div style="font-size:10px;color:var(--text-dim)">' + escHtml(ln.notes) + '</div>' : '')
+      + '</td>'
+      + '<td style="padding:5px 8px;text-align:right;font-family:var(--font-mono);font-size:12px;'
+      + 'color:var(--text-dim);white-space:nowrap">' + fmtNum(ln.qty || 0, 2) + ' '
+      + escHtml(ln.unit || '') + '</td>'
+      + '<td style="padding:5px 8px;text-align:right;white-space:nowrap">' + priceCell + '</td>'
+      + totalCell
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+  const btn = document.getElementById('lp-primary-btn');
+  btn.style.display = '';
+  btn.textContent = _lpMode === 'save' ? 'Save template' : 'Add selected';
+  _lpUpdateSummary();
+}
+
+function lpToggleRow(i, checked) {
+  if (_lpRows[i] && !_lpRows[i].disabled) _lpRows[i].ticked = !!checked;
+  _lpRenderLines();
+}
+
+function _lpUpdateSummary() {
+  const ticked = _lpRows.filter(function (r) { return r.ticked; });
+  const btn = document.getElementById('lp-primary-btn');
+  btn.disabled = !ticked.length;
+  let txt = ticked.length + ' of ' + _lpRows.length + ' lines ticked';
+  if (_lpMode !== 'save') {
+    const total = ticked.reduce(function (s, r) {
+      const ln = r.line;
+      if (ln.unavailable || ln.unit_price == null) return s;
+      return s + (ln.line_total != null ? ln.line_total : (ln.qty || 0) * ln.unit_price);
+    }, 0);
+    txt += ' · ' + _lpMoney(total);
+  }
+  document.getElementById('lp-summary').textContent = txt;
+}
+
+// ── Inserting picked lines ─────────────────────────────────────────────────
+
+function _lpAddSelected() {
+  const ticked = _lpRows.filter(function (r) { return r.ticked && !r.disabled; });
+  if (!ticked.length) return;
+  ticked.forEach(function (r) {
+    const ln = r.line;
+    if (_lpMode === 'template' && ln.kind === 'stock') {
+      // A stock template line stays a stock line: the catalogue owns its
+      // identity and the server re-resolves its price at every calculate.
+      repairLines.push({
+        kind: 'stock', key: _fhKey(),
+        description: ln.description || '', qty: ln.qty || 1,
+        unit: ln.unit || 'each', unit_price: +(ln.unit_price || 0),
+        notes: ln.notes || null, material_id: +ln.material_id,
+        bom_section_id: null, category: null,
+        origin: ln.origin || null, excluded: false,
+      });
+    } else {
+      // A pulled category line, or a free-hand template line: an ordinary
+      // free-hand repair line — editable, removable, priced as shown (the
+      // category snapshot, today's list price, or 0 to be typed).
+      repairLines.push({
+        kind: 'free_hand', key: _fhKey(),
+        description: String(ln.description || '').toUpperCase(),
+        qty: ln.qty || 0,
+        unit: ln.unit || 'each',
+        unit_price: ln.unit_price != null ? +ln.unit_price : 0,
+        notes: ln.notes || null,
+        material_id: ln.material_id != null ? +ln.material_id : null,
+        bom_section_id: null, category: null,
+        origin: (_lpMode === 'category' ? (ln.category || null) : (ln.origin || null)),
+        excluded: false,
+      });
+    }
+  });
+  closeModal('modal-line-pick');
+  toast('Added ' + ticked.length + (ticked.length === 1 ? ' line' : ' lines'), 'success');
+  _fhAfterChange();
+}
+
+// ── Saving a template ──────────────────────────────────────────────────────
+
+async function _lpSaveTemplate() {
+  const name = String(document.getElementById('lp-tpl-name').value || '').trim();
+  if (!name) {
+    _lpError('Give the template a name.');
+    const el = document.getElementById('lp-tpl-name');
+    if (el) el.focus();
+    return;
+  }
+  const ticked = _lpRows.filter(function (r) { return r.ticked; });
+  if (!ticked.length) { _lpError('Tick at least one line.'); return; }
+  const lines = ticked.map(function (r) {
+    const l = r.line;
+    return {
+      kind: l.kind === 'stock' ? 'stock' : 'free_hand',
+      material_id: l.material_id || null,
+      description: l.description, qty: l.qty, unit: l.unit,
+      notes: l.notes || null, origin: l.origin || null,
+    };
+  });
+  const btn = document.getElementById('lp-primary-btn');
+  btn.disabled = true;
+  try {
+    const tpl = await api('POST', '/api/repair-templates', {
+      name: name,
+      description: String(document.getElementById('lp-tpl-desc').value || '').trim() || null,
+      lines: lines,
+    });
+    closeModal('modal-line-pick');
+    toast('Template “' + tpl.name + '” saved · ' + tpl.line_count
+          + (tpl.line_count === 1 ? ' line' : ' lines'), 'success');
+  } catch (e) {
+    btn.disabled = false;
+    _lpError('Could not save the template: ' + e.message);
+  }
+}
+
+// ── Manage templates (rename / retire / restore) ───────────────────────────
+
+let _tplmRows = [];
+
+async function openTemplateManager() {
+  openModal('modal-tpl-manage');
+  await _tplmReload();
+}
+
+async function _tplmReload() {
+  const wrap = document.getElementById('tplm-list');
+  try {
+    _tplmRows = await api('GET', '/api/repair-templates?include_retired=1');
+  } catch (e) {
+    wrap.innerHTML = '<div style="padding:16px;text-align:center;color:var(--red);font-size:12px">'
+      + 'Could not load the templates: ' + escHtml(e.message) + '</div>';
+    return;
+  }
+  if (!_tplmRows.length) {
+    wrap.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-dim);font-size:12px">'
+      + 'No templates yet — tick lines on a repair and use “Save lines as a template”</div>';
+    return;
+  }
+  wrap.innerHTML = _tplmRows.map(function (t, i) {
+    const retired = !!t.retired_at;
+    return '<div style="border-bottom:1px solid rgba(48,54,61,.5);padding:7px 10px;'
+      + (retired ? 'opacity:.6;' : '') + '">'
+      + '<div style="display:flex;gap:8px;align-items:center">'
+      + '<input class="form-control" type="text" id="tplm-name-' + t.id + '"'
+      + ' value="' + escHtml(t.name) + '" maxlength="200"'
+      + ' style="flex:1;font-size:12px;padding:3px 6px"'
+      + ' oninput="_tplmNameChanged(' + t.id + ')"/>'
+      + '<button type="button" class="btn btn-outline btn-sm" id="tplm-save-' + t.id + '"'
+      + ' style="display:none" onclick="tplmRename(' + t.id + ')">Save name</button>'
+      + '<span style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);'
+      + 'white-space:nowrap">' + t.line_count + (t.line_count === 1 ? ' line' : ' lines') + '</span>'
+      + (retired
+        ? '<span style="font-size:9px;background:rgba(240,165,0,.16);color:#f0a500;'
+          + 'border:1px solid rgba(240,165,0,.5);border-radius:3px;padding:1px 5px">retired</span>'
+          + '<button type="button" class="btn btn-outline btn-sm" onclick="tplmRestore(' + t.id + ')">Restore</button>'
+        : '<button type="button" class="btn btn-outline btn-sm" onclick="tplmRetire(' + t.id + ')">Retire</button>')
+      + '<button type="button" class="btn btn-outline btn-sm" onclick="tplmToggleLines(' + t.id + ')">Lines</button>'
+      + '</div>'
+      + (t.description ? '<div style="font-size:10px;color:var(--text-dim);margin-top:2px">'
+         + escHtml(t.description) + '</div>' : '')
+      + '<div style="font-size:10px;color:var(--text-dim);margin-top:2px">'
+      + (t.created_by ? 'by ' + escHtml(t.created_by) : '')
+      + (retired && t.retired_by ? ' · retired by ' + escHtml(t.retired_by) : '')
+      + '</div>'
+      + '<div id="tplm-lines-' + t.id + '" style="display:none;margin:4px 0 2px;padding-left:8px;'
+      + 'border-left:2px solid var(--border)"></div>'
+      + '</div>';
+  }).join('');
+}
+
+function _tplmNameChanged(id) {
+  const t = _tplmRows.find(function (x) { return x.id === id; });
+  const input = document.getElementById('tplm-name-' + id);
+  const btn = document.getElementById('tplm-save-' + id);
+  if (t && input && btn) {
+    btn.style.display = input.value.trim() && input.value.trim() !== t.name ? '' : 'none';
+  }
+}
+
+async function tplmRename(id) {
+  const input = document.getElementById('tplm-name-' + id);
+  const name = String(input ? input.value : '').trim();
+  if (!name) { toast('Give the template a name.', 'warn'); return; }
+  try {
+    await api('PUT', '/api/repair-templates/' + id, { name: name });
+    toast('Renamed to “' + name + '”', 'success');
+    await _tplmReload();
+  } catch (e) {
+    toast('Rename failed: ' + e.message, 'error');
+  }
+}
+
+async function tplmRetire(id) {
+  try {
+    await api('POST', '/api/repair-templates/' + id + '/retire');
+    toast('Template retired — it is hidden from the picker. Restore brings it back.', 'success');
+    await _tplmReload();
+  } catch (e) {
+    toast('Retire failed: ' + e.message, 'error');
+  }
+}
+
+async function tplmRestore(id) {
+  try {
+    await api('POST', '/api/repair-templates/' + id + '/restore');
+    toast('Template restored — it is back in the picker.', 'success');
+    await _tplmReload();
+  } catch (e) {
+    toast('Restore failed: ' + e.message, 'error');
+  }
+}
+
+async function tplmToggleLines(id) {
+  const box = document.getElementById('tplm-lines-' + id);
+  if (!box) return;
+  if (box.style.display !== 'none') { box.style.display = 'none'; return; }
+  box.innerHTML = '<div style="font-size:11px;color:var(--text-dim);padding:4px 0">Loading…</div>';
+  box.style.display = '';
+  try {
+    const data = await api('GET', '/api/repair-templates/' + id);
+    box.innerHTML = (data.lines || []).map(function (ln) {
+      return '<div style="display:flex;gap:8px;font-size:11px;padding:2px 0;color:var(--text-head)">'
+        + '<span style="flex:1">' + escHtml(ln.description)
+        + (ln.origin ? ' ' + _fhOriginChip(ln.origin) : '')
+        + (ln.unavailable ? ' <span style="font-size:9px;color:var(--red,#e35d6a)">'
+           + 'no longer in the list</span>' : '')
+        + '</span>'
+        + '<span style="font-family:var(--font-mono);color:var(--text-dim)">'
+        + fmtNum(ln.qty || 0, 2) + ' ' + escHtml(ln.unit || '') + '</span>'
+        + '</div>';
+    }).join('') || '<div style="font-size:11px;color:var(--text-dim)">No lines</div>';
+  } catch (e) {
+    box.innerHTML = '<div style="font-size:11px;color:var(--red)">' + escHtml(e.message) + '</div>';
+  }
+}
+
+// ── The origin chip ────────────────────────────────────────────────────────
+// The one visual marker that says WHERE a pulled line came from ("SIDES",
+// "FLOOR", ...). Sits beside the stock/manual chips and rides the saved
+// costing, so a reopened repair still shows its provenance.
+
+function _fhOriginChip(origin) {
+  return '<span title="Pulled from ' + escHtml(origin) + '"'
+    + ' style="display:inline-block;margin-left:6px;font-size:9px;background:rgba(63,185,80,.14);'
+    + 'color:var(--green,#3fb950);border:1px solid rgba(63,185,80,.45);border-radius:3px;'
+    + 'padding:0 5px;letter-spacing:.3px;text-decoration:none">' + escHtml(origin) + '</span>';
 }
 
 // NB: the live line total is wired with inline oninput= on #fh-qty and

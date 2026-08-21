@@ -727,6 +727,50 @@ class BOMSection(Base):
     is_optional = Column(Boolean, default=False, nullable=False)
 
 
+class RepairTemplate(Base):
+    """A reusable bundle of repair lines (v1.50 P3, migration 0044).
+
+    SHARED TEAM-WIDE and SOFT-RETIRED (retired_at NULL = active), never hard
+    deleted. Stores the ITEM LIST + DEFAULT QUANTITIES only — NEVER prices:
+    a line's price resolves live from the materials master at the moment of
+    use, so a template cannot quote a stale price."""
+    __tablename__ = "repair_templates"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_by = Column(String(120), nullable=True)   # username snapshot (house audit idiom)
+    updated_at = Column(DateTime(timezone=True), nullable=True)
+    updated_by = Column(String(120), nullable=True)
+    retired_at = Column(DateTime(timezone=True), nullable=True, index=True)
+    retired_by = Column(String(120), nullable=True)
+    lines = relationship("RepairTemplateLine", back_populates="template",
+                         cascade="all, delete-orphan",
+                         order_by="RepairTemplateLine.sort_order")
+
+
+class RepairTemplateLine(Base):
+    """One line of a repair template. kind='stock' is a material REFERENCE
+    (priced live at every use); kind='free_hand' is description + qty + unit
+    with the price typed at use time. material_id on a free_hand line is
+    provenance metadata from a body-category pull — it lets the expand offer a
+    live list price, it never makes the line a catalogue row."""
+    __tablename__ = "repair_template_lines"
+    id = Column(Integer, primary_key=True)
+    template_id = Column(Integer, ForeignKey("repair_templates.id", ondelete="CASCADE"),
+                         nullable=False, index=True)
+    sort_order = Column(Integer, nullable=False, default=0)
+    kind = Column(String(16), nullable=False, default="free_hand")  # 'stock' | 'free_hand'
+    material_id = Column(Integer, ForeignKey("materials.id", ondelete="SET NULL"), nullable=True)
+    description = Column(String(200), nullable=False)
+    qty = Column(Float, nullable=True)
+    unit = Column(String(32), nullable=True)
+    notes = Column(Text, nullable=True)
+    origin = Column(String(200), nullable=True)   # body-category chip, e.g. "SIDES"
+    template = relationship("RepairTemplate", back_populates="lines")
+    material = relationship("Material")
+
+
 class BodyOptionGroup(Base):
     """Global registry of body-option zone names (FRONT, SIDES, DRD, SRD …).
     Auto-populated from imports and Body Designer saves."""
@@ -1218,6 +1262,11 @@ PERMISSION_CATALOGUE = [
     # RESTORE deliberately has NO key: undelete is a correction, not a sales
     # action, and stays on require_admin.
     ("costings.delete_own_draft", "Soft-delete your own costing while it is still pending and unscheduled", "admin", {"admin", "full"}),
+    # v1.50 P3 (Lezette) — create/edit/retire REUSABLE REPAIR TEMPLATES. Follows
+    # costings.price_master_edit verbatim: seeded {admin, full} so repair
+    # estimators own their own template library. USING a template needs no key —
+    # any costings user may pull one into a repair.
+    ("costings.repair_templates_manage", "Create, edit and retire reusable repair templates", "admin", {"admin", "full"}),
     # ── MES permission keys (v1.40.1) ────────────────────────────────────────
     # Mirrors the data inserts of migrations 0005 / 0013 / 0016 / 0017 / 0028
     # VERBATIM (names, descriptions, grants). Those migrations seed migrated DBs,

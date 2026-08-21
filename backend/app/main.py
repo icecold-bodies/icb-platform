@@ -92,6 +92,7 @@ from .routers import bom_snapshots as _r_bom_snapshots
 # WO v1.45 — Nadie's "Validated references". Unrelated to bom_snapshots above
 # (that one is the admin, template-level feature); no shared names or routes.
 from .routers import validated_references as _r_validated_references
+from .routers import repair_templates as _r_repair_templates  # v1.50 P3 — body-category pulls + reusable repair templates
 from .routers import help as _r_help
 from .routers import feedback as _r_feedback  # WO v4.38 — Feedback Portal
 from .routers import pre_job_card as _r_pre_job_card
@@ -217,6 +218,7 @@ app.include_router(_r_exports.router)
 app.include_router(_r_quote_document.router)
 app.include_router(_r_bom_snapshots.router)
 app.include_router(_r_validated_references.router)  # WO v1.45 — validated references
+app.include_router(_r_repair_templates.router)  # v1.50 P3 — body-category pulls + reusable repair templates
 app.include_router(_r_help.router)
 app.include_router(_r_feedback.router)  # WO v4.38 — POST /api/feedback + clarify
 app.include_router(_r_feedback.admin_router)  # WO v4.38 — /api/admin/feedback inbox

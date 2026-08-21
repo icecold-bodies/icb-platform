@@ -130,7 +130,12 @@ DEFAULT_TERMS: dict[str, Any] = {
         {"heading": "TERMS OF SALES:",
          "body": "Our payment terms are strictly C.O.D., unless payment terms have been "
                  "agreed upon prior to manufacturing."},
-        {"heading": "CONDITIONS OF SALES:", "body": "", "signature_block": True},
+        # po_line (v1.50, Lezette 22 Aug): the label of the hand-completed
+        # Purchase Order line drawn beside Date / Signature. The CUSTOMER fills
+        # it in on the signed copy they return — nothing is captured in the MES.
+        # Blank the label in admin to omit the line entirely.
+        {"heading": "CONDITIONS OF SALES:", "body": "", "signature_block": True,
+         "po_line": "Purchase Order No:"},
     ],
     "acceptance": {
         "heading": "Quote Acceptance form",
@@ -180,6 +185,15 @@ def get_config(db: Session) -> dict[str, Any]:
     for key in ("branding", "terms"):
         if not isinstance(merged.get(key), dict) or not merged.get(key):
             merged[key] = DEFAULT_CONFIG[key]
+    # The top-level merge is WHOLESALE: a stored `terms` blob written before a
+    # key existed simply lacks it. Keys added to the signature block later
+    # (po_line, v1.50) are healed here BY MECHANISM — any block flagged
+    # signature_block gets the default — so an admin-edited prod config still
+    # renders the Purchase Order line, and blanking it in admin still omits it
+    # ("" is present, so setdefault leaves it alone).
+    for blk in (merged.get("terms") or {}).get("blocks") or []:
+        if isinstance(blk, dict) and blk.get("signature_block"):
+            blk.setdefault("po_line", "Purchase Order No:")
     return merged
 
 
@@ -250,6 +264,7 @@ EDITABLE_FIELDS: list[tuple[str, str, bool]] = [
     ("terms.blocks[1].body",            "COMPLETION",                       True),
     ("terms.blocks[2].body",            "WARRANTY",                         True),
     ("terms.blocks[3].body",            "TERMS OF SALES",                   True),
+    ("terms.blocks[4].po_line",         "Purchase Order line label (signature area; blank = omit)", False),
     ("terms.acceptance.intro",          "Acceptance form — intro",          True),
     ("terms.acceptance.body",           "Acceptance form — body ({ref} = document number)", True),
 ]
@@ -286,6 +301,11 @@ def _walk(cfg: dict, path: str):
 def read_field(cfg: dict, path: str):
     container, key = _walk(cfg, path)
     if container is None:
+        return ""
+    # _walk vouches for every step EXCEPT a final dict key (write_field needs
+    # that to CREATE the key). A stored config from before the key existed must
+    # read as blank here, not KeyError the whole admin screen.
+    if isinstance(container, dict) and key not in container:
         return ""
     value = container[key]
     # NOTE items are (tag, text) pairs — the admin edits the TEXT.

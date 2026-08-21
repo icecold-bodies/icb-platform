@@ -236,6 +236,91 @@ def test_the_terms_and_acceptance_pages_come_from_the_editable_config():
     assert "thirty (30) days" not in joined2
 
 
+# ── v1.50: the customer's Purchase Order line (Lezette, 22 Aug) ──────────────
+
+def test_the_purchase_order_line_sits_with_the_signature_block_on_a_long_quote():
+    """The line is for the CUSTOMER to complete by hand when signing — so it
+    must ride the CONDITIONS OF SALES / signature block, which the renderer
+    draws AFTER every page of line items, never at the foot of whatever page
+    the items happen to end on. Proven on a quote long enough for 3+ pages."""
+    from app.services.quote_document_pdf import render_repair_quote_pdf
+    ctx, _ = _long_ctx(45)
+    texts = _page_texts(render_repair_quote_pdf(ctx))
+    assert len(texts) >= 3, f"expected a multi-page quote, got {len(texts)}"
+
+    po_pages = [i for i, t in enumerate(texts) if "Purchase Order No" in t]
+    terms_pages = [i for i, t in enumerate(texts) if "CONDITIONS OF SALES" in t]
+    assert len(po_pages) == 1, f"the PO line must appear exactly once, got pages {po_pages}"
+    assert po_pages == terms_pages, "the PO line must sit in the signature block"
+    # ...which lies BEYOND the last page of line items, whatever their number.
+    line_pages = [i for i, t in enumerate(texts) if "Carry Over" in t
+                  or "Total Amount" in t]
+    assert po_pages[0] > max(line_pages), \
+        "the PO line floated onto a line-items page instead of the terms page"
+    # Beside Signature / Date — all three share the signature area.
+    assert "Signature" in texts[po_pages[0]] and "Date" in texts[po_pages[0]]
+
+
+def test_the_purchase_order_label_is_admin_editable_and_blank_omits_it():
+    """D7 — the wording changes in admin without a work order; blanking the
+    label removes the line outright."""
+    from copy import deepcopy
+    from app.services.quote_document_config import DEFAULT_CONFIG
+    from app.services.quote_document_pdf import render_repair_quote_pdf
+
+    edited = deepcopy(DEFAULT_CONFIG)
+    edited["terms"]["blocks"][4]["po_line"] = "Client Order Ref:"
+    ctx, _ = _long_ctx(3)
+    ctx["config"] = edited
+    joined = "\n".join(_page_texts(render_repair_quote_pdf(ctx)))
+    assert "Client Order Ref:" in joined
+    assert "Purchase Order No" not in joined
+
+    blanked = deepcopy(DEFAULT_CONFIG)
+    blanked["terms"]["blocks"][4]["po_line"] = ""
+    ctx2, _ = _long_ctx(3)
+    ctx2["config"] = blanked
+    joined2 = "\n".join(_page_texts(render_repair_quote_pdf(ctx2)))
+    assert "Purchase Order" not in joined2, "a blanked label must omit the line"
+
+
+def test_a_stored_config_from_before_the_po_line_still_prints_it(app_mod):
+    """get_config's top-level merge is WHOLESALE: a terms blob an admin saved
+    before v1.50 simply lacks po_line. The config layer must heal it (any block
+    flagged signature_block gets the default), and the admin field list must
+    read the missing key as blank rather than KeyError-ing the whole screen."""
+    from copy import deepcopy
+    from app.database import SessionLocal
+    from app.services.quote_document_config import (DEFAULT_CONFIG, _row,
+                                                    get_config, read_field,
+                                                    save_config)
+    legacy = deepcopy(DEFAULT_CONFIG)
+    del legacy["terms"]["blocks"][4]["po_line"]
+
+    # The pure half: a config dict without the key reads blank, never raises.
+    assert read_field(legacy, "terms.blocks[4].po_line") == ""
+
+    with SessionLocal() as db:
+        prev = _row(db)
+        prev_data = prev.template_data if prev is not None else None
+        try:
+            save_config(db, legacy)
+            healed = get_config(db)
+            sig_blocks = [b for b in healed["terms"]["blocks"]
+                          if b.get("signature_block")]
+            assert sig_blocks, "the CONDITIONS OF SALES block went missing"
+            assert all(b.get("po_line") == "Purchase Order No:" for b in sig_blocks), \
+                "a pre-v1.50 stored config must be healed to print the PO line"
+        finally:
+            row = _row(db)
+            if prev_data is not None:
+                row.template_data = prev_data
+                db.commit()
+            elif row is not None:
+                db.delete(row)
+                db.commit()
+
+
 # ── the download endpoint ────────────────────────────────────────────────────
 
 @pytest.fixture(scope="module")
@@ -322,12 +407,11 @@ def test_the_repair_quote_downloads_as_a_pdf(
     r = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf", headers=admin_headers)
     assert r.status_code == 200, r.text[:300]
     assert r.headers["content-type"].startswith("application/pdf")
-    # v1.49 — the file is named by the convention (date + customer + contact +
-    # registration), not by the document number. The NUMBER stays in the
-    # document, where it is the identifier; the NAME is how it is found on disk.
+    # v1.50 (Lezette, 22 Aug) — {R-number} - {Customer} - {Vehicle reg}: the
+    # document number LEADS the name now; the 18 Aug date form is superseded.
     disp = r.headers.get("content-disposition", "")
-    assert disp.startswith('attachment; filename="R2'), disp
-    assert disp.endswith('.pdf"'), disp
+    assert disp == ('attachment; filename='
+                    '"R-000777 - QD Sample Customer - LT 15 FB GP.pdf"'), disp
     assert r.content[:4] == b"%PDF"
 
     texts = _page_texts(r.content)
@@ -535,7 +619,7 @@ def test_the_list_row_carries_the_flag_for_the_react_button(
     assert row["is_repair"] is True
 
 
-# ── v1.49: the filename convention, and the sample-aligned heading ───────────
+# ── v1.50: the filename convention — {R-number} - {Customer} - {Vehicle reg} ──
 
 class _FakeRec:
     """Just the attributes repair_quote_filename reads."""
@@ -546,46 +630,57 @@ class _FakeRec:
         self.id = rec_id
 
 
-def test_the_filename_is_date_customer_contact_registration():
-    """Michael's worked example, 18 Aug 2026, reproduced exactly."""
+def test_the_filename_is_number_customer_registration():
+    """Lezette's worked example, 22 Aug 2026, reproduced exactly."""
     from app.services.quote_document import repair_quote_filename
     name = repair_quote_filename(_FakeRec(), {
-        "customer_name": "360 DEGREES CARRIERS",
-        "customer_contact": "PETER SMITH",
-        "vehicle_registration": "LT15FB GP",
-    })
-    assert name == "R20260818 360 DEGREES CARRIERS PETER SMITH LT15FB GP"
-
-
-def test_the_filename_contact_is_the_CUSTOMER_contact_not_ICB():
-    """`your_contact` is ICB's person and must play no part in the name.
-
-    They are different people on the same document — ICB's contact is who the
-    customer rings — so naming the file after the wrong one would file the quote
-    under an ICB employee instead of the customer's buyer.
-    """
-    from app.services.quote_document import repair_quote_filename
-    name = repair_quote_filename(_FakeRec(), {
-        "customer_name": "ATLANTIC SEAFOODS",
-        "customer_contact": "RIDHWAN MUSSA",       # the customer's person
-        "your_contact": "Suzette Cocklin",          # ICB's person
-        "your_contact_phone": "+27 82 563 4864",
+        "document_number": "R-1042",
+        "customer_name": "Atlantic Seafoods",
+        "customer_contact": "RIDHWAN MUSSA",        # dropped from the name (v1.50)
         "vehicle_registration": "LT 15 FB GP",
     })
-    assert "RIDHWAN MUSSA" in name
-    assert "Suzette" not in name and "Cocklin" not in name
+    assert name == "R-1042 - Atlantic Seafoods - LT 15 FB GP"
 
 
-def test_the_filename_omits_missing_parts_without_leaving_gaps():
+def test_the_date_and_both_contacts_are_dropped_from_the_filename():
+    """v1.50 — the number identifies the quote, so the 18 Aug date form is
+    superseded: nothing in the name may derive from created_at, and neither
+    contact (the customer's buyer OR ICB's person) names the file any more."""
+    from datetime import datetime
+    from app.services.quote_document import repair_quote_filename
+    ctx = {
+        "document_number": "R-1042",
+        "customer_name": "ATLANTIC SEAFOODS",
+        "customer_contact": "RIDHWAN MUSSA",
+        "your_contact": "Suzette Cocklin",
+        "vehicle_registration": "LT 15 FB GP",
+    }
+    a = repair_quote_filename(_FakeRec(datetime(2026, 8, 18)), ctx)
+    b = repair_quote_filename(_FakeRec(datetime(2001, 1, 1)), ctx)
+    assert a == b, "the record's date must play no part in the name"
+    assert "2026" not in a and "20260818" not in a
+    assert "RIDHWAN" not in a and "MUSSA" not in a
+    assert "Suzette" not in a and "Cocklin" not in a
+
+
+def test_the_filename_omits_missing_parts_and_their_separators():
+    """Never "R-1042 -  - .pdf": a missing part takes its ' - ' with it."""
     from app.services.quote_document import repair_quote_filename
     f = repair_quote_filename
-    assert f(_FakeRec(), {"customer_name": "ACME", "customer_contact": "",
-                          "vehicle_registration": "CA 1"}) == "R20260818 ACME CA 1"
-    assert f(_FakeRec(), {"customer_name": "ACME", "customer_contact": "PAT",
-                          "vehicle_registration": ""}) == "R20260818 ACME PAT"
-    for name in (f(_FakeRec(), {"customer_name": "A  B", "customer_contact": "",
-                                "vehicle_registration": ""}),):
-        assert "  " not in name, "a missing part must not leave a double space"
+    base = {"document_number": "R-1042", "customer_name": "ACME",
+            "vehicle_registration": "CA 1"}
+    assert f(_FakeRec(), base) == "R-1042 - ACME - CA 1"
+    assert f(_FakeRec(), {**base, "vehicle_registration": ""}) == "R-1042 - ACME"
+    assert f(_FakeRec(), {**base, "customer_name": ""}) == "R-1042 - CA 1"
+    assert f(_FakeRec(), {"document_number": "R-1042"}) == "R-1042"
+    # A pre-R-series repair (no number yet) leads with the customer instead.
+    assert f(_FakeRec(), {**base, "document_number": ""}) == "ACME - CA 1"
+    for ctx in ({**base, "customer_name": "", "vehicle_registration": ""},
+                {**base, "customer_name": "  ", "vehicle_registration": "\t"}):
+        n = f(_FakeRec(), ctx)
+        assert "  " not in n, "a missing part must not leave a double space"
+        assert not n.endswith("-") and not n.endswith(" "), \
+            "a missing part must take its separator with it"
 
 
 def test_the_filename_is_safe_to_write_to_disk():
@@ -593,24 +688,26 @@ def test_the_filename_is_safe_to_write_to_disk():
     survive a naive join. A quote that cannot be saved is a quote that is lost."""
     from app.services.quote_document import repair_quote_filename
     name = repair_quote_filename(_FakeRec(), {
+        "document_number": "R-1042",
         "customer_name": 'A/B  Transport: Ltd',
-        "customer_contact": 'Pete "PJ" S',
         "vehicle_registration": "CA 123-456",
     })
     for ch in '\/:*?"<>|\r\n\t':
         assert ch not in name, f"{ch!r} is not legal in a Windows filename"
     assert not name.endswith("."), "a trailing dot is silently dropped by Windows"
+    assert "  " not in name
     assert len(name) <= 180
 
 
 def test_the_filename_falls_back_when_nothing_identifies_the_quote():
-    """A bare date names nothing — several repairs are quoted in a day."""
+    """All three parts missing (a pre-R-series repair with nothing captured):
+    the body quote number steps in, sanitised; last of all the record id."""
     from app.services.quote_document import repair_quote_filename
-    name = repair_quote_filename(_FakeRec(), {
-        "customer_name": "", "customer_contact": "", "vehicle_registration": "",
-        "document_number": "R-2",
-    })
-    assert name == "R-2"
+    empty = {"document_number": "", "customer_name": "", "vehicle_registration": ""}
+    name = repair_quote_filename(_FakeRec(), dict(empty))
+    assert name == "A1082026", "the body quote number, with its slashes stripped"
+    name2 = repair_quote_filename(_FakeRec(quote_number=""), dict(empty))
+    assert name2 == "repair-1695", "the record id is the very last resort"
 
 
 def test_the_download_is_named_by_the_convention(client, admin_headers, saved_repair):
@@ -619,10 +716,8 @@ def test_the_download_is_named_by_the_convention(client, admin_headers, saved_re
     r = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf", headers=admin_headers)
     assert r.status_code == 200, r.text[:200]
     disp = r.headers.get("content-disposition", "")
-    assert disp.startswith('attachment; filename="R'), disp
-    assert "QD Sample Customer" in disp, disp
-    assert "LT 15 FB GP" in disp, "the vehicle registration belongs in the name"
-    assert disp.endswith('.pdf"')
+    assert disp == ('attachment; filename='
+                    '"R-000777 - QD Sample Customer - LT 15 FB GP.pdf"'), disp
 
 
 def test_the_header_height_follows_its_content():

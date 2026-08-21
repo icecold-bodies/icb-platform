@@ -198,6 +198,22 @@ def test_saved_export_r2_layout(client, admin_headers, seeded):
     assert expect["selling_price"] in col_i
 
 
+def test_saved_export_filename_is_the_costing_stem_unchanged(client, admin_headers, seeded):
+    """v1.50 regression pin: the REPAIR quotation's filename convention changed
+    ({R-number} - {Customer} - {Reg}) — the BODY export stem must not move with
+    it. Costing_{trailer}_{id}_{username}, exactly as before."""
+    import re
+    r = client.get(f"/results/{seeded['rec_id']}/export/excel", headers=admin_headers)
+    assert r.status_code == 200, r.text
+    disp = r.headers.get("content-disposition", "")
+    # The username segment rides the record's user, which on a stateful test DB
+    # is whatever an earlier run left there — pin the CONVENTION, not the user.
+    stem = f"Costing_{FIXED_TT_NAME.replace(' ', '_')}_{seeded['rec_id']}"
+    assert re.fullmatch(
+        rf'attachment; filename="{stem}_\w+\.xlsx"', disp), disp
+    assert " - " not in disp, "the repair separator has no business in a body stem"
+
+
 def test_saved_export_totals_only_and_multi_ratio(client, admin_headers, seeded):
     r = client.get(
         f"/results/{seeded['rec_id']}/export/excel?detail=totals&ratios=0.35,0.65",

@@ -14,6 +14,7 @@ from ..database import (
 from ..deps import get_current_user, require_admin, require_user, user_can
 from ..quote_numbering import (
     get_or_create_counter, preview_template, validate_template, ALLOWED_PLACEHOLDERS,
+    SERIES_QUOTE, SERIES_REPAIR_DOC,
 )
 from ..services import resolve_report_template
 from ..templates_config import templates
@@ -208,6 +209,37 @@ async def admin_delete_theme(theme_id: int, request: Request, db: Session = Depe
 
 # ── Quote Numbering ───────────────────────────────────────────────────────────
 
+# Both numbering SERIES are administered from the one screen. The allow-list is
+# what stops a typo'd ?series= from MINTING an arbitrary counter row via
+# get_or_create semantics — anything outside it is a 400, never a new row.
+NUMBERING_SERIES = (SERIES_QUOTE, SERIES_REPAIR_DOC)
+
+
+def _resolve_series(value) -> str:
+    """Validate an incoming series, defaulting to the body line.
+
+    The default is deliberate: every pre-v1.50 caller and test sends no series
+    at all, and must keep addressing the body counter byte-for-byte.
+    """
+    if value is None or value == "":
+        return SERIES_QUOTE
+    s = str(value)
+    if s not in NUMBERING_SERIES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown series '{s}'. Expected one of: {', '.join(NUMBERING_SERIES)}.",
+        )
+    return s
+
+
+def _counter_payload(qc) -> dict:
+    return {
+        "next_value":      qc.next_value,
+        "format_template": qc.format_template,
+        "preview":         preview_template(qc.format_template),
+    }
+
+
 @router.get("/admin/quote-numbering", response_class=HTMLResponse)
 async def admin_quote_numbering(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
@@ -216,31 +248,33 @@ async def admin_quote_numbering(request: Request, db: Session = Depends(get_db))
     if not user_can(user, "menu.quote_numbering", db):
         raise HTTPException(status_code=403, detail="Not authorized")
     qc = get_or_create_counter(db)
+    # Seeding the repair row on first open is the POINT, not a side effect: it is
+    # what lets prod's starting R-number be set before any repair is ever saved.
+    rc = get_or_create_counter(db, SERIES_REPAIR_DOC)
     db.commit()
     return templates.TemplateResponse("admin_quote_numbering.html", {
         "request": request, "user": user,
         "counter": qc,
+        "repair_counter": rc,
         "placeholders": sorted(ALLOWED_PLACEHOLDERS),
     })
 
 
 @router.get("/api/quote-numbering")
-async def api_quote_numbering_get(request: Request, db: Session = Depends(get_db)):
+async def api_quote_numbering_get(request: Request, db: Session = Depends(get_db),
+                                  series: Optional[str] = None):
     require_admin(request, db)
-    qc = get_or_create_counter(db)
+    qc = get_or_create_counter(db, _resolve_series(series))
     db.commit()
-    return {
-        "next_value":      qc.next_value,
-        "format_template": qc.format_template,
-        "preview":         preview_template(qc.format_template),
-        "placeholders":    sorted(ALLOWED_PLACEHOLDERS),
-    }
+    return {**_counter_payload(qc), "placeholders": sorted(ALLOWED_PLACEHOLDERS)}
 
 
 @router.post("/api/quote-numbering/preview")
 async def api_quote_numbering_preview(payload: dict, request: Request, db: Session = Depends(get_db)):
     require_admin(request, db)
-    template = (payload or {}).get("format_template", "")
+    payload = payload or {}
+    _resolve_series(payload.get("series"))     # validate even though preview is series-agnostic
+    template = payload.get("format_template", "")
     ok, msg = validate_template(template)
     if not ok:
         return {"ok": False, "error": msg}
@@ -250,10 +284,11 @@ async def api_quote_numbering_preview(payload: dict, request: Request, db: Sessi
 @router.put("/api/quote-numbering")
 async def api_quote_numbering_update(payload: dict, request: Request, db: Session = Depends(get_db)):
     require_admin(request, db)
-    qc = get_or_create_counter(db)
+    payload = payload or {}
+    qc = get_or_create_counter(db, _resolve_series(payload.get("series")))
 
-    new_template = (payload or {}).get("format_template")
-    new_next     = (payload or {}).get("next_value")
+    new_template = payload.get("format_template")
+    new_next     = payload.get("next_value")
 
     if new_template is not None:
         ok, msg = validate_template(new_template)
@@ -268,15 +303,12 @@ async def api_quote_numbering_update(payload: dict, request: Request, db: Sessio
             raise HTTPException(status_code=400, detail="next_value must be an integer")
         if n < 1:
             raise HTTPException(status_code=400, detail="next_value must be >= 1")
+        # Lowering is ALLOWED here, exactly as it always was for the body series —
+        # the confirm-before-send lives in the UI. Parity, not a new rule.
         qc.next_value = n
 
     db.commit()
-    return {
-        "ok": True,
-        "next_value": qc.next_value,
-        "format_template": qc.format_template,
-        "preview": preview_template(qc.format_template),
-    }
+    return {"ok": True, **_counter_payload(qc)}
 
 
 # ── Quote Templates (report templates + trailer groups) ──────────────────────

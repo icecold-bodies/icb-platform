@@ -395,8 +395,17 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     # v1.50 — the R-series document number is ON SCREEN the moment the save
     # returns. It was issued at save since v1.47 but displayed nowhere: the only
     # way to see it was to download the PDF and read the header band.
+    #
+    # ⚠ The trailing part is deliberately OPTIONAL. This used to assert
+    # `^R-\d+$`, which hard-coded ONE admin-editable setting: the repair series'
+    # format template. The moment the ratified convention
+    # `R-{counter} {customer} {vehicle_registration}` became the default, a
+    # correct screen showing "R-1 ATLANTIC SEAFOODS CA 123-456" failed this
+    # journey. What the journey is actually here to prove is that the number is
+    # DISPLAYED and is an R-number — not which template an admin has chosen, which
+    # the Quote Numbering screen owns and its own tests cover.
     expect(page.locator("#repair-doc-number")).to_have_text(
-        re.compile(r"^R-\d+$"), timeout=T)
+        re.compile(r"^R-\d+(\s+\S.*)?$"), timeout=T)
     # ...and nothing that used to re-arm it may do so. Ticking a line was the
     # obvious recalc path; since the lock (below) it is refused outright, so
     # drive the recalc directly and prove the gate still holds regardless.

@@ -81,6 +81,19 @@ def test_both_series_are_administered_from_the_one_screen(
     expect(page.locator("#qn-note-repair_doc")).to_be_hidden()
     shot(page, "01-both-blocks", journey=JOURNEY)
 
+    # v1.50 — the ratified convention is BUILDABLE on the screen: both new
+    # placeholders are offered as chips, and the preview reads like the
+    # document people already know.
+    expect(page.locator("#ph-list code", has_text="{customer}")).to_be_visible(timeout=T)
+    expect(page.locator("#ph-list code", has_text="{vehicle_registration}")).to_be_visible()
+    repair_tpl.fill("R-{counter} {customer} {vehicle_registration}")
+    expect(page.get_by_test_id("qn-preview-repair_doc")).to_have_text(
+        "R-2547 ATLANTIC SEAFOODS CA 123-456", timeout=T)
+    expect(page.locator("#qn-status-repair_doc")).to_have_text("Template OK.")
+    shot(page, "05-convention-template", journey=JOURNEY)
+    repair_tpl.fill("R-{counter}")
+    expect(page.get_by_test_id("qn-preview-repair_doc")).to_have_text("R-2547", timeout=T)
+
     # A template that drops the prefix is NOTED, never blocked.
     repair_tpl.fill("REP{counter}")
     expect(page.locator("#qn-note-repair_doc")).to_be_visible(timeout=T)

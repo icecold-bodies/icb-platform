@@ -208,8 +208,18 @@ def repair_quote_filename(rec, ctx: dict[str, Any]) -> str:
         p = " ".join(str(p).split())
         p = "".join(ch for ch in p if ch not in _FILENAME_BANNED)
         p = p.strip(" .")
-        if p:
-            cleaned.append(p)
+        if not p:
+            continue
+        # v1.50 — the document NUMBER may now itself embed the customer and the
+        # registration, because the admin template can include {customer} and
+        # {vehicle_registration}. Appending them again would produce
+        # "R-100 ATLANTIC SEAFOODS CA 123-456 - ATLANTIC SEAFOODS - CA 123-456".
+        # The number is always parts[0], so anything already inside it is
+        # dropped rather than repeated; the convention is unchanged for the
+        # default template, where the number carries neither.
+        if cleaned and p.casefold() in cleaned[0].casefold():
+            continue
+        cleaned.append(p)
     name = " - ".join(cleaned).strip(" .")        # a trailing dot breaks on Windows
     # Nothing descriptive at all — fall back to the body-series quote number,
     # and as a last resort the record id, so the download is never "-.pdf".

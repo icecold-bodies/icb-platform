@@ -41,6 +41,11 @@ const SERVER_KEYS = new Set<string>([
   // ACTUAL grant instead of falling through the permissive default below, which
   // would offer Nadie's mark action to every logged-in user.
   'costings.validated_refs_manage',
+  // v1.50 — Internal Sales soft-deletes its own pending draft. Listed here for the
+  // same reason as the line above, and it matters more: the fallback below returns
+  // TRUE for an unlisted key, so leaving it out would have offered the Delete
+  // right-click to every logged-in user rather than to the roles actually granted it.
+  'costings.delete_own_draft',
 ])
 const KEY_ALIAS: Record<string, string> = {
   'materials.count': 'stores.count',

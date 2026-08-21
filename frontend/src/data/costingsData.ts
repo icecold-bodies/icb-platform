@@ -33,6 +33,7 @@ export type PermissionKey =
   | 'costings.signoff_production'  // v4
   | 'costings.admin'
   | 'costings.validated_refs_manage'  // v1.45 — mark/retire a validated reference
+  | 'costings.delete_own_draft'       // v1.50 — soft-delete your OWN pending, unscheduled costing
   | 'planning.view'
   | 'planning.acknowledge'         // v4
   | 'planning.schedule'            // v4.18 — drag-drop schedule / move

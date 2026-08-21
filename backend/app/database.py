@@ -1205,6 +1205,19 @@ PERMISSION_CATALOGUE = [
     # Internal Sales owns its own reference library. READING them (the recall
     # dropdown, the drift warning) needs no key — any costings user gets those.
     ("costings.validated_refs_manage", "Mark a costing as a validated reference and retire references", "admin", {"admin", "full"}),
+    # v1.50 (Michael, 20 Aug) — Internal Sales may SOFT-DELETE its own draft. Third
+    # in the costings.* family and seeded {admin, full} for the same reason as the
+    # two above: the work is Internal Sales' own, so the key belongs to the role.
+    #
+    # The key alone is NOT the whole gate. It opens the door; the route then
+    # applies Michael's three conditions (own record, still pending, nothing
+    # scheduled) on top of it, because "may delete drafts" and "may delete THIS
+    # costing" are different questions. Admin keeps the code-level wildcard and so
+    # keeps its existing unrestricted behaviour, unnarrowed.
+    #
+    # RESTORE deliberately has NO key: undelete is a correction, not a sales
+    # action, and stays on require_admin.
+    ("costings.delete_own_draft", "Soft-delete your own costing while it is still pending and unscheduled", "admin", {"admin", "full"}),
     # ── MES permission keys (v1.40.1) ────────────────────────────────────────
     # Mirrors the data inserts of migrations 0005 / 0013 / 0016 / 0017 / 0028
     # VERBATIM (names, descriptions, grants). Those migrations seed migrated DBs,

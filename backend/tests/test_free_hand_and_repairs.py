@@ -826,3 +826,68 @@ def test_a_free_hand_description_is_stored_upper_case_however_typed(client, admi
     assert r.status_code == 200, r.text
     it = _item_by_key(r.json(), "k1")
     assert it["material"] == "MIXED CASE  TEXT"
+
+
+def test_admin_set_repair_next_number_drives_the_next_saved_repair(
+        client, admin_headers, seeded):
+    """v1.50 R-series admin — the end-to-end the surface exists for.
+
+    Setting the repair counter from /api/quote-numbering must be what the very
+    next saved repair uses (100 → "R-100", then "R-101"), while the BODY counter
+    does not move and repairs already saved keep the number frozen on them.
+    """
+    from app.database import SessionLocal
+    from app.quote_numbering import (get_or_create_counter,
+                                     SERIES_QUOTE, SERIES_REPAIR_DOC)
+
+    with SessionLocal() as db:
+        r_before = (int(get_or_create_counter(db, SERIES_REPAIR_DOC).next_value),
+                    get_or_create_counter(db, SERIES_REPAIR_DOC).format_template)
+        q_before = (int(get_or_create_counter(db, SERIES_QUOTE).next_value),
+                    get_or_create_counter(db, SERIES_QUOTE).format_template)
+        db.commit()
+
+    # An EXISTING repair, saved before the counter is touched.
+    older = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"]), headers=admin_headers)
+    assert older.status_code == 200, older.text
+    older_id = older.json()["record_id"]
+    older_doc = older.json()["repair_document_number"]
+
+    try:
+        set_it = client.put("/api/quote-numbering",
+                            json={"series": "repair_doc", "next_value": 100,
+                                  "format_template": "R-{counter}"},
+                            headers=admin_headers)
+        assert set_it.status_code == 200, set_it.text
+
+        first = client.post("/api/approve", json=_repair(
+            seeded, customer_id=seeded["customer"]), headers=admin_headers)
+        assert first.status_code == 200, first.text
+        assert first.json()["repair_document_number"] == "R-100", \
+            "the admin-set next number is not what the next repair used"
+
+        second = client.post("/api/approve", json=_repair(
+            seeded, customer_id=seeded["customer"]), headers=admin_headers)
+        assert second.status_code == 200, second.text
+        assert second.json()["repair_document_number"] == "R-101"
+
+        with SessionLocal() as db:
+            q_now = (int(get_or_create_counter(db, SERIES_QUOTE).next_value),
+                     get_or_create_counter(db, SERIES_QUOTE).format_template)
+            db.commit()
+        assert q_now[1] == q_before[1], "the body TEMPLATE moved with an R-series edit"
+        # A repair is still a costing and still takes a quote_number, so the body
+        # counter advances by exactly the THREE saves above — and by nothing else.
+        # The R-series edit itself contributes zero.
+        assert q_now[0] == q_before[0] + 3
+
+        still = client.get(f"/api/calculations/{older_id}", headers=admin_headers)
+        assert still.status_code == 200, still.text
+        assert still.json()["repair_document_number"] == older_doc, \
+            "a counter edit renumbered a repair that was already saved"
+    finally:
+        with SessionLocal() as db:
+            qc = get_or_create_counter(db, SERIES_REPAIR_DOC)
+            qc.next_value, qc.format_template = r_before
+            db.commit()

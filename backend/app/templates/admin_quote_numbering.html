@@ -135,7 +135,8 @@
         <li>Changing a template only affects documents numbered <strong>after</strong> the change.</li>
         <li>Use Python format specs for padding, e.g. <code>{{ '{counter:04d}' }}</code> → 2547 becomes <code>2547</code>, 7 becomes <code>0007</code>.</li>
         <li>Body default is <code>{{ '{user_initial}{counter}/{month}/{year}' }}</code> producing <code>B2547/04/2026</code>.</li>
-        <li>Repair default is <code>R-{{ '{counter}' }}</code> producing <code>R-2547</code>.</li>
+        <li>Repair default is <code>R-{{ '{counter}' }} {{ '{customer}' }} {{ '{vehicle_registration}' }}</code>
+            producing <code>R-2547 ATLANTIC SEAFOODS CA 123-456</code> — the ratified convention.</li>
         <li><code>{{ '{customer}' }}</code> and <code>{{ '{vehicle_registration}' }}</code> are filled on the
             <strong>repair series only</strong> — they come off the repair quotation's own fields, and render
             empty on a body costing. Use them to build the ratified

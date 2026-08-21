@@ -76,12 +76,19 @@ def test_internal_whitespace_is_collapsed(app_mod):
 
 # ── the shipped default is untouched ─────────────────────────────────────────
 
-def test_the_shipped_default_templates_did_not_change(app_mod):
-    """Adding placeholders must not move any existing installation's numbers.
-    The convention is OPT-IN on the admin screen, not a silent format change."""
+def test_the_repair_default_is_the_ratified_convention(app_mod):
+    """Michael, 22 Aug: the convention is the DEFAULT, not an opt-in.
+
+    ⚠ This constant only governs a counter row that does not exist yet —
+    migration 0042 seeds the repair row with a hard-coded "R-{counter}", so on
+    any database that has run it this value is never consulted. Migration 0045
+    is what moves those rows. Both halves are needed; neither works alone.
+    """
     from app.quote_numbering import (DEFAULT_TEMPLATES, SERIES_QUOTE,
-                                     SERIES_REPAIR_DOC)
-    assert DEFAULT_TEMPLATES[SERIES_REPAIR_DOC] == "R-{counter}"
+                                     SERIES_REPAIR_DOC, preview_template)
+    assert DEFAULT_TEMPLATES[SERIES_REPAIR_DOC] ==         "R-{counter} {customer} {vehicle_registration}"
+    assert preview_template(DEFAULT_TEMPLATES[SERIES_REPAIR_DOC]) ==         "R-2547 ATLANTIC SEAFOODS CA 123-456"
+    # The BODY series is untouched — this change is repair-only.
     assert DEFAULT_TEMPLATES[SERIES_QUOTE] == "{user_initial}{counter}/{month}/{year}"
 
 
@@ -190,3 +197,111 @@ def test_the_body_series_output_is_byte_identical(app_mod):
     got = render_template("{user_initial}{counter}/{month}/{year}",
                           counter=32839, user=u, when=when)
     assert got == "B32839/08/2026"
+
+
+# ── migration 0045: move the default forward WITHOUT clobbering a decision ───
+
+@pytest.fixture()
+def repair_row(app_mod):
+    """Restore the repair counter's template whatever a test does to it."""
+    from app.database import SessionLocal
+    from app.quote_numbering import get_or_create_counter, SERIES_REPAIR_DOC
+    with SessionLocal() as db:
+        qc = get_or_create_counter(db, SERIES_REPAIR_DOC)
+        before = qc.format_template
+        db.commit()
+    yield
+    with SessionLocal() as db:
+        qc = get_or_create_counter(db, SERIES_REPAIR_DOC)
+        qc.format_template = before
+        db.commit()
+
+
+def _run_0045(direction: str) -> None:
+    """Run just this migration's data step against the live test DB."""
+    import importlib.util
+    from pathlib import Path
+    from alembic import op as _op
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+    from app.database import engine
+
+    path = (Path(__file__).resolve().parent.parent / "alembic" / "versions"
+            / "0045_repair_number_convention_default.py")
+    spec = importlib.util.spec_from_file_location("m0045", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    with engine.begin() as conn:
+        ctx = MigrationContext.configure(conn)
+        with Operations.context(Operations(ctx)):
+            getattr(mod, direction)()
+
+
+def _template() -> str:
+    from app.database import SessionLocal
+    from app.quote_numbering import get_or_create_counter, SERIES_REPAIR_DOC
+    with SessionLocal() as db:
+        t = get_or_create_counter(db, SERIES_REPAIR_DOC).format_template
+        db.commit()
+        return t
+
+
+def _set_template(value: str) -> None:
+    from app.database import SessionLocal
+    from app.quote_numbering import get_or_create_counter, SERIES_REPAIR_DOC
+    with SessionLocal() as db:
+        get_or_create_counter(db, SERIES_REPAIR_DOC).format_template = value
+        db.commit()
+
+
+def test_0045_moves_the_untouched_0042_seed_forward(app_mod, repair_row):
+    """The whole reason the migration exists: 0042 hard-codes the seed, so the
+    code default alone never reaches an existing database."""
+    _set_template("R-{counter}")
+    _run_0045("upgrade")
+    assert _template() == "R-{counter} {customer} {vehicle_registration}"
+
+
+def test_0045_never_clobbers_a_template_an_admin_chose(app_mod, repair_row):
+    """`format_template` is admin-owned — the v1.50 screen exists precisely so
+    someone can set it. Moving a default forward must not overwrite a decision."""
+    _set_template("REPAIR/{counter:04d}")
+    _run_0045("upgrade")
+    assert _template() == "REPAIR/{counter:04d}", \
+        "the migration overwrote a customised template"
+
+
+def test_0045_downgrade_is_equally_guarded(app_mod, repair_row):
+    _set_template("R-{counter} {customer} {vehicle_registration}")
+    _run_0045("downgrade")
+    assert _template() == "R-{counter}"
+    _set_template("REPAIR/{counter:04d}")
+    _run_0045("downgrade")
+    assert _template() == "REPAIR/{counter:04d}"
+
+
+def test_0045_does_not_renumber_anything_already_issued(app_mod, repair_row):
+    """Issued numbers live in result_json, never re-derived from the counter."""
+    import json
+    from app.database import CalculationRecord, SessionLocal
+    with SessionLocal() as db:
+        rec = CalculationRecord(
+            dimensions_json="{}", status="pending",
+            result_json=json.dumps({"items": [], "repair_document_number": "R-77"}),
+            is_repair=True)
+        db.add(rec)
+        db.commit()
+        rec_id = rec.id
+    try:
+        _set_template("R-{counter}")
+        _run_0045("upgrade")
+        with SessionLocal() as db:
+            again = json.loads(db.get(CalculationRecord, rec_id).result_json)
+        assert again["repair_document_number"] == "R-77"
+    finally:
+        with SessionLocal() as db:
+            r = db.get(CalculationRecord, rec_id)
+            if r:
+                db.delete(r)
+            db.commit()

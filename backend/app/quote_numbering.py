@@ -51,7 +51,15 @@ SERIES_REPAIR_DOC = "repair_doc"
 
 DEFAULT_TEMPLATES = {
     SERIES_QUOTE:      "{user_initial}{counter}/{month}/{year}",
-    SERIES_REPAIR_DOC: "R-{counter}",
+    # v1.50 — the ratified repair convention: R-number + customer + vehicle
+    # registration (Michael, 22 Aug 2026), the same one the quotation FILENAME
+    # already follows.
+    # ⚠ This governs a counter row that does not exist yet. Migration 0042
+    # SEEDS the repair row with a hard-coded "R-{counter}", so on every database
+    # that has run it this constant is never consulted — migration 0045 is what
+    # moves those existing rows forward, and only where the admin has not
+    # customised the template.
+    SERIES_REPAIR_DOC: "R-{counter} {customer} {vehicle_registration}",
 }
 
 

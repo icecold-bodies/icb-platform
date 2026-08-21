@@ -79,9 +79,9 @@ async def repair_quote_pdf(record_id: int, request: Request,
         rec, db, generated_at=datetime.now().strftime("%d %b %Y %H:%M"))
     pdf = render_repair_quote_pdf(ctx)
 
-    # v1.49 — date + customer + contact + vehicle registration, so a saved quote
-    # can be found by any of the four things anyone remembers about a repair. The
-    # document NUMBER stays inside the document, where it is the identifier.
+    # v1.50 (Lezette, 22 Aug) — {R-number} - {Customer} - {Vehicle reg}: the
+    # document number now LEADS the filename, since it is the identifier the
+    # sales side quotes back to a customer. Missing parts drop out cleanly.
     safe = repair_quote_filename(rec, ctx)
     return StreamingResponse(
         BytesIO(pdf),

@@ -444,6 +444,20 @@ def _draw_terms_pages(c, ctx, terms, branding, pages_so_far, total_pages,
                 c.setFont("Helvetica", 8)
                 c.drawString(_MARGIN_MM * mm, y - 18, "Date")
                 c.drawString((_MARGIN_MM + 70) * mm, y - 18, "Signature")
+                # v1.50 (Lezette, 22 Aug) — a hand-completed Purchase Order line
+                # beside Date / Signature: the customer writes their PO number on
+                # the signed copy they return. Label text is admin-editable
+                # (terms.blocks[].po_line); blank = the line is omitted. Drawn as
+                # a rule, the same technique as the acceptance form's fields.
+                po = str(blk.get("po_line") or "").strip()
+                if po:
+                    po_x = (_MARGIN_MM + 115) * mm
+                    c.drawString(po_x, y - 18, po)
+                    label_w = c.stringWidth(po, "Helvetica", 8)
+                    c.setStrokeColor(colors.HexColor("#666666"))
+                    c.setLineWidth(0.6)
+                    c.line(po_x + label_w + 6, y - 20,
+                           (_PAGE_W_MM - _MARGIN_MM) * mm, y - 20)
                 y -= 26
         draw_footer(page_no)
         c.showPage()

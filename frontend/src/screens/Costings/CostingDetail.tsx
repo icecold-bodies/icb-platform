@@ -201,6 +201,19 @@ export function CostingDetail() {
             {c.quote_type === 'Repair' && (
               <span className="rounded bg-[#7E22CE]/10 px-2 py-0.5 text-[11px] font-bold uppercase text-[#7E22CE]">Repair</span>
             )}
+            {/* v1.50 (Lezette, 22 Aug) — the R-series number the quotation
+                prints as its Document Number. It was issued at save since
+                v1.47 but shown nowhere; this is where sales lands after
+                saving a repair, so it is the first place it must appear. */}
+            {c.repair_document_number && (
+              <span
+                data-testid="repair-doc-number"
+                title="Repair document number — printed on the quotation as Document Number. Issued once, on first save, and never changes."
+                className="rounded border border-[#7E22CE]/40 px-2 py-0.5 text-[11px] font-bold text-[#7E22CE]"
+              >
+                {c.repair_document_number}
+              </span>
+            )}
             {c.deleted_at && (
               <span data-testid="deleted-badge"
                     title={`Deleted ${c.deleted_by ? 'by ' + c.deleted_by + ' ' : ''}on ${c.deleted_at}. Export and quotation are unavailable — Duplicate to make a new costing, or ask an admin to restore it.`}

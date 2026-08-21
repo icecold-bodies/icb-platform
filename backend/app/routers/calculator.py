@@ -1073,6 +1073,24 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 if _prev_doc:
                     result["repair_document_number"] = _prev_doc
                     result["input_state"]["repair_document_number"] = _prev_doc
+                else:
+                    # v1.50 — a repair saved before the R-series existed (or one
+                    # whose allocation failed and was logged) has nothing to copy
+                    # forward. Issue its number NOW, on the same issued-once
+                    # terms: presence is the guard, so this runs at most once per
+                    # costing and the number never changes after. Its document
+                    # prints a blank Document Number until then, which is the
+                    # gap Lezette reported.
+                    try:
+                        _doc_no = allocate_series_number(
+                            db, SERIES_REPAIR_DOC, user=user,
+                            when=rec.created_at or datetime.now(timezone.utc))
+                        result["repair_document_number"] = _doc_no
+                        result["input_state"]["repair_document_number"] = _doc_no
+                    except Exception:
+                        logging.exception(
+                            "repair document number allocation failed for record %s",
+                            rec.id)
                 rec.result_json = json.dumps(result)
                 rec.dimensions_json = json.dumps({})
                 rec.customer_id = customer_id
@@ -1426,6 +1444,9 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
         # document, just not a ReportTemplate one, so the button points at the
         # R-series quotation instead of being disabled.
         "repair_quote": has_repair_quote_document(rec),
+        # v1.50 — shown beside the quote number so the R-number the quotation
+        # prints is visible without downloading the PDF (Lezette, 22 Aug).
+        "repair_document_number": _repair_document_number(result),
     })
 
 
@@ -1544,6 +1565,12 @@ async def api_list_calculations(
             # would be a page of blanks. The React detail page offers its
             # download button on this, so it matches the endpoint exactly.
             "has_repair_quote": has_repair_quote_document(r),
+            # v1.50 — the R-series document number, so the board and the detail
+            # page can SHOW the number the quotation prints (it was issued at
+            # save since v1.47 but displayed nowhere — Lezette, 22 Aug). None on
+            # body costings and on pre-R-series repairs.
+            "repair_document_number": (rd.get("repair_document_number")
+                                       or _input_state.get("repair_document_number")),
             # v1.47 — the repair surface's own fields. These live on the costing's
             # result_json / input_state snapshot, NOT in repair_phases_json, which
             # is owned by /schedule-repair and holds the phase-entry LIST.

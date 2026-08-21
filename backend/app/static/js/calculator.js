@@ -2413,6 +2413,11 @@ async function _openSavedRepair(payload, recordId, forEdit) {
   set('f-repair-contact', payload.icb_contact_name);
   set('f-repair-contact-tel', payload.icb_contact_phone);
   if (payload.payment_terms) set('f-repair-terms', payload.payment_terms);
+  // v1.50 — Edit shows the record's own R-number; a DUPLICATE is a new costing
+  // and must NOT inherit the source's (it gets its own on save). A legacy
+  // repair with none shows the issued-on-save placeholder, which is exactly
+  // what its next save will do.
+  _setRepairDocNumber(forEdit ? (payload.repair_document_number || null) : null);
   set('f-margin', payload.profit_margin ?? 0);
   restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
   setCustomer(payload.customer_id, payload.contact_id ?? null, payload.end_user_id ?? null);
@@ -5485,12 +5490,18 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     // Duplicate is the way to make another costing from this one.
     _markSavedOnce();
     clearOverrideSession();
+    // v1.50 — surface the R-series document number this save issued (or carried
+    // forward): on the repair panel, and in the toast — the one thing the user
+    // reads before the board countdown takes them away.
+    const docNo    = result.repair_document_number || null;
+    if (docNo) _setRepairDocNumber(docNo);
+    const docLabel = docNo ? ` · Document ${docNo}` : '';
     const custName    = result.customer_name ? ` for ${result.customer_name}` : '';
     const verLabel    = result.version && result.version > 1 ? ` · Rev${result.version}` : '';
     const wasEditing  = !!_pendingApproveBase?.edit_record_id;
     if (wasEditing) {
       const verbed = versionAction === 'overwrite' ? 'Overwrote' : 'Saved new revision';
-      toast(`${verbed} ${result.quote_number || ('#'+result.record_id)}${custName}${verLabel}`, 'success');
+      toast(`${verbed} ${result.quote_number || ('#'+result.record_id)}${custName}${verLabel}${docLabel}`, 'success');
       // v1.42 (Michael 17 Jul) — the edit is committed: drop the edit chrome
       // (banner + "Cancel edit") instead of staying in edit mode. A further
       // save goes through the normal duplicate/version-action flow; reloading
@@ -5503,7 +5514,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       document.getElementById('edit-mode-banner')?.classList.add('hidden');
       try { history.replaceState(null, '', _skinnify(window.location.pathname)); } catch(_) {}
     } else {
-      toast(`Costing approved${custName}${verLabel} — saved as #${result.record_id}`, 'success');
+      toast(`Costing approved${custName}${verLabel}${docLabel} — saved as #${result.record_id}`, 'success');
     }
     // v1.39.6 — when embedded on the MES shell (/costings/new → LiveCalculator), tell the
     // parent frame a costing was saved so the CostingsDashboard below the calculator refetches
@@ -8737,6 +8748,21 @@ function pickStockItem(materialId) {
 
 // ── REPAIRS mode ──────────────────────────────────────────────────────────
 
+// v1.50 (Lezette, 22 Aug) — the R-series document number, visible on the repair
+// surface. The server issues it on save (immutable after — D6); before that the
+// panel says so plainly rather than showing blank. Also covers editing a
+// pre-R-series repair, whose number is issued on its next save.
+function _setRepairDocNumber(no) {
+  const el = document.getElementById('repair-doc-number');
+  if (!el) return;
+  if (no) {
+    el.textContent = no;
+  } else {
+    el.innerHTML = '<span style="color:var(--text-dim);font-weight:400;font-size:12px">'
+                 + '— issued when the repair is saved —</span>';
+  }
+}
+
 function enterRepairMode() {
   repairMode = true;
   // A repair has no geometry, no body options, no insulation and no chassis —
@@ -8752,6 +8778,7 @@ function enterRepairMode() {
   lastResult = null;
   priceOverrides = {};
   discountKind = null; discountInput = 0;
+  _setRepairDocNumber(null);   // a fresh repair has no document number yet
   renderRepairSurface();
   // D8 — "Your Contact" defaults to the signed-in user. Only the NAME: the User
   // model has no phone column (§3.0), so the telephone is typed per quote.

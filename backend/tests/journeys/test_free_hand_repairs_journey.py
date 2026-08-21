@@ -323,6 +323,10 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     expect(page.locator("#topbar-title")).not_to_contain_text(" m)")
     # Nothing to approve until the repair has a type and a line.
     expect(page.locator("#approve-btn")).to_be_disabled()
+    # v1.50 (Lezette, 22 Aug): a draft says PLAINLY that its document number is
+    # still to come — never a blank where the R-number will be.
+    expect(page.locator("#repair-doc-number")).to_contain_text(
+        "issued when the repair is saved")
 
     page.select_option("#f-ratio", "")          # deterministic start; set below
     page.fill("#f-repair-type", "Side panel replacement")
@@ -388,6 +392,11 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     # It must now stay disabled, and say so; Duplicate is the way to make another.
     expect(page.locator("#approve-btn")).to_be_disabled()
     expect(page.locator("#approve-btn")).to_have_text(re.compile("Saved"))
+    # v1.50 — the R-series document number is ON SCREEN the moment the save
+    # returns. It was issued at save since v1.47 but displayed nowhere: the only
+    # way to see it was to download the PDF and read the header band.
+    expect(page.locator("#repair-doc-number")).to_have_text(
+        re.compile(r"^R-\d+$"), timeout=T)
     # ...and nothing that used to re-arm it may do so. Ticking a line was the
     # obvious recalc path; since the lock (below) it is refused outright, so
     # drive the recalc directly and prove the gate still holds regardless.
@@ -426,8 +435,14 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
         assert rec.trailer_type_id is None
         assert rec.quote_number
         quote_no = rec.quote_number
-        # Accept it: "Schedule into MES" shows for an ACCEPTED repair (v1.2.1
-        # status mapping), which is pre-existing behaviour this lane kept.
+        # v1.50 — what the panel shows IS the stored number, not a lookalike.
+        import json as _json
+        _doc_no = (_json.loads(rec.result_json or "{}")).get("repair_document_number")
+        assert _doc_no, "the save must issue the R-series document number"
+    expect(page.locator("#repair-doc-number")).to_have_text(_doc_no)
+
+    # Accept it: "Schedule into MES" shows for an ACCEPTED repair (v1.2.1
+    # status mapping), which is pre-existing behaviour this lane kept.
     csrf = page.evaluate(
         "() => document.querySelector('meta[name=\"csrf-token\"]')?.content || ''")
     acc = page.request.post(f"{base}/api/calculations/{int(rec_id)}/accept",

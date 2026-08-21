@@ -184,24 +184,21 @@ _FILENAME_BANNED = set('\\/:*?"<>|\r\n\t')
 
 
 def repair_quote_filename(rec, ctx: dict[str, Any]) -> str:
-    """`R20260818 360 DEGREES CARRIERS PETER SMITH LT15FB GP` — no extension.
+    """`R-1042 - ATLANTIC SEAFOODS - LT 15 FB GP` — no extension.
 
-    The naming convention is date + customer + contact + vehicle registration, so
-    a repair quote can be found in a folder by any of the four things anyone
-    actually remembers about it. Ratified by Michael, 18 Aug 2026.
+    The naming convention is {R-number} - {Customer} - {Vehicle reg}, ratified
+    22 Aug 2026 (Lezette, via BA): the document number identifies the quote, so
+    the 18 Aug date+customer+contact+reg form is superseded — the date is
+    dropped (the number carries identity) and the contact with it.
 
-    The contact is the CUSTOMER's contact person, not ICB's — the document's
-    "Your Contact" block is ICB's person and deliberately plays no part here.
-
-    Parts that are missing are simply left out rather than leaving a gap or an
-    empty placeholder, so a quote captured without a registration still gets a
-    sensible name.
+    Parts that are missing are simply left out WITH their separator — never
+    "R-1042 -  - .pdf" — so a quote captured without a registration still gets
+    a sensible name. A pre-R-series repair (no document number yet) leads with
+    the customer instead.
     """
-    date = rec.created_at.strftime("%Y%m%d") if getattr(rec, "created_at", None) else ""
     parts = [
-        f"R{date}" if date else "R",
+        ctx.get("document_number") or "",
         ctx.get("customer_name") or "",
-        ctx.get("customer_contact") or "",
         ctx.get("vehicle_registration") or "",
     ]
     cleaned = []
@@ -210,14 +207,15 @@ def repair_quote_filename(rec, ctx: dict[str, Any]) -> str:
         # double gap that reads as a missing field.
         p = " ".join(str(p).split())
         p = "".join(ch for ch in p if ch not in _FILENAME_BANNED)
+        p = p.strip(" .")
         if p:
             cleaned.append(p)
-    name = " ".join(cleaned).strip(" .")          # a trailing dot breaks on Windows
-    # The date alone identifies nothing — several repairs are quoted a day. When
-    # every descriptive part is missing, fall back to the document number.
-    if len(cleaned) <= 1:
-        name = ctx.get("document_number") or getattr(rec, "quote_number", "") or f"repair-{rec.id}"
-        name = "".join(ch for ch in str(name) if ch not in _FILENAME_BANNED).strip()
+    name = " - ".join(cleaned).strip(" .")        # a trailing dot breaks on Windows
+    # Nothing descriptive at all — fall back to the body-series quote number,
+    # and as a last resort the record id, so the download is never "-.pdf".
+    if not name:
+        name = getattr(rec, "quote_number", "") or f"repair-{rec.id}"
+        name = "".join(ch for ch in str(name) if ch not in _FILENAME_BANNED).strip(" .")
     return name[:180]                              # keep well inside path limits
 
 

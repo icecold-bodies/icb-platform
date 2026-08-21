@@ -484,6 +484,85 @@ def test_saved_repair_carries_the_existing_repair_identity(client, admin_headers
     assert row["repair_scope"].startswith("Strip damaged panel")
 
 
+# ── v1.50: the R-series number is VISIBLE, issued once, and healed ───────────
+
+def test_a_repair_save_returns_its_document_number_and_resaves_keep_it(
+        client, admin_headers, seeded):
+    """Lezette, 22 Aug: the number was issued at save but displayed nowhere.
+    The SAVE RESPONSE carries it (the repair panel and the toast show it from
+    there), the LIST ROW carries it (the board detail shows it), and an
+    edit-save keeps it byte-identical without burning a second number."""
+    from app.database import SessionLocal
+    from app.quote_numbering import get_or_create_counter, SERIES_REPAIR_DOC
+
+    made = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"]), headers=admin_headers)
+    assert made.status_code == 200, made.text
+    d = made.json()
+    rec_id, doc = d["record_id"], d.get("repair_document_number")
+    assert doc and doc.startswith("R-"), \
+        f"the save response must carry the R-number, got {doc!r}"
+
+    rows = client.get("/api/calculations?filter=repair", headers=admin_headers).json()
+    row = next(x for x in rows if x["id"] == rec_id)
+    assert row["repair_document_number"] == doc, \
+        "the list row must carry the number the board detail displays"
+
+    with SessionLocal() as db:
+        before = int(get_or_create_counter(db, SERIES_REPAIR_DOC).next_value)
+    r2 = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"],
+        repair_type="Side panel replacement (rev)",
+        version_action="overwrite", edit_record_id=rec_id), headers=admin_headers)
+    assert r2.status_code == 200, r2.text
+    assert r2.json()["repair_document_number"] == doc, \
+        "D6 — the number is immutable across re-saves"
+    with SessionLocal() as db:
+        after = int(get_or_create_counter(db, SERIES_REPAIR_DOC).next_value)
+    assert after == before, "a re-save burned a number off the R-series"
+
+
+def test_a_pre_series_repair_is_issued_its_number_on_its_next_save(
+        client, admin_headers, seeded):
+    """A repair saved before migration 0042 (or after a logged allocation
+    failure) has no number: its quotation printed a blank Document Number
+    forever — the data half of the gap behind Lezette's report. An edit-save
+    now issues one, on the same issued-once terms."""
+    import json as _json
+    from app.database import SessionLocal, CalculationRecord
+
+    made = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"]), headers=admin_headers)
+    assert made.status_code == 200, made.text
+    rec_id = made.json()["record_id"]
+
+    # Reproduce the pre-0042 record: strip the number this save just issued.
+    with SessionLocal() as db:
+        rec = db.query(CalculationRecord).filter_by(id=rec_id).first()
+        result = _json.loads(rec.result_json)
+        result.pop("repair_document_number", None)
+        (result.get("input_state") or {}).pop("repair_document_number", None)
+        rec.result_json = _json.dumps(result)
+        db.commit()
+    got = client.get(f"/api/calculations/{rec_id}", headers=admin_headers).json()
+    assert not got.get("repair_document_number"), "the stripped record is the premise"
+
+    r2 = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"],
+        version_action="overwrite", edit_record_id=rec_id), headers=admin_headers)
+    assert r2.status_code == 200, r2.text
+    issued = r2.json()["repair_document_number"]
+    assert issued and issued.startswith("R-"), \
+        "the edit-save must issue the number the record never got"
+
+    r3 = client.post("/api/approve", json=_repair(
+        seeded, customer_id=seeded["customer"],
+        version_action="overwrite", edit_record_id=rec_id), headers=admin_headers)
+    assert r3.status_code == 200, r3.text
+    assert r3.json()["repair_document_number"] == issued, \
+        "issued once — then immutable, exactly like a first-save number"
+
+
 def test_created_repair_can_be_scheduled_into_the_mes(client, admin_headers, seeded):
     """The acceptance test: a repair created here reaches the existing scheduling
     machinery unchanged. /schedule-repair 409s unless is_repair is set, so this

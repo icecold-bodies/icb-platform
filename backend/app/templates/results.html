@@ -107,6 +107,15 @@
     <div style="font-family:var(--font-mono);font-size:10px;color:var(--blue);
       letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:8px">
       Costing Report {{ record.quote_number or ('#' ~ record.id) }}
+      {# v1.50 (Lezette, 22 Aug) — the R-series number the quotation prints as
+         its Document Number, visible without downloading the PDF. #}
+      {% if repair_document_number %}
+      <span title="Repair document number — printed on the quotation as Document Number. Issued once, on first save."
+        style="background:rgba(224,36,36,.10);color:#e02424;border:1px solid rgba(224,36,36,.35);
+        border-radius:10px;padding:1px 8px;font-size:10px;letter-spacing:.5px">
+        Document {{ repair_document_number }}
+      </span>
+      {% endif %}
       {% if result_version and result_version > 1 %}
       <span style="background:rgba(255,163,67,.15);color:#b45309;border:1px solid rgba(255,163,67,.4);
         border-radius:10px;padding:1px 8px;font-size:10px;letter-spacing:.5px">

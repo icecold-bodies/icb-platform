@@ -90,6 +90,17 @@
                repair mode, where dimensions / body options / insulation are
                hidden because they have no meaning for a repair. -->
           <div id="repair-meta-wrap" style="display:none">
+            <!-- v1.50 (Lezette, 22 Aug) — the R-series document number, on screen.
+                 It was issued at save since v1.47 but displayed nowhere: the only
+                 way to see it was to download the PDF and read the header band.
+                 JS owns the text (_setRepairDocNumber): a draft says so plainly
+                 rather than showing blank. -->
+            <div class="form-group stacked">
+              <label class="form-label">Repair document no</label>
+              <div id="repair-doc-number"
+                   title="Printed on the repair quotation as its Document Number. Issued once, on first save, and never changes."
+                   style="font-weight:700;font-size:14px;padding:2px 0"></div>
+            </div>
             <div class="form-group stacked">
               <label class="form-label" for="f-repair-type">Type of repair *</label>
               <input class="form-control" type="text" id="f-repair-type" maxlength="120"
@@ -1480,7 +1491,7 @@ const CURRENT_USER_ID   = {{ user.id }};
 const CURRENT_USER_NAME = {{ user.username | tojson }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
-<script defer src="/static/js/calculator.js?v=167"></script>
+<script defer src="/static/js/calculator.js?v=168"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

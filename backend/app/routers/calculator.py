@@ -1023,6 +1023,11 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             "repair_type":   repair_meta["repair_type"],
             "repair_scope":  repair_meta["repair_scope"],
             "repair_lines":  free_hand.snapshot(repair_lines),
+            # v1.50 P3 — the OPTIONAL "vehicle being repaired" block. Stored so
+            # an edit re-offers "+ From body category" with the same body +
+            # dims. Never trailer_type_id on the record: a repair stays a
+            # repair (is_repair_mode keys on that absence).
+            "repair_vehicle": free_hand.repair_vehicle_fields(body),
             # v1.47 Lane D (D8) — the quotation document's header fields, all
             # per-quote: vehicle registration, delivery address, the ICB contact
             # and phone, and the payment terms.
@@ -1889,6 +1894,7 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "repair_type":     result_data.get("repair_type")  or input_state.get("repair_type"),
         "repair_scope":    result_data.get("repair_scope") or input_state.get("repair_scope"),
         "repair_lines":    input_state.get("repair_lines") or [],
+        "repair_vehicle":  input_state.get("repair_vehicle"),
         "free_hand_lines": input_state.get("free_hand_lines") or [],
         # The quotation document's header fields (D8). Returned so reopening a
         # repair restores what was typed — without these the surface rebuilds

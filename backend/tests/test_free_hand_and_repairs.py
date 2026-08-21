@@ -891,3 +891,71 @@ def test_admin_set_repair_next_number_drives_the_next_saved_repair(
             qc = get_or_create_counter(db, SERIES_REPAIR_DOC)
             qc.next_value, qc.format_template = r_before
             db.commit()
+
+
+def test_the_ratified_convention_can_be_built_into_the_issued_number(
+        client, admin_headers, seeded):
+    """v1.50 — {customer} + {vehicle_registration} in the R-series template.
+
+    The end-to-end for the opt-in: with the admin template set to the ratified
+    `R-number + customer + vehicle registration` form, the number a repair is
+    issued at SAVE embeds the customer off the record and the registration off
+    the quotation's own field — the same two sources the document reads, so the
+    number and the document can never disagree.
+
+    It also pins the snapshot rule: renaming the customer afterwards does NOT
+    restamp a number that has already been issued and printed.
+    """
+    from app.database import SessionLocal, Customer
+    from app.quote_numbering import get_or_create_counter, SERIES_REPAIR_DOC
+
+    with SessionLocal() as db:
+        qc = get_or_create_counter(db, SERIES_REPAIR_DOC)
+        before = (int(qc.next_value), qc.format_template)
+        cust = db.query(Customer).filter_by(id=seeded["customer"]).first()
+        cust_name_before = cust.name
+        db.commit()
+
+    try:
+        set_it = client.put("/api/quote-numbering",
+                            json={"series": "repair_doc", "next_value": 1042,
+                                  "format_template":
+                                      "R-{counter} {customer} {vehicle_registration}"},
+                            headers=admin_headers)
+        assert set_it.status_code == 200, set_it.text
+
+        made = client.post("/api/approve", json=_repair(
+            seeded, customer_id=seeded["customer"],
+            vehicle_registration="CA 123-456"), headers=admin_headers)
+        assert made.status_code == 200, made.text
+        rec_id = made.json()["record_id"]
+        doc = made.json()["repair_document_number"]
+        assert doc == f"R-1042 {cust_name_before} CA 123-456", \
+            f"the issued number did not carry the convention, got {doc!r}"
+
+        # A repair captured WITHOUT a registration must still get a clean number
+        # — no trailing gap, no "None".
+        made2 = client.post("/api/approve", json=_repair(
+            seeded, customer_id=seeded["customer"]), headers=admin_headers)
+        assert made2.status_code == 200, made2.text
+        doc2 = made2.json()["repair_document_number"]
+        assert "None" not in doc2
+        assert doc2 == f"R-1043 {cust_name_before}",             f"an empty registration left debris in the number: {doc2!r}"
+
+        # Snapshot: renaming the customer does not restamp an issued number.
+        with SessionLocal() as db:
+            c = db.query(Customer).filter_by(id=seeded["customer"]).first()
+            c.name = f"{cust_name_before} RENAMED"
+            db.commit()
+        again = client.get(f"/api/calculations/{rec_id}", headers=admin_headers)
+        assert again.status_code == 200, again.text
+        assert again.json()["repair_document_number"] == doc, \
+            "renaming the customer restamped an already-issued number"
+    finally:
+        with SessionLocal() as db:
+            qc = get_or_create_counter(db, SERIES_REPAIR_DOC)
+            qc.next_value, qc.format_template = before
+            c = db.query(Customer).filter_by(id=seeded["customer"]).first()
+            if c:
+                c.name = cust_name_before
+            db.commit()

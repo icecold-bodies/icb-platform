@@ -982,6 +982,28 @@ def _end_user_snapshot(db: Session, customer_id, end_user_id) -> dict:
     return fields
 
 
+def _repair_number_identity(result: dict, rec) -> dict:
+    """The customer + vehicle registration a repair document number may embed.
+
+    Read from the SAME places the quotation document reads them, so the number
+    and the document can never disagree: the registration off `input_state`
+    (it has never been a column) and the customer off the record's own FK.
+
+    ⚠ Snapshot semantics, deliberately. The number is issued ONCE and is
+    immutable after (D6), so these are the values as they stood at issue. If a
+    customer is renamed or a registration corrected later, the already-issued
+    number keeps the old text — the document it is printed on has already gone
+    out. Anything else would mean re-issuing numbers, which is the one thing
+    the R-series contract forbids.
+    """
+    state = (result or {}).get("input_state") or {}
+    customer = getattr(rec, "customer", None)
+    return {
+        "customer": (getattr(customer, "name", "") or ""),
+        "vehicle_registration": (state.get("vehicle_registration") or ""),
+    }
+
+
 @router.post("/api/approve")
 async def api_approve(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
@@ -1089,7 +1111,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                     try:
                         _doc_no = allocate_series_number(
                             db, SERIES_REPAIR_DOC, user=user,
-                            when=rec.created_at or datetime.now(timezone.utc))
+                            when=rec.created_at or datetime.now(timezone.utc),
+                            **_repair_number_identity(result, rec))
                         result["repair_document_number"] = _doc_no
                         result["input_state"]["repair_document_number"] = _doc_no
                     except Exception:
@@ -1134,7 +1157,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                     if not _doc_no:
                         _doc_no = allocate_series_number(
                             db, SERIES_REPAIR_DOC, user=user,
-                            when=rec.created_at or datetime.now(timezone.utc))
+                            when=rec.created_at or datetime.now(timezone.utc),
+                            **_repair_number_identity(result, rec))
                         result["repair_document_number"] = _doc_no
                         result["input_state"]["repair_document_number"] = _doc_no
                         rec.result_json = json.dumps(result)

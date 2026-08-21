@@ -14,6 +14,12 @@ Format placeholders (allow-list):
   {year}         - 4-digit year   ('2026')
   {year_short}   - 2-digit year   ('26')
   {trailer_code} - trailer type name, or empty
+  {customer}     - customer name, or empty
+  {vehicle_registration} - the repair's vehicle registration, or empty
+
+⚠ {customer} and {vehicle_registration} are only ever populated on the REPAIR
+series — they come off the repair quotation's own capture fields. On the body
+series they render empty, exactly as {trailer_code} does on a repair.
 """
 from __future__ import annotations
 
@@ -30,6 +36,11 @@ ALLOWED_PLACEHOLDERS = {
     "user_initial", "user", "counter",
     "month", "month_name", "year", "year_short",
     "trailer_code",
+    # v1.50 — the repair quotation's own identity fields, so an admin can build
+    # the ratified R-number + customer + vehicle-registration convention into
+    # the NUMBER as well as the filename. Both render empty when absent; the
+    # shipped default template deliberately still uses neither.
+    "customer", "vehicle_registration",
 }
 
 # Numbering SERIES (v1.47 Lane D, migration 0042). 'quote' is the original
@@ -40,7 +51,15 @@ SERIES_REPAIR_DOC = "repair_doc"
 
 DEFAULT_TEMPLATES = {
     SERIES_QUOTE:      "{user_initial}{counter}/{month}/{year}",
-    SERIES_REPAIR_DOC: "R-{counter}",
+    # v1.50 — the ratified repair convention: R-number + customer + vehicle
+    # registration (Michael, 22 Aug 2026), the same one the quotation FILENAME
+    # already follows.
+    # ⚠ This governs a counter row that does not exist yet. Migration 0042
+    # SEEDS the repair row with a hard-coded "R-{counter}", so on every database
+    # that has run it this constant is never consulted — migration 0045 is what
+    # moves those existing rows forward, and only where the admin has not
+    # customised the template.
+    SERIES_REPAIR_DOC: "R-{counter} {customer} {vehicle_registration}",
 }
 
 
@@ -83,11 +102,27 @@ def get_or_create_counter(db: Session, series: str = SERIES_QUOTE) -> QuoteCount
     return qc
 
 
+# Trailing/leading debris an EMPTY placeholder leaves behind. A number is an
+# identifier that reaches a customer's document and a PDF filename, so
+# "R-1043 ATLANTIC SEAFOODS " (empty registration) or "R-1043 -" (empty
+# customer on a dash convention) must never escape the renderer.
+# ⚠ "/" is deliberately NOT in this set: the body series' shipped convention is
+# {user_initial}{counter}/{month}/{year} and this must not touch its output.
+_NUMBER_EDGE_CHARS = " 	-,"
+
+
+def _tidy_number(rendered: str) -> str:
+    """Collapse whitespace runs and trim separator debris left by empty fields."""
+    return " ".join(str(rendered or "").split()).strip(_NUMBER_EDGE_CHARS)
+
+
 def render_template(template: str, *,
                     counter: int,
                     user: Optional[User] = None,
                     trailer: Optional[TrailerType] = None,
-                    when: Optional[datetime] = None) -> str:
+                    when: Optional[datetime] = None,
+                    customer: str = "",
+                    vehicle_registration: str = "") -> str:
     """Render the template with the allow-listed placeholders. Unknown
     placeholders are replaced with the empty string (never raise) so an admin
     typo doesn't break record creation."""
@@ -103,6 +138,11 @@ def render_template(template: str, *,
         "year":         when.strftime("%Y"),
         "year_short":   when.strftime("%y"),
         "trailer_code": (trailer.name if trailer else "") or "",
+        # Collapsed, never None: a number is an identifier, and a stray double
+        # space or a literal "None" in one is the kind of thing that reaches a
+        # customer's document before anyone notices.
+        "customer":             " ".join(str(customer or "").split()),
+        "vehicle_registration": " ".join(str(vehicle_registration or "").split()),
     }
 
     class _SafeDict(dict):
@@ -110,22 +150,32 @@ def render_template(template: str, *,
             return ""
 
     try:
-        return template.format_map(_SafeDict(ctx))
+        return _tidy_number(template.format_map(_SafeDict(ctx)))
     except (ValueError, KeyError, IndexError):
         # Malformed template — fall back to a sensible default so saves still work.
-        return f"{ctx['user_initial']}{counter}/{ctx['month']}/{ctx['year']}"
+        return _tidy_number(
+            f"{ctx['user_initial']}{counter}/{ctx['month']}/{ctx['year']}")
 
 
 def preview_template(template: str, *, sample_user: str = "Burt",
                      sample_counter: int = 2547,
-                     sample_trailer: str = "EXPLOSIVE") -> str:
-    """Render a deterministic sample for the admin UI preview."""
+                     sample_trailer: str = "EXPLOSIVE",
+                     sample_customer: str = "ATLANTIC SEAFOODS",
+                     sample_vehicle_registration: str = "CA 123-456") -> str:
+    """Render a deterministic sample for the admin UI preview.
+
+    The customer/registration samples match the ones the repair quotation's
+    filename convention is documented with, so what the admin screen previews
+    reads like the document they already know.
+    """
     class _U: pass
     u = _U(); u.username = sample_user
     class _T: pass
     t = _T(); t.name = sample_trailer
     return render_template(template, counter=sample_counter, user=u, trailer=t,
-                           when=datetime.now(timezone.utc))
+                           when=datetime.now(timezone.utc),
+                           customer=sample_customer,
+                           vehicle_registration=sample_vehicle_registration)
 
 
 def validate_template(template: str) -> tuple[bool, str]:
@@ -188,7 +238,9 @@ def assign_quote_number(rec: CalculationRecord, *, db: Session,
 
 def allocate_series_number(db: Session, series: str, *,
                            user: Optional[User] = None,
-                           when: Optional[datetime] = None) -> str:
+                           when: Optional[datetime] = None,
+                           customer: str = "",
+                           vehicle_registration: str = "") -> str:
     """Atomically allocate + format the next number on any SERIES.
 
     The row-locking, the increment and the template rendering are the SAME as
@@ -217,6 +269,7 @@ def allocate_series_number(db: Session, series: str, *,
         locked.format_template or DEFAULT_TEMPLATES.get(series, "{counter}"),
         counter=counter_value, user=user, trailer=None,
         when=when or datetime.now(timezone.utc),
+        customer=customer, vehicle_registration=vehicle_registration,
     )
     db.flush()
     return rendered

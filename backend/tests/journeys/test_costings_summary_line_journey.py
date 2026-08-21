@@ -26,6 +26,8 @@ Selector policy (WO v4.26.1 §5): data-testid only.
 """
 from __future__ import annotations
 
+import re
+
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -137,14 +139,23 @@ def test_the_end_user_shows_in_brackets_and_is_absent_when_there_is_none(
     # 1. WITH an end user — customer, then the end user in brackets.
     with_cell = _cell(page, staged["with"])
     expect(with_cell).to_have_text(f"{CUSTOMER} ({END_USER})", timeout=T)
-    # The full value is on the row for the truncated case (narrow screens).
+    # The full value is on the row for the truncated case (narrow screens), and
+    # the truncation itself is on THIS cell only.
     expect(with_cell).to_have_attribute("title", f"{CUSTOMER} ({END_USER})")
+    expect(with_cell).to_have_class(re.compile(r"(^| )truncate( |$)"))
 
     # 2. WITHOUT one — EXACT text, not a substring: empty brackets, a lone
     #    separator or a trailing space would all pass a `contains` assertion and
     #    all of them are the bug this line exists to prevent.
     without_cell = _cell(page, staged["without"])
     expect(without_cell).to_have_text(CUSTOMER, timeout=T)
-    expect(without_cell).to_have_attribute("title", CUSTOMER)
+
+    # ...and byte-identical means the ATTRIBUTES too, not just the text. The first
+    # cut of this feature hung the truncation and the title on the cell
+    # unconditionally, which read as correct in every text assertion while
+    # clipping long CUSTOMER names that had always rendered in full — caught on
+    # the live board, not by this test, which is why the check is here now.
+    expect(without_cell).not_to_have_attribute("title", re.compile(r".*"))
+    expect(without_cell).to_have_class("px-3 py-2")
 
     shot(page, "summary_line_end_user_brackets", JOURNEY)

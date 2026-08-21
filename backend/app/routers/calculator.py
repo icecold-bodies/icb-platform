@@ -1671,9 +1671,51 @@ def costing_delete_blockers(db: Session, record_id: int) -> list[str]:
     return blockers
 
 
+def _own_draft_delete_refusal(user, rec) -> str | None:
+    """Why a NON-ADMIN key-holder may not delete this costing — None means go.
+
+    v1.50. Michael ratified widening the soft delete to Internal Sales under three
+    conditions, ALL of which must hold: the requester created it, it is still a
+    pending draft, and nothing downstream has moved on it. This states them.
+
+    Deliberately NOT called for admins: admin's reach is unchanged by this WO, and
+    folding it in here would have quietly narrowed it to admin's own drafts.
+
+    The lifecycle test is `status == "pending"` — the one status that means nobody
+    has acted. Testing NOT-accepted instead would have let a DECLINED costing
+    through, and a decline is a record of a customer's answer, not a draft. The
+    pre_job_* stamps are checked as well as the status even though the status
+    moves with them, because they are the fields that actually record the send and
+    the confirmation, and a costing carrying either is by definition not untouched
+    — a status that failed to advance must not become a way in. Scheduled work is
+    NOT tested here: costing_delete_blockers already refuses it for everyone, with
+    a better sentence, and duplicating the rule would let the two drift apart.
+
+    Every branch returns a sentence written for the person who right-clicked; the
+    UI shows `detail` verbatim.
+    """
+    if getattr(rec, "user_id", None) != getattr(user, "id", None):
+        owner = rec.user.username if getattr(rec, "user", None) else "someone else"
+        return (f"This costing was created by {owner}. You can only delete costings "
+                "you created yourself — ask an administrator to remove it.")
+    status = (getattr(rec, "status", None) or "").strip().lower()
+    if status != "pending":
+        label = {"accepted": "has been accepted",
+                 "declined": "has been declined",
+                 "pre_job_sent": "has had its pre-job card sent",
+                 "pre_job_confirmed": "has a confirmed pre-job card",
+                 "planning": "is on the Planning board"}.get(status, f"is {status}")
+        return (f"This costing {label}, so it is no longer a draft. Only a pending "
+                "costing can be deleted — ask an administrator to remove it.")
+    if getattr(rec, "pre_job_sent_at", None) or getattr(rec, "pre_job_confirmed_at", None):
+        return ("This costing has already gone to production as a pre-job card. "
+                "Ask an administrator to remove it.")
+    return None
+
+
 @router.delete("/api/calculations/{record_id}")
 async def api_delete_calculation(record_id: int, request: Request, db: Session = Depends(get_db)):
-    """SOFT-delete a costing. Admin only, and only while nothing has scheduled it.
+    """SOFT-delete a costing. Admin, or Internal Sales on its OWN pending draft.
 
     Ratified by Michael, 18 Aug 2026: a deleted costing "only disappears from the
     costing board. It will only show if the user selects a 'Deleted' pill". So the
@@ -1683,11 +1725,24 @@ async def api_delete_calculation(record_id: int, request: Request, db: Session =
     different directions at once (see costing_delete_blockers), and it is why the
     soft delete is the right shape rather than merely the gentler one.
 
-    The route, the method and the admin gate are unchanged, so the legacy
-    dashboard's existing right-click keeps working against it.
+    v1.50 (Michael, 20 Aug) widens the gate from admin-only to admin OR the
+    `costings.delete_own_draft` key (seeded {admin, full}), TIGHTLY: holding the
+    key is permission to delete YOUR OWN UNTOUCHED draft, not permission to
+    delete. `_own_draft_delete_refusal` states the extra conditions and is applied
+    only to non-admins, so admin's unrestricted behaviour is unchanged — it still
+    passes on someone else's costing and on an accepted one, exactly as before.
+
+    require_admin itself is untouched, and RESTORE stays on it: undelete is a
+    correction, not a sales action.
+
+    The route and the method are unchanged, so the legacy dashboard's existing
+    right-click keeps working against it.
     """
-    from ..deps import require_admin
-    user = require_admin(request, db)
+    from ..deps import require_user, user_can
+    user = require_user(request, db)
+    is_admin = getattr(user, "role", None) == "admin"
+    if not is_admin and not user_can(user, "costings.delete_own_draft", db):
+        raise HTTPException(status_code=403, detail="Admin access required")
     rec = db.query(CalculationRecord).filter_by(id=record_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Calculation not found")
@@ -1696,6 +1751,11 @@ async def api_delete_calculation(record_id: int, request: Request, db: Session =
         # not read as a failure.
         return {"ok": True, "already_deleted": True,
                 "deleted": rec.quote_number or f"#{rec.id}"}
+
+    if not is_admin:
+        refusal = _own_draft_delete_refusal(user, rec)
+        if refusal:
+            raise HTTPException(status_code=403, detail=refusal)
 
     blockers = costing_delete_blockers(db, record_id)
     if blockers:

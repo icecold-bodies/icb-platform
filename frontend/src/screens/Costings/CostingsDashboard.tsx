@@ -52,10 +52,10 @@ export function CostingsDashboard() {
   const [pulsing, setPulsing] = useState<string | null>(null)
   const highlightRef = useRef<HTMLTableRowElement | null>(null)
   const { mode, costings, statusCounts, acceptStage, refresh, scheduleRepairPhases, acceptCosting, declineCosting } = useCostings()
-  const { profile, hasPermission, isAdmin } = useAppData()
-  // v1.49 — admin-only right-click delete. ctxMenu holds the row the menu was
-  // opened on; confirmRow moves it into the confirmation step. Deleting is
-  // irreversible, so nothing happens on the menu click itself.
+  const { profile, hasPermission, isAdmin, sessionUsername } = useAppData()
+  // v1.49 — right-click delete. ctxMenu holds the row the menu was opened on;
+  // confirmRow moves it into the confirmation step. Deleting is irreversible, so
+  // nothing happens on the menu click itself.
   const [ctxMenu, setCtxMenu] = useState<{ c: Costing; x: number; y: number } | null>(null)
   const [confirmRow, setConfirmRow] = useState<Costing | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -65,6 +65,30 @@ export function CostingsDashboard() {
   const [showDeleted, setShowDeleted] = useState(false)
   const [deletedRows, setDeletedRows] = useState<Costing[]>([])
   const [filter, setFilter] = useState<Set<StatusName>>(new Set())
+
+  // v1.50 (Michael, 20 Aug) — the delete right-click is no longer admin-only.
+  // Internal Sales holds `costings.delete_own_draft` and may delete its OWN
+  // costing while it is still an untouched draft.
+  //
+  // Per-ROW, not per-user: the same person may delete one row on the board and
+  // not the next, so this cannot be hoisted into a single boolean the way the
+  // admin gate was. Evaluated at render time on the row under the cursor.
+  //
+  // The server re-applies all of this in api_delete_calculation and is the
+  // authority — this only decides whether to offer the menu, so that a user is
+  // never shown an action that will refuse. Deleted rows are excluded because
+  // the only action there is Restore, which stays admin-only.
+  const canDeleteOwnDraft = hasPermission('costings.delete_own_draft')
+  const canDeleteRow = (c: Costing): boolean => {
+    if (showDeleted) return isAdmin
+    if (isAdmin) return true
+    if (!canDeleteOwnDraft) return false
+    return (
+      !!sessionUsername && c.created_by === sessionUsername &&
+      c.status === 'Pending' &&
+      !c.pre_job_sent_at && !c.pre_job_confirmed_at
+    )
+  }
 
   useEffect(() => {
     if (!toast) return
@@ -112,9 +136,10 @@ export function CostingsDashboard() {
       await refresh()
       setToast(`Deleted ${c.quote_number}`)
     } catch (e: any) {
-      // The server refuses with 409 and a sentence written for this dialog —
-      // show it verbatim rather than inventing wording for a case the client
-      // cannot evaluate (a Pre-Job Card or a scheduled production job).
+      // The server refuses with 409 (scheduled work) or, since v1.50, 403 (not
+      // your draft any more) and a sentence written for this dialog — show it
+      // verbatim rather than inventing wording. The 409 cases in particular are
+      // ones the client cannot evaluate at all (a Pre-Job Card, a production job).
       setToast(e?.detail || e?.message || 'Could not delete this costing')
       setConfirmRow(null)
     } finally {
@@ -386,9 +411,11 @@ export function CostingsDashboard() {
                   }`}
                   onClick={() => nav(`/costings/${encodeURIComponent(c.quote_number)}`)}
                   onContextMenu={(e) => {
-                    // Admin-only, and the browser menu is only suppressed for an
-                    // admin — everyone else keeps normal right-click behaviour.
-                    if (!isAdmin) return
+                    // The browser menu is only suppressed for someone who has
+                    // an action on THIS row — everyone else keeps normal
+                    // right-click behaviour (v1.50: no longer "admin", see
+                    // canDeleteRow).
+                    if (!canDeleteRow(c)) return
                     e.preventDefault()
                     e.stopPropagation()      // the row's own onClick would navigate away
                     setCtxMenu({ c, x: e.clientX, y: e.clientY })
@@ -403,7 +430,23 @@ export function CostingsDashboard() {
                     />
                   </td>
                   <td className="px-3 py-2 font-mono text-xs font-semibold">{c.quote_number}</td>
-                  <td className="px-3 py-2">{c.customer_name}</td>
+                  {/* Nadie (20 Aug) — the END USER (the customer's own customer,
+                      snapshotted on the costing in #141) in brackets after the
+                      customer, so a reseller's quotes tell themselves apart on the
+                      board. With no end user the cell is byte-identical to before:
+                      no brackets, no separator, not even a stray space, because
+                      the whole suffix is conditional rather than an empty string.
+                      max-w + truncate keeps a long pair on one line — the row must
+                      never wrap — and title carries the untruncated value. */}
+                  <td data-testid="costing-customer" className="max-w-[220px] truncate px-3 py-2"
+                      title={c.end_user_company
+                        ? `${c.customer_name} (${c.end_user_company})`
+                        : c.customer_name}>
+                    {c.customer_name}
+                    {c.end_user_company && (
+                      <span className="text-muted"> ({c.end_user_company})</span>
+                    )}
+                  </td>
                   <td className="max-w-[150px] truncate px-3 py-2" title={c.contact_name ?? undefined}>
                     {c.contact_name ?? ''}
                   </td>
@@ -603,8 +646,10 @@ export function CostingsDashboard() {
         }}
       />
 
-      {/* v1.49 — admin right-click menu. Same scrim + fixed-position idiom as
-          ChassisModelSelect, so both context menus behave identically. */}
+      {/* v1.49 — the row right-click menu. Same scrim + fixed-position idiom as
+          ChassisModelSelect, so both context menus behave identically. It only
+          opens for a row canDeleteRow() allowed, so no entry here needs its own
+          second gate beyond Restore's admin check. */}
       {ctxMenu && (
         <>
           <div className="fixed inset-0 z-[70]" data-testid="costing-ctx-scrim"
@@ -617,7 +662,7 @@ export function CostingsDashboard() {
             <div className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
               {ctxMenu.c.quote_number}
             </div>
-            {showDeleted ? (
+            {showDeleted && isAdmin ? (
               <button data-testid="costing-ctx-restore"
                       className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-body hover:bg-surface-alt"
                       onClick={() => { const c = ctxMenu.c; setCtxMenu(null); void doRestore(c) }}>

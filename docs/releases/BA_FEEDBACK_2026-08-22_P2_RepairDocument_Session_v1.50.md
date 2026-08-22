@@ -68,15 +68,18 @@ These cost real time and are now banked; the BA may want them reflected in futur
 - Edit-save **issue-if-absent** accepted as consistent with D6 (presence is the guard; issued once; immutable after).
 - Repair-screen draft state must *say* the number is pending — no blanks.
 
-## 7. Open items handed to the BA
+## 7. Open items handed to the BA — with the ledger as at commit time
 
-| Item | State |
-| --- | --- |
-| **R-series admin surface** | Gap confirmed: `/admin/quote-numbering` edits only the body series; the repair counter is DB-only today. **WO drafted and delivered** (paste-block, est 2–3h, no migration, parallel-safe with P3) — awaiting Michael's dispatch. |
-| **Prod counter** | No action needed at deploy: prod seeds `repair_doc` fresh at `next_value=1` → first prod repair is R-1. Dev's R-1…R-7 never reached customers. If a higher start is wanted, either the drafted admin screen (pre-seed by opening the page) or a one-line INSERT before the first repair. |
-| **Assembly journey purge hardening** | Chip `task_854b9e8f` pending — one click to start. |
-| **P3 (#163)** | Rebase signal + collision picture delivered to the CA-P3 session; awaiting their re-green and Michael's authorisation. |
-| **Letterhead** | Still the placeholder — the standing "do not SEND a quotation to a customer" rule remains in force. |
+The deploy line moved on after this session's merge. Status below is as at the commit of this document (`backport/v1.39-base` tip `e182c97` = tag **v1.50.0**, deployed to prod 22 Aug 06:58 — runbook `docs/runbooks/prod-deploy-v1.50.0-repair-numbering-bundle.md`).
+
+| Item | State at session end | State now |
+| --- | --- | --- |
+| **R-series admin surface** | Gap found: `/admin/quote-numbering` edited only the body series; WO drafted (paste-block, no migration). | **SHIPPED — #166 `50ce21c`**: the Quote Numbering screen edits BOTH `quote_counter` series; opening the page seeds `repair_doc`, which is the prod pre-seed path. |
+| **Prod counter** | Guidance given: prod would seed `repair_doc` at 1 on first use. | **Superseded by the v1.50.0 deploy**: prod's repair counter stood at **5** (body at 9975) at deploy — next prod repair = R-5 unless Michael pre-edits it on the admin screen. Dev's R-1…R-7 never reached customers. |
+| **Repair-number placeholders** | — | **#167 `e182c97`** added `{customer}` / `{vehicle_registration}` as repair-number template placeholders (migration 0045, guarded against clobbering an admin-set template). |
+| **P3 (#163)** | Rebase signal + collision picture delivered to the CA-P3 session. | **MERGED `9659475`** (repair from body categories + reusable templates, migration 0044). |
+| **Assembly journey purge hardening** | Chip `task_854b9e8f` raised. | Still pending — one click to start; the residue class it guards against recurs on the shared `icb_test`. |
+| **Letterhead** | Placeholder. | Still the placeholder — the standing "do not SEND a quotation to a customer" rule remains in force. |
 
 ---
 

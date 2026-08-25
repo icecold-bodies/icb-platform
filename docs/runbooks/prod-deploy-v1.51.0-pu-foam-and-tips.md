@@ -6,10 +6,10 @@ service `icb-backend`, `uvicorn --workers 4`).
 | | |
 |---|---|
 | Prod is at | `e182c97` = tag `v1.50.0` (deployed 22 Aug 06:58) — **step 1 asserts this; STOP if it prints anything else** |
-| Deploying to | **`__TARGET_SHA__`** (`__TARGET_FULL__`) |
+| Deploying to | **`e36482d`** (`e36482db04b9e43ddd499135224de23030e9c21f`) |
 | Commits | **4 merges + 2 doc commits** — #169, #168, #170, #171 (everything since v1.50.0) |
 | DB migration | **YES — one**: `0046` (PU foam normalisation). Prod must read `0045` before and `0046` after |
-| **Data mutation** | **YES — this migration REWRITES PU FOAM PRICES.** See "The one that needs care" below. Run the pre-flight first |
+| **Data mutation** | **YES — this migration REWRITES PU FOAM PRICES.** Pre-flight already RUN against prod — **4 rows change**, see below |
 | DB backup first | **YES** — on-demand run of `icb-pg-backup`, before anything else |
 | Frontend rebuild | **YES** — 5 files under `frontend/src` from #169 |
 | Service restart | **YES** — backend Python changed (#168) |
@@ -21,51 +21,68 @@ service `icb-backend`, `uvicorn --workers 4`).
 - **#169 `537af2e`** — repair quote print modes (BREAKDOWN default), editable `Veh reg nr:` caption, board shows the R-number. Ships the 5 frontend files.
 - **#168 `dfadc70`** — **PU insulation foam grade**: one selection per costing under BODY OPTIONS, `32D PU FOAM` (default) / `4G FOAM`. Ships migration **0046** and `calculator.js?v=170`.
 - **#170 `b44982a`** — one `calculator.js` tag, not two. #168 and #169 each bumped the cache-bust and the merge auto-joined both tags side by side, so every calculator load fetched the file twice and threw `SyntaxError: Identifier 'allCustomers' has already been declared`. Lands `?v=172`.
-- **#171 `__TIPS_SHA__`** — BOM hover tips are **opt-in, off by default**, behind a `Tips` checkbox in the Bill of Materials header. Covers both the coloured price bubbles and the large hover FORMULA panel. Lands `calculator.js?v=173` and `style.css?v=20`.
+- **#171 `e36482d`** — BOM hover tips are **opt-in, off by default**, behind a `Tips` checkbox in the Bill of Materials header. Covers both the coloured price bubbles and the large hover FORMULA panel. Lands `calculator.js?v=173` and `style.css?v=20`.
 
-## ⚠ The one that needs care — 0046 rewrites prices
+## ⚠ 0046 rewrites prices — and prod's pre-flight has been RUN
 
-Burt hand-edited his workbook to switch a body between 32D PU FOAM and 4G FOAM, which baked
-the grade into the stored unit price of some categories. The MES now stores the **32D** price
-and derives 4G at calculation time (`× 5875/4310 = 1.36311`), so 0046 normalises the rows that
-were baked at 4G **down** onto their 32D value.
+Burt hand-edited his workbook to switch a body between 32D PU FOAM and 4G FOAM,
+which baked the grade into the stored unit price. The MES now stores the **32D**
+price and derives 4G at calculation time (`× 5875/4310 = 1.36311`), so 0046
+normalises the rows that were baked at 4G **down** onto their 32D value.
 
-**Two categories will show PU prices ~26.6 % lower than they did yesterday** — on dev those are
-`EXPLOSIVE 4.9 AND UP` and `MEAT HANGER LARGE`. That is the ratified normalisation, not a
-fault: ticking **4G FOAM** in BODY OPTIONS restores the previous number **to the cent**. Tell
-Burt before he opens one of those, or it reads as a pricing error.
+**The pre-flight was run against prod on 25 Aug** (read-only). Prod reads `0045`.
+Result — and it differs from dev, so use these numbers, not dev's:
 
-**Rows the migration cannot classify are left untouched and reported.** On dev that is all five
-`RHINORANGE TRAILER` rows, which sit on a coherent internal rate of 6373.80 derived from
-neither sheet price. Prod may differ — the pre-flight below says exactly.
+| kind | rows | action |
+|---|---:|---|
+| `32D` | 39 | untouched |
+| `32D~2.99` | 1 | untouched |
+| **`4G`** | **4** | **rewritten** |
+| `NO-THICKNESS` | 9 | untouched |
+| `SHARED-DEFAULT` | 98 | untouched |
+| `UNCLASSIFIED` | 8 | refused + reported |
 
-Every rewrite is journalled into `icb_costings.pu_foam_normalisation` (bom_id, old/new price,
-classification), so the downgrade replays the old prices back **byte-exact**.
+**The 4 rows that change:**
 
-## Pre-flight — READ-ONLY, run this FIRST and send the CA the output
+| bom_id | body | sect | before | after |
+|---:|---|---|---:|---:|
+| 4005 | EXPLOSIVE 4.9 AND UP | ROOF | 246.4850 | **180.825591** |
+| 3996 | EXPLOSIVE 4.9 AND UP | SIDES | 246.4850 | **180.825591** |
+| 5921 | MEAT HANGER LARGE | FLOOR | 586.8700 | **430.537821** |
+| 5910 | MEAT HANGER LARGE | ROOF | 586.8700 | **430.537821** |
 
-Writes nothing. Reproduces the migration's classifier in SQL and reports what it *would* do, so
-prod's outcome is known before prod is touched. (Verified against dev: restoring the 9 rows to
-their pre-migration values inside a rolled-back transaction, this SQL predicted the identical
-buckets and the identical after-prices to six decimals.)
+**Both bodies are MIXED on prod today, and 0046 makes them uniform** — this is a
+repair, not a disruption:
 
-```bash
-cat > /tmp/icb-preflight-0046.sh <<'ICBEOF'
-DB=icb_platform
-echo "== alembic now (expect 0045) =="
-sudo bash -c 'set -a; . /etc/icb/backend.env; set +a; cd /opt/icb-platform/backend && /opt/icb-platform/.venv/bin/alembic current'
-echo "== what 0046 WOULD do — nothing is written =="
-sudo -u postgres psql -d "$DB" -f /tmp/icb-preflight-0046.sql
-ICBEOF
-```
+* `EXPLOSIVE 4.9 AND UP` — DRD and FRONT already sit at `180.83` (32D); ROOF and
+  SIDES are still 4G. After 0046 all four read ~`180.83`.
+* `MEAT HANGER LARGE` — DRD `258.32` and SIDES `258.32` are 32D, FRONT `257.46`
+  is 32D with Burt's 2.99 typo; only FLOOR and ROOF are 4G. After 0046 the whole
+  body is 32D.
 
-The `.sql` file is staged separately by the CA (it is long). Ask for it, drop it at
-`/tmp/icb-preflight-0046.sql`, then `bash /tmp/icb-preflight-0046.sh`.
+Selecting **4G FOAM** on either body restores the previous number to the cent.
 
-**Expected:** a bucket count (`32D`, `4G`, `4G~2.99`, `SHARED-DEFAULT`, `NO-THICKNESS`,
-`UNCLASSIFIED`), then the exact rows that will be rewritten with their before/after prices, then
-the rows that will be refused. **Send that output to the CA before deploying.** If `4G` +
-`4G~2.99` is zero, the migration is a no-op on prod and the price warning above does not apply.
+**The `UNCLASSIFIED` and `NO-THICKNESS` rows are correctly left alone.** Most are
+already-32D prices whose *thickness* wiring on prod differs from dev (`176.52` at
+`t=0.06` where its siblings are `0.041`; `516.64` at `0.06` where siblings are
+`0.12`), so the rate lands off-grid. The five RHINORANGE rows remain genuinely
+unrecognisable (rate 6373.80, derived from neither sheet price).
+
+### Two data items for Burt — NOT fixed by this deploy
+
+1. **`MEAT HANGER SMALL-MEDIUM / FLOOR` (bom_id 6229) is 4G-baked and 0046 will
+   MISS it.** It stores `446.0200`, and `327.208 × 1.36311 = 446.0202` where
+   `327.208` is FREEZER MEDIUM FLOOR's price at rate `4305.37` = 32D. Its
+   thickness is unset, so the classifier cannot see it and — per the ratified
+   guard — writes nothing. Consequence: that one line quotes ~36 % high on 32D
+   and double-scaled on 4G. **It quotes exactly as it does today under the 32D
+   default, so this deploy is not a regression** — but Burt should confirm the
+   intended price and set it via the calculator's price edit. Deliberately not
+   automated: it is a pricing decision, not a mechanical one.
+2. **The shared PU material price for FRONT/DRD/SIDES on prod is `352.12`** —
+   itself a 4G-derived number — inherited by the 98 `SHARED-DEFAULT` rows. 0046
+   never touches shared material prices (rewriting one would silently reprice
+   every body). Worth Burt's attention separately.
 
 ## Cache-busts
 
@@ -96,7 +113,7 @@ cat > /tmp/icb-deploy-v1510.sh <<'ICBEOF'
 set -euo pipefail
 DB=icb_platform
 REPO=/opt/icb-platform
-TARGET=__TARGET_FULL__
+TARGET=e36482db04b9e43ddd499135224de23030e9c21f
 BASELINE=e182c9780358a2c77b355395a4209a2a8569dc36
 
 echo "== STEP 1: rollback anchor — prod must be exactly v1.50.0 =="
@@ -195,7 +212,7 @@ bash /tmp/icb-deploy-v1510.sh
 | 6 | a fresh `dist/index.html`; build ~10 s |
 | 7 | alembic prints `0046`; `0046 (head)`; the two timestamps differ |
 | 8 | **4** and **0** |
-| 9 | classification lines matching the **pre-flight**; journal row count == the pre-flight's `4G` + `4G~2.99`; factor `1.363109048723898`; **`mismatched` = 0** |
+| 9 | classification lines matching the pre-flight; **journal has exactly 4 rows** (4005, 3996, 5921, 5910); factor `1.363109048723898`; **`mismatched` = 0** |
 | 10 | `{"status":"ok"}` · foam markers ≥1 · tips markers ≥1 · css gate refs ≥1 · one `dist/assets/…js` |
 
 Step 9 is the one that matters most. **`mismatched` must be 0** and the journal must contain
@@ -214,7 +231,7 @@ exactly the rows the pre-flight predicted — nothing else in the BOM should hav
 ## CA verification after the paste
 
 Read-only from the Windows side (VPN): `https://192.168.0.251/health` is 200; the served
-`calculator.js` is byte-identical to `git show __TARGET_SHA__:backend/app/static/js/calculator.js`
+`calculator.js` is byte-identical to `git show e36482d:backend/app/static/js/calculator.js`
 and carries `insulation-foam-block` and `_syncPriceTitles`; the served `style.css` carries
 `body[data-tips="on"]`; and — with Michael logged in — a costing on a PU body shows the
 **Insulation foam** pair defaulting to 32D, with the BOM header's **Tips** box unticked and no
@@ -241,6 +258,31 @@ bash /tmp/icb-rollback-v1510.sh
 Any approved costing saved **after** this deploy keeps its own saved prices either way —
 `result_json` is frozen at Approve and is never re-derived from the BOM.
 
-## OUTCOME
+## OUTCOME — deployed 25 Aug 2026 21:04 SAST, all asserts green
 
-_(filled in after the run)_
+Michael pasted the block (the final block differed from the one printed above in two
+verification-hardening edits found by adversarial review before the run: the health probe is
+asserted on its HTTP code, and step 10 greps the SERVED SPA bundle for a #169 marker instead of
+the tautological `ls dist/assets`). Every step matched Expected:
+
+| | |
+|---|---|
+| Baseline | `e182c97` = v1.50.0 confirmed; backup `icb_platform_20260825-2103.dump.gz` |
+| Target | **`e36482d`** reached; SPA bundle `index-CZXIdq9G.js` (hash identical to the dev build — deterministic) |
+| 0046 | scanned **159** rows: 32D=39, 32D~2.99=1, **4G=4**, NO-THICKNESS=9, SHARED-DEFAULT=98, UNCLASSIFIED=8 — **byte-for-byte the pre-flight prediction** |
+| Rewrites | 4005/3996 `246.485 → 180.8256`, 5921/5910 `586.87 → 430.5378`; journal = 4 rows; `mismatched = 0` |
+| Factor | `costings.pu_foam_4g_factor = 1.363109048723898` seeded |
+| Boot | 4 workers, 0 bootstrap failures; ActiveEnterTimestamp moved 22 Aug 06:58 → 25 Aug 21:04 |
+| Smoke | health 200 · foam 1 · tips 2 · css 9 · served SPA #169 marker 1 |
+
+CA external verification (Windows side): health 200; served `calculator.js` **byte-identical**
+to `git show e36482d` (496,931 bytes); `style.css` carries the `data-tips` gate (9 refs); served
+`/mes-app/assets/index-CZXIdq9G.js` carries `repair-quote-mode-modal`.
+
+**No tag cut** — per the dispatch, the release tag is the BA-coordinator's call.
+
+Open items handed to Burt (unchanged by this deploy): the 8 UNCLASSIFIED rows (5x Rhinorange at
+rate 6373.80 + three thickness-wiring oddities on Explosive ≤2.7 / Icecream Large DRD / Icecream
+Medium SRD, whose PRICES are already 32D); `MEAT HANGER SMALL-MEDIUM / FLOOR` bom_id 6229
+(4G-baked at 446.02, invisible to the classifier — one price edit once Burt confirms); and the
+shared FRONT/DRD/SIDES PU material price 352.12 being itself a 4G-derived number.

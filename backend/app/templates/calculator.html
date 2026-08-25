@@ -309,6 +309,10 @@
           <button id="excel-paste-btn" class="btn btn-outline btn-sm" type="button"
             style="font-size:9px;padding:2px 8px;letter-spacing:.5px" onclick="openExcelPasteModal()">⧉ Paste from Excel</button>
         </div>
+        <!-- v1.51 — PU insulation foam grade. A costing-level choice, not a BOM
+             row, so it lives OUTSIDE #body-options-list and survives every
+             re-render (same reasoning as the Excel-paste button above). -->
+        <div id="insulation-foam-block" style="display:none;margin-bottom:10px"></div>
         <div id="body-options-list"></div>
       </div>
 
@@ -1624,6 +1628,7 @@ const CURRENT_USER_NAME = {{ user.username | tojson }};
 const canManageRepairTemplates = {{ 'true' if user_can(user, 'costings.repair_templates_manage') else 'false' }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
+<script defer src="/static/js/calculator.js?v=170"></script>
 <script defer src="/static/js/calculator.js?v=171"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────

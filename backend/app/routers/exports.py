@@ -1026,6 +1026,14 @@ def _spec_options_from_derived(derived) -> list:
                 (label, f"{p['insulation']} ({p['thickness_m']:.3f} m)"))
         if derived.get("floor_type"):
             spec_options.append(("FLOOR TYPE", derived["floor_type"]))
+        # v1.51 — the PU foam grade, printed only when the quote actually uses PU:
+        # an all-EPS body consumes no PU foam, so the grade would say nothing.
+        uses_pu = ((rd or {}).get("insulation") == "PU"
+                   or any(p.get("insulation") == "PU" for p in derived.get("panels") or []))
+        if uses_pu:
+            from ..services import insulation_foam as _pu_foam
+            spec_options.append(
+                ("INSULATION FOAM", _pu_foam.label(derived.get("insulation_foam"))))
     return spec_options
 
 
@@ -1197,6 +1205,9 @@ def _doc_ctx_for_preview(body: dict, db: Session):
         input_state = {
             "body_option_selections": body.get("body_option_selections") or {},
             "ui_snapshot": {"drd_srd": body.get("drd_srd") or {}},
+            # v1.51 — the live preview prices off the client's current state, so
+            # the foam grade rides in from the same payload.
+            "insulation_foam": body.get("insulation_foam"),
         }
         derived = _derive_body_options_display(
             bom_rows, input_state, (result.get("body_variables") or {}))

@@ -203,6 +203,88 @@ const _DRDSR_TOGGLE_GROUPS = ['DRD', 'SRD'];
 
 function _boSelKey(tid)    { return `body_opt_sel_${tid}`; }
 function _drdSrdKey(tid)   { return `drd_srd_${tid}`; }
+function _insFoamKey(tid)  { return `ins_foam_${tid}`; }
+
+// ── v1.51 — PU insulation foam grade (32D PU FOAM / 4G FOAM) ────────────────
+// ONE selection per costing, not per category: every PU foam line in the BOM
+// follows it. Price-only — thickness, weight and every derived value are
+// untouched. Stored BOM prices are the 32D side, so 4G is derived server-side
+// by the price-list ratio; the client only ever sends WHICH grade is chosen.
+const INS_FOAM_32D = '32D';
+const INS_FOAM_4G  = '4G';
+const INS_FOAM_LABELS = { [INS_FOAM_32D]: '32D PU FOAM', [INS_FOAM_4G]: '4G FOAM' };
+let insulationFoam = INS_FOAM_32D;
+
+function normaliseInsFoam(v) {
+  const t = String(v || '').trim().toUpperCase();
+  return (t === INS_FOAM_4G || t === '4G FOAM') ? INS_FOAM_4G : INS_FOAM_32D;
+}
+
+function saveInsFoam() {
+  const tid = document.getElementById('trailer-select')?.value;
+  if (!tid) return;
+  try { localStorage.setItem(_insFoamKey(tid), insulationFoam); } catch(_) {}
+}
+
+function loadInsFoam(tid) {
+  try {
+    const raw = localStorage.getItem(_insFoamKey(tid));
+    if (raw) insulationFoam = normaliseInsFoam(raw);
+  } catch(_) {}
+}
+
+/** True when this body has at least one PU foam COST line — the toggles
+ *  ("FRONT PU", "SIDES PU", …) are body options, not foam. Mirrors
+ *  services/insulation_foam.is_pu_foam_row so panel and price agree. */
+function _bodyUsesPuFoam(items) {
+  return (items || []).some(it => !it.is_body_option
+    && ['PU', 'PU FOAM'].includes(String(it.material_name || '').trim().toUpperCase()));
+}
+
+/** True when a PU side of an insulation pair is currently selected — i.e. the
+ *  grade is actually pricing something right now. An all-EPS configuration
+ *  still shows the control, it just has nothing to move. */
+function _puInsulationSelected(items) {
+  return (items || []).some(it => it.is_body_option
+    && String(it.body_option_subgroup || '').toUpperCase() === 'INSULATION'
+    && String(it.material_name || '').trim().toUpperCase().endsWith(' PU')
+    && bodyOptionSelections[String(it.id)]);
+}
+
+function onInsFoamChange(grade) {
+  const next = normaliseInsFoam(grade);
+  if (next === insulationFoam) return;
+  insulationFoam = next;
+  saveInsFoam();
+  renderInsulationFoam(bomData);
+  refreshBomDisplay();
+  scheduleCalc();
+}
+
+function renderInsulationFoam(items) {
+  const host = document.getElementById('insulation-foam-block');
+  if (!host) return;
+  if (!_bodyUsesPuFoam(items)) { host.style.display = 'none'; host.innerHTML = ''; return; }
+  host.style.display = '';
+  const live = _puInsulationSelected(items);
+  const radio = (grade) => `
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-size:11px">
+        <input type="radio" name="ins-foam" value="${grade}"
+               ${insulationFoam === grade ? 'checked' : ''}
+               style="accent-color:var(--blue);width:13px;height:13px;cursor:pointer"
+               onchange="onInsFoamChange(this.value)"/>
+        <span>${INS_FOAM_LABELS[grade]}</span>
+      </label>`;
+  host.innerHTML = `
+    <div style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px">
+      Insulation foam
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      ${radio(INS_FOAM_32D)}${radio(INS_FOAM_4G)}
+    </div>
+    ${live ? '' : `<div style="margin-top:5px;font-size:9px;color:var(--text-dim)">
+      No PU insulation selected — the grade prices nothing on this configuration.</div>`}`;
+}
 
 function saveBodyOptSel() {
   const tid = document.getElementById('trailer-select')?.value;
@@ -2354,11 +2436,19 @@ function applyCalculationInputs(payload) {
   document.getElementById('f-doors').value = dims.num_doors ?? document.getElementById('f-doors').value;
   document.getElementById('f-margin').value = payload.profit_margin ?? 0;
   setCustomer(payload.customer_id, payload.contact_id ?? null, payload.end_user_id ?? null);
+  // v1.51 — restore the PU foam grade this quote was priced at. Runs for BOTH
+  // hydrate paths (edit and recall-a-validated-reference) because both funnel
+  // through here. A record saved before this lane has no key and reads as 32D,
+  // which is what it was priced at.
+  insulationFoam = normaliseInsFoam(payload.insulation_foam);
+  saveInsFoam();
   // Restore body-option selections from saved calculation
   if (payload.body_option_selections && typeof payload.body_option_selections === 'object') {
     Object.assign(bodyOptionSelections, payload.body_option_selections);
     renderBodyOptions(bomData);
     refreshBomDisplay();
+  } else {
+    renderInsulationFoam(bomData);
   }
 }
 
@@ -3072,6 +3162,7 @@ async function loadBOM(options = {}) {
     priceOverrides = {};
     bodyOptionSelections = {};
     drdSrdEnabled = {};
+    insulationFoam = INS_FOAM_32D;  // v1.51 — every fresh costing starts on 32D
     editBodyVarOverrides = null;   // pinned thicknesses only apply within an edit
     editReplay = null;             // replay state only applies within an edit
     discountKind = null; discountInput = 0;   // discount is per-costing, reset on a fresh trailer
@@ -3093,6 +3184,9 @@ async function loadBOM(options = {}) {
       loadBodyOptSel(tid);
       loadDrdSrdEnabled(tid);
     }
+    // v1.51 — the foam grade is not configurator state, so it restores on both
+    // v1 and v2 bodies. Absent key = 32D (already reset above).
+    loadInsFoam(tid);
   }
 
   // Apply default dimensions and markup from the trailer's saved values
@@ -4658,6 +4752,10 @@ function renderBodyOptions(bomItems) {
   _enforceRearDoorInvariant();
   validateInsulationPairs();
   _updateNoDoorsWarning();   // v1.43 — no-doors amber guard (both renderers)
+  // v1.51 — the foam grade is a costing-level choice, not a BOM row, so it
+  // renders from the OUTER function: the three inner renderers (legacy flat,
+  // settings draft, configurator tree) each return early on their own path.
+  renderInsulationFoam(bomItems);
 }
 
 // ── WO v1.39.10 — the GENERAL insulation invariant (Michael, 2 Jul) ─────────
@@ -5312,6 +5410,7 @@ async function runCalc() {
     override_reasons: reasonsPayload,
     chassis: getChassisSelection(),
     body_option_selections: Object.keys(bodyOptionSelections).length ? bodyOptionSelections : undefined,
+    insulation_foam: insulationFoam,   // v1.51 — 32D (default) or 4G
     excluded_categories: excludedCats,
     flag_overrides: Object.keys(flagOverridesPayload).length ? flagOverridesPayload : undefined,
     user_excluded_bom_ids: _optExcl,
@@ -8300,6 +8399,8 @@ function _previewPayload(opts) {
     format: _EXPORT_EXTS[opts.format] ? opts.format : 'excel',
     body_option_selections: lastCalcPayload.body_option_selections
       || ((typeof bodyOptionSelections !== 'undefined' && bodyOptionSelections) || undefined),
+    // v1.51 — so the preview's spec block names the grade the preview priced.
+    insulation_foam: lastCalcPayload.insulation_foam || insulationFoam,
     drd_srd: (typeof drdSrdEnabled !== 'undefined' && drdSrdEnabled) || undefined,
     bom_sort_mode: (typeof getBomSortMode === 'function' ? getBomSortMode() : 'sheet'),
     customer_name: _selectedCustomerName(),

@@ -65,7 +65,7 @@
     {# v1.51 - the print mode is chosen at download time, so this is a button
        that asks first rather than an anchor that fetches immediately. #}
     <button type="button" class="btn btn-primary btn-sm no-print"
-            onclick="downloadRepairQuoteHere({{ record.id }})"
+            onclick="downloadRepairQuoteHere()"
             title="Generate the repair quotation on the ICB letterhead">📑 Generate Quote</button>
     {% elif report_template %}
     <a href="/results/{{ record.id }}/report" target="_blank" class="btn btn-primary btn-sm no-print" onclick="onExport(this,'Generating Quote…')" title="Generate {{ report_template.name }}">📑 Generate Quote</a>
@@ -767,10 +767,21 @@ async function declineFromResults(btn) {
   }
 }
 
+{% if repair_quote and not record.deleted_at and user_can(user, 'quote.generate') %}
 // v1.51 - the repair quotation, in the mode the user picks. Uses the shared
 // chooseModal (app.js) for the same reason every other dialog on these pages
 // does: a native one dies silently inside the calculator's embed iframe, and
 // this page is reachable from there.
+//
+// Guarded by the SAME condition as the button, and the URL is written out in
+// full rather than assembled from an argument. Both matter: a costing that is
+// deleted, is a body, or belongs to a user without quote.generate must not
+// carry the endpoint anywhere in its HTML - "the page does not offer the
+// quotation" is a property of the whole page, not of its buttons, and the
+// first version of this leaked the URL into every costing through the script
+// block (caught by test_the_summary_page_offers_no_export_or_quote_for_a_
+// deleted_costing, which is exactly the rule it exists to hold).
+const REPAIR_QUOTE_URL = "/api/calculations/{{ record.id }}/repair-quote.pdf";
 const REPAIR_QUOTE_MODES_RESULTS = [
   { value: 'summary',   label: 'Summary',
     note: 'One line per repair section. No item detail.' },
@@ -780,16 +791,16 @@ const REPAIR_QUOTE_MODES_RESULTS = [
     note: 'Quantity, unit price and line total on every line.' },
 ];
 let _resultsRepairQuoteMode = {{ (repair_quote_print_mode or 'breakdown')|tojson }};
-async function downloadRepairQuoteHere(recordId) {
+async function downloadRepairQuoteHere() {
   const mode = await chooseModal(
     'How much of the costing should the customer see?',
     REPAIR_QUOTE_MODES_RESULTS,
     { title: 'Repair quotation', selected: _resultsRepairQuoteMode });
   if (!mode) return;
   _resultsRepairQuoteMode = mode;
-  window.open('/api/calculations/' + recordId + '/repair-quote.pdf?mode='
-              + encodeURIComponent(mode), '_blank');
+  window.open(REPAIR_QUOTE_URL + '?mode=' + encodeURIComponent(mode), '_blank');
 }
+{% endif %}
 
 function onExport(link, label) {
   const orig = link.innerHTML;

@@ -1628,8 +1628,17 @@ const CURRENT_USER_NAME = {{ user.username | tojson }};
 const canManageRepairTemplates = {{ 'true' if user_can(user, 'costings.repair_templates_manage') else 'false' }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
-<script defer src="/static/js/calculator.js?v=170"></script>
-<script defer src="/static/js/calculator.js?v=171"></script>
+{# v1.51 - ONE tag. #168 (PU foam, v=170) and #169 (repair quote doc,
+   v=171) each bumped this line, and merging the second one auto-merged
+   the two tags SIDE BY SIDE with no conflict marker - so calculator.js
+   was downloaded twice and the second copy died on
+   "Identifier 'allCustomers' has already been declared", throwing a
+   SyntaxError into the console of every calculator page load.
+
+   v=172 rather than either of them: both 170 and 171 have already been
+   served, so a fresh number is the only value guaranteed not to hit a
+   stale cached copy of one lane's file. #}
+<script defer src="/static/js/calculator.js?v=172"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

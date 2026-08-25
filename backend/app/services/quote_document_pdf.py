@@ -65,14 +65,24 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
 
     content_w = (_PAGE_W_MM - 2 * _MARGIN_MM) * mm
     # Description | Quantity | Price | Total  (the sample's columns)
-    col_w = [content_w * 0.58, content_w * 0.12, content_w * 0.15, content_w * 0.15]
+    #
+    # v1.51 (Lezette, 25 Aug) — the description used to end where Quantity
+    # began, so a full-width line read as though it ran into the figures. A
+    # dedicated GUTTER column sits between them: it is drawn empty and never
+    # carries content, which is what makes the separation hold for every row
+    # rather than for the rows that happen to be short.
+    _GUTTER_W = content_w * 0.04
+    col_w = [content_w * 0.54, content_w * 0.12, content_w * 0.15, content_w * 0.15]
 
     def _row_height(line: dict) -> float:
         """Measure a line the way it will actually be drawn — long descriptions
         wrap, and a wrapped row is what pushes a quote onto another page."""
         para = Paragraph(_esc(line.get("description") or ""), body_style)
-        _w, h = para.wrap(col_w[0] - 6, 10_000)
-        return max(h + 6, 14)
+        # The arrow column (9pt) and the cell padding come off the width before
+        # the text wraps — measuring the whole column would under-count the
+        # wrapped height and break pages one line too late.
+        _w, h = para.wrap(col_w[0] - 9.0 - 8.0, 10_000)
+        return max(h + 11, 16)
 
     def _capacity(page_index: int) -> float:
         # Page 1's header is MEASURED, not assumed: the delivery address alone
@@ -188,10 +198,17 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         c.setFont("Helvetica", 8)
         c.drawString(x, top - 24, ctx.get("original_label", ""))
         c.setFont("Helvetica", 8)
-        c.drawRightString((_PAGE_W_MM - _MARGIN_MM) * mm, top - 12,
-                          f"Document Number  {ctx.get('document_number', '')}")
-        c.drawRightString((_PAGE_W_MM - _MARGIN_MM) * mm, top - 24,
-                          f"Document Date  {ctx.get('document_date', '')}")
+        # v1.51 — Document Number and Document Date are drawn right-aligned from
+        # the same edge on two lines, so they never collide with each other; what
+        # DID collide (R-2002, 25 Aug) was a long number running left into the
+        # title. Each value is fitted to the space actually left beside the
+        # title, truncating with an ellipsis rather than overprinting it.
+        _right = (_PAGE_W_MM - _MARGIN_MM) * mm
+        _avail = _right - x - 8
+        for dy, label, value in ((12, "Document Number", ctx.get("document_number", "")),
+                                 (24, "Document Date", ctx.get("document_date", ""))):
+            c.drawRightString(_right, top - dy,
+                              f"{label}  {_fit(c, str(value or ''), 'Helvetica', 8, _avail - c.stringWidth(label + '  ', 'Helvetica', 8))}")
         return top - _CONT_HEADER_H_MM * mm
 
     # ── the sample's header grid ─────────────────────────────────────────────
@@ -200,10 +217,15 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
     # recognisable feature after the letterhead itself.
     _LABEL_GREY = colors.HexColor("#8A9099")
     _RULE_BLUE = colors.HexColor("#9CC3E5")
-    _BAND_LABEL_DY = 9.0     # label baseline below the band top
-    _BAND_VALUE_DY = 20.0    # first value baseline below the band top
-    _BAND_LINE_DY = 8.5      # extra value lines
-    _BAND_GAP = 9.0          # space between the last value and the rule
+    _RULE_DOT = colors.HexColor("#C9CED6")   # the between-items separator (v1.51)
+    # v1.51 (Lezette, 25 Aug) — "squeezed to the top". The bands were drawn on
+    # the tightest rhythm that fit; against the old system's quote the whole
+    # block reads as compressed. Each figure gains a couple of points, which the
+    # measured paginator absorbs without any change to where pages break.
+    _BAND_LABEL_DY = 10.0    # label baseline below the band top
+    _BAND_VALUE_DY = 23.0    # first value baseline below the band top
+    _BAND_LINE_DY = 9.5      # extra value lines
+    _BAND_GAP = 12.0         # space between the last value and the rule
     _MISSING = "–"           # en-dash: "ICB never captured this", not content
 
     def _header_bands() -> list[list[tuple[str, list[str], int]]]:
@@ -235,8 +257,44 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
             bands.append([("Job Note", _wrap_plain(str(ctx["job_note"]), 110)[:3], 0)])
         return bands
 
+    # The grid is four equal columns; a value is only ever allowed the width of
+    # its own, less a gutter, so a long one can NEVER reach its neighbour.
+    _COL_W = content_w / 4.0
+    _COL_GUTTER = 8.0
+
+    def _fit_band(values: list[str], col: int) -> list[str]:
+        """A band value as the lines it will actually occupy.
+
+        v1.51 (default 6) — Document Number and Document Date collided on R-2002
+        because a templated number was three times its column wide and nothing
+        measured it. Values wrap onto a second line where the text has spaces to
+        wrap on, and are ellipsised where it has none (an unbroken 60-character
+        reference), so the collision is impossible by construction rather than
+        unlikely by convention. Capped at two lines: a header field is a label,
+        not a paragraph, and the band height follows this measurement.
+        """
+        # The last column has the page edge, not a neighbour, to its right.
+        avail = (_COL_W - _COL_GUTTER) if col < 3 else (_COL_W - 2.0)
+        out: list[str] = []
+        for v in values:
+            v = str(v)
+            if c.stringWidth(v, "Helvetica-Bold", 8.2) <= avail:
+                out.append(v)
+                continue
+            wrapped = _wrap_to_width(c, v, "Helvetica-Bold", 8.2, avail)
+            if len(wrapped) > 2:
+                wrapped = wrapped[:2]
+                wrapped[1] = wrapped[1] + " …"
+            # Wrapping alone is not enough: a value with NO spaces in it (an
+            # unbroken 120-character reference) is one "word", so the wrapper
+            # hands it back whole and it would run clean across its neighbour.
+            # Every line is ellipsised to the column here, which is what makes
+            # the collision impossible rather than merely unlikely.
+            out.extend(_fit(c, w, "Helvetica-Bold", 8.2, avail) for w in wrapped)
+        return out or [""]
+
     def _band_height(band) -> float:
-        lines = max(len(v) for _l, v, _col in band)
+        lines = max(len(_fit_band(v, col)) for _l, v, col in band)
         return _BAND_VALUE_DY + (lines - 1) * _BAND_LINE_DY + _BAND_GAP
 
     def _header_height() -> float:
@@ -260,7 +318,7 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
                 c.setFillColor(_LABEL_GREY)
                 c.setFont("Helvetica", 6.8)
                 c.drawString(x, y - _BAND_LABEL_DY, label)
-                for i, v in enumerate(values):
+                for i, v in enumerate(_fit_band(values, col)):
                     # A value ICB never captured is shown as a light dash rather
                     # than a bold one: the eye should read "not supplied", not
                     # mistake a heavy em-dash for content.
@@ -307,36 +365,52 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         # It is DRAWN, not typed: Helvetica has no arrow glyph, and the character
         # forms render as a tofu box — the same trap the Carry Over bar hit.
         acol = 9.0
-        widths = [acol, col_w[0] - acol, col_w[1], col_w[2], col_w[3]]
-        data = [["", "Description", "Quantity", "Price", "Total"]]
+        widths = [acol, col_w[0] - acol, _GUTTER_W, col_w[1], col_w[2], col_w[3]]
+        data = [["", "Description", "", "Quantity", "Price", "Total"]]
         if carry_in is not None:
             # Carry IN at the head of a continuation page — same wording as the
             # foot of the page before it, which is how the sample reads.
-            data.append(["", Paragraph(f"<b>{LABEL_CARRY_OVER}</b>", body_style), "", "",
+            data.append(["", Paragraph(f"<b>{LABEL_CARRY_OVER}</b>", body_style), "", "", "",
                          money(carry_in)])
         for ln in rows:
             data.append([
                 _Arrow(),
                 Paragraph(_esc(ln.get("description") or ""), body_style),
+                "",
                 "" if ln.get("qty") is None else _num(ln["qty"]),
                 "" if ln.get("price") is None else money(ln["price"]),
-                money(ln.get("total")),
+                # v1.51 — None means "print nothing here". SUMMARY and BREAKDOWN
+                # blank all three money columns, and money(None) would print a
+                # real, wrong "0.00" in a column the customer reads as a price.
+                "" if ln.get("total") is None else money(ln["total"]),
             ])
         t = Table(data, colWidths=widths, repeatRows=1)
-        t.setStyle(TableStyle([
+        _first_line = 2 if carry_in is not None else 1
+        style = [
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("FONTSIZE", (0, 0), (-1, -1), 8.5),
             # The sample brackets its column headings in the same blue as the
             # header rules, rather than a black underline.
             ("LINEABOVE", (0, 0), (-1, 0), 0.8, _RULE_BLUE),
             ("LINEBELOW", (0, 0), (-1, 0), 0.8, _RULE_BLUE),
-            ("ALIGN", (2, 0), (-1, -1), "RIGHT"),
+            ("ALIGN", (3, 0), (-1, -1), "RIGHT"),
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
             ("LEFTPADDING", (0, 0), (0, -1), 0),
             ("RIGHTPADDING", (0, 0), (0, -1), 2),
-            ("TOPPADDING", (0, 0), (-1, -1), 3),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ]))
+            # v1.51 — more air per row. The old 3/4 pt pair packed the lines
+            # tightly enough that a two-line description ran into the next item.
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ]
+        # v1.51 — a thin dotted rule BETWEEN items, matching the header bands.
+        # Drawn between rows rather than under every row so the last item is not
+        # underlined into the totals block, and skipped on the header (which has
+        # its own blue rule) and on a Carry Over line (which belongs to the item
+        # above it, not to a new one).
+        for i in range(_first_line + 1, len(data)):
+            style.append(("LINEABOVE", (1, i), (-1, i), 0.4, _RULE_DOT, None,
+                          (1, 2.2)))
+        t.setStyle(TableStyle(style))
         w, h = t.wrap(content_w, y)
         t.drawOn(c, _MARGIN_MM * mm, y - h)
         return y - h
@@ -378,6 +452,10 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
     # above. total_pages is read by draw_footer at call time, so it is in place
     # before the first page is stamped.
     pages = paginate_lines(lines, _capacity, _row_height) or [[]]
+    # Whether the money columns are printed at all — the mode decides it, but
+    # the LINES are asked rather than the mode name, so a caller that builds a
+    # context by hand cannot get a Carry Over bar over blank columns.
+    _shows_money = any(ln.get("total") is not None for ln in lines)
     carries = carry_over_for(pages)
     total_pages = len(pages) + _extra_page_count(terms)
 
@@ -387,11 +465,16 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
             y = draw_header_block(y)
         else:
             y = draw_continuation_header(i + 1)
-        carry_in = carries[i - 1] if i > 0 else None
+        carry_in = carries[i - 1] if (i > 0 and _shows_money) else None
         y = draw_lines_table(rows, y, carry_in)
         is_last = (i == len(pages) - 1)
         if not is_last:
-            draw_carry_out((_MARGIN_MM + _FOOTER_H_MM + _CARRY_H_MM) * mm, carries[i])
+            # v1.51 — a Carry Over bar states a running total of the LINE column.
+            # In SUMMARY and BREAKDOWN that column is deliberately empty, so the
+            # bar would announce a figure the page does not show. It belongs to
+            # ITEMIZED alone.
+            if _shows_money:
+                draw_carry_out((_MARGIN_MM + _FOOTER_H_MM + _CARRY_H_MM) * mm, carries[i])
         else:
             draw_totals(y - 8)
         draw_footer(i + 1)
@@ -474,11 +557,18 @@ def _draw_terms_pages(c, ctx, terms, branding, pages_so_far, total_pages,
         y = _para_block(c, y, (acc.get("body") or "").replace(
             "{ref}", str(ctx.get("document_number") or "")))
         for field in acc.get("fields") or []:
-            y -= 16
+            y -= 18
             c.setFont("Helvetica", 9)
             c.drawString(_MARGIN_MM * mm, y, field)
             c.setStrokeColor(colors.HexColor("#666666"))
-            c.line((_MARGIN_MM + 30) * mm, y - 2, (_MARGIN_MM + 120) * mm, y - 2)
+            c.setLineWidth(0.6)
+            # v1.51 — the rule starts after the LABEL, not at a fixed 30 mm.
+            # "Order Number:" is wider than "Date:" and would have been struck
+            # through by a hardcoded start; measuring means any label an admin
+            # types gets a line that begins where its text ends.
+            _x = max((_MARGIN_MM + 30) * mm,
+                     _MARGIN_MM * mm + c.stringWidth(str(field), "Helvetica", 9) + 8)
+            c.line(_x, y - 2, (_PAGE_W_MM - _MARGIN_MM - 18) * mm, y - 2)
         draw_footer(page_no)
         c.showPage()
 
@@ -498,6 +588,56 @@ def _para_block(c, y, text, bold=False):
     _w, h = para.wrap(width, 10_000)
     para.drawOn(c, _MARGIN_MM * mm, y - h)
     return y - h - 5
+
+
+def _fit(c, text: str, font: str, size: float, avail: float) -> str:
+    """`text` shortened with an ellipsis until it fits `avail` points.
+
+    Used where a value has NO room to wrap — the continuation header's two
+    stacked fields, and the second line of a header band. Returns "" rather than
+    a bare ellipsis when there is no room at all, because a lone "…" in a
+    document header reads as corruption, not as truncation.
+    """
+    text = str(text or "")
+    if avail <= 0:
+        return ""
+    if c.stringWidth(text, font, size) <= avail:
+        return text
+    ell = "…"
+    if c.stringWidth(ell, font, size) > avail:
+        return ""
+    lo, hi = 0, len(text)
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        if c.stringWidth(text[:mid] + ell, font, size) <= avail:
+            lo = mid
+        else:
+            hi = mid - 1
+    return (text[:lo].rstrip() + ell) if lo else ell
+
+
+def _wrap_to_width(c, text: str, font: str, size: float, avail: float) -> list[str]:
+    """Greedy word wrap MEASURED in points rather than counted in characters.
+
+    _wrap_plain counts characters, which is fine for the job note's fixed-width
+    paragraph but wrong for a header value that must fit an exact column: "III"
+    and "WWW" are the same character count and nearly double the width.
+    """
+    words = str(text or "").split()
+    if not words:
+        return [""]
+    out: list[str] = []
+    cur = ""
+    for w in words:
+        trial = f"{cur} {w}".strip()
+        if cur and c.stringWidth(trial, font, size) > avail:
+            out.append(cur)
+            cur = w
+        else:
+            cur = trial
+    if cur:
+        out.append(cur)
+    return out
 
 
 def _esc(s: str) -> str:

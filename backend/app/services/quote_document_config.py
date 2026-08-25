@@ -145,7 +145,12 @@ DEFAULT_TERMS: dict[str, Any] = {
         # not a format to reproduce.
         "body": "I hereby accept the Icecold Bodies Quote Ref: {ref} and the terms and "
                 "conditions as stated in the quote.",
-        "fields": ["Signature:", "PRINT NAME:", "Date:"],
+        # v1.51 (Lezette, 25 Aug) — "Order Number:" joins the ruled fields. The
+        # customer writes their order number on the copy they sign and return;
+        # Signature / PRINT NAME / Date each had a rule and this did not, which
+        # read as an oversight on the page. Last, matching where the body
+        # quotation's own templates put it.
+        "fields": ["Signature:", "PRINT NAME:", "Date:", "Order Number:"],
     },
 }
 
@@ -194,6 +199,16 @@ def get_config(db: Session) -> dict[str, Any]:
     for blk in (merged.get("terms") or {}).get("blocks") or []:
         if isinstance(blk, dict) and blk.get("signature_block"):
             blk.setdefault("po_line", "Purchase Order No:")
+    # v1.51 — the acceptance form's Order Number line, healed the same way. A
+    # prod config saved before this key existed carries the three original
+    # fields; appending the missing one leaves an admin's own edits (a renamed
+    # field, a removed one, a re-ordered list) exactly as they are, because the
+    # test is "is this label present", not "is this list the default".
+    _acc = (merged.get("terms") or {}).get("acceptance")
+    if isinstance(_acc, dict) and isinstance(_acc.get("fields"), list):
+        if not any(str(f).strip().lower().startswith("order number")
+                   for f in _acc["fields"]):
+            _acc["fields"] = list(_acc["fields"]) + ["Order Number:"]
     return merged
 
 

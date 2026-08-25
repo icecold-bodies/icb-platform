@@ -23,6 +23,7 @@ import { Toast } from '../../components/ui/overlays'
 import { apiDelete, apiGet, apiPost } from '../../lib/api'
 import { ALL_STATUSES, liveToCosting, type Costing, type LiveCalculation, type StatusName } from '../../data/costingsData'
 import { Tooltip } from '../../components/ui/Tooltip'
+import { QuoteNumberCell, quoteSearchText } from './quoteIdentity'
 import { Card } from '../../components/ui/primitives'
 import { STATUS_STYLES, StatusPillCosting, statusFilterTooltipKey } from './statusPalette'
 import { CostingsKpiStrip } from './CostingsKpiStrip'
@@ -213,7 +214,10 @@ export function CostingsDashboard() {
       if (!ql) return true
       return (
         c.customer_name.toLowerCase().includes(ql) ||
-        c.quote_number.toLowerCase().includes(ql) ||
+        // v1.51 — BOTH numbers. Lezette searches for the R-number she quoted
+        // over the phone; before this the board could only be searched by the
+        // internal number, which the customer has never seen.
+        quoteSearchText(c).includes(ql) ||
         c.body_type.toLowerCase().includes(ql) ||
         (c.contact_name ?? '').toLowerCase().includes(ql)
       )
@@ -352,7 +356,7 @@ export function CostingsDashboard() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search customer, contact, quote number, body type…"
+            placeholder="Search customer, contact, quote or repair number, body type…"
             className="flex-1 text-sm outline-none"
           />
           {q && (
@@ -429,7 +433,13 @@ export function CostingsDashboard() {
                       className="h-4 w-4 cursor-pointer"
                     />
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs font-semibold">{c.quote_number}</td>
+                  {/* v1.51 (Michael, 25 Aug) — a repair row leads with the
+                      R-number the customer was quoted, with the internal record
+                      number beneath it. Non-repair rows are unchanged: they have
+                      no second number, so the helper returns the bare value. */}
+                  <td className="px-3 py-2 font-mono text-xs font-semibold">
+                    <QuoteNumberCell c={c} />
+                  </td>
                   {/* Nadie (20 Aug) — the END USER (the customer's own customer,
                       snapshotted on the costing in #141) in brackets after the
                       customer, so a reseller's quotes tell themselves apart on the

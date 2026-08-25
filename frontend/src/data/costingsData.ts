@@ -102,6 +102,7 @@ export interface Costing {
   quote_type: 'New Build' | 'Repair'
   has_repair_quote?: boolean       // v1.48 — server says this repair has a letterhead quotation
   repair_document_number?: string | null  // v1.50 — the R-series number the quotation prints
+  repair_quote_print_mode?: string | null  // v1.51 — how the quotation was last printed
   deleted_at?: string | null       // v1.49 — soft-deleted; export + quote withheld, Duplicate only
   deleted_by?: string | null
   requires_chassis: boolean
@@ -362,6 +363,9 @@ export interface LiveCalculation {
   // v1.50 — the R-series document number (issued at save, immutable). Null on
   // body costings and on repairs saved before the series existed.
   repair_document_number?: string | null
+  // v1.51 — 'summary' | 'breakdown' | 'itemized'. The mode the quotation was
+  // last downloaded in, so the chooser opens on the document that was sent.
+  repair_quote_print_mode?: string | null
   deleted_at?: string | null      // v1.49 — soft delete (0043)
   deleted_by?: string | null
   // v1.47 Lane C — the repair surface's own fields, served off the costing's
@@ -409,6 +413,7 @@ export function liveToCosting(r: LiveCalculation): Costing {
     quote_type: r.is_repair ? 'Repair' : 'New Build',
     has_repair_quote: !!r.has_repair_quote,
     repair_document_number: r.repair_document_number ?? null,
+    repair_quote_print_mode: r.repair_quote_print_mode ?? null,
     deleted_at: r.deleted_at ?? null,
     deleted_by: r.deleted_by ?? null,
     // v1.47 — carry the repair's scope through so the Repair scope block and the

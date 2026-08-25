@@ -237,7 +237,10 @@ def _parse_template_lines(db: Session, raw) -> list[RepairTemplateLine]:
             description = mat.name
             unit = mat.unit_of_measure or "each"
         else:
-            description = str(item.get("description") or "").strip().upper()
+            # v1.51 — as typed, matching free_hand.parse_lines. A template is a
+            # saved repair line: if one of the two normalised case and the other
+            # did not, using a template would silently rewrite the text.
+            description = str(item.get("description") or "").strip()
             if not description:
                 raise HTTPException(status_code=422,
                                     detail="Description is required on every line.")

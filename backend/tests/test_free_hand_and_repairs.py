@@ -199,9 +199,11 @@ def test_free_hand_line_adds_qty_times_price_to_the_totals(client, admin_headers
     it = _item_by_key(after, "k1")
     assert it is not None, "the free-hand line is missing from items"
     assert it["free_hand"] is True
-    # v1.49 (Michael, 19 Aug): the description is stored UPPER CASE however it
-    # was typed - the fixture sends "Rubber seal kit" on purpose.
-    assert it["material"] == "RUBBER SEAL KIT"
+    # v1.51 (Lezette, 25 Aug): the description is stored EXACTLY AS TYPED - the
+    # fixture sends "Rubber seal kit" and that is what the customer's quotation
+    # prints. (v1.49 upper-cased it here; the quote then read as a shouted parts
+    # list against the old system's sentences.)
+    assert it["material"] == "Rubber seal kit"
     assert it["quantity"] == pytest.approx(2.0)
     assert it["unit_price"] == pytest.approx(450.0)
     assert it["line_cost"] == pytest.approx(900.0)
@@ -322,7 +324,7 @@ def test_free_hand_line_survives_the_save_snapshot(client, admin_headers, seeded
     assert got.status_code == 200, got.text
     lines = got.json()["free_hand_lines"]
     assert len(lines) == 1
-    assert lines[0]["description"] == "RUBBER SEAL KIT"   # v1.49 - upper-cased on the way in
+    assert lines[0]["description"] == "Rubber seal kit"   # v1.51 - stored as typed
     assert lines[0]["qty"] == pytest.approx(2.0)
     assert lines[0]["unit_price"] == pytest.approx(450.0)
     assert lines[0]["notes"] == "ex stock Cape Town"
@@ -797,7 +799,7 @@ def test_reopening_a_body_costing_returns_its_free_hand_extras(
     d = client.get(f"/api/calculations/{rec_id}", headers=admin_headers).json()
     lines = d["free_hand_lines"]
     assert len(lines) == 1, "the manual line must survive the round trip"
-    assert lines[0]["description"] == "RUBBER SEAL KIT"   # v1.49 - upper-cased on the way in
+    assert lines[0]["description"] == "Rubber seal kit"   # v1.51 - stored as typed
     assert lines[0]["qty"] == pytest.approx(2.0)
     assert lines[0]["unit_price"] == pytest.approx(450.0)
     assert lines[0]["notes"] == "ex stock Cape Town"
@@ -811,12 +813,14 @@ def test_reopening_a_body_costing_returns_its_free_hand_extras(
     assert again.json()["grand_total"] == pytest.approx(saved_total)
 
 
-def test_a_free_hand_description_is_stored_upper_case_however_typed(client, admin_headers, seeded):
-    """Michael, 19 Aug: repair line descriptions default to upper case.
+def test_a_free_hand_description_is_stored_exactly_as_typed(client, admin_headers, seeded):
+    """Lezette, 25 Aug (v1.51): repair line descriptions are stored AS TYPED.
 
-    Normalised server-side at the one place every free-hand line passes through,
-    so it holds however the text arrived - typed, pasted, or from a script. The
-    client also upper-cases the input as the user types; this pins the server.
+    v1.49 upper-cased them server-side, at the one place every free-hand line
+    passes through - which is precisely why the removal had to happen there too,
+    or anything pasted or posted would still have been shouted onto the
+    customer's quotation however the input behaved. This pins the server, the
+    same way it pinned the old rule.
     """
     r = client.post("/api/calculate", json=_body(
         seeded,
@@ -825,7 +829,9 @@ def test_a_free_hand_description_is_stored_upper_case_however_typed(client, admi
     ), headers=admin_headers)
     assert r.status_code == 200, r.text
     it = _item_by_key(r.json(), "k1")
-    assert it["material"] == "MIXED CASE  TEXT"
+    # Internal whitespace is preserved too - the normaliser only ever trimmed
+    # the ends, and it must not start collapsing what a user typed.
+    assert it["material"] == "mixed Case  Text"
 
 
 def test_admin_set_repair_next_number_drives_the_next_saved_repair(

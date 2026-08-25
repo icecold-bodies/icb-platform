@@ -512,4 +512,7 @@ def test_rename_and_replace_lines(client, seeded, admin_headers):
     data = r.json()
     assert data["name"] == "V150 P3 RENAMED"
     assert data["updated_by"] == "admin"
-    assert [ln["description"] for ln in data["lines"]] == ["JUST GLUE"]  # upper-cased
+    # v1.51 - as typed. A template IS a saved repair line, so it must normalise
+    # exactly as free_hand.parse_lines does; if one upper-cased and the other did
+    # not, using a template would silently rewrite the text.
+    assert [ln["description"] for ln in data["lines"]] == ["just glue"]

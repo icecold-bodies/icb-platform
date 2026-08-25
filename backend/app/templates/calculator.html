@@ -417,6 +417,16 @@
                background:var(--bg-raise);border:1px solid var(--border);border-radius:4px;padding:2px 9px">
         <span style="font-size:10px">⇕</span><span id="bom-collapse-txt">Expand all</span>
       </button>
+      <!-- v1.51 — price-tip toggle (Michael, 25 Aug). The coloured price-cell
+           bubbles used to fire on every hover anywhere in the BOM; they are now
+           OFF by default and opt-in per user. Same visibility lifecycle as the
+           sort control: hidden until a BOM is loaded. -->
+      <label id="bom-tips-lbl" style="display:none;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);user-select:none;margin-left:10px;cursor:pointer"
+             title="Show the coloured price notes when you hover a price">
+        <input type="checkbox" id="bom-tips-toggle" onchange="onBomTipsToggle(this.checked)"
+               style="accent-color:var(--blue);width:13px;height:13px;cursor:pointer">
+        Tips
+      </label>
       <span id="bom-count" style="color:var(--text-dim);font-size:10px"></span>
     </div>
     <div class="panel-body" id="bom-area">
@@ -1638,7 +1648,7 @@ const canManageRepairTemplates = {{ 'true' if user_can(user, 'costings.repair_te
    v=172 rather than either of them: both 170 and 171 have already been
    served, so a fresh number is the only value guaranteed not to hit a
    stale cached copy of one lane's file. #}
-<script defer src="/static/js/calculator.js?v=172"></script>
+<script defer src="/static/js/calculator.js?v=173"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

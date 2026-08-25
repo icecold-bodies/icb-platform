@@ -205,6 +205,89 @@ function _boSelKey(tid)    { return `body_opt_sel_${tid}`; }
 function _drdSrdKey(tid)   { return `drd_srd_${tid}`; }
 function _insFoamKey(tid)  { return `ins_foam_${tid}`; }
 
+// ── v1.51 — BOM price tips are OPT-IN (Michael, 25 Aug) ─────────────────────
+// The coloured price bubbles (quote-only override / recently updated / outdated
+// / bulk-updated) used to fire on every hover anywhere in the BOM. They are now
+// off unless the user ticks "Tips" in the Bill of Materials header.
+//
+// Two mechanisms have to go together. The CSS bubble is gated on
+// body[data-tips="on"]; the NATIVE browser tooltip is a `title` attribute
+// carrying the SAME text, and CSS cannot suppress that — so the attribute is
+// simply not emitted while tips are off. Gating only the CSS would leave the
+// browser's own tooltip popping up a second later, which reads as a broken
+// toggle. The `data-tooltip` attribute stays either way: it is the bubble's
+// text source, it is inert without the hover rule, and journeys read it.
+//
+// NOT a per-body preference: it is how this user likes to read the table, so it
+// is one key, not one per trailer.
+const TIPS_KEY = 'bom_price_tips';
+let tipsEnabled = false;
+
+function _priceTipAttrs(text) {
+  if (!text) return '';
+  const esc = escHtml(text);
+  return tipsEnabled ? ` data-tooltip="${esc}" title="${esc}"` : ` data-tooltip="${esc}"`;
+}
+
+/** Paint the flag the CSS reads. Body-level so it covers both BOM renderers. */
+function _applyTipsFlag() {
+  if (tipsEnabled) document.body.setAttribute('data-tips', 'on');
+  else document.body.removeAttribute('data-tips');
+  const box = document.getElementById('bom-tips-toggle');
+  if (box) box.checked = tipsEnabled;
+}
+
+function loadTipsPref() {
+  try { tipsEnabled = localStorage.getItem(TIPS_KEY) === '1'; } catch (_) { tipsEnabled = false; }
+  _applyTipsFlag();
+  _globalTooltipState = tipsEnabled ? 'on' : 'off';
+}
+
+/** Reveal the Tips control once a BOM is on screen (same lifecycle as Sort). */
+function _showTipsToggle() {
+  const lbl = document.getElementById('bom-tips-lbl');
+  if (lbl) lbl.style.display = 'inline-flex';
+  const box = document.getElementById('bom-tips-toggle');
+  if (box) box.checked = tipsEnabled;
+}
+
+/** Add/remove the native `title` on price cells already in the DOM.
+ *
+ *  Patched IN PLACE rather than re-rendered. Re-rendering here is actively
+ *  wrong: refreshBomDisplay() paints the PRE-calc parts view, so calling it
+ *  after a calculation replaces the costed table with the uncosted one - the
+ *  toggle would wipe the user's results (209 price cells -> 0, measured).
+ *  In-place is also instant and cannot disturb collapse state or scroll.
+ *
+ *  `data-tooltip` is only ever emitted on price cells - calculator.js has
+ *  exactly two such render sites - so it is the precise handle for "the cells
+ *  whose tip this toggle owns". */
+function _syncPriceTitles() {
+  document.querySelectorAll('#bom-area [data-tooltip]').forEach(el => {
+    if (tipsEnabled) el.setAttribute('title', el.getAttribute('data-tooltip'));
+    else el.removeAttribute('title');
+  });
+}
+
+function onBomTipsToggle(on) {
+  tipsEnabled = !!on;
+  try { localStorage.setItem(TIPS_KEY, tipsEnabled ? '1' : '0'); } catch (_) {}
+  _applyTipsFlag();
+  _syncPriceTitles();
+  _applyTipsToHoverPanels();
+}
+
+/** The hover FORMULA panel (and the skin/taping/floor/cleat panels) share one
+ *  page-level state. Tips owns it: off means off, on restores the ordinary
+ *  'on' state that the row-click cycle then steps through. */
+function _applyTipsToHoverPanels() {
+  _globalTooltipState = tipsEnabled ? 'on' : 'off';
+  if (!tipsEnabled) {
+    if (typeof _hideFormulaTooltip === 'function') _hideFormulaTooltip();
+    if (typeof _hidePricingTooltips === 'function') _hidePricingTooltips();
+  }
+}
+
 // ── v1.51 — PU insulation foam grade (32D PU FOAM / 4G FOAM) ────────────────
 // ONE selection per costing, not per category: every PU foam line in the BOM
 // follows it. Price-only — thickness, weight and every derived value are
@@ -2073,6 +2156,7 @@ document.addEventListener('mousedown', e => {
 
 // Right-click delegation on #bom-area
 document.addEventListener('DOMContentLoaded', () => {
+  loadTipsPref();   // v1.51 — paint body[data-tips] before the first BOM render
   document.getElementById('bom-area').addEventListener('contextmenu', e => {
     const row = e.target.closest('[data-material-id]');
     if (!row) return;
@@ -3405,7 +3489,7 @@ function renderBOM(items) {
       const priceClass   = ov ? 'price-override-cell' : (outdatedLabel ? 'price-outdated-cell' : (recentLabel ? 'price-recent-cell' : ''));
       const ovTooltip    = ov && ov.reason ? `Reason: ${ov.reason}` : (ov ? 'Quote-only price override' : null);
       const tooltipText  = ovTooltip || outdatedLabel || recentLabel;
-      const tooltip      = tooltipText ? ` data-tooltip="${escHtml(tooltipText)}" title="${escHtml(tooltipText)}"` : '';
+      const tooltip      = _priceTipAttrs(tooltipText);
       const badge        = ov ? '<span class="override-badge">*</span>' : '';
       html += `<div class="assembly-item" data-id="${bid}"
           data-bom-id="${bid}"
@@ -3431,6 +3515,7 @@ function renderBOM(items) {
   if (lbl2) lbl2.style.display = 'flex';
   const sortLbl = document.getElementById('bom-sort-lbl');
   if (sortLbl) sortLbl.style.display = 'inline-flex';
+  _showTipsToggle();
 }
 
 // ── Body Options ──────────────────────────────────────────────────────────────
@@ -6061,7 +6146,7 @@ function renderBOMWithCosts(items, bomRef) {
       const priceCls    = isOv ? 'price-override-cell' : (isBulk ? 'price-bulk-cell' : (outdatedLabel ? 'price-outdated-cell' : (recentLabel ? 'price-recent-cell' : '')));
       const ovTooltip   = isOv && ov.reason ? `Reason: ${ov.reason}` : (isOv ? 'Quote-only price override' : null);
       const tooltipText = ovTooltip || bulkTip || outdatedLabel || recentLabel;
-      const tooltipAttr = tooltipText ? ` data-tooltip="${escHtml(tooltipText)}" title="${escHtml(tooltipText)}"` : '';
+      const tooltipAttr = _priceTipAttrs(tooltipText);
       const priceCell   = priceCls ? `class="${priceCls}"${tooltipAttr}` : (tooltipAttr ? tooltipAttr : '');
       const badge       = isOv ? '<span class="override-badge">*</span>' : '';
       const skinName    = bRef?.skin_formula_name;
@@ -6264,6 +6349,7 @@ function renderBOMWithCosts(items, bomRef) {
   document.getElementById('bom-count').textContent = `${items.length}${_chassisCount ? ' + ' + _chassisCount + ' chassis' : ''} items`;
   const lbl = document.getElementById('bom-collapse-lbl');
   if (lbl) lbl.style.display = 'flex';
+  _showTipsToggle();
   _calcSyncCheckbox();
   _updateNoDoorsWarning();   // v1.43 — re-evaluate after every calc (side-doors inclusion may have changed)
 }
@@ -7304,7 +7390,12 @@ function _positionFormulaTooltip(e, tt) {
 // Plain row click:   on → off → on
 // Pricing row click: on → on-formula → off → on
 const _PRICING_ROW_CLASSES    = ['bom-skin-row','bom-taping-row','bom-floor-row','bom-cleat-row'];
-let   _globalTooltipState     = 'on';
+// v1.51 (Michael, 25 Aug): starts 'off'. This state used to default to 'on'
+// and could only be changed by CLICKING a BOM row - an undiscoverable control -
+// so the formula panel fired on every hover with no obvious way to stop it. The
+// "Tips" checkbox in the BOM header is now the visible owner of this state; the
+// click cycle still works, but only while Tips is on.
+let   _globalTooltipState     = 'off';
 let   _suppressPricingTooltip = false;  // set before document handlers fire (bubble order)
 
 function _isPricingRow(row) {
@@ -7357,8 +7448,11 @@ function _initFormulaTooltip() {
     _suppressPricingTooltip = false;
   });
 
-  // Each click advances the page-level tooltip state
+  // Each click advances the page-level tooltip state. Inert while Tips is off:
+  // otherwise a stray click on a row would bring back the very panel the user
+  // switched off, through a control they cannot see.
   area.addEventListener('click', e => {
+    if (!tipsEnabled) return;
     const row = e.target.closest('tr.calc-grp-row');
     if (!row) return;
 

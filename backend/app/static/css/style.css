@@ -664,7 +664,13 @@ tbody tr:last-child td { border-bottom: none; }
 .ctx-menu-item:hover { background: var(--bg-panel); color: var(--text-head); }
 .ctx-menu-item .ctx-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
 
-/* BOM price override / recently-updated cell indicators */
+/* BOM price override / recently-updated cell indicators.
+   v1.51 (Michael, 25 Aug): the bubbles are OPT-IN. They only fire while
+   body[data-tips="on"] is set by the BOM header's Tips checkbox, and the
+   help cursor goes with them so an unhoverable cell never advertises a tip
+   that will not appear. The COLOUR stays either way — it is the price's
+   status, not a tip. calculator.js drops the matching title= attribute in
+   the same state, otherwise the native browser tooltip would still show. */
 .price-override-cell { color: var(--red) !important; position: relative; cursor: help; }
 .price-override-cell::after {
   content: "Price change only for this quote";
@@ -674,7 +680,7 @@ tbody tr:last-child td { border-bottom: none; }
   white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,.4);
   opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 100;
 }
-.price-override-cell:hover::after { opacity: 1; }
+body[data-tips="on"] .price-override-cell:hover::after { opacity: 1; }
 .price-recent-cell { color: var(--blue-hi) !important; position: relative; cursor: help; }
 .price-recent-cell::after {
   content: attr(data-tooltip);
@@ -684,7 +690,7 @@ tbody tr:last-child td { border-bottom: none; }
   white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,.4);
   opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 100;
 }
-.price-recent-cell:hover::after { opacity: 1; }
+body[data-tips="on"] .price-recent-cell:hover::after { opacity: 1; }
 .price-outdated-cell { color: #ffb340 !important; position: relative; cursor: help; }
 .price-outdated-cell::after {
   content: attr(data-tooltip);
@@ -694,7 +700,7 @@ tbody tr:last-child td { border-bottom: none; }
   white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,.4);
   opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 100;
 }
-.price-outdated-cell:hover::after { opacity: 1; }
+body[data-tips="on"] .price-outdated-cell:hover::after { opacity: 1; }
 .price-bulk-cell { color: #FFB454 !important; background: rgba(255,180,84,.10); position: relative; cursor: help; }
 .price-bulk-cell::after {
   content: attr(data-tooltip);
@@ -704,7 +710,11 @@ tbody tr:last-child td { border-bottom: none; }
   white-space: normal; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,.4);
   opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 100;
 }
-.price-bulk-cell:hover::after { opacity: 1; }
+body[data-tips="on"] .price-bulk-cell:hover::after { opacity: 1; }
+body:not([data-tips="on"]) .price-override-cell,
+body:not([data-tips="on"]) .price-recent-cell,
+body:not([data-tips="on"]) .price-outdated-cell,
+body:not([data-tips="on"]) .price-bulk-cell { cursor: default; }
 .override-badge {
   display: inline-block; font-size: 9px; font-weight: 700;
   background: rgba(248,81,73,.15); border: 1px solid var(--red);

@@ -55,8 +55,11 @@ def staged():
                      last_updated=datetime.now(timezone.utc))
         db.add(m)
         db.flush()
+        # NOT formula "1": _showFormulaTooltip returns early on a trivial formula
+        # (`if (!formula || formula === '1') return;`), so a "1" row can never
+        # open the panel and the test would pass for the wrong reason.
         row = BillOfMaterial(trailer_type_id=t.id, material_id=m.id,
-                             formula_expression="1", waste_percentage=0.0,
+                             formula_expression="length*2", waste_percentage=0.0,
                              bom_section="FRONT", sort_order=0)
         db.add(row)
         db.flush()
@@ -68,18 +71,36 @@ def staged():
         _purge(db)
 
 
-def _open(page: Page, tt_id: int) -> None:
+def _open(page: Page, tt_id: int, row_id: int | None = None) -> None:
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     page.select_option("#trailer-select", str(tt_id))
     expect(page.locator(".calc-grp-hdr").first).to_be_visible(timeout=T)
     expect(page.locator("#calc-status")).to_have_text("", timeout=T)
     page.wait_for_timeout(1200)
+    if row_id is not None:
+        _ensure_visible(page, row_id)
+
+
+def _ensure_visible(page: Page, bom_id: int) -> None:
+    """BOM groups render COLLAPSED, so a price cell is ATTACHED but has zero
+    height — Playwright resolves the locator and then times out waiting for it to
+    be visible. Expand until the row really is on screen, which is also the state
+    a user hovering a price is in. (This is what turned the first CI run red.)"""
+    probe = ("(id) => { const r = document.querySelector('tr[data-bom-id=\"' + id + '\"]');"
+             "          return !!r && r.getBoundingClientRect().height > 0; }")
+    for _ in range(8):
+        if page.evaluate(probe, str(bom_id)):
+            return
+        page.locator("#bom-collapse-lbl").click()
+        page.wait_for_timeout(1200)
+    raise AssertionError(f"BOM row {bom_id} never became visible - cannot hover it")
 
 
 def _bubble_opacity(page: Page, bom_id: int) -> float:
     """Computed opacity of the tooltip bubble WHILE HOVERING the price cell.
     Reads the real pseudo-element, so it fails if the CSS gate regresses."""
+    _ensure_visible(page, bom_id)
     cell = page.locator(f"tr[data-bom-id='{bom_id}'] td.price-recent-cell")
     cell.hover()
     page.wait_for_timeout(400)   # the bubble transitions over .15s
@@ -101,6 +122,12 @@ def _formula_panel(page: Page, bom_id: int) -> str:
     resolved {NAME} variables. It has its own page-level state that used to
     default to ON and could only be changed by CLICKING a row, which is why it
     fired on every hover with no visible way to stop it."""
+    _ensure_visible(page, bom_id)
+    # Move OFF the row first. The panel opens on a `mouseover` EVENT, so hovering
+    # a row the pointer is already sitting on fires nothing and the panel never
+    # appears — a false negative that has nothing to do with the Tips state.
+    page.mouse.move(4, 4)
+    page.wait_for_timeout(150)
     page.locator(f"tr[data-bom-id='{bom_id}']").hover()
     page.wait_for_timeout(500)
     return page.evaluate(
@@ -114,7 +141,7 @@ def test_price_tips_are_off_by_default_and_opt_in(page: Page, live_server: str, 
     # A first-time user has no stored preference at all.
     page.goto("/calculator")
     page.evaluate("() => localStorage.removeItem('bom_price_tips')")
-    _open(page, ids["trailer"])
+    _open(page, ids["trailer"], ids["row"])
 
     toggle = page.locator("#bom-tips-toggle")
     expect(page.locator("#bom-tips-lbl")).to_be_visible(timeout=T)
@@ -166,7 +193,7 @@ def test_the_formula_panel_follows_the_same_switch(page: Page, live_server: str,
     admin_session(page, base=live_server)
     page.goto("/calculator")
     page.evaluate("() => localStorage.removeItem('bom_price_tips')")
-    _open(page, ids["trailer"])
+    _open(page, ids["trailer"], ids["row"])
 
     assert _formula_panel(page, ids["row"]) in ("none", "absent"), \
         "the formula panel showed on hover with Tips off"
@@ -191,11 +218,11 @@ def test_the_formula_panel_follows_the_same_switch(page: Page, live_server: str,
 def test_the_choice_is_remembered_across_a_reload(page: Page, live_server: str, staged) -> None:
     ids = staged
     admin_session(page, base=live_server)
-    _open(page, ids["trailer"])
+    _open(page, ids["trailer"], ids["row"])
     page.locator("#bom-tips-toggle").check()
     page.wait_for_timeout(1000)
 
-    _open(page, ids["trailer"])          # full page load
+    _open(page, ids["trailer"], ids["row"])          # full page load
     expect(page.locator("#bom-tips-toggle")).to_be_checked(timeout=T)
     expect(page.locator("body")).to_have_attribute("data-tips", "on")
     assert _title_attr(page, ids["row"]), "the remembered ON state must restore both mechanisms"
@@ -211,7 +238,7 @@ def test_other_tooltips_are_untouched(page: Page, live_server: str, staged) -> N
     their native hints whatever the Tips state is."""
     ids = staged
     admin_session(page, base=live_server)
-    _open(page, ids["trailer"])
+    _open(page, ids["trailer"], ids["row"])
     expect(page.locator("#bom-tips-toggle")).not_to_be_checked()
     # A BOM section header keeps its native hint while price tips are off.
     hdr = page.locator(".calc-grp-hdr[title]").first

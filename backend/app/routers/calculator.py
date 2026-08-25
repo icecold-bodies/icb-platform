@@ -24,6 +24,7 @@ from ..services import (
     get_section_snapshot, get_formula_lib, get_global_vars,
 )
 from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
+from ..services import insulation_foam as pu_foam   # v1.51 — 32D PU FOAM vs 4G FOAM
 from ..services.quote_document import has_repair_quote_document  # v1.48
 from ..templates_config import templates
 from ..quote_numbering import (assign_quote_number, allocate_series_number,
@@ -153,7 +154,11 @@ def _derive_body_options_display(bom_rows: list, input_state: dict, saved_body_v
     if not rear_door and not panels and not floor_type:
         return None
 
-    return {"rear_door": rear_door, "panels": panels, "floor_type": floor_type}
+    # v1.51 — the PU foam grade the quote was priced at. Read straight off the
+    # saved input_state (absent = 32D), never re-derived from prices: the BOM
+    # master data moves, the quote does not.
+    return {"rear_door": rear_door, "panels": panels, "floor_type": floor_type,
+            "insulation_foam": pu_foam.normalise(input_state.get("insulation_foam"))}
 
 
 # ─── Calculator page ──────────────────────────────────────────────────────────
@@ -257,7 +262,7 @@ def _eval_bom_conditions(raw_json: str | None, selected_opt_names: set[str]) -> 
     return (not all_met) if mode == "exclude" else all_met
 
 
-def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categories=None, trailer=None, flag_overrides=None, include_all_items=False, user_excluded_bom_ids=None, optional_sections_enabled=None, formula_overrides=None):
+def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categories=None, trailer=None, flag_overrides=None, include_all_items=False, user_excluded_bom_ids=None, optional_sections_enabled=None, formula_overrides=None, insulation_foam=None):
     """Resolve BOM rows into the bom_items list consumed by calculate_bom().
 
     When `trailer.configurator_v2` is True, additional gating runs on top of the
@@ -277,6 +282,13 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
     selected_opt_groups: set[str] = set()
     selected_opt_material_ids: set[int] = set()
     selected_master_row_ids: set[int] = set()
+
+    # v1.51 — PU insulation foam grade. One selection per costing; every PU foam
+    # cost line follows it. Stored prices are the 32D side (migration 0046), so
+    # 32D leaves the price untouched and 4G scales it by the price-list ratio.
+    # Resolved ONCE per build: the factor is a single admin_settings read.
+    foam_mult = (pu_foam.price_multiplier(insulation_foam, pu_foam.get_4g_factor(db))
+                 if insulation_foam else 1.0)
 
     if body_opt_sel:
         for row in bom_rows:
@@ -379,6 +391,11 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
                 base_price = row.unit_price_override
             else:
                 base_price = mat.price_per_unit
+            # v1.51 — grade the PU foam BEFORE the per-row override is applied:
+            # an explicit price someone typed is a decision, and a default must
+            # never overwrite a decision.
+            if foam_mult != 1.0 and pu_foam.is_pu_foam_row(row) and base_price is not None:
+                base_price = base_price * foam_mult
             price = overrides.get(str(row.id), base_price)
             mult = section_mults_by_id.get(row.bom_section_id) if row.bom_section_id else None
             if mult is None:
@@ -520,6 +537,9 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
             base_price = row.unit_price_override
         else:
             base_price = mat.price_per_unit
+        # v1.51 — see the matching block in the include_all_items path above.
+        if foam_mult != 1.0 and pu_foam.is_pu_foam_row(row) and base_price is not None:
+            base_price = base_price * foam_mult
         price = overrides.get(str(row.id), base_price)
         mult = section_mults_by_id.get(row.bom_section_id) if row.bom_section_id else None
         if mult is None:
@@ -825,8 +845,9 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
     include_all_items = bool(body.get("include_all_items"))
     user_excluded_bom_ids = body.get("user_excluded_bom_ids") or []
     optional_sections_enabled = body.get("optional_sections_enabled") or []
+    insulation_foam = pu_foam.normalise(body.get("insulation_foam"))
 
-    bom_items = _build_bom_items(bom_rows, body.get("dimensions", {}), overrides, body_opt_sel, db, excluded_cats, trailer=tt, flag_overrides=flag_overrides, include_all_items=include_all_items, user_excluded_bom_ids=user_excluded_bom_ids, optional_sections_enabled=optional_sections_enabled, formula_overrides=body.get("formula_overrides"))
+    bom_items = _build_bom_items(bom_rows, body.get("dimensions", {}), overrides, body_opt_sel, db, excluded_cats, trailer=tt, flag_overrides=flag_overrides, include_all_items=include_all_items, user_excluded_bom_ids=user_excluded_bom_ids, optional_sections_enabled=optional_sections_enabled, formula_overrides=body.get("formula_overrides"), insulation_foam=insulation_foam)
     _append_free_hand_lines(bom_items, body, optional_sections_enabled)
     body_vars = _build_body_variables(bom_rows)
     _apply_body_variable_overrides(body_vars, body.get("body_variable_overrides"))
@@ -1200,7 +1221,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     include_all_items = bool(body.get("include_all_items"))
     user_excluded_bom_ids = body.get("user_excluded_bom_ids") or []
     optional_sections_enabled = body.get("optional_sections_enabled") or []
-    bom_items = _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_cats, trailer=tt, flag_overrides=flag_overrides, include_all_items=include_all_items, user_excluded_bom_ids=user_excluded_bom_ids, optional_sections_enabled=optional_sections_enabled, formula_overrides=body.get("formula_overrides"))
+    insulation_foam = pu_foam.normalise(body.get("insulation_foam"))
+    bom_items = _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_cats, trailer=tt, flag_overrides=flag_overrides, include_all_items=include_all_items, user_excluded_bom_ids=user_excluded_bom_ids, optional_sections_enabled=optional_sections_enabled, formula_overrides=body.get("formula_overrides"), insulation_foam=insulation_foam)
     free_hand_lines = _append_free_hand_lines(bom_items, body, optional_sections_enabled)
     body_vars = _build_body_variables(bom_rows)
     _apply_body_variable_overrides(body_vars, body.get("body_variable_overrides"))
@@ -1235,6 +1257,10 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         "overrides":                 overrides,
         "override_reasons":          override_reasons,
         "body_option_selections":    body_opt_sel,
+        # v1.51 — the PU foam grade this quote was priced at. A record saved
+        # before this lane has no key here and reads as 32D (the default), which
+        # is exactly what those quotes were priced at.
+        "insulation_foam":           insulation_foam,
         "excluded_categories":       excluded_cats,
         "flag_overrides":            flag_overrides,
         "user_excluded_bom_ids":     user_excluded_bom_ids,
@@ -1940,6 +1966,9 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "override_reasons":        result_data.get("override_reasons_by_bom")
                                    or input_state.get("override_reasons") or {},
         "body_option_selections":    input_state.get("body_option_selections") or {},
+        # v1.51 — restores the saved PU foam grade on edit-load; a record with no
+        # key reads as 32D.
+        "insulation_foam":           pu_foam.normalise(input_state.get("insulation_foam")),
         "excluded_categories":       input_state.get("excluded_categories") or [],
         "flag_overrides":            input_state.get("flag_overrides") or {},
         "user_excluded_bom_ids":     input_state.get("user_excluded_bom_ids") or [],

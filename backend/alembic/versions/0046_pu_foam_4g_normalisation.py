@@ -174,11 +174,15 @@ def upgrade() -> None:
 
     # Admin-tunable ratio. Guarded: seed only when the key is absent, so a value
     # someone has set is never overwritten (the 0045 rule).
+    # The casts are load-bearing: an INSERT ... SELECT puts :k in an untyped
+    # output position AND in a varchar comparison, and Postgres refuses to deduce
+    # one type for both ("inconsistent types deduced for parameter $1").
     bind.execute(
         sa.text(f"""
             INSERT INTO {COST}.admin_settings (key, value, updated_at)
-            SELECT :k, :v, now()
-             WHERE NOT EXISTS (SELECT 1 FROM {COST}.admin_settings WHERE key = :k)
+            SELECT CAST(:k AS varchar), CAST(:v AS text), now()
+             WHERE NOT EXISTS (
+                   SELECT 1 FROM {COST}.admin_settings WHERE key = CAST(:k AS varchar))
         """),
         {"k": FACTOR_KEY, "v": FACTOR_SEED},
     )

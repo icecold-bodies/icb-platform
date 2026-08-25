@@ -145,8 +145,18 @@ def _line_cost(page: Page, bom_id: int) -> float:
     return _money(page.locator(f"tr[data-bom-id='{bom_id}'] td.calc-line-cost").inner_text())
 
 
-def _grand_total(page: Page) -> float:
+def _headline_total(page: Page) -> float:
+    """The number on screen. NOT a plain cost sum — it is
+    `grand_total x (1 + margin) / ratio`, and the ratio defaults to 55 %."""
     return _money(page.locator("#grand-total").inner_text())
+
+
+def _cost_total(page: Page) -> float:
+    """The server's own cost total (sum of line costs), read off the last calc
+    result. This is what a line-cost delta is directly comparable to; the
+    headline above it carries the margin and the profit ratio."""
+    return float(page.evaluate(
+        "() => (typeof lastResult !== 'undefined' && lastResult) ? lastResult.grand_total : 0"))
 
 
 def _open_body(page: Page, tt_id: int) -> None:
@@ -155,8 +165,9 @@ def _open_body(page: Page, tt_id: int) -> None:
     page.select_option("#trailer-select", str(tt_id))
     expect(page.locator(".calc-grp-hdr").first).to_be_visible(timeout=T)
     expect(page.locator("#grand-total")).not_to_have_text("—", timeout=T)
-    # Zero the margin so the grand total is a plain sum of line costs and the
-    # money delta below is directly comparable to the line delta.
+    # Zero the margin so the headline total tracks the cost total simply. The
+    # exact delta assertions read lastResult.grand_total, which is the raw sum of
+    # line costs either way.
     page.fill("#f-margin", "0")
     _settle(page)
 
@@ -203,7 +214,8 @@ def test_foam_grade_moves_only_the_pu_lines(page: Page, live_server: str, staged
     foam32 = _line_cost(page, ids["foam_row"])
     control32 = _line_cost(page, ids["control_row"])
     injection32 = _line_cost(page, ids["injection_row"])
-    total32 = _grand_total(page)
+    cost32 = _cost_total(page)
+    headline32 = _headline_total(page)
     assert foam32 > 0, "the staged PU foam line must cost something to be a test"
 
     # 2) Switch to 4G — the foam line rises by exactly the price-list ratio.
@@ -219,17 +231,22 @@ def test_foam_grade_moves_only_the_pu_lines(page: Page, live_server: str, staged
     assert _line_cost(page, ids["control_row"]) == pytest.approx(control32, abs=0.01)
     assert _line_cost(page, ids["injection_row"]) == pytest.approx(injection32, abs=0.01)
 
-    # 4) The grand total rose by exactly the foam line's own increase.
-    total4g = _grand_total(page)
-    assert total4g - total32 == pytest.approx(foam4g - foam32, abs=0.05), (
-        f"total moved {total4g - total32:.2f}, foam line moved {foam4g - foam32:.2f}")
+    # 4) The cost total rose by exactly the foam line's own increase — and the
+    #    headline the user reads moved with it. (They are different numbers: the
+    #    headline is cost x margin / profit-ratio, and the ratio defaults to 55%,
+    #    so only the cost total is directly comparable to a line delta.)
+    cost4g = _cost_total(page)
+    assert cost4g - cost32 == pytest.approx(foam4g - foam32, abs=0.05), (
+        f"cost total moved {cost4g - cost32:.2f}, foam line moved {foam4g - foam32:.2f}")
+    assert _headline_total(page) > headline32, "the total on screen must move too"
     shot(page, "02-4g-selected", journey=JOURNEY)
 
     # 5) And back: 32D restores the original money exactly.
     block.locator("input[value='32D']").check()
     _wait_for_line_cost(page, ids["foam_row"], foam32)
     _settle(page)
-    assert _grand_total(page) == pytest.approx(total32, abs=0.05)
+    assert _cost_total(page) == pytest.approx(cost32, abs=0.05)
+    assert _headline_total(page) == pytest.approx(headline32, abs=0.05)
 
 
 def test_the_grade_is_frozen_into_the_saved_costing_and_restored_on_edit(

@@ -24,6 +24,7 @@ from ..services import (
     get_section_snapshot, get_formula_lib, get_global_vars,
 )
 from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
+from ..services import quote_document           # v1.51 — print modes
 from ..services.quote_document import has_repair_quote_document  # v1.48
 from ..templates_config import templates
 from ..quote_numbering import (assign_quote_number, allocate_series_number,
@@ -1054,6 +1055,10 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             # per-quote: vehicle registration, delivery address, the ICB contact
             # and phone, and the payment terms.
             "vehicle_registration": repair_meta["vehicle_registration"],
+            # v1.51 — the caption printed above that value ("Veh reg nr:" by
+            # default; "Store Sale", "Parts Supply", "Serial nr:" when the
+            # repair is not vehicle work).
+            "vehicle_reference_label": repair_meta["vehicle_reference_label"],
             "delivery_address":     repair_meta["delivery_address"],
             "icb_contact_name":     repair_meta["icb_contact_name"],
             "icb_contact_phone":    repair_meta["icb_contact_phone"],
@@ -1092,6 +1097,16 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 except Exception:
                     _prev = {}
                 result["version"] = int(_prev.get("version", 1) or 1)
+                # v1.51 — the last-used PRINT MODE is a property of the quote,
+                # so it survives an edit for the same reason the version and the
+                # document number do: `result` is freshly computed and carries
+                # none, and losing it would silently re-issue the next download
+                # in a different shape from the one the customer was sent.
+                _prev_mode = (_prev.get(quote_document.PRINT_MODE_KEY)
+                              or (_prev.get("input_state") or {}).get(
+                                  quote_document.PRINT_MODE_KEY))
+                if _prev_mode:
+                    result[quote_document.PRINT_MODE_KEY] =                         quote_document.normalize_print_mode(_prev_mode)
                 # D6 — the R-series document number is IMMUTABLE once issued.
                 # `result` is freshly computed and carries none, so an edit must
                 # copy the original forward or the costing would silently get a
@@ -1476,6 +1491,9 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
         # v1.50 — shown beside the quote number so the R-number the quotation
         # prints is visible without downloading the PDF (Lezette, 22 Aug).
         "repair_document_number": _repair_document_number(result),
+        # v1.51 — the print mode this quote was last downloaded in, so the
+        # page's own chooser opens on the document that was sent.
+        "repair_quote_print_mode": quote_document.stored_print_mode(result),
     })
 
 
@@ -1600,6 +1618,9 @@ async def api_list_calculations(
             # body costings and on pre-R-series repairs.
             "repair_document_number": (rd.get("repair_document_number")
                                        or _input_state.get("repair_document_number")),
+            # v1.51 — the mode this quote was last downloaded in, so the board's
+            # own download chooser opens on the document that was sent.
+            "repair_quote_print_mode": quote_document.stored_print_mode(rd),
             # v1.47 — the repair surface's own fields. These live on the costing's
             # result_json / input_state snapshot, NOT in repair_phases_json, which
             # is owned by /schedule-repair and holds the phase-entry LIST.
@@ -1925,6 +1946,12 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         # with the lines intact but the vehicle registration, delivery address
         # and contact silently blank, which is worse than refusing to open it.
         "vehicle_registration": input_state.get("vehicle_registration"),
+        # v1.51 — the caption above that value, and the print mode this quote
+        # was last downloaded in. Both restore the surface to the state the
+        # document was produced from; without them an edit silently resets the
+        # caption to the default and the chooser opens on the wrong option.
+        "vehicle_reference_label": input_state.get("vehicle_reference_label"),
+        "repair_quote_print_mode": quote_document.stored_print_mode(result_data),
         "delivery_address":     input_state.get("delivery_address"),
         "icb_contact_name":     input_state.get("icb_contact_name"),
         "icb_contact_phone":    input_state.get("icb_contact_phone"),

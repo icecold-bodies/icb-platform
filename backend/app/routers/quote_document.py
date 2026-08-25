@@ -8,6 +8,7 @@ output, not another format of the internal costing export.
 
 D10 is respected: this DOWNLOADS. Nothing here emails a customer.
 """
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -19,9 +20,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ..database import CalculationRecord, get_db
 from ..deps import get_current_user, require_admin, user_can
-from ..services.quote_document import (build_repair_quote_context,
+from ..services.quote_document import (PRINT_MODE_KEY,
+                                       build_repair_quote_context,
                                        has_repair_quote_document,
-                                       repair_quote_filename)
+                                       normalize_print_mode,
+                                       repair_quote_filename,
+                                       stored_print_mode)
 from ..services.quote_document_config import (apply_edits, editable_view,
                                               get_config, save_config)
 from ..services.quote_document_pdf import render_repair_quote_pdf
@@ -49,8 +53,29 @@ def _require_pdf_user(request: Request, db: Session):
     return user
 
 
+def _remember_print_mode(rec, db: Session, mode: str | None) -> None:
+    """Persist the print mode this quote was last downloaded in."""
+    mode = normalize_print_mode(mode)
+    try:
+        import json as _json
+        result = _json.loads(rec.result_json) if rec.result_json else {}
+        if not isinstance(result, dict):
+            return
+        if stored_print_mode(result) == mode and result.get(PRINT_MODE_KEY):
+            return                      # already recorded — no write, no churn
+        result[PRINT_MODE_KEY] = mode
+        rec.result_json = _json.dumps(result)
+        db.commit()
+    except Exception:
+        # A costing whose result_json cannot be re-serialised still gets its
+        # PDF; only the memory of the choice is lost.
+        db.rollback()
+        logging.exception("could not store the print mode for record %s", rec.id)
+
+
 @router.get("/api/calculations/{record_id}/repair-quote.pdf")
 async def repair_quote_pdf(record_id: int, request: Request,
+                           mode: str | None = None,
                            db: Session = Depends(get_db)):
     """The customer-facing repair quotation on the ICB letterhead.
 
@@ -59,6 +84,13 @@ async def repair_quote_pdf(record_id: int, request: Request,
     costing, and rendering one would produce an official-looking document full
     of blanks. A body costing gets the existing /results export instead, so this
     refuses with 409 rather than guessing.
+
+    v1.51 — `mode` is one of quote_document.PRINT_MODES and decides how much of
+    the costing the customer sees. Omitted, it is whatever this quote was last
+    downloaded as, which is what makes a re-download reproduce the document
+    already in the customer's inbox. An unreadable value falls back to the
+    default rather than refusing: a formatting preference must never be able to
+    take the quotation away.
     """
     _require_pdf_user(request, db)
     rec = db.query(CalculationRecord).filter_by(id=record_id).first()
@@ -76,8 +108,16 @@ async def repair_quote_pdf(record_id: int, request: Request,
             detail="The repair quotation document is only for repair costings.")
 
     ctx = build_repair_quote_context(
-        rec, db, generated_at=datetime.now().strftime("%d %b %Y %H:%M"))
+        rec, db, generated_at=datetime.now().strftime("%d %b %Y %H:%M"), mode=mode)
     pdf = render_repair_quote_pdf(ctx)
+
+    # Remember the mode ON THE QUOTE (v1.51). A GET that writes is deliberate
+    # and narrow: this is the only moment the choice exists, and it is stored
+    # so the NEXT download of this quote — by anyone, from any screen —
+    # reproduces the document that was sent. Written only when it actually
+    # changes, only into result_json (no column, no migration), and a failure
+    # here must never cost the user their PDF: the bytes are already rendered.
+    _remember_print_mode(rec, db, ctx.get("print_mode"))
 
     # v1.50 (Lezette, 22 Aug) — {R-number} - {Customer} - {Vehicle reg}: the
     # document number now LEADS the filename, since it is the identifier the

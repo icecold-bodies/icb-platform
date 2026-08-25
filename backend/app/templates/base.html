@@ -387,6 +387,24 @@
   </div>
 </div>
 
+{# v1.51 - the multiple-choice dialog chooseModal() drives. One markup block
+   here beside confirm/prompt so every page that extends base.html has it. #}
+<div class="modal-backdrop hidden" id="modal-choose">
+  <div class="modal" style="max-width:440px;width:95vw">
+    <div class="modal-header">
+      <span class="modal-title" id="choose-title">Choose</span>
+      <button class="btn btn-icon" onclick="_chooseModalResolve(null)">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div id="choose-message" style="font-size:13px;color:var(--text-dim);margin-bottom:12px"></div>
+      <div id="choose-options" class="choose-options"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="choose-cancel" onclick="_chooseModalResolve(null)">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop hidden" id="modal-confirm">
   <div class="modal" style="max-width:420px">
     <div class="modal-header">
@@ -424,7 +442,7 @@
   </div>
 </div>
 
-<script src="/static/js/app.js?v=5"></script>
+<script src="/static/js/app.js?v=6"></script>
 <script src="/static/js/password_toggle.js?v=1"></script>
 {% if user %}<script src="/static/js/help_chat.js?v=12"></script>{% endif %}
 {% if user %}<script src="/static/js/help_audit.js?v=7"></script>{% endif %}

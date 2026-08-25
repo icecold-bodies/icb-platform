@@ -62,7 +62,11 @@
        is the ICB-letterhead repair quotation, on its own R-series number. Checked
        BEFORE report_template so the repair never falls to the disabled branch. #}
     {% if repair_quote %}
-    <a href="/api/calculations/{{ record.id }}/repair-quote.pdf" target="_blank" class="btn btn-primary btn-sm no-print" onclick="onExport(this,'Generating Quote…')" title="Generate the repair quotation on the ICB letterhead">📑 Generate Quote</a>
+    {# v1.51 - the print mode is chosen at download time, so this is a button
+       that asks first rather than an anchor that fetches immediately. #}
+    <button type="button" class="btn btn-primary btn-sm no-print"
+            onclick="downloadRepairQuoteHere({{ record.id }})"
+            title="Generate the repair quotation on the ICB letterhead">📑 Generate Quote</button>
     {% elif report_template %}
     <a href="/results/{{ record.id }}/report" target="_blank" class="btn btn-primary btn-sm no-print" onclick="onExport(this,'Generating Quote…')" title="Generate {{ report_template.name }}">📑 Generate Quote</a>
     {% else %}
@@ -761,6 +765,30 @@ async function declineFromResults(btn) {
     btn.innerHTML = orig;
     toast('Decline failed: ' + e.message, 'error');
   }
+}
+
+// v1.51 - the repair quotation, in the mode the user picks. Uses the shared
+// chooseModal (app.js) for the same reason every other dialog on these pages
+// does: a native one dies silently inside the calculator's embed iframe, and
+// this page is reachable from there.
+const REPAIR_QUOTE_MODES_RESULTS = [
+  { value: 'summary',   label: 'Summary',
+    note: 'One line per repair section. No item detail.' },
+  { value: 'breakdown', label: 'Breakdown  (recommended)',
+    note: 'Every line described, no prices per line. Matches the old system.' },
+  { value: 'itemized',  label: 'Itemized',
+    note: 'Quantity, unit price and line total on every line.' },
+];
+let _resultsRepairQuoteMode = {{ (repair_quote_print_mode or 'breakdown')|tojson }};
+async function downloadRepairQuoteHere(recordId) {
+  const mode = await chooseModal(
+    'How much of the costing should the customer see?',
+    REPAIR_QUOTE_MODES_RESULTS,
+    { title: 'Repair quotation', selected: _resultsRepairQuoteMode });
+  if (!mode) return;
+  _resultsRepairQuoteMode = mode;
+  window.open('/api/calculations/' + recordId + '/repair-quote.pdf?mode='
+              + encodeURIComponent(mode), '_blank');
 }
 
 function onExport(link, label) {

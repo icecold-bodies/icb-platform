@@ -313,7 +313,7 @@ def test_pull_a_category_save_a_template_and_reuse_it(page: Page, p3_body) -> No
     assert "pdf" in (pdf.headers.get("content-type") or "")
     from pypdf import PdfReader                      # hard dependency (requirements.txt)
     text = "\n".join(pg.extract_text() or "" for pg in PdfReader(io.BytesIO(pdf.body())).pages)
-    for needle in ("J150P3 SIDE PANEL", "J150P3 GLUE", "LABOUR"):
+    for needle in ("J150P3 SIDE PANEL", "J150P3 GLUE", "Labour"):   # v1.51 - as typed
         assert needle in text, f"{needle!r} missing from the quotation PDF"
 
     # ── A NEW repair, from the template — priced at TODAY's prices. Move the
@@ -339,10 +339,10 @@ def test_pull_a_category_save_a_template_and_reuse_it(page: Page, p3_body) -> No
     expect(page.locator("#lp-title")).to_contain_text(TPL_NAME, timeout=T)
     rows = _lp_rows(page)
     by_desc = {r["d"]: r for r in rows}
-    assert set(by_desc) == {"J150P3 SIDE PANEL", "J150P3 GLUE", "LABOUR"}
+    assert set(by_desc) == {"J150P3 SIDE PANEL", "J150P3 GLUE", "Labour"}
     assert by_desc["J150P3 GLUE"]["price"] == 275.0
     assert by_desc["J150P3 SIDE PANEL"]["price"] == 100.0
-    assert by_desc["LABOUR"]["price"] is None
+    assert by_desc["Labour"]["price"] is None
     shot(page, "template_reuse_live_prices", JOURNEY)
 
     page.click("#lp-primary-btn")                    # Add selected (all three)

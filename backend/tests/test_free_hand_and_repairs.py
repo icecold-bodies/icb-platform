@@ -199,9 +199,11 @@ def test_free_hand_line_adds_qty_times_price_to_the_totals(client, admin_headers
     it = _item_by_key(after, "k1")
     assert it is not None, "the free-hand line is missing from items"
     assert it["free_hand"] is True
-    # v1.49 (Michael, 19 Aug): the description is stored UPPER CASE however it
-    # was typed - the fixture sends "Rubber seal kit" on purpose.
-    assert it["material"] == "RUBBER SEAL KIT"
+    # v1.51 (Lezette, 25 Aug): the description is stored EXACTLY AS TYPED - the
+    # fixture sends "Rubber seal kit" and that is what the customer's quotation
+    # prints. (v1.49 upper-cased it here; the quote then read as a shouted parts
+    # list against the old system's sentences.)
+    assert it["material"] == "Rubber seal kit"
     assert it["quantity"] == pytest.approx(2.0)
     assert it["unit_price"] == pytest.approx(450.0)
     assert it["line_cost"] == pytest.approx(900.0)
@@ -322,7 +324,7 @@ def test_free_hand_line_survives_the_save_snapshot(client, admin_headers, seeded
     assert got.status_code == 200, got.text
     lines = got.json()["free_hand_lines"]
     assert len(lines) == 1
-    assert lines[0]["description"] == "RUBBER SEAL KIT"   # v1.49 - upper-cased on the way in
+    assert lines[0]["description"] == "Rubber seal kit"   # v1.51 - stored as typed
     assert lines[0]["qty"] == pytest.approx(2.0)
     assert lines[0]["unit_price"] == pytest.approx(450.0)
     assert lines[0]["notes"] == "ex stock Cape Town"
@@ -797,7 +799,7 @@ def test_reopening_a_body_costing_returns_its_free_hand_extras(
     d = client.get(f"/api/calculations/{rec_id}", headers=admin_headers).json()
     lines = d["free_hand_lines"]
     assert len(lines) == 1, "the manual line must survive the round trip"
-    assert lines[0]["description"] == "RUBBER SEAL KIT"   # v1.49 - upper-cased on the way in
+    assert lines[0]["description"] == "Rubber seal kit"   # v1.51 - stored as typed
     assert lines[0]["qty"] == pytest.approx(2.0)
     assert lines[0]["unit_price"] == pytest.approx(450.0)
     assert lines[0]["notes"] == "ex stock Cape Town"

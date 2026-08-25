@@ -286,7 +286,16 @@
           {% set rtip = 'Pending review' %}
         {% endif %}
         <tr{% if rstatus == 'accepted' %} class="recent-approved-row"{% endif %} title="{{ rtip }}">
-          <td class="td-mono" style="color:var(--text-dim)" title="Internal #{{ r.id }} · Created {{ r.created_at.strftime('%Y-%m-%d %H:%M') }}">{{ r.quote_number or ('#' ~ r.id) }}</td>
+          {# v1.51 - a repair leads with the R-number the customer was quoted,
+             its internal record number beneath. Same rule as the MES board. #}
+          <td class="td-mono" style="color:var(--text-dim)" title="Internal #{{ r.id }} · Created {{ r.created_at.strftime('%Y-%m-%d %H:%M') }}">
+            {%- if r.repair_doc_number -%}
+              <span class="quote-no-primary">{{ r.repair_doc_number }}</span>
+              <span class="quote-no-internal" title="Internal costing number">{{ r.quote_number or ('#' ~ r.id) }}</span>
+            {%- else -%}
+              {{ r.quote_number or ('#' ~ r.id) }}
+            {%- endif -%}
+          </td>
           <td class="body-cell">
             <span class="body-name">{{ r.trailer_type.name if r.trailer_type else '—' }}</span>
             <span class="row-pills">
@@ -633,6 +642,18 @@ async function filterRecent(filter, clickedCard) {
         No calculations found for this period.</td></tr>`;
       return;
     }
+    // v1.51 - the Quote # cell. A repair leads with the R-number the customer
+    // was quoted; every other row is the bare number it always was. Mirrors the
+    // Jinja branch above it and the MES board's QuoteNumberCell - three
+    // renderers of one rule, so the degraded case (a repair with no number yet)
+    // reads identically on all of them.
+    const quoteNoCell = (r) => {
+      const internal = escH(r.quote_number || ('#' + r.id));
+      const doc = String(r.repair_document_number || '').trim();
+      if (!doc) return internal;
+      return `<span class="quote-no-primary">${escH(doc)}</span>`
+           + `<span class="quote-no-internal" title="Internal costing number">${internal}</span>`;
+    };
     tbody.innerHTML = rows.map(r => {
       const ver = r.version || 1;
       const verBadge = ver > 1
@@ -647,7 +668,7 @@ async function filterRecent(filter, clickedCard) {
       const deleteBtn = '';
       const rowTip = escH(_statusTip(r));
       return `<tr${st === 'accepted' ? ' class="recent-approved-row"' : ''} title="${rowTip}">
-        <td class="td-mono" style="color:var(--text-dim)" title="Internal #${r.id}${r.created_at ? ' · Created ' + escH(r.created_at) : ''}">${escH(r.quote_number || ('#' + r.id))}</td>
+        <td class="td-mono" style="color:var(--text-dim)" title="Internal #${r.id}${r.created_at ? ' · Created ' + escH(r.created_at) : ''}">${quoteNoCell(r)}</td>
         <td class="body-cell"><span class="body-name">${escH(r.trailer)}</span><span class="row-pills">${renderStatePill(r)}${renderRepairPill(r)}</span></td>
         <td class="customer-cell">${escH(r.customer || '—')}</td>
         <td class="td-mono" style="text-align:center">${verBadge}</td>

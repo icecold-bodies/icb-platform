@@ -271,7 +271,7 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
     # by exactly qty × price.
     row = page.locator("tr.fh-row")
     expect(row).to_have_count(1, timeout=T)
-    expect(row).to_contain_text("RUBBER SEAL KIT")   # v1.49 - upper-cased on the surface
+    expect(row).to_contain_text("Rubber seal kit")   # v1.51 - reads back as typed
     expect(row).to_contain_text("manual")
     _wait_for_total(page, baseline + 900.0)
     shot(page, "free_hand_extra_added", JOURNEY)
@@ -788,8 +788,9 @@ def test_saving_a_repair_lands_on_the_costings_board_with_the_row_highlighted(pa
     frame.locator("#fh-unit-price").fill("120")
     frame.locator("#fh-save-btn").click()
     expect(frame.locator("#repair-lines-body tr")).to_have_count(1, timeout=T)
-    # v1.49: the description reads UPPER CASE on the surface
-    expect(frame.locator("#repair-lines-body tr").first).to_contain_text("LANDING SEAL")
+    # v1.51: the description reads BACK AS TYPED on the surface - mixed case
+    # survives the modal, the wire and the render.
+    expect(frame.locator("#repair-lines-body tr").first).to_contain_text("landing seal")
 
     frame.locator("#cust-select").select_option(value=str(laneC_body["customer"]))
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=T)

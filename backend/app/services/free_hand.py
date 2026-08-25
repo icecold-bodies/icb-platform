@@ -189,15 +189,16 @@ def parse_lines(raw, *, allow_stock: bool = False, allow_total_only: bool = Fals
                 mat_id = int(mat_id) if mat_id not in (None, "") else None
             except (TypeError, ValueError):
                 mat_id = None
-            # v1.49 (Michael, 19 Aug): a repair line's description is UPPER CASE.
-            # Normalised HERE, at the one place every free-hand line passes
-            # through, so it holds however the text arrived - typed in the
-            # modal, pasted, or sent by a script. The client also upper-cases
-            # the input as the user types, so what they see is what is stored.
-            # Stock lines take the catalogue name verbatim (that name is master
-            # data, and already upper case in practice) - not touched here.
+            # v1.51 (Lezette, 25 Aug): stored AS TYPED. v1.49 upper-cased here,
+            # which is why an existing repair reads in capitals - and why the
+            # forcing had to be removed at the MECHANISM: this normaliser is the
+            # one place every free-hand line passes through, so leaving it would
+            # have quietly undone the client-side change for anything pasted or
+            # posted. Text already saved in capitals is NOT rewritten; only what
+            # is typed from here on keeps its case. Stock lines still take the
+            # catalogue name verbatim, which this branch never touches.
             description = _text(item.get("description"), field="Description",
-                                cap=MAX_DESCRIPTION, required=True).upper()
+                                cap=MAX_DESCRIPTION, required=True)
             unit        = _text(item.get("unit"), field="Unit", cap=MAX_UNIT) or "each"
             _raw_qty   = item.get("qty")
             _raw_price = item.get("unit_price")
@@ -383,6 +384,13 @@ def repair_fields(body: dict, *, require_type: bool = True) -> dict:
         "vehicle_registration": _text(body.get("vehicle_registration"),
                                       field="Vehicle registration",
                                       cap=MAX_VEHICLE_REG) or None,
+        # v1.51 — the CAPTION printed above that value on the quotation. Free
+        # text because the field is not always a registration: Lezette quotes
+        # store sales, parts supply and serial-numbered units off the same
+        # surface. Stored as None when it matches the default so an untouched
+        # quote's input_state is unchanged and the renderer's own default keeps
+        # deciding what "no label" means.
+        "vehicle_reference_label": _reference_label(body.get("vehicle_reference_label")),
         "delivery_address": _text(body.get("delivery_address"),
                                   field="Delivery address",
                                   cap=MAX_DELIVERY_ADDRESS) or None,
@@ -394,6 +402,15 @@ def repair_fields(body: dict, *, require_type: bool = True) -> dict:
         "payment_terms": _text(body.get("payment_terms"), field="Payment terms",
                                cap=MAX_PAYMENT_TERMS) or DEFAULT_PAYMENT_TERMS,
     }
+
+
+def _reference_label(raw) -> str | None:
+    """The Your Reference caption, or None for "use the document's default"."""
+    from .quote_document import DEFAULT_REFERENCE_LABEL, MAX_REFERENCE_LABEL
+    label = _text(raw, field="Reference label", cap=MAX_REFERENCE_LABEL)
+    if not label or label == DEFAULT_REFERENCE_LABEL:
+        return None
+    return label
 
 
 # Body dimensions are metres; the biggest bodies are ~15 m. Anything past this

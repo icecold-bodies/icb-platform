@@ -167,8 +167,23 @@
             <div style="border-top:1px solid var(--border);margin:10px 0 0;padding-top:8px">
               <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;
                 color:var(--text-dim);margin-bottom:6px">Quotation document (optional)</div>
+              {# v1.51 (Lezette, 25 Aug) - the reference LABEL is editable. Most
+                 repairs are vehicle work, so "Veh reg nr:" stays the default and
+                 nothing existing changes; but the same field also carries
+                 "Store Sale", "Parts Supply" and "Serial nr:", where a
+                 registration caption is simply the wrong word on an outgoing
+                 quote. Label and value print together under Your Reference. #}
               <div class="form-group stacked">
-                <label class="form-label" for="f-repair-vehicle">Vehicle registration</label>
+                <label class="form-label" for="f-repair-vehicle-label">Reference label</label>
+                <input class="form-control" type="text" id="f-repair-vehicle-label" maxlength="40"
+                       value="Veh reg nr:" placeholder="Veh reg nr:"
+                       oninput="onRepairMetaInput()"/>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:3px">
+                  Printed above the value below - e.g. &ldquo;Store Sale&rdquo;, &ldquo;Parts Supply&rdquo;, &ldquo;Serial nr:&rdquo;
+                </div>
+              </div>
+              <div class="form-group stacked">
+                <label class="form-label" for="f-repair-vehicle">Reference value</label>
                 <input class="form-control" type="text" id="f-repair-vehicle" maxlength="40"
                        placeholder="e.g. LT 15 FB GP" oninput="onRepairMetaInput()"/>
               </div>
@@ -1460,14 +1475,15 @@ function _pidCopy(id, btn) {
            border-radius:6px;padding:6px 8px;margin-bottom:10px"></div>
       <div class="form-group stacked">
         <label class="form-label" for="fh-description">Description *</label>
-        {# v1.49 - repair line descriptions are UPPER CASE (Michael, 19 Aug).
-           text-transform shows it as typed; the JS upper-cases the VALUE on
-           input so the stored text matches the display, and the server
-           normalises again regardless. #}
+        {# v1.51 (Lezette, 25 Aug) - descriptions print AS TYPED. The v1.49 rule
+           forced upper case in three places at once (this transform, the value
+           rewrite below it, and free_hand.parse_lines server-side); the
+           quotation then read as a shouted parts list where the old system's
+           reads as sentences. All three are gone. Catalogue names are untouched
+           - a stock line still takes Material.name verbatim - and text already
+           stored in capitals stays exactly as it was saved. #}
         <input class="form-control" type="text" id="fh-description" maxlength="200"
-               placeholder="E.G. RUBBER SEAL KIT" autocomplete="off"
-               style="text-transform:uppercase"
-               oninput="this.value = this.value.toUpperCase()"/>
+               placeholder="e.g. Rubber seal kit" autocomplete="off"/>
       </div>
       <div style="display:flex;gap:8px">
         <div class="form-group stacked" style="flex:1">
@@ -1613,6 +1629,7 @@ const canManageRepairTemplates = {{ 'true' if user_can(user, 'costings.repair_te
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
 <script defer src="/static/js/calculator.js?v=170"></script>
+<script defer src="/static/js/calculator.js?v=171"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

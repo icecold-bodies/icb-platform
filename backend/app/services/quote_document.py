@@ -94,29 +94,124 @@ def totals_block(result: dict, db=None, *, rate_pct: float | None = None) -> lis
     ]
 
 
+# ── how much of itself the document shows (v1.51) ────────────────────────────
+#
+# Lezette test-drove R-2001/R-2002 against the old system's R-231037388 and the
+# gap was not the numbers — it was how much of the costing the CUSTOMER sees.
+# The old system printed the work, not the pricing of the work: every line
+# carries its description and the three money columns are EMPTY, with the money
+# appearing once, in the totals block. That is the ratified default here.
+#
+# Three modes rather than a flag because all three are real outgoing documents:
+#   * SUMMARY   — one line per repair section, no item detail at all. For the
+#                 customer who wants a price, not a method statement.
+#   * BREAKDOWN — every line's description, money columns empty (DEFAULT; this
+#                 is the old system's shape, reproduced).
+#   * ITEMIZED  — quantity, unit price and line total on every row. What the
+#                 document did through v1.50; kept because a customer who asks
+#                 "what am I paying for each part" must still be answerable.
+PRINT_MODE_SUMMARY   = "summary"
+PRINT_MODE_BREAKDOWN = "breakdown"
+PRINT_MODE_ITEMIZED  = "itemized"
+PRINT_MODES = (PRINT_MODE_SUMMARY, PRINT_MODE_BREAKDOWN, PRINT_MODE_ITEMIZED)
+DEFAULT_PRINT_MODE = PRINT_MODE_BREAKDOWN
+
+# Where the last-used mode is remembered. It rides `result_json` beside the
+# document number rather than a column of its own: a re-download must reproduce
+# the document that was sent, and that is a property of THIS quote, not of the
+# user or the browser that fetched it. (No migration — see also the
+# carry-forward in routers/calculator.py, which keeps it across an edit-save.)
+PRINT_MODE_KEY = "repair_quote_print_mode"
+
+
+def normalize_print_mode(value) -> str:
+    """Any input to one of PRINT_MODES, defaulting rather than raising.
+
+    A mode arrives from a query string, from stored JSON written by an older
+    build, or from nothing at all. None of those is an error the user can act
+    on, and refusing the download over an unreadable preference would take the
+    quotation away for the sake of a formatting choice — so an unknown value
+    simply falls back to the ratified default.
+    """
+    v = str(value or "").strip().lower()
+    return v if v in PRINT_MODES else DEFAULT_PRINT_MODE
+
+
+def stored_print_mode(result: dict) -> str:
+    """The mode this costing was last downloaded in (default when never)."""
+    result = result or {}
+    return normalize_print_mode(
+        result.get(PRINT_MODE_KEY)
+        or (result.get("input_state") or {}).get(PRINT_MODE_KEY))
+
+
+# The repair surface's own default section name (free_hand.REPAIR_SECTION),
+# matched by VALUE rather than imported so this module keeps no dependency on
+# the calculator's input validation — it only ever needs to recognise it.
+_INTERNAL_REPAIR_SECTION = "REPAIR LINES"
+
+
 # ── lines ────────────────────────────────────────────────────────────────────
 
-def document_lines(result: dict) -> list[dict]:
-    """The repair lines as the document prints them.
+def document_lines(result: dict, mode: str = DEFAULT_PRINT_MODE) -> list[dict]:
+    """The repair lines as the document prints them, in the requested mode.
 
     D3: most real lines carry a long description and a LUMP-SUM total with NO
     quantity and NO unit price — every line in the reference quote is that
     shape. Those cells must come out EMPTY, never 0 and never 1, so `qty` and
     `price` are None rather than the carrier values the costing engine needed.
+
+    v1.51 — `mode` decides how much of each line is printed. SUMMARY and
+    BREAKDOWN blank the money columns by returning None in every one of them,
+    including `total`: None is the renderer's "print nothing here", where 0.0
+    would print a real and wrong "0.00". The totals block is computed from the
+    costing, not from these rows, so the document still adds up in every mode.
     """
+    mode = normalize_print_mode(mode)
+    items = [it for it in (result or {}).get("items") or [] if not it.get("excluded")]
+
+    if mode == PRINT_MODE_SUMMARY:
+        return _summary_lines(items, result or {})
+
+    money_cols = (mode == PRINT_MODE_ITEMIZED)
     out: list[dict] = []
-    for it in (result or {}).get("items") or []:
-        if it.get("excluded"):
-            continue
+    for it in items:
         total_only = bool(it.get("total_only"))
         out.append({
             "description": it.get("material") or "",
-            "qty":   None if total_only else it.get("quantity"),
-            "price": None if total_only else it.get("unit_price"),
-            "total": float(it.get("line_cost") or 0),
+            "qty":   (None if total_only else it.get("quantity")) if money_cols else None,
+            "price": (None if total_only else it.get("unit_price")) if money_cols else None,
+            "total": float(it.get("line_cost") or 0) if money_cols else None,
             "notes": it.get("notes") or "",
         })
     return out
+
+
+def _summary_lines(items: list[dict], result: dict) -> list[dict]:
+    """One line per repair SECTION, in the order the sections first appear.
+
+    The grouping key is the item's category, which is what the repair surface
+    already writes: a line pulled from a body category carries that category's
+    name ("REAR DOORS"), and a plain typed line carries free_hand.REPAIR_SECTION.
+    That default is an INTERNAL name — printing "REPAIR LINES" to a customer
+    says nothing — so a group under it falls back to the type of repair, then to
+    a plain descriptive phrase. Money columns are empty here for the same reason
+    as BREAKDOWN: the totals block is the one place the price is stated.
+    """
+    fallback = (str(result.get("repair_type") or "").strip()
+                or str((result.get("input_state") or {}).get("repair_type") or "").strip()
+                or "Repair work")
+    order: list[str] = []
+    seen: set[str] = set()
+    for it in items:
+        cat = str(it.get("category") or "").strip()
+        label = fallback if (not cat or cat == _INTERNAL_REPAIR_SECTION) else cat
+        if label not in seen:
+            seen.add(label)
+            order.append(label)
+    return [{"description": label, "qty": None, "price": None,
+             "total": None, "notes": ""} for label in order]
+
 
 
 def lines_total(lines: Sequence[dict]) -> float:
@@ -176,6 +271,26 @@ def carry_over_for(pages: Sequence[Sequence[dict]]) -> list[float]:
     return out
 
 
+# ── the reference caption (v1.51) ────────────────────────────────────────────
+
+# The caption printed above the reference value. "Veh reg nr:" for the repairs
+# that ARE vehicle work — which is most of them, so it stays the default and no
+# existing quote changes — but Lezette also quotes store sales, parts supply and
+# serial-numbered units, where a registration caption is simply wrong.
+DEFAULT_REFERENCE_LABEL = "Veh reg nr:"
+
+# Long enough for a real caption, short enough that it cannot push the value out
+# of its header column.
+MAX_REFERENCE_LABEL = 40
+
+
+def vehicle_reference_label(state: dict) -> str:
+    """The caption for Your Reference, defaulting for every quote written before
+    the field existed (and for one saved with the box cleared)."""
+    label = str((state or {}).get("vehicle_reference_label") or "").strip()
+    return label[:MAX_REFERENCE_LABEL] if label else DEFAULT_REFERENCE_LABEL
+
+
 # ── what the downloaded file is called ───────────────────────────────────────
 
 # Characters Windows refuses in a filename, plus the ones that make a mess of a
@@ -231,8 +346,14 @@ def repair_quote_filename(rec, ctx: dict[str, Any]) -> str:
 
 # ── the whole context ────────────────────────────────────────────────────────
 
-def build_repair_quote_context(rec, db, *, generated_at: str = "") -> dict[str, Any]:
-    """Everything the renderer needs for one repair quotation, in plain data."""
+def build_repair_quote_context(rec, db, *, generated_at: str = "",
+                               mode: str | None = None) -> dict[str, Any]:
+    """Everything the renderer needs for one repair quotation, in plain data.
+
+    `mode` is the print mode this download asked for; None means "whatever this
+    costing was last downloaded as", which is what makes a re-download reproduce
+    the document that was sent.
+    """
     try:
         result = json.loads(rec.result_json) if rec.result_json else {}
     except (TypeError, ValueError):
@@ -240,10 +361,12 @@ def build_repair_quote_context(rec, db, *, generated_at: str = "") -> dict[str, 
     state = result.get("input_state") or {}
     cfg = get_config(db)
     customer = getattr(rec, "customer", None)
+    mode = normalize_print_mode(mode) if mode is not None else stored_print_mode(result)
 
-    lines = document_lines(result)
+    lines = document_lines(result, mode)
     return {
         "config": cfg,
+        "print_mode": mode,
         "document_number": (result.get("repair_document_number")
                             or state.get("repair_document_number") or ""),
         "document_date": rec.created_at.strftime("%d-%m-%Y") if rec.created_at else "",
@@ -262,7 +385,13 @@ def build_repair_quote_context(rec, db, *, generated_at: str = "") -> dict[str, 
         "customer_contact": getattr(rec, "contact_name", None) or "",
         # D8 — all captured per quote on the repair surface.
         "vehicle_registration": state.get("vehicle_registration") or "",
-        "your_reference": (f"Veh reg nr:  {state['vehicle_registration']}"
+        # v1.51 (Lezette, 25 Aug) — "Veh reg nr:" is now a LABEL the quote owns,
+        # not a fixed string, because the same field carries "Store Sale",
+        # "Parts Supply" or "Serial nr:" on the repairs that are not vehicle
+        # work at all. Label and value both print under Your Reference; the
+        # label alone prints nothing, since a caption with no value is furniture.
+        "your_reference_label": vehicle_reference_label(state),
+        "your_reference": (f"{vehicle_reference_label(state)}  {state['vehicle_registration']}".strip()
                            if state.get("vehicle_registration") else ""),
         "delivery_address": state.get("delivery_address") or "",
         "your_contact": state.get("icb_contact_name") or "",

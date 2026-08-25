@@ -134,7 +134,11 @@ def test_the_end_user_shows_in_brackets_and_is_absent_when_there_is_none(
 
     # Search down to the two seeded rows so the assertions do not depend on how
     # many other costings the database happens to hold.
-    page.get_by_placeholder("Search customer, contact, quote number, body type…").fill(MARK)
+    # v1.51 - matched on a PREFIX, not the whole caption. The full string is
+    # product copy and it changed the moment the box learned to search repair
+    # numbers too; a journey that pins every word of a placeholder breaks on an
+    # edit that cannot affect what it is testing.
+    page.get_by_placeholder(re.compile(r"^Search customer, contact")).fill(MARK)
 
     # 1. WITH an end user — customer, then the end user in brackets.
     with_cell = _cell(page, staged["with"])

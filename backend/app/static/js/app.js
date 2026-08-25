@@ -253,6 +253,54 @@ function confirmModal(message, opts = {}) {
   setTimeout(() => ok.focus(), 50);
   return new Promise(resolve => { _confirmPromiseResolve = resolve; });
 }
+// ── Styled multiple-choice dialog (v1.51) ─────────────────────────────────
+// confirmModal answers yes/no; this answers "which of these". Written here for
+// the same reason confirmModal was: a native dialog dies SILENTLY inside the
+// calculator embed iframe, so every dialog on these surfaces has to be ours.
+// Resolves to the chosen option's `value`, or null if the user backs out.
+let _choosePromiseResolve = null;
+function _chooseModalResolve(value) {
+  const modal = document.getElementById('modal-choose');
+  if (modal) modal.classList.add('hidden');
+  if (_choosePromiseResolve) {
+    const r = _choosePromiseResolve;
+    _choosePromiseResolve = null;
+    r(value);
+  }
+}
+function chooseModal(message, options, opts = {}) {
+  const { title = 'Choose', cancelText = 'Cancel', selected = null } = opts;
+  const modal = document.getElementById('modal-choose');
+  // No markup (an older base.html, or a page that does not extend it): fall
+  // back to the first option rather than to a native dialog that would not
+  // show. Silently taking the default beats a download that never happens.
+  if (!modal) return Promise.resolve(options && options.length ? options[0].value : null);
+  document.getElementById('choose-title').textContent = title;
+  document.getElementById('choose-message').textContent = message || '';
+  const list = document.getElementById('choose-options');
+  list.innerHTML = '';
+  (options || []).forEach(function (o, i) {
+    const on = (selected == null) ? (i === 0) : (o.value === selected);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'choose-option' + (on ? ' choose-option-on' : '');
+    btn.dataset.value = o.value;
+    btn.innerHTML = '<span class="choose-option-label"></span>'
+                  + '<span class="choose-option-note"></span>';
+    btn.querySelector('.choose-option-label').textContent = o.label || o.value;
+    btn.querySelector('.choose-option-note').textContent = o.note || '';
+    btn.onclick = function () { _chooseModalResolve(o.value); };
+    list.appendChild(btn);
+  });
+  document.getElementById('choose-cancel').textContent = cancelText;
+  modal.classList.remove('hidden');
+  setTimeout(function () {
+    const on = list.querySelector('.choose-option-on') || list.querySelector('.choose-option');
+    if (on) on.focus();
+  }, 50);
+  return new Promise(function (resolve) { _choosePromiseResolve = resolve; });
+}
+
 function alertModal(message, opts = {}) {
   const { title = 'Notice', okText = 'OK', danger = false } = opts;
   const modal = document.getElementById('modal-confirm');

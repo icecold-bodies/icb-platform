@@ -40,6 +40,7 @@ import { PreJobCardModal } from './PreJobCardModal'
 import { RepairPhasePanel } from './RepairPhasePanel'
 import { PreJobSignoffModal } from './PreJobSignoffModal'
 import { BottleneckIndicator } from './BottleneckIndicator'
+import { RepairQuoteModeModal, type RepairQuoteMode } from './RepairQuoteModeModal'
 import { liveToCosting, type Costing, type LiveCalculation, type PrejobCardSummary } from '../../data/costingsData'
 import type { Status } from '../../data/types'
 
@@ -65,6 +66,11 @@ export function CostingDetail() {
   const [repairOpen, setRepairOpen] = useState(false)
   const [signoffRole, setSignoffRole] = useState<'sales' | 'production' | null>(null)
   const [chassisReceivedDate, setChassisReceivedDate] = useState('')
+  // v1.51 — the repair quotation's print mode. Held here and SYNCED from the
+  // costing once it loads (the row arrives asynchronously, so initialising from
+  // it would freeze the default in place on a cold open).
+  const [quoteModeOpen, setQuoteModeOpen] = useState(false)
+  const [quoteMode, setQuoteMode] = useState<RepairQuoteMode>('breakdown')
   // v1.44 R5b — Export (Excel/Word/PDF) with the shared options dialog.
   const [exportOpen, setExportOpen] = useState(false)
   const [savedRatio, setSavedRatio] = useState<number | null>(null)
@@ -101,6 +107,14 @@ export function CostingDetail() {
   // /api/prejob-cards/summaries into every row). When present it supersedes the legacy
   // job-level sign-off widget; one card → one sign-off surface across all costings views.
   const prejobCard = c?.prejob_card ?? null
+
+  // The mode this quote was last downloaded in, once the row is in hand. Not a
+  // dependency on `c` itself: the context refreshes the whole list on a timer,
+  // and re-seeding on every refresh would throw away a choice made since.
+  const storedQuoteMode = c?.repair_quote_print_mode
+  useEffect(() => {
+    if (storedQuoteMode) setQuoteMode(storedQuoteMode as RepairQuoteMode)
+  }, [storedQuoteMode])
 
   useEffect(() => {
     if (!toast) return
@@ -283,19 +297,31 @@ export function CostingDetail() {
           {c.has_repair_quote && c.calculation_id && !c.deleted_at && (
             <button
               data-testid="repair-quote-btn"
-              onClick={() =>
-                window.open(
-                  `/api/calculations/${c.calculation_id}/repair-quote.pdf`,
-                  '_blank',
-                  'noopener',
-                )
-              }
+              /* v1.51 — the print mode is chosen at download time, so the button
+                 ASKS rather than fetching. The chooser opens on whatever this
+                 quote was last downloaded as, which makes a re-download one
+                 extra click and reproduces the document the customer has. */
+              onClick={() => setQuoteModeOpen(true)}
               title="The customer-facing quotation on the ICB letterhead"
               className="flex items-center gap-1 rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-body hover:bg-surface-alt"
             >
               <FileText size={14} /> Repair quotation (PDF)
             </button>
           )}
+          <RepairQuoteModeModal
+            open={quoteModeOpen}
+            selected={quoteMode}
+            onClose={() => setQuoteModeOpen(false)}
+            onPick={(m) => {
+              setQuoteMode(m)
+              setQuoteModeOpen(false)
+              window.open(
+                `/api/calculations/${c.calculation_id}/repair-quote.pdf?mode=${encodeURIComponent(m)}`,
+                '_blank',
+                'noopener',
+              )
+            }}
+          />
           {/* v1.49 (Michael, 19 Aug) — a DELETED costing gets no Export and no
               quotation. The server refuses both (rule 1), but a button that
               exists and then errors with raw JSON is not a rule the user can

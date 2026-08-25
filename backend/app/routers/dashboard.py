@@ -126,6 +126,17 @@ def build_dashboard_context(request: Request, db: Session, user) -> dict:
                 r.result_data = json.loads(r.result_json)
             except Exception:
                 pass
+        # v1.51 (Michael, 25 Aug) — the customer-facing R-number, resolved the
+        # same way the React board's list endpoint resolves it. Attached here
+        # rather than dug out of result_data in the template: the number lives
+        # in two places for historical reasons, and a Jinja expression that has
+        # to know both is a second implementation waiting to drift.
+        r.repair_doc_number = None
+        if getattr(r, "is_repair", False) and isinstance(r.result_data, dict):
+            r.repair_doc_number = (
+                r.result_data.get("repair_document_number")
+                or (r.result_data.get("input_state") or {}).get("repair_document_number")
+                or None)
 
     now_utc  = datetime.now(timezone.utc)
     kpis = compute_kpis(db, now_utc)   # WO v4.31 §3.4 — single source for the 5 metric tiles

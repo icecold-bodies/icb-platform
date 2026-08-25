@@ -17,6 +17,7 @@ import pytest
 from app.services.quote_document import (
     LABEL_TOTAL_BEFORE_DISCOUNT, LABEL_DISCOUNT_SUBTOTAL, LABEL_TOTAL_BEFORE_TAX,
     LABEL_TOTAL_TAX, LABEL_TOTAL_INCL_VAT,
+    PRINT_MODE_BREAKDOWN, PRINT_MODE_ITEMIZED, PRINT_MODE_SUMMARY,
     carry_over_for, document_lines, lines_total, money, paginate_lines,
     totals_block,
 )
@@ -67,14 +68,20 @@ def test_a_discount_lands_between_gross_and_tax():
 
 def test_lump_sum_lines_print_blank_qty_and_price_cells():
     """Every line in the reference quote is a long description with a total and
-    nothing else. Those cells must be EMPTY — never 0, never the carrier 1."""
+    nothing else. Those cells must be EMPTY — never 0, never the carrier 1.
+
+    v1.51 — this is ITEMIZED's grammar, asked for by name. BREAKDOWN (now the
+    default) blanks all three money columns on every line, which its own tests
+    below pin; the rule here is about the lines that are lump sums even when the
+    document IS printing money.
+    """
     result = {"items": [
         {"material": "Remove nose cone and scrap.", "quantity": 1.0,
          "unit_price": 280.0, "line_cost": 280.0, "total_only": True},
         {"material": "Rubber seal kit", "quantity": 2.0,
          "unit_price": 450.0, "line_cost": 900.0},
     ]}
-    lines = document_lines(result)
+    lines = document_lines(result, PRINT_MODE_ITEMIZED)
     assert lines[0]["qty"] is None and lines[0]["price"] is None
     assert lines[0]["total"] == pytest.approx(280.0)
     # A priced line still shows both.
@@ -88,9 +95,14 @@ def test_excluded_lines_never_reach_the_document():
         {"material": "In", "line_cost": 100.0},
         {"material": "Out", "line_cost": 999.0, "excluded": True},
     ]}
-    lines = document_lines(result)
+    lines = document_lines(result, PRINT_MODE_ITEMIZED)
     assert [l["description"] for l in lines] == ["In"]
     assert lines_total(lines) == pytest.approx(100.0)
+    # ...and in every other mode too: an excluded line is not a formatting
+    # choice, it is a line the customer must never see.
+    for mode in (PRINT_MODE_BREAKDOWN, PRINT_MODE_SUMMARY):
+        assert all("Out" not in l["description"]
+                   for l in document_lines(result, mode)), mode
 
 
 # ── D5 pagination + carry over ───────────────────────────────────────────────
@@ -148,9 +160,14 @@ def _long_ctx(n_lines: int, per_line: float = 1000.0):
     gross = per_line * n_lines
     result = {"items": items, "grand_total": gross, "selling_price": gross,
               "discount_amount": 0.0, "net_total": gross}
-    lines = document_lines(result)
+    # v1.51 — ITEMIZED by name. These tests pin the SHELL (pagination, the
+    # Carry Over bar, the terms and acceptance pages), and a Carry Over bar
+    # exists only where the line column carries money — so the shell has to be
+    # exercised in the mode that prints it.
+    lines = document_lines(result, PRINT_MODE_ITEMIZED)
     return {
-        "config": DEFAULT_CONFIG, "document_number": "R-000123",
+        "config": DEFAULT_CONFIG, "print_mode": PRINT_MODE_ITEMIZED,
+        "document_number": "R-000123",
         "document_date": "18-08-2026", "title": "Repair Quotation",
         "original_label": "Original", "customer_name": "Long Quote Ltd",
         "customer_vat": "477 026 7526", "customer_tel": "011 000 0000",

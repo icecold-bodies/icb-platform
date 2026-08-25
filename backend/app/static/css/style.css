@@ -413,6 +413,15 @@ tbody td {
 tbody tr:hover td { background: rgba(56,139,253,.04); }
 tbody tr:last-child td { border-bottom: none; }
 .td-mono { font-family: var(--font-mono); font-size: 12px; }
+
+/* v1.51 — the two-line Quote # cell on the costings list. A repair leads with
+   the R-number the customer was quoted; its internal record number sits under
+   it, smaller and dimmed, because the floor still works off that one. Scoped to
+   the classes rather than to `.td-mono span` so nothing else in a mono cell
+   picks the styling up (v1.46 lesson: an unscoped element selector IS a theme
+   leak, no var() required). */
+.quote-no-primary  { display: block; }
+.quote-no-internal { display: block; font-size: 10px; color: var(--text-dim); opacity: .85; }
 .td-num { text-align: right; font-family: var(--font-mono); }
 .td-actions { white-space: nowrap; }
 
@@ -1046,3 +1055,21 @@ th.sortable.sort-desc::after { content: '▼'; opacity: 1; color: var(--blue-hi)
   line-height: 1;
   color: var(--red);
 }
+
+/* ── v1.51 — chooseModal's option list ─────────────────────────────────────
+   Buttons rather than radios: every option is a single click that both picks
+   and confirms, which is what a "how do you want this document?" question
+   wants. The highlighted one is the mode this quote was LAST downloaded in. */
+.choose-options { display: flex; flex-direction: column; gap: 8px; }
+.choose-option {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg-input); color: var(--text);
+  font-family: inherit; font-size: 13px;
+}
+.choose-option:hover, .choose-option:focus {
+  border-color: var(--blue); background: rgba(56, 139, 253, .10); outline: none;
+}
+.choose-option-on { border-color: var(--blue); box-shadow: inset 3px 0 0 0 var(--blue); }
+.choose-option-label { display: block; font-weight: 600; }
+.choose-option-note  { display: block; margin-top: 2px; font-size: 11px; color: var(--text-dim); }

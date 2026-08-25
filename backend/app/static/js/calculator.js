@@ -2500,6 +2500,10 @@ async function _openSavedRepair(payload, recordId, forEdit) {
   set('f-repair-scope', payload.repair_scope);
   // The quotation-document header fields (D8).
   set('f-repair-vehicle', payload.vehicle_registration);
+  // v1.51 — the CAPTION printed above that value. Blank in the payload means
+  // the quote never changed it, so the field shows the default rather than
+  // going empty: an empty caption box reads as a field that lost its value.
+  set('f-repair-vehicle-label', payload.vehicle_reference_label || 'Veh reg nr:');
   set('f-repair-delivery', payload.delivery_address);
   set('f-repair-contact', payload.icb_contact_name);
   set('f-repair-contact-tel', payload.icb_contact_phone);
@@ -2512,6 +2516,10 @@ async function _openSavedRepair(payload, recordId, forEdit) {
   // v1.50 P3 — the "vehicle being repaired" block rides input_state and comes
   // back on edit/duplicate, so "+ From body category" is ready to use again.
   _setRepairVehicleInputs(payload.repair_vehicle || null);
+  // v1.51 — the print mode this quote was last downloaded in, so the chooser
+  // opens on the document that was actually sent. Only on EDIT: a duplicate is
+  // a new quote and starts on the default like any other.
+  _lastRepairQuoteMode = forEdit ? (payload.repair_quote_print_mode || null) : null;
   set('f-margin', payload.profit_margin ?? 0);
   restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
   setCustomer(payload.customer_id, payload.contact_id ?? null, payload.end_user_id ?? null);
@@ -9043,14 +9051,45 @@ async function runRepairCalc() {
   }
 }
 
+// ── v1.51 — the repair quotation's print modes ────────────────────────────
+// One definition for every surface that offers the download. The chooser is
+// the whole feature: through v1.50 the document always printed the full costing
+// breakdown, which is not the document Lezette sends a customer.
+const REPAIR_QUOTE_MODES = [
+  { value: 'summary',   label: 'Summary',
+    note: 'One line per repair section. No item detail.' },
+  { value: 'breakdown', label: 'Breakdown  (recommended)',
+    note: 'Every line described, no prices per line. Matches the old system.' },
+  { value: 'itemized',  label: 'Itemized',
+    note: 'Quantity, unit price and line total on every line.' },
+];
+
+// Ask, then open. `lastMode` highlights whatever this quote was last downloaded
+// as, so a re-download is one click and reproduces the same document.
+async function chooseRepairQuoteMode(lastMode) {
+  return await chooseModal(
+    'How much of the costing should the customer see?',
+    REPAIR_QUOTE_MODES,
+    { title: 'Repair quotation', selected: lastMode || 'breakdown' });
+}
+
 // Download the customer-facing quotation for the SAVED repair.
-function downloadRepairQuote() {
+async function downloadRepairQuote() {
   if (!lastRecordId) {
     toast('Save the repair first — its document number is issued on save', 'warn');
     return;
   }
-  window.open(`/api/calculations/${lastRecordId}/repair-quote.pdf`, '_blank');
+  const mode = await chooseRepairQuoteMode(_lastRepairQuoteMode);
+  if (!mode) return;                       // backed out of the dialog
+  _lastRepairQuoteMode = mode;
+  window.open(`/api/calculations/${lastRecordId}/repair-quote.pdf?mode=${encodeURIComponent(mode)}`,
+              '_blank');
 }
+
+// The mode this costing was last downloaded in. Seeded from the server when a
+// saved repair is reopened, so the highlighted option is the document that was
+// actually sent rather than the default.
+let _lastRepairQuoteMode = null;
 
 // The quotation-document header fields (D8). Read straight off the surface;
 // every one is optional, so a repair still prices and saves without them and
@@ -9062,6 +9101,9 @@ function _repairDocFields() {
   };
   return {
     vehicle_registration: v('f-repair-vehicle') || null,
+    // v1.51 — free text; the server stores null when it matches the default so
+    // an untouched quote's input_state is byte-identical to before.
+    vehicle_reference_label: v('f-repair-vehicle-label') || null,
     delivery_address:     v('f-repair-delivery') || null,
     icb_contact_name:     v('f-repair-contact') || null,
     icb_contact_phone:    v('f-repair-contact-tel') || null,

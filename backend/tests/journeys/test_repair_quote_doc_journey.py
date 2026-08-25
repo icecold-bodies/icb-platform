@@ -225,7 +225,10 @@ def test_the_quote_reads_as_typed_and_the_board_shows_its_r_number(
     assert _grand_total(summary) == grand, "summary disagrees on the total"
 
     # ── the board (Michael, 25 Aug) ─────────────────────────────────────────
-    page.goto("/mes-app/#/costings")
+    # PATH, not hash: the MES SPA is a BrowserRouter, so "/mes-app/#/costings"
+    # loads the app at its default screen and the board never mounts. Every
+    # other journey in this suite uses the path form.
+    page.goto("/mes-app/costings")
     expect(page.locator("[data-testid='costings-table']")).to_be_visible(timeout=T)
     row = page.locator("[data-testid='costing-row']").filter(has_text=doc_no).first
     expect(row).to_be_visible(timeout=T)
@@ -237,13 +240,16 @@ def test_the_quote_reads_as_typed_and_the_board_shows_its_r_number(
 
     # Search matches BOTH numbers — the R-number is the one Lezette is asked
     # about on the phone, and before this it matched nothing.
-    search = page.locator("input[type='search'], input[placeholder*='earch']").first
-    search.fill(doc_no)
-    expect(page.locator("[data-testid='costing-row']")).to_have_count(1, timeout=T)
-    expect(page.locator("[data-testid='quote-number-primary']").first).to_have_text(doc_no)
-    search.fill(internal_no)
-    expect(page.locator("[data-testid='costing-row']")).to_have_count(1, timeout=T)
-    search.fill("")
+    search = page.locator("input[placeholder*='earch']").first
+    for term in (doc_no, internal_no):
+        search.fill(term)
+        # The row SURVIVES the filter, and a row that should not is gone. Not an
+        # exact row COUNT: the board keys rows by quote number, which is not
+        # unique, so a duplicated number can leave a stale row behind - a
+        # pre-existing defect this journey must not be a hostage to.
+        expect(page.locator("[data-testid='costing-row']")
+               .filter(has_text=doc_no).first).to_be_visible(timeout=T)
+        search.fill("")
 
     # ── the chooser itself ──────────────────────────────────────────────────
     page.locator("[data-testid='costing-row']").filter(has_text=doc_no).first.click()

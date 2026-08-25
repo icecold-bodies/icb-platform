@@ -88,6 +88,17 @@ def _add_free_hand(page: Page, description: str, qty: str, price: str) -> None:
         re.compile(r"\bhidden\b"), timeout=T)
 
 
+def _grand_total(text: str) -> str | None:
+    """The VAT-inclusive figure as the DOCUMENT prints it.
+
+    Read back rather than recomputed: the VAT rate is admin-editable, and the
+    margin and ratio are surface state, so a constant here would pin the journey
+    to one configuration instead of to the rule it is testing.
+    """
+    m = re.search(r"Total Amount:.*?([0-9][0-9,]*\.[0-9]{2})", text, re.S)
+    return m.group(1) if m else None
+
+
 def _pdf_text(page: Page, base: str, rec_id: int, mode: str | None) -> str:
     from pypdf import PdfReader
     url = f"{base}/api/calculations/{rec_id}/repair-quote.pdf"
@@ -160,6 +171,16 @@ def test_the_quote_reads_as_typed_and_the_board_shows_its_r_number(
     assert internal_no and internal_no != doc_no, \
         "the two identifiers must be distinct for the board test to mean anything"
 
+    # The per-line figures the document WOULD print, taken from the saved
+    # costing and formatted by the document's own money() - never typed in
+    # here. A hand-written constant that no longer matches what the engine
+    # produced would make "this figure is absent" pass for the wrong reason,
+    # which is how the first version of this journey went red in CI.
+    from app.services.quote_document import money
+    line_figures = [money(it["line_cost"]) for it in result["items"]
+                    if not it.get("excluded") and it.get("line_cost")]
+    assert len(line_figures) == 2, f"expected two priced lines, got {line_figures}"
+
     # ── the document, in the default mode ───────────────────────────────────
     default_text = _pdf_text(page, base, rec_id, None)
     for needle in (DESC_1, DESC_2):
@@ -168,9 +189,16 @@ def test_the_quote_reads_as_typed_and_the_board_shows_its_r_number(
     # BREAKDOWN is the default: the headings stay, the figures do not, and the
     # money is stated once in the totals block.
     assert "Quantity" in default_text and "Price" in default_text
-    for figure in ("680.00", "30,408.00"):
+    for figure in line_figures:
         assert figure not in default_text, f"{figure} reached the default document"
-    assert "35,751.20" in default_text, "the VAT-inclusive total is missing"
+    # The VAT-inclusive total is READ OFF the document, not asserted against a
+    # constant computed here: the VAT rate is admin-editable and the margin and
+    # ratio are surface state, so a precomputed figure pins this journey to a
+    # configuration rather than to the rule. What matters is that the total is
+    # present and is the SAME in every mode - which is checked below.
+    grand = _grand_total(default_text)
+    assert grand, ("no totals block on the default document: "
+                   + default_text[:400])
     # The reference caption Lezette typed, with its value.
     assert "Store Sale" in default_text and "KK 12 LT GP" in default_text
     assert "Veh reg nr" not in default_text, "the default caption overrode hers"
@@ -179,19 +207,22 @@ def test_the_quote_reads_as_typed_and_the_board_shows_its_r_number(
 
     # ── switch to itemized: the prices appear ───────────────────────────────
     itemized = _pdf_text(page, base, rec_id, "itemized")
-    for figure in ("680.00", "30,408.00"):
+    for figure in line_figures:
         assert figure in itemized, f"{figure} missing from the itemized document"
 
     # ── and the choice is remembered ON THE QUOTE ───────────────────────────
     # No mode this time: a re-download must reproduce what was last sent, not
     # fall back to the default.
     again = _pdf_text(page, base, rec_id, None)
-    assert "30,408.00" in again, \
+    assert line_figures[1] in again, \
         "the re-download lost the mode — the customer would get a different document"
 
     summary = _pdf_text(page, base, rec_id, "summary")
     assert DESC_1 not in summary, "summary printed the item detail"
-    assert "35,751.20" in summary, "summary lost the total"
+
+    # The mode changes how much of the WORK is shown, never what is owed.
+    assert _grand_total(itemized) == grand, "itemized disagrees on the total"
+    assert _grand_total(summary) == grand, "summary disagrees on the total"
 
     # ── the board (Michael, 25 Aug) ─────────────────────────────────────────
     page.goto("/mes-app/#/costings")

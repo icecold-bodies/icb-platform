@@ -94,6 +94,20 @@ def _title_attr(page: Page, bom_id: int):
     return page.get_attribute(f"tr[data-bom-id='{bom_id}'] td.price-recent-cell", "title")
 
 
+def _formula_panel(page: Page, bom_id: int) -> str:
+    """Computed display of the hover FORMULA panel while over a BOM row.
+
+    This is the BIG one — the panel showing the substituted formula and the
+    resolved {NAME} variables. It has its own page-level state that used to
+    default to ON and could only be changed by CLICKING a row, which is why it
+    fired on every hover with no visible way to stop it."""
+    page.locator(f"tr[data-bom-id='{bom_id}']").hover()
+    page.wait_for_timeout(500)
+    return page.evaluate(
+        "() => { const t = document.getElementById('formula-tooltip');"
+        "        return t ? getComputedStyle(t).display : 'absent'; }")
+
+
 def test_price_tips_are_off_by_default_and_opt_in(page: Page, live_server: str, staged) -> None:
     ids = staged
     admin_session(page, base=live_server)
@@ -142,6 +156,36 @@ def test_price_tips_are_off_by_default_and_opt_in(page: Page, live_server: str, 
     page.wait_for_timeout(1200)
     assert _title_attr(page, ids["row"]) is None
     assert _bubble_opacity(page, ids["row"]) == 0.0
+
+
+def test_the_formula_panel_follows_the_same_switch(page: Page, live_server: str, staged) -> None:
+    """The hover FORMULA panel is the loud one. It shares the page-level tooltip
+    state, which defaulted to ON and was only reachable by clicking a row — so
+    the Tips checkbox owns that state now, and owns it in both directions."""
+    ids = staged
+    admin_session(page, base=live_server)
+    page.goto("/calculator")
+    page.evaluate("() => localStorage.removeItem('bom_price_tips')")
+    _open(page, ids["trailer"])
+
+    assert _formula_panel(page, ids["row"]) in ("none", "absent"), \
+        "the formula panel showed on hover with Tips off"
+
+    # A stray click on a row must not bring it back through the invisible cycle.
+    page.locator(f"tr[data-bom-id='{ids['row']}']").click()
+    page.wait_for_timeout(600)
+    assert _formula_panel(page, ids["row"]) in ("none", "absent"), \
+        "a row click resurrected the formula panel while Tips was off"
+
+    page.locator("#bom-tips-toggle").check()
+    page.wait_for_timeout(1200)
+    assert _formula_panel(page, ids["row"]) == "block", \
+        "the formula panel did not come back when Tips was switched on"
+    shot(page, "04-formula-panel-on", journey=JOURNEY)
+
+    page.locator("#bom-tips-toggle").uncheck()
+    page.wait_for_timeout(1000)
+    assert _formula_panel(page, ids["row"]) in ("none", "absent")
 
 
 def test_the_choice_is_remembered_across_a_reload(page: Page, live_server: str, staged) -> None:

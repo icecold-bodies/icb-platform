@@ -240,6 +240,7 @@ function _applyTipsFlag() {
 function loadTipsPref() {
   try { tipsEnabled = localStorage.getItem(TIPS_KEY) === '1'; } catch (_) { tipsEnabled = false; }
   _applyTipsFlag();
+  _globalTooltipState = tipsEnabled ? 'on' : 'off';
 }
 
 /** Reveal the Tips control once a BOM is on screen (same lifecycle as Sort). */
@@ -273,6 +274,18 @@ function onBomTipsToggle(on) {
   try { localStorage.setItem(TIPS_KEY, tipsEnabled ? '1' : '0'); } catch (_) {}
   _applyTipsFlag();
   _syncPriceTitles();
+  _applyTipsToHoverPanels();
+}
+
+/** The hover FORMULA panel (and the skin/taping/floor/cleat panels) share one
+ *  page-level state. Tips owns it: off means off, on restores the ordinary
+ *  'on' state that the row-click cycle then steps through. */
+function _applyTipsToHoverPanels() {
+  _globalTooltipState = tipsEnabled ? 'on' : 'off';
+  if (!tipsEnabled) {
+    if (typeof _hideFormulaTooltip === 'function') _hideFormulaTooltip();
+    if (typeof _hidePricingTooltips === 'function') _hidePricingTooltips();
+  }
 }
 
 // ── v1.51 — PU insulation foam grade (32D PU FOAM / 4G FOAM) ────────────────
@@ -7377,7 +7390,12 @@ function _positionFormulaTooltip(e, tt) {
 // Plain row click:   on → off → on
 // Pricing row click: on → on-formula → off → on
 const _PRICING_ROW_CLASSES    = ['bom-skin-row','bom-taping-row','bom-floor-row','bom-cleat-row'];
-let   _globalTooltipState     = 'on';
+// v1.51 (Michael, 25 Aug): starts 'off'. This state used to default to 'on'
+// and could only be changed by CLICKING a BOM row - an undiscoverable control -
+// so the formula panel fired on every hover with no obvious way to stop it. The
+// "Tips" checkbox in the BOM header is now the visible owner of this state; the
+// click cycle still works, but only while Tips is on.
+let   _globalTooltipState     = 'off';
 let   _suppressPricingTooltip = false;  // set before document handlers fire (bubble order)
 
 function _isPricingRow(row) {
@@ -7430,8 +7448,11 @@ function _initFormulaTooltip() {
     _suppressPricingTooltip = false;
   });
 
-  // Each click advances the page-level tooltip state
+  // Each click advances the page-level tooltip state. Inert while Tips is off:
+  // otherwise a stray click on a row would bring back the very panel the user
+  // switched off, through a control they cannot see.
   area.addEventListener('click', e => {
+    if (!tipsEnabled) return;
     const row = e.target.closest('tr.calc-grp-row');
     if (!row) return;
 

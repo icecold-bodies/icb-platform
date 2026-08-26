@@ -290,3 +290,145 @@ def test_every_acceptance_field_gets_a_rule_of_its_own():
     ops = page.get_contents().get_data().decode("latin-1")
     # 4 field rules + the footer's own divider.
     assert len(re.findall(r"\d[\d.]* [\d.]+ l", ops)) == 5
+
+
+# ── the footer is not a place to print line items (v1.51, Lezette 26 Aug) ────
+#
+# Lezette photographed a quote whose last two lines were drawn straight through
+# the remittance block, and the very first R-2001 did the same thing with its
+# TOTALS. Three separate heights were never budgeted:
+#
+#   * the "Description | Quantity | Price | Total" row, repeated on EVERY page;
+#   * the "Carry Over" row a continuation page opens with;
+#   * the totals block itself, on the last page.
+#
+# Detected through the extracted TEXT rather than coordinates: when two strings
+# are painted over each other reportlab still emits both, and the extractor
+# interleaves them - "FORWARD" over "GALV" comes out as "FORWGAARLDV". So the
+# footer's own headings surviving INTACT on every page is a precise test for
+# "nothing was drawn on top of them", and it needs no geometry.
+
+# The footer's own text, by the y it is drawn at. Anything ELSE drawn into that
+# band is painted on top of it.
+#
+# Checked by COORDINATE, not by string. pypdf's extract_text() rebuilds text in
+# content-stream order and never interleaves two strings that are drawn over
+# each other, so the footer reads back perfectly intact even when it has been
+# obliterated - the first version of this test was green against the unfixed
+# renderer for exactly that reason. pypdf's visitor_text hands us the text
+# matrix, so the y each string is actually painted at is available without
+# adding a dependency.
+_FOOTER_OWN = (
+    "FORWARD REMITTANCE TO :", "Martie Snyman", "E-mail: martie@icecoldgrp.co.za",
+    "BANKING DETAILS :", "Capitec Business", "Current Account",
+    "Acc No: 105 068 2114", "Branch Code: 450 105", "SWIFT Code :  CABLZAJJ",
+)
+
+
+def _footer_intruders(pdf_bytes):
+    """Every string painted into the footer band that does not belong to it."""
+    from io import BytesIO
+    from pypdf import PdfReader
+    from app.services.quote_document_pdf import _MARGIN_MM, _FOOTER_H_MM
+    floor = (_MARGIN_MM + _FOOTER_H_MM) * 72.0 / 25.4      # mm -> points
+    out = []
+    for page_no, page in enumerate(PdfReader(BytesIO(pdf_bytes)).pages, start=1):
+        hits = []
+
+        def visit(text, cm, tm, font_dict, font_size, _hits=hits):
+            t = (text or "").strip()
+            if not t:
+                return
+            # drawOn() translates the canvas before painting a table, so the
+            # text matrix alone is RELATIVE to that translate - reading tm[5] by
+            # itself puts every table row near y=0 and flags the whole document.
+            y = tm[5] + cm[5]
+            if y < floor and t not in _FOOTER_OWN:
+                _hits.append((t, round(y, 1)))
+
+        page.extract_text(visitor_text=visit)
+        out.extend((page_no, t, y) for t, y in hits)
+    return out
+
+
+_PART_NAMES = [
+    "130*62MM TAPPING BLOCKS_200MM", "CSLB HINGES", "SB 51111 DOOR SET",
+    "34*3 LOCKING POLE", "28779 DOOR CAPPING", "2316 DOOR RUBBER",
+    "M10*40 GALV. BOLTS", "M10 SPRING WASHERS", "0661-0631 LONG RIVETS",
+    "SILPLUS X WHITE SILICONE", "3MM ALU BUFFER PLATE",
+]
+
+
+def _many_line_result(n):
+    items = [{"material": _PART_NAMES[i % len(_PART_NAMES)],
+              "category": "REPAIR LINES", "quantity": 1.0,
+              "unit_price": 100.0, "line_cost": 100.0} for i in range(n)]
+    gross = 100.0 * n
+    return {"repair_type": "Rear door replacement", "selling_price": gross,
+            "discount_amount": 0.0, "net_total": gross, "items": items}
+
+
+def _many_ctx(n, mode):
+    from app.services.quote_document import lines_total
+    r = _many_line_result(n)
+    lines = document_lines(r, mode)
+    return _ctx(mode, lines=lines, lines_total=lines_total(lines),
+                totals=totals_block(r, rate_pct=15.0))
+
+
+def _render_many_bytes(n, mode):
+    from app.services.quote_document_pdf import render_repair_quote_pdf
+    return render_repair_quote_pdf(_many_ctx(n, mode))
+
+
+def _render_many(n, mode):
+    return _pages(_many_ctx(n, mode))
+
+
+@pytest.mark.parametrize("mode", list(PRINT_MODES))
+@pytest.mark.parametrize("n", [14, 20, 26, 41, 46, 55])
+def test_nothing_is_ever_drawn_over_the_remittance_footer(mode, n):
+    """The real R-2001 was 26 lines. The other counts are the boundaries each
+    unbudgeted height used to break at: 14 (totals over the footer on a
+    one-pager), 20 and 26 (items over it), 41 (totals on page 2), 46 and 55
+    (items on a continuation page, which also carries a Carry Over row)."""
+    intruders = _footer_intruders(_render_many_bytes(n, mode))
+    assert not intruders, (
+        f"{mode} n={n}: {len(intruders)} string(s) painted over the remittance "
+        f"footer, e.g. {intruders[:3]}")
+
+
+@pytest.mark.parametrize("mode", list(PRINT_MODES))
+def test_the_totals_block_survives_a_quote_that_fills_its_last_page(mode):
+    """When the lines end too low for the totals, the totals take a page of
+    their own rather than being painted over the footer - which is how the old
+    system's own quote reads (R-231037388 puts its totals alone on page 2/4)."""
+    for n in (13, 14, 15, 40, 41, 42):
+        texts = _render_many(n, mode)
+        joined = "\n".join(texts)
+        assert "Total Amount:" in joined, f"{mode} n={n}: the totals vanished"
+        # ...and exactly once: a spill must MOVE the block, never duplicate it.
+        assert joined.count("Total Amount:") == 1, \
+            f"{mode} n={n}: the totals block was drawn {joined.count('Total Amount:')} times"
+
+
+@pytest.mark.parametrize("mode", list(PRINT_MODES))
+def test_page_numbers_stay_contiguous_when_the_totals_spill(mode):
+    """A spill page is a real page: it must be counted in "n/m" and must not
+    re-use the number the terms page then claims."""
+    import re
+    for n in (14, 26, 41):
+        texts = _render_many(n, mode)
+        stamped = []
+        for t in texts:
+            # Anchored on the "Page" label: an unanchored n/m also matches the
+            # letterhead's Co. Reg. Nr ("2000/025936/07"), which is how the
+            # first version of this test read page 1 as page 2000.
+            m = re.search(r"Page\s*(\d+)\s*/\s*(\d+)", t)
+            if m:
+                stamped.append((int(m.group(1)), int(m.group(2))))
+        assert stamped, f"{mode} n={n}: no page numbers stamped"
+        assert [a for a, _ in stamped] == list(range(1, len(texts) + 1)), \
+            f"{mode} n={n}: page numbers are {stamped} across {len(texts)} pages"
+        assert {b for _, b in stamped} == {len(texts)}, \
+            f"{mode} n={n}: stamped total disagrees with the real page count"

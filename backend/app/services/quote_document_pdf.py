@@ -74,15 +74,61 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
     _GUTTER_W = content_w * 0.04
     col_w = [content_w * 0.54, content_w * 0.12, content_w * 0.15, content_w * 0.15]
 
+    _WIDTHS = None          # set once col_w / _GUTTER_W exist (see _widths())
+
+    def _widths():
+        return [9.0, col_w[0] - 9.0, _GUTTER_W, col_w[1], col_w[2], col_w[3]]
+
+    def _row_style():
+        """The paddings the real items table uses. One definition, so a MEASURED
+        row and a DRAWN row can never disagree - which is exactly how the last
+        rows ended up over the footer."""
+        return [("FONTSIZE", (0, 0), (-1, -1), 8.5),
+                ("LEFTPADDING", (0, 0), (0, -1), 0),
+                ("RIGHTPADDING", (0, 0), (0, -1), 2),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6)]
+
     def _row_height(line: dict) -> float:
-        """Measure a line the way it will actually be drawn — long descriptions
-        wrap, and a wrapped row is what pushes a quote onto another page."""
-        para = Paragraph(_esc(line.get("description") or ""), body_style)
-        # The arrow column (9pt) and the cell padding come off the width before
-        # the text wraps — measuring the whole column would under-count the
-        # wrapped height and break pages one line too late.
-        _w, h = para.wrap(col_w[0] - 9.0 - 8.0, 10_000)
-        return max(h + 11, 16)
+        """The height this line costs IN THE REAL TABLE.
+
+        v1.51 - measured by wrapping a one-row Table with the same widths and the
+        same paddings, instead of a bare Paragraph plus a hand-added constant.
+        The old estimate drifted from the truth whenever the padding changed, and
+        pagination believed the estimate, so the last row or two of a long quote
+        were drawn straight over the remittance footer (Lezette, 26 Aug).
+        """
+        probe = Table([[_Arrow(),
+                        Paragraph(_esc(line.get("description") or ""), body_style),
+                        "", "", "", ""]], colWidths=_widths())
+        probe.setStyle(TableStyle(_row_style()))
+        return probe.wrap(content_w, 10_000)[1]
+
+    def _table_header_h() -> float:
+        """The height of the "Description | Quantity | Price | Total" row.
+
+        v1.51 - that row repeats on EVERY page (repeatRows=1) but was never
+        subtracted from the page's capacity, so each page was over-committed by
+        its height and the last row or two ran into the remittance footer.
+        Measured rather than guessed: it moves with the table's own padding.
+        """
+        probe = Table([["", "Description", "", "Quantity", "Price", "Total"]],
+                      colWidths=[9.0, col_w[0] - 9.0, _GUTTER_W,
+                                 col_w[1], col_w[2], col_w[3]])
+        probe.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8.5),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ]))
+        return probe.wrap(content_w, 10_000)[1]
+
+    def _carry_row_h() -> float:
+        """The Carry Over row a continuation page opens with, measured."""
+        probe = Table([["", Paragraph("<b>x</b>", body_style), "", "", "", "0.00"]],
+                      colWidths=_widths())
+        probe.setStyle(TableStyle(_row_style()))
+        return probe.wrap(content_w, 10_000)[1]
 
     def _capacity(page_index: int) -> float:
         # Page 1's header is MEASURED, not assumed: the delivery address alone
@@ -90,10 +136,21 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         # leaves a void between the header and the table.
         top = (_letterhead_height() + 15 + _header_height()) if page_index == 0 \
             else (_CONT_HEADER_H_MM * mm)
-        # Every page keeps room for the footer and for a Carry Over line.
-        return (_PAGE_H_MM - 2 * _MARGIN_MM) * mm - top - (_FOOTER_H_MM + _CARRY_H_MM) * mm
+        # Every page keeps room for the footer, for the Carry Over bar at its
+        # foot, and for the column-heading row the table repeats at its top.
+        avail = ((_PAGE_H_MM - 2 * _MARGIN_MM) * mm - top
+                 - (_FOOTER_H_MM + _CARRY_H_MM) * mm - _table_header_h())
+        # ...and a CONTINUATION page opens with a Carry Over row INSIDE the
+        # table, which costs a full row and was never budgeted.
+        if page_index > 0 and _shows_money:
+            avail -= _carry_row_h()
+        return avail
 
     lines = list(ctx.get("lines") or [])
+    # Whether the money columns are printed at all. Computed HERE, before
+    # pagination, because a continuation page carries a "Carry Over" row only
+    # when they are - and that row costs height the paginator has to know about.
+    _shows_money = any(ln.get("total") is not None for ln in lines)
 
     buf = BytesIO()
     c = pdfcanvas.Canvas(buf, pagesize=A4)
@@ -425,6 +482,25 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
         c.drawString((_MARGIN_MM * mm) + 6, y - 12, LABEL_CARRY_OVER)
         c.drawRightString((_PAGE_W_MM - _MARGIN_MM) * mm, y - 12, money(amount))
 
+    def _totals_height() -> float:
+        """How tall the totals block plus its Payment Term line will be.
+
+        v1.51 - nothing reserved room for this. On a quote whose lines ended low
+        on the last page the totals were drawn straight over the remittance
+        footer: that is the defect on the very FIRST R-2001 ("Total before
+        Discount: ZAR 30,408.40" interleaved with the ICB e-mail address), which
+        predates the print modes and is the same bug Lezette photographed.
+        """
+        rows = ctx.get("totals") or []
+        if not rows:
+            return 0.0
+        probe = Table([[str(r["label"]).replace(chr(10), " "), r.get("note") or "", "X"]
+                       for r in rows],
+                      colWidths=[content_w * 0.55, content_w * 0.15, content_w * 0.30])
+        probe.setStyle(TableStyle([("FONTSIZE", (0, 0), (-1, -1), 8.5),
+                                   ("TOPPADDING", (0, 0), (-1, -1), 2)]))
+        return probe.wrap(content_w, 10_000)[1] + 20.0   # + the Payment Term line
+
     def draw_totals(y: float) -> float:
         prefix = branding.get("currency_prefix", "ZAR")
         rows = []
@@ -452,35 +528,66 @@ def render_repair_quote_pdf(ctx: dict[str, Any]) -> bytes:
     # above. total_pages is read by draw_footer at call time, so it is in place
     # before the first page is stamped.
     pages = paginate_lines(lines, _capacity, _row_height) or [[]]
-    # Whether the money columns are printed at all — the mode decides it, but
-    # the LINES are asked rather than the mode name, so a caller that builds a
-    # context by hand cannot get a Carry Over bar over blank columns.
-    _shows_money = any(ln.get("total") is not None for ln in lines)
     carries = carry_over_for(pages)
-    total_pages = len(pages) + _extra_page_count(terms)
 
+    # v1.51 - does the totals block still fit under the last page's table?
+    #
+    # Decided BEFORE anything is drawn, not when we get there: page 1's footer
+    # prints "n/m", so the page COUNT has to be right from the first stamp. The
+    # arithmetic mirrors the drawing exactly (same helpers, same paddings), and
+    # the same answer drives both the count and the placement, so the two can
+    # never disagree.
+    def _totals_fit_on_last_page() -> bool:
+        idx = len(pages) - 1
+        used_top = (_letterhead_height() + 15 + _header_height()) if idx == 0             else (_CONT_HEADER_H_MM * mm)
+        y_start = (_PAGE_H_MM - _MARGIN_MM) * mm - used_top
+        table_h = _table_header_h() + sum(_row_height(r) for r in pages[idx])
+        if idx > 0 and _shows_money:
+            table_h += _carry_row_h()            # the Carry Over row at the head
+        return (y_start - table_h - 8) - _totals_height() >= (_MARGIN_MM + _FOOTER_H_MM) * mm
+
+    _totals_spill = not _totals_fit_on_last_page()
+    total_pages = len(pages) + (1 if _totals_spill else 0) + _extra_page_count(terms)
+
+    page_no = 0
     for i, rows in enumerate(pages):
+        page_no += 1
         if i == 0:
             y = draw_letterhead()
             y = draw_header_block(y)
         else:
-            y = draw_continuation_header(i + 1)
+            y = draw_continuation_header(page_no)
         carry_in = carries[i - 1] if (i > 0 and _shows_money) else None
         y = draw_lines_table(rows, y, carry_in)
         is_last = (i == len(pages) - 1)
         if not is_last:
-            # v1.51 — a Carry Over bar states a running total of the LINE column.
-            # In SUMMARY and BREAKDOWN that column is deliberately empty, so the
-            # bar would announce a figure the page does not show. It belongs to
-            # ITEMIZED alone.
+            # A Carry Over bar states a running total of the LINE column. In
+            # SUMMARY and BREAKDOWN that column is deliberately empty, so the bar
+            # would announce a figure the page does not show. ITEMIZED only.
             if _shows_money:
                 draw_carry_out((_MARGIN_MM + _FOOTER_H_MM + _CARRY_H_MM) * mm, carries[i])
+            draw_footer(page_no)
+            c.showPage()
+        elif _totals_spill:
+            # The totals get a page of their own rather than being painted over
+            # the remittance footer - which is also how the old system's own
+            # quote reads (R-231037388 puts its totals alone on page 2 of 4).
+            draw_footer(page_no)
+            c.showPage()
+            page_no += 1
+            y = draw_continuation_header(page_no)
+            draw_totals(y - 8)
+            draw_footer(page_no)
+            c.showPage()
         else:
             draw_totals(y - 8)
-        draw_footer(i + 1)
-        c.showPage()
+            draw_footer(page_no)
+            c.showPage()
 
-    _draw_terms_pages(c, ctx, terms, branding, len(pages), total_pages, draw_footer,
+    # pages_so_far must COUNT the totals spill page, or the terms pages would
+    # re-use its number and the document would show two page 3s.
+    _draw_terms_pages(c, ctx, terms, branding,
+                      len(pages) + (1 if _totals_spill else 0), total_pages, draw_footer,
                       draw_continuation_header)
     c.save()
     return buf.getvalue()

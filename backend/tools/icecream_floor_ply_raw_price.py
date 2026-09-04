@@ -284,8 +284,21 @@ def main() -> int:
     return 0
 
 
+def _bootstrap_app_path() -> None:
+    """Make the `app` package importable no matter where this file runs from —
+    the repo (backend/tools/…) or the VM staging copy in /tmp (the wrapper
+    cd's to /opt/icb-platform/backend first)."""
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for cand in (os.getcwd(), "/opt/icb-platform/backend", here):
+        if os.path.isdir(os.path.join(cand, "app")):
+            sys.path.insert(0, cand)
+            return
+    raise SystemExit("cannot locate the app package — run from backend/ "
+                     "(or via the VM wrapper, which cd's there)")
+
+
 def verify(db_url: str) -> int:
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    _bootstrap_app_path()
     os.environ["DATABASE_URL"] = db_url
     from app.database import SessionLocal, TrailerType, BillOfMaterial
     from app.routers.calculator import (_build_bom_items, _build_body_variables,

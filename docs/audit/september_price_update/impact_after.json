@@ -1,0 +1,134 @@
+{
+  "1": {
+    "name": "ADV VACUUM PANELS",
+    "active": true,
+    "32D": 40057246.37,
+    "4G": 40069160.62
+  },
+  "2": {
+    "name": "ADVANTICA BODY",
+    "active": false,
+    "32D": 549958.92,
+    "4G": 549958.92
+  },
+  "9": {
+    "name": "TAUT LINER RIGID",
+    "active": true,
+    "32D": 1035806.19,
+    "4G": 1035806.19
+  },
+  "10": {
+    "name": "CHESTER SPEC MEAT BODY",
+    "active": true,
+    "32D": 256954.02,
+    "4G": 266551.06
+  },
+  "12": {
+    "name": "MEAT HANGER LARGE",
+    "active": true,
+    "32D": 154039.0,
+    "4G": 161810.91
+  },
+  "13": {
+    "name": "DRY FREIGHT TRAILER",
+    "active": true,
+    "32D": 212704.8,
+    "4G": 219789.98
+  },
+  "14": {
+    "name": "GRP TRAILERS",
+    "active": true,
+    "32D": 302820.91,
+    "4G": 321831.59
+  },
+  "15": {
+    "name": "RHINORANGE TRAILER",
+    "active": true,
+    "32D": 340838.9,
+    "4G": 365877.36
+  },
+  "16": {
+    "name": "ICECREAM UP TO 3,2",
+    "active": true,
+    "32D": 87689.54,
+    "4G": 93354.99
+  },
+  "17": {
+    "name": "ICECREAM UP TO 4.8",
+    "active": true,
+    "32D": 141171.6,
+    "4G": 152011.67
+  },
+  "18": {
+    "name": "ICECREAM 4.9 UP",
+    "active": true,
+    "32D": 144343.19,
+    "4G": 156143.07
+  },
+  "19": {
+    "name": "FREEZER 2.3 METER",
+    "active": true,
+    "32D": 45014.85,
+    "4G": 46836.15
+  },
+  "20": {
+    "name": "FREEZER MEDIUM",
+    "active": true,
+    "32D": 145473.69,
+    "4G": 151270.95
+  },
+  "21": {
+    "name": "FREEZER LARGE",
+    "active": true,
+    "32D": 171496.55,
+    "4G": 179268.48
+  },
+  "24": {
+    "name": "EXPLOSIVE 4.9 AND UP",
+    "active": true,
+    "32D": 257414.6,
+    "4G": 263952.86
+  },
+  "25": {
+    "name": "CHILLER 2.3 METER",
+    "active": true,
+    "32D": 45904.11,
+    "4G": 45904.11
+  },
+  "26": {
+    "name": "CHILLER MEDIUM",
+    "active": true,
+    "32D": 90210.15,
+    "4G": 90210.15
+  },
+  "27": {
+    "name": "CHILLER LARGE",
+    "active": true,
+    "32D": 114771.07,
+    "4G": 114771.07
+  },
+  "34": {
+    "name": "EXPLOSIVE UP TO 2.7",
+    "active": true,
+    "32D": 61834.12,
+    "4G": 63383.97
+  },
+  "36": {
+    "name": "MEAT HANGER SMALL-MEDIUM",
+    "active": true,
+    "32D": 121504.87,
+    "4G": 121504.87
+  },
+  "37": {
+    "name": "EXPLOSIVE 2.7 TO 4.8",
+    "active": true,
+    "32D": 149876.69,
+    "4G": 153736.22
+  },
+  "39": {
+    "name": "RIGID DRY FREIGHT",
+    "active": true,
+    "32D": 240288.11,
+    "4G": 240288.11
+  }
+}

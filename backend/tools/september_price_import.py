@@ -677,12 +677,16 @@ def apply_plan(conn, db: Db, plan: Plan, out_dir: Path, env_tag: str):
     journal["materials_stamped"] = stamped
 
     # 5. the 4G factor (ratified default 7)
-    old_factor = conn.execute(sa.text(
-        "SELECT value FROM admin_settings WHERE key=:k"), {"k": FACTOR_KEY}).scalar()
+    pre_factor = conn.execute(sa.text(
+        "SELECT value, updated_at FROM admin_settings WHERE key=:k"),
+        {"k": FACTOR_KEY}).mappings().one()
     conn.execute(sa.text(
         "UPDATE admin_settings SET value=:v, updated_at=:now WHERE key=:k"),
         {"v": repr(FACTOR_NEW), "now": batch, "k": FACTOR_KEY})
-    journal["factor"] = {"key": FACTOR_KEY, "before": old_factor, "after": repr(FACTOR_NEW)}
+    journal["factor"] = {"key": FACTOR_KEY, "before": pre_factor["value"],
+                        "before_updated_at": (pre_factor["updated_at"].isoformat()
+                                              if pre_factor["updated_at"] else None),
+                        "after": repr(FACTOR_NEW)}
 
     jpath = out_dir / f"apply_journal_{env_tag}_{ts}.json"
     jpath.write_text(json.dumps(journal, indent=2, default=str))
@@ -694,8 +698,10 @@ def apply_plan(conn, db: Db, plan: Plan, out_dir: Path, env_tag: str):
 def revert_journal(conn, jpath: Path):
     j = json.loads(jpath.read_text())
     # reverse order: factor, stamps, lines, in-place materials, creations
-    conn.execute(sa.text("UPDATE admin_settings SET value=:v WHERE key=:k"),
-                 {"v": j["factor"]["before"], "k": j["factor"]["key"]})
+    conn.execute(sa.text(
+        "UPDATE admin_settings SET value=:v, updated_at=:u WHERE key=:k"),
+        {"v": j["factor"]["before"], "u": j["factor"].get("before_updated_at"),
+         "k": j["factor"]["key"]})
     for s in j.get("materials_stamped", []):
         conn.execute(sa.text(
             "UPDATE materials SET last_updated=:lu, last_bulk_update_at=:lb, "
@@ -786,6 +792,19 @@ def main() -> int:
         if not args.apply:
             print("\n(DRY RUN — nothing written. Re-run with --apply to commit.)")
             return 0
+
+        # One-shot guard: after an apply the OLD descriptions are gone, so a
+        # second --apply would mostly mis-plan (unmatched rows) while
+        # re-stamping every badge. A revert restores applyability.
+        already = conn.execute(sa.text(
+            "SELECT COUNT(*) FROM materials WHERE last_bulk_update_note = :n "
+            "AND last_bulk_update_at > now() - interval '7 days'"),
+            {"n": BATCH_NOTE}).scalar()
+        if already:
+            raise SystemExit(
+                f"REFUSED: {already} materials already carry the '{BATCH_NOTE}' "
+                f"stamp from the last 7 days — this apply has already run. "
+                f"To redo it, --revert the journal first.")
 
         bdir, bman = backup_tables(conn, out_dir, f"pre_apply_{args.env_tag}_"
                                    + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))

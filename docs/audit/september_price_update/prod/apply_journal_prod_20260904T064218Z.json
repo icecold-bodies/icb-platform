@@ -1,0 +1,6210 @@
+{
+  "batch_at": "2026-09-04T06:42:18.497914+00:00",
+  "note": "September 2026 price update",
+  "env": "prod",
+  "materials_created": [
+    {
+      "id": 901,
+      "name": "PLYWOOD",
+      "price_per_unit": 735.0,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 484
+    },
+    {
+      "id": 902,
+      "name": "18MM FINN PLY FLOOR",
+      "price_per_unit": 1120.0,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 279
+    },
+    {
+      "id": 903,
+      "name": "12MM FINN PLY FLOOR",
+      "price_per_unit": 798.0,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 485
+    },
+    {
+      "id": 904,
+      "name": "FRIDGE FRAME",
+      "price_per_unit": 148.72727272727272,
+      "category_id": 15,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 265
+    },
+    {
+      "id": 905,
+      "name": "18MM FINN PLY FLOOR",
+      "price_per_unit": 375.83892617449663,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 279
+    },
+    {
+      "id": 906,
+      "name": "Rhinotex 1150",
+      "price_per_unit": 223.0,
+      "category_id": 16,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 358
+    },
+    {
+      "id": 907,
+      "name": "4 MM PLYWOOD",
+      "price_per_unit": 68.79194630872483,
+      "category_id": 16,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 360
+    },
+    {
+      "id": 908,
+      "name": "19MM PHONO BONDED PLYWOOD",
+      "price_per_unit": 223.15436241610738,
+      "category_id": 15,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 382
+    },
+    {
+      "id": 909,
+      "name": "100*19mm PICTURE FRAME",
+      "price_per_unit": 46.27732240437159,
+      "category_id": 15,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 383
+    },
+    {
+      "id": 910,
+      "name": "19MM PHONO BONDED PLYWWOD",
+      "price_per_unit": 223.15436241610738,
+      "category_id": 16,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 386
+    },
+    {
+      "id": 911,
+      "name": "DOOR BLOCKS",
+      "price_per_unit": 268.01775000000004,
+      "category_id": 16,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 362
+    },
+    {
+      "id": 912,
+      "name": "19MM PHENO BONDED PLYWOOD",
+      "price_per_unit": 46.27732240437159,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 397
+    },
+    {
+      "id": 913,
+      "name": "100*19 PICTURE  FRAME",
+      "price_per_unit": 46.27732240437159,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 398
+    },
+    {
+      "id": 914,
+      "name": "100*45MM PICTURE FRAME",
+      "price_per_unit": 34.144961445051614,
+      "category_id": 19,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 403
+    },
+    {
+      "id": 915,
+      "name": "4 MM PLYWOOD",
+      "price_per_unit": 205.0,
+      "category_id": 16,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 360
+    },
+    {
+      "id": 916,
+      "name": "DOOR BLOCKS",
+      "price_per_unit": 794.51775,
+      "category_id": 16,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 362
+    },
+    {
+      "id": 917,
+      "name": "EXT GRP SKIN 2*450",
+      "price_per_unit": 263.65,
+      "category_id": 15,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 318
+    },
+    {
+      "id": 918,
+      "name": "6MM PF PLYWOOD",
+      "price_per_unit": 86.57718120805369,
+      "category_id": 15,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 327
+    },
+    {
+      "id": 919,
+      "name": "6MM PF PLYWOOD",
+      "price_per_unit": 258.0,
+      "category_id": 19,
+      "unit_of_measure": "each",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 335
+    },
+    {
+      "id": 920,
+      "name": "100*62 PICTURE FRAME",
+      "price_per_unit": 37.28646144505161,
+      "category_id": 15,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 330
+    },
+    {
+      "id": 921,
+      "name": "INT GRP SKIN 1*450",
+      "price_per_unit": 272.27,
+      "category_id": 15,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 98
+    },
+    {
+      "id": 922,
+      "name": "6MM PF PLYWWOD",
+      "price_per_unit": 86.57718120805369,
+      "category_id": 28,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 664
+    },
+    {
+      "id": 923,
+      "name": "EXT GRP SKIN 2*300",
+      "price_per_unit": 263.65,
+      "category_id": 16,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 99
+    },
+    {
+      "id": 924,
+      "name": "60*50 LVL BEAMS",
+      "price_per_unit": 409.0,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 332
+    },
+    {
+      "id": 925,
+      "name": "4MM PF PLYWOOD",
+      "price_per_unit": 258.0,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 121
+    },
+    {
+      "id": 926,
+      "name": "INT GRP SKIN1*450",
+      "price_per_unit": 272.27,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 333
+    },
+    {
+      "id": 927,
+      "name": "58MM PICTURE FRAME",
+      "price_per_unit": 37.28646144505161,
+      "category_id": 18,
+      "unit_of_measure": "metre",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": null,
+      "template_material_id": 235
+    },
+    {
+      "id": 928,
+      "name": "INT GRP SKIN 2*450",
+      "price_per_unit": 272.27,
+      "category_id": 19,
+      "unit_of_measure": "each",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": null,
+      "template_material_id": 336
+    },
+    {
+      "id": 929,
+      "name": "6MM PF PLYWOOD",
+      "price_per_unit": 68.79194630872483,
+      "category_id": 19,
+      "unit_of_measure": "each",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 335
+    },
+    {
+      "id": 930,
+      "name": "60*50 LVL BEAMS",
+      "price_per_unit": 146.59498207885304,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 332
+    },
+    {
+      "id": 931,
+      "name": "4MM PF PLYWOOD",
+      "price_per_unit": 171.14093959731542,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 121
+    },
+    {
+      "id": 932,
+      "name": "12 MM PF PLYWOOD",
+      "price_per_unit": 149.66442953020135,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 668
+    },
+    {
+      "id": 933,
+      "name": "12 MM FINN PLYWOOD",
+      "price_per_unit": 267.7852348993289,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 347
+    },
+    {
+      "id": 934,
+      "name": "100*50 LVL",
+      "price_per_unit": 146.59498207885304,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 339
+    },
+    {
+      "id": 935,
+      "name": "Rhinotex 1150 BW",
+      "price_per_unit": 222.76,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 283
+    },
+    {
+      "id": 936,
+      "name": "18 MM PF PLYWOOD",
+      "price_per_unit": 246.64429530201343,
+      "category_id": 20,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 134
+    },
+    {
+      "id": 937,
+      "name": "Rhinoetx 1150 Bioshield",
+      "price_per_unit": 222.76,
+      "category_id": 16,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 103
+    },
+    {
+      "id": 938,
+      "name": "4MM PF PLYWOOD",
+      "price_per_unit": 86.57718120805369,
+      "category_id": 16,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 102
+    },
+    {
+      "id": 939,
+      "name": "56MM PICTURE FRAME",
+      "price_per_unit": 25.102459016393443,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 321
+    },
+    {
+      "id": 940,
+      "name": "18MM BIRCH PLY",
+      "price_per_unit": 1120.0,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 322
+    },
+    {
+      "id": 941,
+      "name": "2*300 INT LAMINATION",
+      "price_per_unit": 50.153999999999996,
+      "category_id": 21,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": null,
+      "template_material_id": 137
+    },
+    {
+      "id": 942,
+      "name": "Crystex V2",
+      "price_per_unit": 264.37,
+      "category_id": 15,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 318
+    },
+    {
+      "id": 943,
+      "name": "4MM PF PLYWOOD",
+      "price_per_unit": 68.79194630872483,
+      "category_id": 15,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 96
+    },
+    {
+      "id": 944,
+      "name": "Rhinotex 2100 Bioshield",
+      "price_per_unit": 295.39,
+      "category_id": 15,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 98
+    },
+    {
+      "id": 945,
+      "name": "56MM PICTURE FRAME",
+      "price_per_unit": 37.28646144505161,
+      "category_id": 18,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 321
+    },
+    {
+      "id": 946,
+      "name": "18MM BIRCH PLY",
+      "price_per_unit": 375.83892617449663,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 322
+    },
+    {
+      "id": 947,
+      "name": "100*50 LVL Beam",
+      "price_per_unit": 148.72727272727272,
+      "category_id": 20,
+      "unit_of_measure": "metre",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 136
+    },
+    {
+      "id": 948,
+      "name": "19MM SHATTER PLYWOOD",
+      "price_per_unit": 246.64429530201343,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 684
+    },
+    {
+      "id": 949,
+      "name": "Rhinotex 2100 Bioshiled",
+      "price_per_unit": 295.39,
+      "category_id": 15,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 98
+    },
+    {
+      "id": 950,
+      "name": "19MM SHATTER PLYWOOD",
+      "price_per_unit": 735.0,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": null,
+      "template_material_id": 684
+    },
+    {
+      "id": 951,
+      "name": "100*50 LVL Beam",
+      "price_per_unit": 146.59498207885304,
+      "category_id": 20,
+      "unit_of_measure": "metre",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 136
+    },
+    {
+      "id": 952,
+      "name": "Rhinotex 1150 Bioshiled",
+      "price_per_unit": 222.76,
+      "category_id": 28,
+      "unit_of_measure": "each",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 294
+    },
+    {
+      "id": 953,
+      "name": "9MM PF PLYWOOD",
+      "price_per_unit": 112.75167785234899,
+      "category_id": 20,
+      "unit_of_measure": "metre",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 196
+    },
+    {
+      "id": 954,
+      "name": "EXT GRP SKIN 2*300",
+      "price_per_unit": 213.11,
+      "category_id": 20,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 131
+    },
+    {
+      "id": 955,
+      "name": "INT GRP SKIN 1*450",
+      "price_per_unit": 222.76,
+      "category_id": 18,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "RESINS + ADESIVES",
+      "template_material_id": 122
+    },
+    {
+      "id": 956,
+      "name": "12MM PF PLYWOOD",
+      "price_per_unit": 223.15436241610738,
+      "category_id": 20,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 179
+    },
+    {
+      "id": 957,
+      "name": "18 MM PF PLYWOOD",
+      "price_per_unit": 375.83892617449663,
+      "category_id": 20,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 134
+    },
+    {
+      "id": 958,
+      "name": "9MM PF PLYWOOD",
+      "price_per_unit": 358.4,
+      "category_id": 20,
+      "unit_of_measure": "metre",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 196
+    },
+    {
+      "id": 959,
+      "name": "18MM PF PLYWOOD",
+      "price_per_unit": 358.4,
+      "category_id": 20,
+      "unit_of_measure": "each",
+      "supplier": null,
+      "material_code": null,
+      "sap_code": null,
+      "size": null,
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 222
+    },
+    {
+      "id": 960,
+      "name": "18 MM PF PLYWOOD",
+      "price_per_unit": 358.4,
+      "category_id": 20,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 134
+    },
+    {
+      "id": 961,
+      "name": "12MM PF PLYWOOD",
+      "price_per_unit": 267.7852348993289,
+      "category_id": 20,
+      "unit_of_measure": "m\u00b2",
+      "supplier": "",
+      "material_code": null,
+      "sap_code": "",
+      "size": "",
+      "manufacture_sub_category": "PLYWOODS + TIMBER",
+      "template_material_id": 179
+    }
+  ],
+  "materials_inplace": [
+    {
+      "id": 459,
+      "before": {
+        "name": "LVL PICTURE FRAME",
+        "price_per_unit": 359.0,
+        "last_updated": "2026-04-28T09:15:03",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "LVL PICTURE FRAME",
+        "price_per_unit": 409.0
+      }
+    },
+    {
+      "id": 462,
+      "before": {
+        "name": "LVL FRAME",
+        "price_per_unit": 359.0,
+        "last_updated": "2026-04-28T09:15:04",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "LVL FRAME",
+        "price_per_unit": 409.0
+      }
+    },
+    {
+      "id": 464,
+      "before": {
+        "name": "LVL FRAME",
+        "price_per_unit": 359.0,
+        "last_updated": "2026-04-28T09:15:04",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "LVL FRAME",
+        "price_per_unit": 409.0
+      }
+    },
+    {
+      "id": 466,
+      "before": {
+        "name": "LVL BEAMS",
+        "price_per_unit": 359.0,
+        "last_updated": "2026-04-28T09:15:04",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "LVL BEAMS",
+        "price_per_unit": 409.0
+      }
+    },
+    {
+      "id": 266,
+      "before": {
+        "name": "LVL BOTTOM BEAM",
+        "price_per_unit": 130.545,
+        "last_updated": "2026-04-29T06:06:19",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "LVL BOTTOM BEAM",
+        "price_per_unit": 148.72727272727272
+      }
+    },
+    {
+      "id": 280,
+      "before": {
+        "name": "LVL BEAM",
+        "price_per_unit": 359.0,
+        "last_updated": "2026-04-25T13:15:45",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "LVL BEAM",
+        "price_per_unit": 409.0
+      }
+    },
+    {
+      "id": 369,
+      "before": {
+        "name": "EXT GRP SKIN 2*300 CSM",
+        "price_per_unit": 223.0,
+        "last_updated": "2026-05-13T12:25:22",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "EXT GRP SKIN 2*300 CSM",
+        "price_per_unit": 263.65
+      }
+    },
+    {
+      "id": 361,
+      "before": {
+        "name": "INT GRP SKIN 2*300 CSM",
+        "price_per_unit": 223.0,
+        "last_updated": "2026-05-13T12:25:22",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "INT GRP SKIN 2*300 CSM",
+        "price_per_unit": 263.65
+      }
+    },
+    {
+      "id": 337,
+      "before": {
+        "name": "18 MM FINN PLYWOOD",
+        "price_per_unit": 468.121,
+        "last_updated": "2026-04-29T14:03:04",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "18 MM FINN PLYWOOD",
+        "price_per_unit": 375.83892617449663
+      }
+    },
+    {
+      "id": 319,
+      "before": {
+        "name": "94MM PICTURE FRAME",
+        "price_per_unit": 42.4329,
+        "last_updated": "2026-05-05T05:41:14",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "94MM PICTURE FRAME",
+        "price_per_unit": 44.40719477838495
+      }
+    },
+    {
+      "id": 128,
+      "before": {
+        "name": "INT GRP SKIN 1*450",
+        "price_per_unit": 282.5,
+        "last_updated": "2026-05-15T04:57:09",
+        "last_bulk_update_at": "2026-07-04T16:44:48.105622",
+        "last_bulk_update_note": "legacy_uat_sync 2026-07-04"
+      },
+      "after": {
+        "name": "Rhinotex 1150 Bioshield",
+        "price_per_unit": 222.76
+      }
+    },
+    {
+      "id": 682,
+      "before": {
+        "name": "12MM BIRCH PLY",
+        "price_per_unit": 354.027,
+        "last_updated": "2026-04-29T06:09:54",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "12MM BIRCH PLY",
+        "price_per_unit": 267.7852348993289
+      }
+    },
+    {
+      "id": 194,
+      "before": {
+        "name": "INT GRP SKIN 2*300",
+        "price_per_unit": 282.53,
+        "last_updated": "2026-05-18T05:13:13",
+        "last_bulk_update_at": "2026-07-04T16:44:48.105622",
+        "last_bulk_update_note": "legacy_uat_sync 2026-07-04"
+      },
+      "after": {
+        "name": "Rhinotex 1150 Bioshield",
+        "price_per_unit": 222.76
+      }
+    },
+    {
+      "id": 687,
+      "before": {
+        "name": "INT GRP SKIN 2*300",
+        "price_per_unit": 192.5,
+        "last_updated": "2026-05-13T12:25:22",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "Rhinotex 1150 Bioshield",
+        "price_per_unit": 222.76
+      }
+    },
+    {
+      "id": 174,
+      "before": {
+        "name": "INT GRP SKIN 2*300",
+        "price_per_unit": 282.53,
+        "last_updated": "2026-05-15T10:36:02",
+        "last_bulk_update_at": "2026-07-04T16:44:48.105622",
+        "last_bulk_update_note": "legacy_uat_sync 2026-07-04"
+      },
+      "after": {
+        "name": "Rhinotex 1150 Bioshield",
+        "price_per_unit": 222.76
+      }
+    },
+    {
+      "id": 176,
+      "before": {
+        "name": "INT GRP SKIN 2*300",
+        "price_per_unit": 282.53,
+        "last_updated": "2026-05-16T03:19:23",
+        "last_bulk_update_at": "2026-07-04T16:44:48.105622",
+        "last_bulk_update_note": "legacy_uat_sync 2026-07-04"
+      },
+      "after": {
+        "name": "Rhinotex 1150 Bioshield",
+        "price_per_unit": 222.76
+      }
+    },
+    {
+      "id": 178,
+      "before": {
+        "name": "INT GRP SKIN 2*300",
+        "price_per_unit": 282.53,
+        "last_updated": "2026-05-15T08:02:46",
+        "last_bulk_update_at": "2026-07-04T16:44:48.105622",
+        "last_bulk_update_note": "legacy_uat_sync 2026-07-04"
+      },
+      "after": {
+        "name": "Rhinotex 1150 Bioshield",
+        "price_per_unit": 222.76
+      }
+    },
+    {
+      "id": 181,
+      "before": {
+        "name": "228*50 TIMBER",
+        "price_per_unit": 128.674,
+        "last_updated": "2026-04-29T12:38:23",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "228*50 TIMBER",
+        "price_per_unit": 146.59498207885304
+      }
+    },
+    {
+      "id": 281,
+      "before": {
+        "name": "58MM PICTURE FARME",
+        "price_per_unit": 36.3205,
+        "last_updated": "2026-05-05T05:21:53",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "58MM PICTURE FARME",
+        "price_per_unit": 37.28646144505161
+      }
+    },
+    {
+      "id": 125,
+      "before": {
+        "name": "EXT GRP SKIN 1*450",
+        "price_per_unit": 282.54,
+        "last_updated": "2026-05-13T12:25:21",
+        "last_bulk_update_at": "2026-07-04T16:44:48.105622",
+        "last_bulk_update_note": "legacy_uat_sync 2026-07-04"
+      },
+      "after": {
+        "name": "Rhinotex 1150 BW",
+        "price_per_unit": 213.11
+      }
+    },
+    {
+      "id": 123,
+      "before": {
+        "name": "58 MM PICTURE FRAME",
+        "price_per_unit": 36.3205,
+        "last_updated": "2026-05-05T05:22:00",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "58 MM PICTURE FRAME",
+        "price_per_unit": 37.28646144505161
+      }
+    },
+    {
+      "id": 97,
+      "before": {
+        "name": "58 MM PICTURE FRAME",
+        "price_per_unit": 36.3205,
+        "last_updated": "2026-05-05T05:22:09",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "58 MM PICTURE FRAME",
+        "price_per_unit": 37.28646144505161
+      }
+    },
+    {
+      "id": 129,
+      "before": {
+        "name": "94 MM PICTURE FRAME",
+        "price_per_unit": 42.4329,
+        "last_updated": "2026-04-29T06:13:15",
+        "last_bulk_update_at": null,
+        "last_bulk_update_note": null
+      },
+      "after": {
+        "name": "94 MM PICTURE FRAME",
+        "price_per_unit": 44.40719477838495
+      }
+    }
+  ],
+  "lines": [
+    {
+      "bom_id": 6,
+      "before": {
+        "material_id": 459,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 459,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 7,
+      "before": {
+        "material_id": 459,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 459,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 58,
+      "before": {
+        "material_id": 462,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 462,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 66,
+      "before": {
+        "material_id": 464,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 464,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 74,
+      "before": {
+        "material_id": 484,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 901,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 75,
+      "before": {
+        "material_id": 279,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 902,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 76,
+      "before": {
+        "material_id": 485,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 903,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 81,
+      "before": {
+        "material_id": 466,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 466,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 142,
+      "before": {
+        "material_id": 265,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 904,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 143,
+      "before": {
+        "material_id": 266,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 266,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 166,
+      "before": {
+        "material_id": 274,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 266,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 176,
+      "before": {
+        "material_id": 484,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 901,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 177,
+      "before": {
+        "material_id": 279,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 905,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 178,
+      "before": {
+        "material_id": 485,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 903,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 184,
+      "before": {
+        "material_id": 280,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 280,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6671,
+      "before": {
+        "material_id": 358,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6681,
+      "before": {
+        "material_id": 358,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6705,
+      "before": {
+        "material_id": 358,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6734,
+      "before": {
+        "material_id": 358,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6676,
+      "before": {
+        "material_id": 360,
+        "unit_price_override": 71.4765
+      },
+      "after": {
+        "material_id": 907,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6686,
+      "before": {
+        "material_id": 360,
+        "unit_price_override": 71.4765
+      },
+      "after": {
+        "material_id": 907,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6710,
+      "before": {
+        "material_id": 360,
+        "unit_price_override": 71.4765
+      },
+      "after": {
+        "material_id": 907,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6739,
+      "before": {
+        "material_id": 360,
+        "unit_price_override": 71.4765
+      },
+      "after": {
+        "material_id": 907,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6678,
+      "before": {
+        "material_id": 382,
+        "unit_price_override": 316.779
+      },
+      "after": {
+        "material_id": 908,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6679,
+      "before": {
+        "material_id": 383,
+        "unit_price_override": 49.5219
+      },
+      "after": {
+        "material_id": 909,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6680,
+      "before": {
+        "material_id": 384,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6689,
+      "before": {
+        "material_id": 384,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6713,
+      "before": {
+        "material_id": 384,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6743,
+      "before": {
+        "material_id": 384,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6750,
+      "before": {
+        "material_id": 384,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6688,
+      "before": {
+        "material_id": 386,
+        "unit_price_override": 316.779
+      },
+      "after": {
+        "material_id": 910,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6690,
+      "before": {
+        "material_id": 362,
+        "unit_price_override": 264.508
+      },
+      "after": {
+        "material_id": 911,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6714,
+      "before": {
+        "material_id": 362,
+        "unit_price_override": 264.508
+      },
+      "after": {
+        "material_id": 911,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6741,
+      "before": {
+        "material_id": 397,
+        "unit_price_override": 316.779
+      },
+      "after": {
+        "material_id": 912,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6742,
+      "before": {
+        "material_id": 398,
+        "unit_price_override": 49.5219
+      },
+      "after": {
+        "material_id": 913,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6744,
+      "before": {
+        "material_id": 400,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 906,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6749,
+      "before": {
+        "material_id": 403,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 914,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1067,
+      "before": {
+        "material_id": 358,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 369,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1099,
+      "before": {
+        "material_id": 369,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 369,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1071,
+      "before": {
+        "material_id": 360,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 915,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1073,
+      "before": {
+        "material_id": 361,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 361,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1074,
+      "before": {
+        "material_id": 362,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 916,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1148,
+      "before": {
+        "material_id": 318,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 917,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1157,
+      "before": {
+        "material_id": 663,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 917,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1205,
+      "before": {
+        "material_id": 320,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 917,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1153,
+      "before": {
+        "material_id": 327,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 918,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1188,
+      "before": {
+        "material_id": 331,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 918,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1222,
+      "before": {
+        "material_id": 335,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 919,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1155,
+      "before": {
+        "material_id": 330,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 920,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1156,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 921,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1164,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 921,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1190,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 921,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1162,
+      "before": {
+        "material_id": 664,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 922,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1183,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 923,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1216,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 290,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1210,
+      "before": {
+        "material_id": 332,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 924,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1211,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 925,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1213,
+      "before": {
+        "material_id": 333,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 926,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1214,
+      "before": {
+        "material_id": 235,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1224,
+      "before": {
+        "material_id": 336,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 928,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1225,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6147,
+      "before": {
+        "material_id": 318,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6156,
+      "before": {
+        "material_id": 663,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6204,
+      "before": {
+        "material_id": 320,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6226,
+      "before": {
+        "material_id": 283,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6152,
+      "before": {
+        "material_id": 327,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 918,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6187,
+      "before": {
+        "material_id": 331,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 918,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6221,
+      "before": {
+        "material_id": 335,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 929,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6154,
+      "before": {
+        "material_id": 330,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 920,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6155,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6163,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6189,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6161,
+      "before": {
+        "material_id": 664,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 922,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6182,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6215,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6209,
+      "before": {
+        "material_id": 332,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 930,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6210,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 234.73
+      },
+      "after": {
+        "material_id": 931,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6212,
+      "before": {
+        "material_id": 333,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6213,
+      "before": {
+        "material_id": 235,
+        "unit_price_override": 38.1
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6223,
+      "before": {
+        "material_id": 336,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6224,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6231,
+      "before": {
+        "material_id": 668,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 932,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6232,
+      "before": {
+        "material_id": 347,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 933,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6235,
+      "before": {
+        "material_id": 339,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 934,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5839,
+      "before": {
+        "material_id": 318,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5848,
+      "before": {
+        "material_id": 663,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5896,
+      "before": {
+        "material_id": 320,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5918,
+      "before": {
+        "material_id": 283,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 935,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5844,
+      "before": {
+        "material_id": 327,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 918,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5879,
+      "before": {
+        "material_id": 331,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 918,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5913,
+      "before": {
+        "material_id": 335,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 929,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5846,
+      "before": {
+        "material_id": 330,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 920,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5847,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5855,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5881,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5853,
+      "before": {
+        "material_id": 664,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 922,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5874,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5907,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5901,
+      "before": {
+        "material_id": 332,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 930,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5902,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 234.73
+      },
+      "after": {
+        "material_id": 931,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5904,
+      "before": {
+        "material_id": 333,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5905,
+      "before": {
+        "material_id": 235,
+        "unit_price_override": 38.1
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5915,
+      "before": {
+        "material_id": 336,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5916,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5923,
+      "before": {
+        "material_id": 134,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 936,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5924,
+      "before": {
+        "material_id": 337,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 337,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5927,
+      "before": {
+        "material_id": 339,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 934,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1594,
+      "before": {
+        "material_id": 318,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1625,
+      "before": {
+        "material_id": 320,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1643,
+      "before": {
+        "material_id": 283,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1599,
+      "before": {
+        "material_id": 327,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 918,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1630,
+      "before": {
+        "material_id": 328,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 918,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1601,
+      "before": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1641,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1602,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1610,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 937,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1632,
+      "before": {
+        "material_id": 122,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1640,
+      "before": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1603,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1635,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1608,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1633,
+      "before": {
+        "material_id": 321,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 939,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1645,
+      "before": {
+        "material_id": 322,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 940,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1646,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1685,
+      "before": {
+        "material_id": 318,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 942,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1718,
+      "before": {
+        "material_id": 320,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 942,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1736,
+      "before": {
+        "material_id": 283,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1690,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1701,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1723,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1692,
+      "before": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1734,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1693,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 944,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1703,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 944,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1725,
+      "before": {
+        "material_id": 122,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 944,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1733,
+      "before": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1696,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 942,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1728,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1726,
+      "before": {
+        "material_id": 321,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 945,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1741,
+      "before": {
+        "material_id": 682,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 682,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1742,
+      "before": {
+        "material_id": 322,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 946,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1744,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 947,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1745,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1755,
+      "before": {
+        "material_id": 684,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 948,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1794,
+      "before": {
+        "material_id": 318,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 942,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1827,
+      "before": {
+        "material_id": 320,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 942,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1845,
+      "before": {
+        "material_id": 283,
+        "unit_price_override": 214.1
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1799,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1810,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": 95.64
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1832,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1801,
+      "before": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1843,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1802,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 949,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1812,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 944,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1834,
+      "before": {
+        "material_id": 122,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 944,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1842,
+      "before": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1805,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 942,
+        "unit_price_override": 256.5
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1837,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": 214.1
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1835,
+      "before": {
+        "material_id": 321,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 945,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1850,
+      "before": {
+        "material_id": 682,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 682,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1851,
+      "before": {
+        "material_id": 322,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 946,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1853,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": 130.55
+      },
+      "after": {
+        "material_id": 947,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1854,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1864,
+      "before": {
+        "material_id": 684,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 950,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5723,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5748,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5769,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5776,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6325,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5722,
+      "before": {
+        "material_id": 194,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 194,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5728,
+      "before": {
+        "material_id": 687,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 687,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5753,
+      "before": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5774,
+      "before": {
+        "material_id": 176,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 176,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5781,
+      "before": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5790,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5791,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5582,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5609,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5632,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5641,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6329,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5579,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5587,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5614,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5637,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5581,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5589,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 952,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5616,
+      "before": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5639,
+      "before": {
+        "material_id": 176,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 176,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5646,
+      "before": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5655,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5656,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5303,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5330,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5353,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5362,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5300,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5308,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5335,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5358,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5302,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5310,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5337,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5360,
+      "before": {
+        "material_id": 122,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5367,
+      "before": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6330,
+      "before": {
+        "material_id": 283,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5376,
+      "before": {
+        "material_id": 181,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 181,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5377,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5378,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3573,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3597,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3617,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3633,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3571,
+      "before": {
+        "material_id": 193,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3572,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3623,
+      "before": {
+        "material_id": 122,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3578,
+      "before": {
+        "material_id": 687,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 687,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3602,
+      "before": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3631,
+      "before": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3622,
+      "before": {
+        "material_id": 281,
+        "unit_price_override": 38.1
+      },
+      "after": {
+        "material_id": 281,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3625,
+      "before": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3630,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": 45.2205
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3638,
+      "before": {
+        "material_id": 196,
+        "unit_price_override": 124.16
+      },
+      "after": {
+        "material_id": 953,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3640,
+      "before": {
+        "material_id": 181,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 181,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3641,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3642,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2412,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2438,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2460,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2478,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 954,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2408,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2417,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2465,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2410,
+      "before": {
+        "material_id": 193,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2467,
+      "before": {
+        "material_id": 235,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2411,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2419,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2468,
+      "before": {
+        "material_id": 122,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 955,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2476,
+      "before": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2445,
+      "before": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2470,
+      "before": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2475,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2483,
+      "before": {
+        "material_id": 179,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 956,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2485,
+      "before": {
+        "material_id": 181,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 181,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2486,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2487,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2557,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2584,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2607,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2625,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2553,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2562,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2589,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": 95.64
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2612,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2555,
+      "before": {
+        "material_id": 193,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2614,
+      "before": {
+        "material_id": 235,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2556,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2564,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2591,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2615,
+      "before": {
+        "material_id": 122,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2623,
+      "before": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2617,
+      "before": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2622,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2630,
+      "before": {
+        "material_id": 134,
+        "unit_price_override": 468.12
+      },
+      "after": {
+        "material_id": 957,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 2633,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5181,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5207,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5229,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5238,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5247,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": 264.37
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5178,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5186,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5212,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5234,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5243,
+      "before": {
+        "material_id": 214,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 5249,
+      "before": {
+        "material_id": 196,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 958,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6342,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6368,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6390,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6399,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6464,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6339,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6347,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 6410,
+      "before": {
+        "material_id": 222,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 959,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3945,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3971,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3993,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 4002,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 4011,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3942,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3950,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3998,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 4013,
+      "before": {
+        "material_id": 134,
+        "unit_price_override": 446.4
+      },
+      "after": {
+        "material_id": 960,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3696,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3720,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3740,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3748,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3756,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3694,
+      "before": {
+        "material_id": 193,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 927,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3695,
+      "before": {
+        "material_id": 194,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 194,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3701,
+      "before": {
+        "material_id": 687,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 687,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3725,
+      "before": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3745,
+      "before": {
+        "material_id": 176,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 176,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3753,
+      "before": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3746,
+      "before": {
+        "material_id": 123,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 123,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3754,
+      "before": {
+        "material_id": 195,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 319,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3761,
+      "before": {
+        "material_id": 196,
+        "unit_price_override": 124.16
+      },
+      "after": {
+        "material_id": 953,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3763,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3764,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3176,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3202,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3224,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3234,
+      "before": {
+        "material_id": 177,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3242,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3172,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3181,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3207,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3229,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3174,
+      "before": {
+        "material_id": 97,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 97,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3232,
+      "before": {
+        "material_id": 123,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 123,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3175,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3183,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3209,
+      "before": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 174,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3231,
+      "before": {
+        "material_id": 176,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 176,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3239,
+      "before": {
+        "material_id": 178,
+        "unit_price_override": 282.53
+      },
+      "after": {
+        "material_id": 178,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3240,
+      "before": {
+        "material_id": 129,
+        "unit_price_override": 45.22
+      },
+      "after": {
+        "material_id": 129,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3247,
+      "before": {
+        "material_id": 179,
+        "unit_price_override": 162.75
+      },
+      "after": {
+        "material_id": 961,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3249,
+      "before": {
+        "material_id": 181,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 181,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3250,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3251,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3316,
+      "before": {
+        "material_id": 290,
+        "unit_price_override": 256.5
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3342,
+      "before": {
+        "material_id": 99,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3364,
+      "before": {
+        "material_id": 118,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3382,
+      "before": {
+        "material_id": 131,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3312,
+      "before": {
+        "material_id": 96,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3321,
+      "before": {
+        "material_id": 293,
+        "unit_price_override": 95.64
+      },
+      "after": {
+        "material_id": 938,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3347,
+      "before": {
+        "material_id": 102,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3369,
+      "before": {
+        "material_id": 121,
+        "unit_price_override": 71.48
+      },
+      "after": {
+        "material_id": 943,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3314,
+      "before": {
+        "material_id": 97,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 97,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3372,
+      "before": {
+        "material_id": 123,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 123,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3315,
+      "before": {
+        "material_id": 98,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3323,
+      "before": {
+        "material_id": 294,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3349,
+      "before": {
+        "material_id": 103,
+        "unit_price_override": 282.53
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3371,
+      "before": {
+        "material_id": 122,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3379,
+      "before": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 128,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3374,
+      "before": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 125,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3380,
+      "before": {
+        "material_id": 129,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 129,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3387,
+      "before": {
+        "material_id": 134,
+        "unit_price_override": 468.121
+      },
+      "after": {
+        "material_id": 957,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3389,
+      "before": {
+        "material_id": 136,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 951,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 3390,
+      "before": {
+        "material_id": 137,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 941,
+        "unit_price_override": null
+      },
+      "kind": "LINE_UPDATE"
+    },
+    {
+      "bom_id": 1151,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1186,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1208,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1219,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1228,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1688,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 444.80872483221475
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1699,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 266.88523489932885
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1721,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 226.8524496644295
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1731,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 444.80872483221475
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1739,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": null
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 444.80872483221475
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1797,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 637.38
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 585.8456375838927
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1808,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 382.43
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 351.50738255033554
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1830,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 325.06
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 298.7812751677852
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1840,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 637.38
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 585.8456375838927
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 1848,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": 637.38
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 585.8456375838927
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5720,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 430.54
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5751,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 430.54
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5772,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 430.54
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5779,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 430.54
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5786,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": 430.53
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5585,
+      "before": {
+        "material_id": 292,
+        "unit_price_override": 516.64
+      },
+      "after": {
+        "material_id": 292,
+        "unit_price_override": 491.47167785234893
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5635,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 516.64
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 491.47167785234893
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5644,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 624.28
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 593.861610738255
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5651,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": 624.28
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 593.861610738255
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5298,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 516.64
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 491.47167785234893
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5333,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 516.64
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 491.47167785234893
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5356,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 516.64
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 491.47167785234893
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5365,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 538.17
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 511.9496644295302
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5372,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": 430.54
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 3569,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 3600,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 3620,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2406,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2441,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2463,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2473,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 327.21
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 311.26539597315434
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2481,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": 327.208
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 311.26539597315434
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2551,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2587,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2610,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 245.73583892617447
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2620,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 430.54
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 2628,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": 430.537
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 409.5597315436242
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5176,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 176.52
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 167.9194899328859
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5210,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 176.52
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 167.9194899328859
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5232,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 176.52
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 167.9194899328859
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5241,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 176.52
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 167.9194899328859
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 6337,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 176.52
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 167.9194899328859
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 6371,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 176.52
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 167.9194899328859
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 6393,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 176.52
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 167.9194899328859
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 6402,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 176.52
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 167.9194899328859
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 3940,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 180.83
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 172.01508724832217
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 3974,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 180.83
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 172.01508724832217
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 3996,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 180.825591
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 172.01508724832217
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 4005,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 180.825591
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 172.01508724832217
+      },
+      "kind": "PU_COVERED"
+    },
+    {
+      "bom_id": 5577,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 430.54
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 409.56241299303946
+      },
+      "kind": "PU_RESCALE"
+    },
+    {
+      "bom_id": 5877,
+      "before": {
+        "material_id": 209,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 209,
+        "unit_price_override": 245.7336426914153
+      },
+      "kind": "PU_RESCALE"
+    },
+    {
+      "bom_id": 5842,
+      "before": {
+        "material_id": 207,
+        "unit_price_override": 257.46
+      },
+      "after": {
+        "material_id": 207,
+        "unit_price_override": 244.91554524361948
+      },
+      "kind": "PU_RESCALE"
+    },
+    {
+      "bom_id": 5921,
+      "before": {
+        "material_id": 236,
+        "unit_price_override": 430.537821
+      },
+      "after": {
+        "material_id": 236,
+        "unit_price_override": 409.560340162413
+      },
+      "kind": "PU_RESCALE"
+    },
+    {
+      "bom_id": 5910,
+      "before": {
+        "material_id": 213,
+        "unit_price_override": 430.537821
+      },
+      "after": {
+        "material_id": 213,
+        "unit_price_override": 409.560340162413
+      },
+      "kind": "PU_RESCALE"
+    },
+    {
+      "bom_id": 5899,
+      "before": {
+        "material_id": 211,
+        "unit_price_override": 258.32
+      },
+      "after": {
+        "material_id": 211,
+        "unit_price_override": 245.7336426914153
+      },
+      "kind": "PU_RESCALE"
+    }
+  ],
+  "price_history_ids": [
+    268,
+    269,
+    270,
+    271,
+    272,
+    273,
+    274,
+    275,
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    287,
+    288,
+    289,
+    290
+  ],
+  "override_history_ids": [
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177
+  ],
+  "factor": {
+    "key": "costings.pu_foam_4g_factor",
+    "before": "1.363109048723898",
+    "before_updated_at": "2026-08-25T21:04:26.464011",
+    "after": "1.3170731707317074"
+  },
+  "materials_stamped": [
+    {
+      "id": 290,
+      "before": {
+        "last_updated": "2026-08-31T11:53:03.589024",
+        "last_bulk_update_at": "2026-07-04T16:44:48.105622",
+        "last_bulk_update_note": "legacy_uat_sync 2026-07-04"
+      }
+    }
+  ]
+}

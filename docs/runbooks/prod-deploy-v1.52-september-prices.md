@@ -213,6 +213,50 @@ disk), then the schema, then the code. Byte-exact restoration was proven on dev
 (all five written tables hash-identical after apply → revert). Approved costings
 are frozen in `result_json` either way.
 
-## OUTCOME
+## OUTCOME — deployed 4 Sep 2026 08:42 SAST, all asserts green
 
-_To be filled in when Michael runs it._
+Michael ran the staged script over ssh (scripts scp-staged by the CA, sha256-verified
+byte-identical). Two operational notes from the run, both handled by design:
+
+1. **First run stopped at the dry-run gate** — `yes` was typed where the gate demands
+   the exact word `APPLY`. Nothing was written; steps 1–5 had already taken the fresh
+   backup and fast-forwarded the repo, so re-runs then refused at the step-1 baseline
+   assert (as designed: "already fast-forwarded" is indistinguishable from
+   "part-deployed" to that assert). The CA staged `/tmp/icb-deploy-v152-resume.sh`
+   asserting the mid-state (HEAD=target, schema 0046, anchor file intact) and the run
+   completed through it.
+2. **The prod dry-run diverged from the dev reference** — 410 actions / 61 resets /
+   8 review / 22 unmatched (dev: 431 / 124 / 1 / 1). CA verdict before APPLY: safe.
+   The divergence decomposes into (a) 7 of 8 review rows = the known v1.51 prod PU
+   oddities already on Burt's list (CHILLER LARGE ×5 + CHILLER MEDIUM thickness
+   wiring, MEAT HANGER SMALL-MEDIUM bom 6229), plus one icecream-4.8 FRONT PU whose
+   prod price bakes a different thickness (stored 430.54 = 32D@0.1 vs the sheet's
+   0.12 flavour) — all parked, nothing written; (b) 22 unmatched = prod lines under
+   different/older names (mostly FLOOR `EXT GRP SKIN 2*300` and `4MM PF PLYWOOD`) —
+   skipped per default 2, and since September was mostly reductions the skip errs
+   high, the safe direction; (c) every writing action carries a manifest value
+   (291 down / 103 up; the largest jumps trace to manifest rows on staler prod
+   baselines).
+
+| | |
+|---|---|
+| Baseline | `e2dbfd5` (#172 line head) confirmed; anchor file written; fresh dumps at both runs |
+| Target | **`cd763c8`** reached; alembic `0046 → 0047` |
+| Apply | **410 line actions**, 23 in-place + 61 created materials, 23 `price_history`, 121 `bom_override_history`; journal `apply_journal_prod_20260904T064218Z.json`; pre-apply table backup `pre_apply_prod_20260904T064218Z` (materials=808, bom=9012) — both under `/var/backups/icb-september-2026/` |
+| Factor | `costings.pu_foam_4g_factor = 1.3170731707317074` ✓ |
+| Boot | 4 workers, 0 bootstrap failures (script asserts passed); ActiveEnterTimestamp moved |
+| Smoke | health 200 on BOTH doors; `calculator.js?v=174` / `calculator2.js?v=126` / `style.css?v=21` each carry `price-updated-badge` on the IP door AND the domain door (first `?v=174` fetch was a CF MISS→origin, then edge-cached the NEW bytes) |
+| CA byte-identity | served `calculator.js` / `calculator2.js` / `style.css` sha256-identical to `git show cd763c8:…` |
+
+Prod run artifacts committed for BA/Burt review under
+`docs/audit/september_price_update/prod/`: the apply journal (the `--revert` input),
+the prod BEFORE/AFTER plan, excluded-scope (incl. the 22 unmatched), review rows and
+override survivors.
+
+**No tag cut** — the release tag stays the BA-coordinator's call.
+
+**Follow-ups handed to BA/Burt** (nothing silently dropped): the 22 prod unmatched
+rows (September prices not applied to lines whose prod names differ — they keep
+their older, higher prices until named/mapped); the 8 review rows above; the shared
+per-section PU material defaults (0046 guard upheld, standing question); Sheet1 vs
+BAKERY BODIES conflicts (§3.0). The "Updated Sept 2026" badges self-expire ~4 Oct 2026.

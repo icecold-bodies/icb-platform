@@ -1,0 +1,9 @@
+sheet,row,section,desc_old,desc_new,price_old,price_new,reason
+icecream up to 4.8,27,FRONT,PU,PU,516.6446174496645,491.47167785234893,"PU flavour unresolved (stored=430.54, old=516.6446174496645, new=491.47167785234893)"
+(uncovered PU),,DRD,PU,PU,,,uncovered PU override on CHILLER MEDIUM bom=3205 rate=None not ≈ 32D rate 4305.37 — left untouched
+(uncovered PU),,FRONT,PU,PU,,,uncovered PU override on CHILLER LARGE bom=3310 rate=None not ≈ 32D rate 4305.37 — left untouched
+(uncovered PU),,DRD,PU,PU,,,uncovered PU override on CHILLER LARGE bom=3345 rate=None not ≈ 32D rate 4305.37 — left untouched
+(uncovered PU),,SIDES,PU,PU,,,uncovered PU override on CHILLER LARGE bom=3367 rate=None not ≈ 32D rate 4305.37 — left untouched
+(uncovered PU),,FLOOR,PU,PU,,,uncovered PU override on CHILLER LARGE bom=3385 rate=None not ≈ 32D rate 4305.37 — left untouched
+(uncovered PU),,FLOOR,PU,PU,,,uncovered PU override on MEAT HANGER SMALL-MEDIUM bom=6229 rate=None not ≈ 32D rate 4305.37 — left untouched
+(uncovered PU),,ROOF,PU,PU,,,uncovered PU override on CHILLER LARGE bom=3377 rate=None not ≈ 32D rate 4305.37 — left untouched

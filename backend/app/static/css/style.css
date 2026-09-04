@@ -715,6 +715,15 @@ body:not([data-tips="on"]) .price-override-cell,
 body:not([data-tips="on"]) .price-recent-cell,
 body:not([data-tips="on"]) .price-outdated-cell,
 body:not([data-tips="on"]) .price-bulk-cell { cursor: default; }
+/* v1.52 — bulk-import "Updated Sep 2026" line marker. STATUS, like the price
+   colours above: deliberately NOT under any [data-tips] gate. */
+.price-updated-badge {
+  display: inline-block; margin-left: 6px; font-size: 9px;
+  background: rgba(63,185,80,.14); color: #3fb950;
+  border: 1px solid rgba(63,185,80,.45); border-radius: 3px; padding: 1px 5px;
+  font-family: var(--font-sans); letter-spacing: .3px; vertical-align: middle;
+  text-decoration: none; white-space: nowrap;
+}
 .override-badge {
   display: inline-block; font-size: 9px; font-weight: 700;
   background: rgba(248,81,73,.15); border: 1px solid var(--red);

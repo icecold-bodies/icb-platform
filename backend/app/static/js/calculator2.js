@@ -747,6 +747,19 @@ function outdatedUpdateLabel(lastUpdatedStr) {
   return 'Outdated price from ' + d.toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
 }
 
+// v1.52 — "Updated Sep 2026" marker for lines a bulk price import touched.
+// Reads bill_of_materials.price_updated_at (migration 0047); self-expires 30
+// days after the apply. STATUS, not a tip: always visible like the price
+// colours, never gated by any tips toggle.
+const IMPORT_BADGE_DAYS = 30;
+function importUpdatedBadge(stampStr) {
+  if (!stampStr) return '';
+  const d = new Date(stampStr);
+  if (isNaN(d) || (Date.now() - d.getTime()) > IMPORT_BADGE_DAYS * 864e5) return '';
+  const lbl = 'Updated ' + d.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' });
+  return ` <span class="price-updated-badge" title="${lbl} — bulk price import">${lbl}</span>`;
+}
+
 function saveOverridesToSession() {
   const tid = document.getElementById('trailer-select')?.value;
   if (!tid || !Object.keys(priceOverrides).length) {
@@ -4819,6 +4832,7 @@ function renderBOMWithCosts(items, bomRef) {
       const tooltipAttr = tooltipText ? ` data-tooltip="${escHtml(tooltipText)}" title="${escHtml(tooltipText)}"` : '';
       const priceCell   = priceCls ? `class="${priceCls}"${tooltipAttr}` : (tooltipAttr ? tooltipAttr : '');
       const badge       = isOv ? '<span class="override-badge">*</span>' : '';
+      const updatedBadge = importUpdatedBadge(bRef?.price_updated_at);
       const skinName    = bRef?.skin_formula_name;
       const skinRegion  = bRef?.skin_formula_region || 'standard';
       const skinItems   = bRef?.skin_formula_items || null;
@@ -4911,7 +4925,7 @@ function renderBOMWithCosts(items, bomRef) {
           ${_rowTickHtml}
         </td>
         <td style="padding:5px 8px">
-          <div style="font-size:12px">${escHtml(it.material)}${excludedBadge}</div>
+          <div style="font-size:12px">${escHtml(it.material)}${updatedBadge}${excludedBadge}</div>
           <div style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono)">${it.formula}</div>
           ${it.formula_error ? `<div style="font-size:10px;font-weight:700;color:#e53935;margin-top:2px" title="${it.formula_unknown_vars && it.formula_unknown_vars.length ? 'Unknown token(s): {' + it.formula_unknown_vars.join('}, {') + '}' : 'Formula could not be evaluated'}">&#x26A0; Calculation Error ?${it.formula_unknown_vars && it.formula_unknown_vars.length ? ' — unknown: {' + escHtml(it.formula_unknown_vars.join('}, {')) + '}' : ''}</div>` : ''}
           ${skinSubtitle}${tapingSubtitle}${floorSubtitle}${cleatSubtitle}

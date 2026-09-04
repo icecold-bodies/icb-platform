@@ -1,0 +1,22 @@
+{
+  "materials": {
+    "rows": 796,
+    "sha256": "fa55cd7eafeeeffccc224419ccacd73dd0a766333d6440a9a89060dd0b6289a3"
+  },
+  "bill_of_materials": {
+    "rows": 8989,
+    "sha256": "8922ff34c2601ed6b31a65b6e68f9bf85b204ea6f1e2a347fc84302486375836"
+  },
+  "admin_settings": {
+    "rows": 10,
+    "sha256": "8cccf580c35b06e2f5776d200851fa35f055820f6289cbc2b57195e3f1a501ad"
+  },
+  "price_history": {
+    "rows": 91,
+    "sha256": "7a5bbf362b60ad53dc4c8b7758303ead8ee77485c107d78e08a41fec876446ce"
+  },
+  "bom_override_history": {
+    "rows": 7,
+    "sha256": "97c3995335d093ae56cc4c50d0cc8f21f8a49d11f7b0a53f3bbf53df8a672cef"
+  }
+}

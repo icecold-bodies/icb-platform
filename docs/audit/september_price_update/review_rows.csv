@@ -1,0 +1,2 @@
+sheet,row,section,desc_old,desc_new,price_old,price_new,reason
+(uncovered PU),,DRD,PU,PU,,,uncovered PU override on CHILLER MEDIUM bom=3205 rate=None not ≈ 32D rate 4305.37 — left untouched

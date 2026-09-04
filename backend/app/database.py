@@ -266,6 +266,11 @@ class BillOfMaterial(Base):
     # material.price_per_unit so the same material can have different prices
     # in different sections (e.g. EPS in FRONT vs EPS in SIDES).
     unit_price_override = Column(Float)
+    # v1.52: stamped by bulk price imports on every line they touch (price,
+    # description or override reset). Line-level because PU prices live in the
+    # override and SPLIT repoints can land on pre-existing materials — material
+    # stamps can't mark those. Read-side 30-day expiry; never cleared.
+    price_updated_at = Column(DateTime(timezone=True), nullable=True)
     # Body-options fields — populated by the BODY OPTIONS section of the Excel import.
     # is_body_option: row is a selectable option (not a fixed BOM line).
     # body_option_group: mutual-exclusion group (FRONT, DRD, SRD, SIDES, ROOF, FLOOR …).

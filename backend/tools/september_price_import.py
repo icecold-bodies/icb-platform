@@ -294,8 +294,21 @@ def match_rows(db: Db, in_scope: list[dict]):
                 else:
                     ambiguous.append(mr)
         else:
-            matched.extend(zip(mrows, cands))
-            unmatched.extend(mrows[len(cands):])
+            # FEWER lines than manifest rows — a variant-named line (prod's
+            # "…GLOSS CRYSTEX V2" FRONT skins) broke the count. Blind zip here
+            # shifted every pairing one section down on the 4 Sep prod apply
+            # (corrected by tools/september_fixup_pairing.py): pair ONLY rows
+            # whose section names exactly one candidate; the rest go unmatched.
+            used: set = set()
+            for mr in mrows:
+                sec = norm(mr["section"])
+                insec = [b for b in cands if b["id"] not in used
+                         and sec and sec == norm(b["bom_section"] or "")]
+                if len(insec) == 1:
+                    matched.append((mr, insec[0]))
+                    used.add(insec[0]["id"])
+                else:
+                    unmatched.append(mr)
     return matched, unmatched, ambiguous, no_action
 
 

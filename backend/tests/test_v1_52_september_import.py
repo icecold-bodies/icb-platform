@@ -143,3 +143,79 @@ def test_pu_unresolvable_goes_to_review_not_to_the_db():
     assert IMP.resolve_covered_pu(500.0, 100.0, 90.0) == (None, None)
     assert IMP.resolve_covered_pu(None, None, 90.0) == (None, None)
     assert IMP.resolve_covered_pu(None, 100.0, None) == (None, None)
+
+
+# ── the 4 Sep prod pairing-shift regression ──────────────────────────────────
+#
+# Prod's FREEZER MEDIUM FRONT "4MM PF PLYWOOD" line carried a variant name, so
+# the group had 4 manifest rows against 3 lines. The old fallback zipped them
+# in order, shifting every pairing one section down — the SIDES line took the
+# DRD row's R86.58 instead of its own R68.79. With the fix, a deficit group
+# pairs strictly by section and the row with no line goes UNMATCHED.
+
+class _FakeDb:
+    """Just enough of Db for match_rows: the name-grouped lines + src_row."""
+
+    def __init__(self, lines):
+        from collections import defaultdict
+        self.by_tt_name = defaultdict(list)
+        for b in lines:
+            self.by_tt_name[(b["trailer_type_id"], b["_norm_name"])].append(b)
+
+    def src_row(self, b):
+        return b.get("_src_row")
+
+
+def _mrow(sheet, row, section, old, new, p_old, p_new):
+    return {"sheet": sheet, "row": str(row), "section": section,
+            "desc_old": old, "desc_new": new,
+            "price_old": str(p_old), "price_new": str(p_new),
+            "price_changed": "True", "desc_changed": "False",
+            "total_changed": "True", "highlighted": "False"}
+
+
+def _line(bid, tid, name, section, src_row):
+    return {"id": bid, "trailer_type_id": tid, "material_id": bid + 1000,
+            "bom_section": section, "sort_order": bid, "source_cell": f"H{src_row}",
+            "_norm_name": name, "_src_row": src_row,
+            "is_body_option": False, "unit_price_override": None,
+            "skin_formula_id": None, "taping_block_id": None,
+            "floor_plate_id": None, "mounting_cleat_id": None,
+            "body_option_linked_id": None}
+
+
+def test_deficit_group_pairs_by_section_never_by_blind_zip():
+    sheet = " UP TO 4.8 MT FREEZER  (2"       # trailer 20 in the §3.0 mapping
+    rows = [
+        _mrow(sheet, 35, "FRONT", "4MM PF PLYWOOD", "4MM PF PLYWOOD", 71.48, 68.79),
+        _mrow(sheet, 49, "SRD", "4MM PF PLYWOOD", "4MM PF PLYWOOD", 95.64, 86.58),
+        _mrow(sheet, 86, "DRD", "4MM PF PLYWOOD", "4MM PF PLYWOOD", 95.64, 86.58),
+        _mrow(sheet, 119, "SIDES", "4MM PF PLYWOOD", "4MM PF PLYWOOD", 71.48, 68.79),
+    ]
+    # FRONT's line is variant-named on prod, so only 3 lines carry the group name
+    lines = [_line(1, 20, "4MM PF PLYWOOD", "SRD", 49),
+             _line(2, 20, "4MM PF PLYWOOD", "DRD", 86),
+             _line(3, 20, "4MM PF PLYWOOD", "SIDES", 119)]
+    matched, unmatched, ambiguous, _ = IMP.match_rows(_FakeDb(lines), rows)
+
+    assert not ambiguous
+    # every pairing is section-true — the SIDES line gets the SIDES row (68.79)
+    for mr, b in matched:
+        assert IMP.norm(mr["section"]) == IMP.norm(b["bom_section"]), \
+            f"row {mr['row']} ({mr['section']}) paired onto a {b['bom_section']} line"
+    paired = {b["bom_section"]: mr for mr, b in matched}
+    assert float(paired["SIDES"]["price_new"]) == 68.79
+    # the row whose line is variant-named goes UNMATCHED, not onto a neighbour
+    assert [r["section"] for r in unmatched] == ["FRONT"]
+
+
+def test_equal_count_groups_still_zip_in_row_order():
+    # the dev-proven fast path is unchanged: equal counts pair 1:1 in order
+    sheet = " UP TO 4.8 MT FREEZER  (2"
+    rows = [_mrow(sheet, 30, "FRONT", "X SKIN", "Y SKIN", 272.27, 213.11),
+            _mrow(sheet, 44, "SRD", "X SKIN", "Y SKIN", 272.27, 213.11)]
+    lines = [_line(1, 20, "X SKIN", "FRONT", 30), _line(2, 20, "X SKIN", "SRD", 44)]
+    matched, unmatched, ambiguous, _ = IMP.match_rows(_FakeDb(lines), rows)
+    assert not unmatched and not ambiguous
+    assert {(mr["section"], b["bom_section"]) for mr, b in matched} == \
+        {("FRONT", "FRONT"), ("SRD", "SRD")}

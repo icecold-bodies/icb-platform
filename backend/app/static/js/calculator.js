@@ -1196,6 +1196,19 @@ function outdatedUpdateLabel(lastUpdatedStr) {
   return 'Outdated price from ' + d.toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
 }
 
+// v1.52 — "Updated Sep 2026" marker for lines a bulk price import touched.
+// Reads bill_of_materials.price_updated_at (migration 0047); self-expires 30
+// days after the apply. STATUS, not a tip: always visible like the price
+// colours, never gated by the Tips checkbox.
+const IMPORT_BADGE_DAYS = 30;
+function importUpdatedBadge(stampStr) {
+  if (!stampStr) return '';
+  const d = new Date(stampStr);
+  if (isNaN(d) || (Date.now() - d.getTime()) > IMPORT_BADGE_DAYS * 864e5) return '';
+  const lbl = 'Updated ' + d.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' });
+  return ` <span class="price-updated-badge" title="${lbl} — bulk price import">${lbl}</span>`;
+}
+
 function saveOverridesToSession() {
   const tid = document.getElementById('trailer-select')?.value;
   if (!tid || !Object.keys(priceOverrides).length) {
@@ -3491,6 +3504,7 @@ function renderBOM(items) {
       const tooltipText  = ovTooltip || outdatedLabel || recentLabel;
       const tooltip      = _priceTipAttrs(tooltipText);
       const badge        = ov ? '<span class="override-badge">*</span>' : '';
+      const updBadge     = importUpdatedBadge(it.price_updated_at);
       html += `<div class="assembly-item" data-id="${bid}"
           data-bom-id="${bid}"
           data-material-id="${mid}"
@@ -3498,7 +3512,7 @@ function renderBOM(items) {
           data-price="${it.price}">
         <div class="assembly-row">
           <div>
-            <div class="assembly-name">${escHtml(it.material_name)}</div>
+            <div class="assembly-name">${escHtml(it.material_name)}${updBadge}</div>
             <div class="assembly-cat">${it.unit} · ${it.formula}</div>
           </div>
           <div style="text-align:right;min-width:90px">
@@ -6149,6 +6163,7 @@ function renderBOMWithCosts(items, bomRef) {
       const tooltipAttr = _priceTipAttrs(tooltipText);
       const priceCell   = priceCls ? `class="${priceCls}"${tooltipAttr}` : (tooltipAttr ? tooltipAttr : '');
       const badge       = isOv ? '<span class="override-badge">*</span>' : '';
+      const updatedBadge = importUpdatedBadge(bRef?.price_updated_at);
       const skinName    = bRef?.skin_formula_name;
       const skinRegion  = bRef?.skin_formula_region || 'standard';
       const skinItems   = bRef?.skin_formula_items || null;
@@ -6233,7 +6248,7 @@ function renderBOMWithCosts(items, bomRef) {
           data-unit-price="${bRef ? bRef.price : it.unit_price}"${skinData}${tapingData}${floorData}${cleatData}${excludedRowTooltip}
           style="border-bottom:1px solid rgba(48,54,61,.4);${collapsed ? 'display:none;' : ''}${excludedStyle}${_optStyle}">
         <td style="padding:5px 8px">
-          <div style="font-size:12px">${_rowTick}${escHtml(it.material)}${excludedBadge}</div>
+          <div style="font-size:12px">${_rowTick}${escHtml(it.material)}${updatedBadge}${excludedBadge}</div>
           <div style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono)">${it.formula}</div>
           ${it.formula_error ? `<div style="font-size:10px;font-weight:700;color:#e53935;margin-top:2px" title="${it.formula_unknown_vars && it.formula_unknown_vars.length ? 'Unknown token(s): {' + it.formula_unknown_vars.join('}, {') + '}' : 'Formula could not be evaluated'}">&#x26A0; Calculation Error ?${it.formula_unknown_vars && it.formula_unknown_vars.length ? ' — unknown: {' + escHtml(it.formula_unknown_vars.join('}, {')) + '}' : ''}</div>` : ''}
           ${skinSubtitle}${tapingSubtitle}${floorSubtitle}${cleatSubtitle}

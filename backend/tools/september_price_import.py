@@ -147,6 +147,34 @@ def approx(a: float | None, b: float | None, rel: float = PU_TOL) -> bool:
     return abs(a - b) <= max(0.01, rel * max(abs(a), abs(b)))
 
 
+def resolve_covered_pu(stored, old, new):
+    """PU grade-flavour resolution for a manifest-covered PU line.
+
+    `stored` is the line's current unit_price_override (32D by 0046, except
+    RHINORANGE), `old`/`new` the manifest pair. Returns (rule, value_to_store)
+    or (None, None) when no rule fits — the caller sends that to REVIEW.
+
+    Order matters: continuity against the STORED price dominates, so the
+    FREEZER LARGE rows whose (old, new) pair happens to sit near the 4G sheet
+    ratio (Burt fixed a thickness on the way) still resolve as plain 32D.
+    """
+    if new is None:
+        return None, None
+    if stored is not None:
+        if approx(new, stored * SCALE_32D):
+            return "PU-32D", new
+        if approx(new / FACTOR_NEW, stored * SCALE_32D):
+            return "PU-4G-DISPLAY", new / FACTOR_NEW
+        if approx(new, stored * SCALE_4G):
+            return "PU-4G-CONTINUATION", new
+        return None, None
+    if old is not None and approx(new, old * SCALE_32D):
+        return "PU-32D(new override)", new
+    if old is not None and approx(new, old * SCALE_4G):
+        return "PU-4G-DISPLAY(new override)", new / FACTOR_NEW
+    return None, None
+
+
 # ── manifest ─────────────────────────────────────────────────────────────────
 
 def load_manifest(path: str):
@@ -395,22 +423,7 @@ def build_plan(db: Db, matched, in_scope_tids) -> Plan:
     for mr, b in covered_pu:
         stored = b["unit_price_override"]
         O, N = fnum(mr["price_old"]), fnum(mr["price_new"])
-        if N is None:
-            plan.review.append({**mr, "reason": "PU covered row without numeric price_new"})
-            continue
-        rule, new_override = None, None
-        if stored is not None:
-            if approx(N, stored * SCALE_32D):
-                rule, new_override = "PU-32D", N
-            elif approx(N / FACTOR_NEW, stored * SCALE_32D):
-                rule, new_override = "PU-4G-DISPLAY", N / FACTOR_NEW
-            elif approx(N, stored * SCALE_4G):
-                rule, new_override = "PU-4G-CONTINUATION", N
-        else:
-            if O is not None and approx(N, O * SCALE_32D):
-                rule, new_override = "PU-32D(new override)", N
-            elif O is not None and approx(N, O * SCALE_4G):
-                rule, new_override = "PU-4G-DISPLAY(new override)", N / FACTOR_NEW
+        rule, new_override = resolve_covered_pu(stored, O, N)
         if rule is None:
             plan.review.append({**mr, "reason": f"PU flavour unresolved (stored={stored}, old={O}, new={N})"})
             continue

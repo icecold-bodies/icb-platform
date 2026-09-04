@@ -235,6 +235,9 @@ async def get_bom(tt_id: int, db: Session = Depends(get_db)):
             "last_updated": mat.last_updated.isoformat() if mat.last_updated else None,
             "last_bulk_update_at":   mat.last_bulk_update_at.isoformat() if mat.last_bulk_update_at else None,
             "last_bulk_update_note": mat.last_bulk_update_note or "",
+            # v1.52: line-level bulk-import stamp (0047) — drives the
+            # "Updated Sep 2026" badge; the 30-day expiry is read-side in JS.
+            "price_updated_at": row.price_updated_at.isoformat() if row.price_updated_at else None,
             "is_body_option":         bool(row.is_body_option),
             "selection_mode":         row.selection_mode or "always",
             "selection_group":        row.selection_group or "",

@@ -19,9 +19,10 @@ This tool:
     VARIANT that contains the old name (the CRYSTEX class);
   * computes the required (name, price) per line from ITS OWN row — never a
     neighbour's;
-  * `--crystex-mode price-only` (recommended) keeps a variant line's prod name
-    and applies only the September price; `--crystex-mode rename` gives variant
-    lines the manifest's new name too (Burt's sheet literally);
+  * `--crystex-mode rename` (the DEFAULT — Michael's ruling, 4 Sep: user-facing
+    names must match Burt's sheet exactly) gives variant lines the manifest's
+    new name; `--crystex-mode price-only` keeps a variant line's prod name and
+    applies only the September price (retained for future partial holds);
   * anything that does not resolve to exactly one line per row (or one row per
     line) is REPORTED, never guessed;
   * delta-driven, so a second run is a no-op; --apply is one transaction,
@@ -83,7 +84,7 @@ def main() -> int:
     ap.add_argument("--manifest", required=False)
     ap.add_argument("--db", default=os.environ.get("DATABASE_URL"))
     ap.add_argument("--out-dir", default=".")
-    ap.add_argument("--crystex-mode", choices=["price-only", "rename"], default="price-only")
+    ap.add_argument("--crystex-mode", choices=["price-only", "rename"], default="rename")
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--revert", metavar="JOURNAL_JSON")
     args = ap.parse_args()

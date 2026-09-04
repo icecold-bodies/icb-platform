@@ -97,8 +97,13 @@ scope; its 12 rows are reported in the excluded-scope list, not imported.
 - `admin_settings['costings.pu_foam_4g_factor'] = 1.363109048723898` (dev,
   seeded by 0046). September: 32D 4310→4100 and 4G 5875→5400 ⇒ new factor
   **5400/4100 = 1.3170731707317074**. The apply script updates the setting row
-  (journaled); the PR updates the code fallbacks in
-  `app/services/insulation_foam.py` (SHEET_PRICE_32D/4G, FACTOR_4G_DEFAULT).
+  (journaled), dev and prod alike. The CODE constants in
+  `app/services/insulation_foam.py` (SHEET_PRICE_32D/4G, FACTOR_4G_DEFAULT)
+  deliberately stay on the 4310/5875 pair: they anchor 0046's historical
+  classifier and the v1.51 tests, and the runtime fallback they feed only fires
+  when the setting ROW is missing — it exists on both databases (dev verified;
+  prod confirmed seeded in the v1.51 deploy OUTCOME). Flagged for BA; a one-line
+  follow-up can retire them if wanted.
 - **Manifest PU rows are 32D-based where the body is 32D-based** — ratio checks
   are exact (`245.73583/258.32230 = 0.9512761 = 4100/4310`, Chester/GRP/
   icecream/freezer/explosive-2.7s). **Exceptions found and handled:**

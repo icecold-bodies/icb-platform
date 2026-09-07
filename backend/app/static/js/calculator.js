@@ -190,6 +190,15 @@ let drdSrdEnabled = {};         // groupName → boolean; master ON/OFF toggle f
 // visual-body-configurator-ui:{tid} when the trailer has a settings draft.
 let draftFlagState = {};
 let _draftFlagStateTrailer = null;  // which tid draftFlagState is seeded for
+// v1.53 — per-flag THICKNESS for name-only (unbound) flags, keyed by the same
+// flagBindingName/label as draftFlagState, value in METRES. A masterless draft
+// body (Manni RIGIDS CB class: real BOM, zero is_body_option rows) has no
+// template row to hold variable_value, so this map is the thickness channel:
+// it feeds the calc as name-keyed body_variable_overrides, which the formula
+// engine resolves for {FLAG NAME} tokens (case-insensitive). The editable
+// suffix renders ONLY for flags some formula on the body actually references
+// — the number shown can never be one the calc ignores.
+let draftFlagVars = {};
 // Selected category-radio per parent folder. Used to track masterless category
 // radios (those whose section has no resolvable owner master on this trailer
 // — e.g. a section that exists in the global pool but no body-option master
@@ -2786,6 +2795,7 @@ async function editCalculation(recordId) {
     //    values — these drive excluded_categories + flag_overrides server-side.
     _draftFlagStateTrailer = tid;
     if (snap.draft_flag_state)       draftFlagState          = { ...snap.draft_flag_state };
+    if (snap.draft_flag_vars)        draftFlagVars           = { ...snap.draft_flag_vars };   // v1.53 name-only thicknesses
     else if (payload.flag_overrides) Object.assign(draftFlagState, payload.flag_overrides);
     if (snap.draft_category_radio)   draftCategoryRadioState = { ...snap.draft_category_radio };
     if (snap.draft_masterless_cat)   draftMasterlessCatState = { ...snap.draft_masterless_cat };
@@ -3014,6 +3024,7 @@ function _buildUiSnapshot() {
     body_option_selections:    { ...bodyOptionSelections },
     drd_srd:                   { ...drdSrdEnabled },
     draft_flag_state:          { ...draftFlagState },
+    draft_flag_vars:           { ...draftFlagVars },   // v1.53 name-only thicknesses (metres)
     draft_category_radio:      { ...draftCategoryRadioState },
     draft_masterless_cat:      { ...draftMasterlessCatState },
     draft_folder:              { ...draftFolderState },
@@ -3657,8 +3668,22 @@ function _readSettingsDraft(tid) {
 
 function _saveDraftFlagState(tid) {
   try {
-    localStorage.setItem(`cfg_user_state_${tid}`, JSON.stringify({ flags: draftFlagState, choice: {} }));
+    localStorage.setItem(`cfg_user_state_${tid}`,
+      JSON.stringify({ flags: draftFlagState, flagVars: draftFlagVars, choice: {} }));
   } catch(_) {}
+}
+
+// v1.53 — the set of {TOKEN} names referenced by THIS body's formulas,
+// uppercased (the engine's variable lookup is case-insensitive). A name-only
+// flag gets its thickness affordance exactly when its name is in this set.
+function _wiredFlagVarNames(rows) {
+  const out = new Set();
+  (rows || []).forEach(r => {
+    const f = String((r && r.formula) || '');
+    if (f.indexOf('{') < 0) return;
+    for (const m of f.matchAll(/\{([^{}]+)\}/g)) out.add(m[1].trim().toUpperCase());
+  });
+  return out;
 }
 
 // Renders the settings-page draft tree into the body-options panel.
@@ -3919,12 +3944,18 @@ function renderBodyOptionsFromDraft(draft, tid) {
     });
 
     // 2) Override draftFlagState from saved cfg_user_state if present.
+    //    2b) v1.53 — same store carries the per-flag thickness map (metres).
+    draftFlagVars = {};
     try {
       const rawCfg = localStorage.getItem(`cfg_user_state_${tid}`);
       if (rawCfg) {
         const cfgState = JSON.parse(rawCfg);
         Object.entries(cfgState.flags || {}).forEach(([name, on]) => {
           if (name in draftFlagState) draftFlagState[name] = !!on;
+        });
+        Object.entries(cfgState.flagVars || {}).forEach(([name, v]) => {
+          const num = Number(v);
+          if (Number.isFinite(num) && num > 0) draftFlagVars[name] = num;
         });
       }
     } catch(_) {}
@@ -4127,6 +4158,29 @@ function renderBodyOptionsFromDraft(draft, tid) {
     return '';
   }
 
+  // v1.53 — thickness suffix for NAME-ONLY flags, the masterless counterpart
+  // of bvEditSpan: on a body with no is_body_option rows there is no
+  // variable_value to show, so the value lives in draftFlagVars (metres) and
+  // reaches the calc as a name-keyed body_variable_override. Rendered ONLY
+  // when some formula on this body references {NAME} (case-insensitive, the
+  // engine's own lookup rule) — the suffix can never show a number the calc
+  // ignores. Referenced-but-unset is LOUD: the engine substitutes 0 for an
+  // unknown token, which silently zeroes the row (the v1.44 quiet-zero class).
+  const wiredVarNames = _wiredFlagVarNames(bomData);
+  function flagVarSpan(name) {
+    if (!name || !wiredVarNames.has(String(name).trim().toUpperCase())) return '';
+    const esc = escHtml(String(name));
+    const v = Number(draftFlagVars[name]);
+    if (Number.isFinite(v) && v > 0) {
+      return ` <span class="flag-var-edit" data-flag-var="${esc}"` +
+        ` style="color:#58a6ff;font-size:10px;cursor:pointer;border-bottom:1px dotted #388bfd"` +
+        ` title="Click to edit — referenced in formulas as {${esc}}">(${v.toFixed(3)} m)</span>`;
+    }
+    return ` <span class="flag-var-edit" data-flag-var="${esc}"` +
+      ` style="color:var(--orange);font-size:10px;cursor:pointer;border-bottom:1px dotted var(--orange);font-weight:700"` +
+      ` title="This body's formulas reference {${esc}} — until a thickness is set the formula computes with 0">(set thickness)</span>`;
+  }
+
   // Recursive renderer.
   function renderNode(nodeId, depth) {
     const node = nodes[nodeId];
@@ -4187,7 +4241,7 @@ function renderBodyOptionsFromDraft(draft, tid) {
       }
       // Unbound flag → name-only fallback via flag_overrides.
       const on = !!draftFlagState[name];
-      return `<label style="${lblStyle}"><input type="${type}"${grpAttr} data-draft-flag="${esc}" ${on ? 'checked' : ''} style="${S.inp}"><span${flagJumpAttr}>${node.label}</span></label>`;
+      return `<label style="${lblStyle}"><input type="${type}"${grpAttr} data-draft-flag="${esc}" ${on ? 'checked' : ''} style="${S.inp}"><span${flagJumpAttr}>${node.label}${flagVarSpan(name)}</span></label>`;
     }
 
     if (node.type === 'category') {
@@ -4305,6 +4359,34 @@ function renderBodyOptionsFromDraft(draft, tid) {
         return;
       }
       syncInputs();
+      scheduleCalc();
+    });
+  });
+
+  // v1.53 — click-to-edit for name-only flag thickness (metres). promptModal,
+  // never a native prompt: the costings embed iframe swallows those silently.
+  list.querySelectorAll('.flag-var-edit').forEach(el => {
+    el.addEventListener('click', async (ev) => {
+      ev.preventDefault();       // a click inside the <label> must not toggle the flag
+      ev.stopPropagation();
+      const name = el.dataset.flagVar || '';
+      if (!name) return;
+      const cur = draftFlagVars[name];
+      const raw = await promptModal(
+        `Thickness for ${name} in METRES (e.g. 0.076 for 76 mm). Enter 0 to clear.`,
+        cur != null ? String(cur) : '',
+        { title: 'Insulation thickness', okText: 'Save' }
+      );
+      if (raw == null || String(raw).trim() === '') return;   // cancelled / empty
+      const v = Number(String(raw).trim().replace(',', '.'));
+      if (!Number.isFinite(v) || v < 0 || v >= 1) {
+        toast('Thickness must be a number between 0 and 1 metre', 'warn');
+        return;
+      }
+      if (v === 0) delete draftFlagVars[name];
+      else draftFlagVars[name] = v;
+      _saveDraftFlagState(tid);
+      renderBodyOptions(bomData);   // refresh the suffix text
       scheduleCalc();
     });
   });
@@ -5487,6 +5569,22 @@ async function runCalc() {
     });
   }
 
+  // v1.53 — name-only flag thicknesses ride the EXISTING name-keyed
+  // body_variable_overrides channel (the server overlays it onto the formula
+  // context on every calc — _apply_body_variable_overrides). Only names some
+  // formula on this body references are sent; edit-replay overrides win on
+  // key collision so a reopened quote still reproduces its saved figures.
+  const flagVarsPayload = {};
+  if (_draftFlagStateTrailer === +tid && Object.keys(draftFlagVars).length) {
+    const wired = _wiredFlagVarNames(bomData);
+    Object.entries(draftFlagVars).forEach(([name, v]) => {
+      const num = Number(v);
+      if (Number.isFinite(num) && num > 0 && wired.has(String(name).trim().toUpperCase())) {
+        flagVarsPayload[name] = num;
+      }
+    });
+  }
+
   // Optional-section exclusions (EXTRAS / OPTIONAL EXTRAS). The per-row excl
   // set is keyed by trailer_id in localStorage so it survives body-type
   // switches — read it directly rather than filtering through lastResult.items,
@@ -5514,7 +5612,8 @@ async function runCalc() {
     flag_overrides: Object.keys(flagOverridesPayload).length ? flagOverridesPayload : undefined,
     user_excluded_bom_ids: _optExcl,
     optional_sections_enabled: _optEnabledIds,
-    body_variable_overrides: (editBodyVarOverrides && Object.keys(editBodyVarOverrides).length) ? editBodyVarOverrides : undefined,
+    body_variable_overrides: (Object.keys(flagVarsPayload).length || (editBodyVarOverrides && Object.keys(editBodyVarOverrides).length))
+      ? { ...flagVarsPayload, ...(editBodyVarOverrides || {}) } : undefined,
     // v1.47 — free-hand OPTIONAL EXTRAS. Omitted entirely when there are none,
     // so a costing without them sends exactly the pre-v1.47 payload.
     free_hand_lines: freeHandLines.length ? freeHandLines.map(_fhWireLine) : undefined,
@@ -6801,6 +6900,7 @@ async function recallValidatedReference(refId) {
     //    values — they drive excluded_categories + flag_overrides server-side.
     _draftFlagStateTrailer = tid;
     if (snap.draft_flag_state)       draftFlagState          = { ...snap.draft_flag_state };
+    if (snap.draft_flag_vars)        draftFlagVars           = { ...snap.draft_flag_vars };   // v1.53 name-only thicknesses
     else if (payload.flag_overrides) Object.assign(draftFlagState, payload.flag_overrides);
     if (snap.draft_category_radio)   draftCategoryRadioState = { ...snap.draft_category_radio };
     if (snap.draft_masterless_cat)   draftMasterlessCatState = { ...snap.draft_masterless_cat };
@@ -8017,9 +8117,17 @@ function _xpDoorFromLabel(text) {
 
 // Parsed rows → an apply plan against the CURRENT trailer's body-option rows.
 // Pure read: builds actions, skips, and error chips; applies nothing.
+// v1.53 — bodies whose panel renders from the Explorer DRAFT can have few or
+// ZERO is_body_option rows (e.g. Manni RIGIDS CB: 104 BOM rows, 0 masters,
+// every flag name-only). Labels that match no master row are therefore also
+// matched against the current draft's flag / selectable-category / selectable-
+// folder nodes by name; matched ones apply through the rendered panel's own
+// inputs so radio clearing, branch restore, door carry and persistence behave
+// exactly as manual clicks (the _xpEnsureDoor precedent).
 function buildExcelPastePlan(rows) {
   const plan = { tid: document.getElementById('trailer-select')?.value || '',
                  dims: [], door: null, pairs: [], radios: [], ticks: [],
+                 draftSelects: [], draftTicks: [], draftVars: [],
                  skipped: [], errors: [], anything: false };
   const opts = (bomData || []).filter(r => r.is_body_option && r.material_name);
   const byName = {};
@@ -8028,6 +8136,66 @@ function buildExcelPastePlan(rows) {
     (byName[k] = byName[k] || []).push(r);
   });
 
+  // Draft-tree vocabulary — only when the draft panel is the active renderer.
+  // Explorer labels are hand-typed and drift from the Excel wording in
+  // whitespace ("ALU KICKPLATES" vs "ALU KICK PLATES"), so every lookup falls
+  // back to a spaces-stripped key. Master matching above stays exact.
+  const draft = _xpIsV2Panel() ? (_readSettingsDraft(plan.tid) || null) : null;
+  const dnodes = (draft && draft.nodes && typeof draft.nodes === 'object') ? draft.nodes : {};
+  const _squash = (s) => String(s || '').toUpperCase().replace(/\s+/g, '');
+  const draftFlagsByName = {};   // NAME → flag node (first in tree order wins)
+  const draftContByName = {};    // NAME → selectable category/folder node
+  const _addKey = (map, key, n) => {
+    const nm = (key || '').trim().toUpperCase();
+    if (!nm) return;
+    if (!(nm in map)) map[nm] = n;
+    const sq = _squash(nm);
+    if (!(sq in map)) map[sq] = n;
+  };
+  Object.values(dnodes).forEach(n => {
+    if (!n) return;
+    if (n.type === 'flag') {
+      _addKey(draftFlagsByName, n.flagBindingName || n.label || '', n);
+    } else if (n.type === 'category' && (n.selectionMode === 'radio' || n.selectionMode === 'tickbox')) {
+      _addKey(draftContByName, n.sourceCategoryKey, n);
+      _addKey(draftContByName, n.label, n);
+    } else if (n.type === 'folder' && (n.folderMode === 'radio' || n.folderMode === 'tickbox')) {
+      _addKey(draftContByName, n.label, n);
+    }
+  });
+  const _dvLookup = (map, label) => map[label] || map[_squash(label)] || null;
+  // v1.53 — {NAME} tokens this body's formulas reference: pasted thickness on
+  // a draft flag applies only when the value would actually reach a formula.
+  const draftWiredVarNames = draft ? _wiredFlagVarNames(bomData) : new Set();
+
+  // Container/radio selections collect here first (with their DOM radio-group
+  // key), then resolve below: dedupe, one-Y-per-radio-group, outermost first.
+  const draftSelRecs = [];   // {node, kind, attr, value, label, groupKey|null, derived, explicitYn}
+  const _contEntry = (n, derived) => {
+    if (n.type === 'folder') {
+      return { node: n, kind: 'folder', attr: 'data-draft-folder', value: String(n.id),
+               label: n.label || 'folder', derived,
+               groupKey: (n.folderMode === 'radio') ? `dff-${n.parentId || 'root'}` : null };
+    }
+    return { node: n, kind: 'cat', attr: 'data-draft-cat-key',
+             value: n.sourceCategoryKey || n.label || '', label: n.label || n.sourceCategoryKey || '',
+             derived, groupKey: (n.selectionMode === 'radio') ? `dfc-${n.parentId || 'root'}` : null };
+  };
+  // Selecting a node implies its selectable ancestors are on (an Excel Y means
+  // "this option is quoted", so its branch must be active). Outermost first.
+  const _deriveAncestors = (n) => {
+    const chain = [];
+    let cur = n.parentId ? dnodes[n.parentId] : null;
+    while (cur) {
+      if ((cur.type === 'folder' && (cur.folderMode === 'radio' || cur.folderMode === 'tickbox')) ||
+          (cur.type === 'category' && (cur.selectionMode === 'radio' || cur.selectionMode === 'tickbox'))) {
+        chain.unshift(_contEntry(cur, true));
+      }
+      cur = cur.parentId ? dnodes[cur.parentId] : null;
+    }
+    chain.forEach(e => draftSelRecs.push(e));
+  };
+
   // A settings block never repeats a label — a duplicate is a stray copy; the
   // LAST line wins everywhere (preview and apply agree by construction).
   const byLabel = new Map();
@@ -8035,6 +8203,7 @@ function buildExcelPastePlan(rows) {
 
   const pairRecs = {};    // gkey → {group, sides:{EPS:{row,yn,val}, PU:{...}}}
   const radioRecs = {};   // gkey → {group, sub, options:[{row,yn,label}]} — non-pair mutex subgroups
+  const draftFlagRadioRecs = {};   // DOM group (dff-<pid>) → {options:[{node,name,yn,label}]}
   [...byLabel.values()].forEach(rw => {
     if (rw.label in _XP_DIM_FIELDS) {
       const v = rw.numerics.length ? rw.numerics[0] : null;   // FIRST numeric = internal size; second (cutting size) ignored
@@ -8044,7 +8213,54 @@ function buildExcelPastePlan(rows) {
       return;
     }
     const matches = byName[rw.label];
-    if (!matches) { plan.skipped.push({ label: rw.label, why: 'not recognised — skipped' }); return; }
+    if (!matches) {
+      // v1.53 — draft-tree fallback: unbound flags, then selectable containers.
+      const fnode = _dvLookup(draftFlagsByName, rw.label);
+      if (fnode) {
+        if (rw.yn == null) { plan.skipped.push({ label: rw.label, why: 'no Y/N cell — skipped' }); return; }
+        const name = fnode.flagBindingName || fnode.label || '';
+        // v1.53 — pasted thickness lands in draftFlagVars when some formula
+        // on this body references {NAME}; otherwise the honest keep-note (a
+        // name-only flag has no BOM template row, and an unreferenced value
+        // would be a number the calc ignores). 0 = keep current, pair rules.
+        const tv = rw.numerics.length ? rw.numerics[0] : null;
+        if (tv != null && tv > 0) {
+          if (tv >= 1) {
+            plan.skipped.push({ label: `${rw.label} thickness`, why: `thickness ${tv} out of range — selection applied, thickness kept` });
+          } else if (draftWiredVarNames.has(String(name).trim().toUpperCase())) {
+            plan.draftVars.push({ label: rw.label, name, value: tv });
+          } else {
+            plan.skipped.push({ label: `${rw.label} thickness`, why: 'no formula on this body references it — selection applied, thickness kept' });
+          }
+        }
+        if ((fnode.flagMode || 'tickbox') === 'radio') {
+          const gkey = `dff-${fnode.parentId || 'root'}`;
+          const rec = (draftFlagRadioRecs[gkey] = draftFlagRadioRecs[gkey] || { options: [] });
+          rec.options.push({ node: fnode, name, yn: rw.yn, label: rw.label });
+        } else {
+          if (rw.yn === 'Y') _deriveAncestors(fnode);
+          plan.draftTicks.push({ label: rw.label, attr: 'data-draft-flag', value: name, on: rw.yn === 'Y' });
+        }
+        return;
+      }
+      const cnode = _dvLookup(draftContByName, rw.label);
+      if (cnode) {
+        if (rw.yn == null) { plan.skipped.push({ label: rw.label, why: 'no Y/N cell — skipped' }); return; }
+        const entry = _contEntry(cnode, false);
+        if (entry.groupKey) {           // radio container: Y selects, N alone leaves it
+          entry.explicitYn = rw.yn;
+          entry.label = rw.label;
+          if (rw.yn === 'Y') _deriveAncestors(cnode);
+          draftSelRecs.push(entry);
+        } else {                        // tickbox container: independent on/off
+          if (rw.yn === 'Y') _deriveAncestors(cnode);
+          plan.draftTicks.push({ label: rw.label, attr: entry.attr, value: entry.value, on: rw.yn === 'Y' });
+        }
+        return;
+      }
+      plan.skipped.push({ label: rw.label, why: 'not recognised — skipped' });
+      return;
+    }
     // A trailer can carry duplicate-named masters (v2 hides legacy copies) —
     // prefer the row that is a real EPS/PU pair member, then a rendered one.
     const row = matches.find(r => _insulationPairFor(r.id))
@@ -8116,14 +8332,89 @@ function buildExcelPastePlan(rows) {
     plan.door = doorActions[0];
   }
 
-  plan.anything = !!(plan.dims.length || plan.pairs.length || plan.radios.length || plan.ticks.length || plan.door);
+  // v1.53 — resolve draft flag radio groups (one Y wins; several Y = data
+  // error; no Y = untouched), deriving each winner's selectable ancestors so
+  // the containing branch (e.g. the DRD DOORS folder) switches with it.
+  Object.values(draftFlagRadioRecs).forEach(rec => {
+    const yes = rec.options.filter(o => o.yn === 'Y');
+    if (yes.length > 1) {
+      plan.errors.push({ label: yes.map(o => o.label).join(' / '), why: 'more than one option marked Y in this radio group — group skipped' });
+      return;
+    }
+    if (!yes.length) {
+      plan.skipped.push({ label: rec.options.map(o => o.label).join(' / '), why: 'no Y option in this radio group — left unchanged' });
+      return;
+    }
+    const chosen = yes[0];
+    _deriveAncestors(chosen.node);
+    draftSelRecs.push({ node: chosen.node, kind: 'flag', attr: 'data-draft-flag',
+                        value: chosen.name, label: chosen.label, derived: false,
+                        groupKey: `dff-${chosen.node.parentId || 'root'}` });
+  });
+
+  // Dedupe (first occurrence wins — ancestors land before dependents), then
+  // reject radio groups asked to select TWO different members (e.g. Y options
+  // under both DRD and SRD): drop the whole group, keep everything else.
+  const seenSel = new Set();
+  const deduped = [];
+  draftSelRecs.forEach(e => {
+    const k = `${e.attr}|${String(e.value).trim().toUpperCase()}`;
+    if (seenSel.has(k)) return;
+    seenSel.add(k);
+    deduped.push(e);
+  });
+  const badGroups = new Set();
+  const byGroup = {};
+  deduped.forEach(e => {
+    if (!e.groupKey) return;
+    (byGroup[e.groupKey] = byGroup[e.groupKey] || []).push(e);
+  });
+  const droppedNodeIds = new Set();
+  Object.entries(byGroup).forEach(([gkey, entries]) => {
+    if (new Set(entries.map(e => e.node.id)).size > 1) {
+      badGroups.add(gkey);
+      entries.forEach(e => droppedNodeIds.add(String(e.node.id)));
+      plan.errors.push({ label: entries.map(e => e.label).join(' / '),
+                         why: 'the pasted options need BOTH sides of one radio group — group skipped' });
+    }
+  });
+  // A dropped container takes its branch's selections with it ("group
+  // skipped" includes the contents of both branches).
+  const _inDroppedBranch = (n) => {
+    let cur = n;
+    while (cur) {
+      if (droppedNodeIds.has(String(cur.id))) return true;
+      cur = cur.parentId ? dnodes[cur.parentId] : null;
+    }
+    return false;
+  };
+  plan.draftSelects = deduped
+    .filter(e => (!e.groupKey || !badGroups.has(e.groupKey)) && !_inDroppedBranch(e.node))
+    .map(e => ({ label: e.label, attr: e.attr, value: e.value, kind: e.kind, derived: !!e.derived }));
+  plan.draftTicks = plan.draftTicks.filter(t => {
+    const n = t.attr === 'data-draft-flag' ? _dvLookup(draftFlagsByName, String(t.label).trim().toUpperCase()) : null;
+    return !(n && _inDroppedBranch(n));
+  });
+
+  plan.anything = !!(plan.dims.length || plan.pairs.length || plan.radios.length || plan.ticks.length
+                     || plan.door || plan.draftSelects.length || plan.draftTicks.length
+                     || plan.draftVars.length);
   return plan;
 }
 
 // ── Apply primitives (shared by both renderers) ─────────────────────────────
 
 function _xpIsV2Panel() {
-  return !!document.querySelector('#body-options-list [data-draft-folder], #body-options-list [data-draft-flag-mids]');
+  // "The draft renderer owns the panel" — true when ANY draft control is
+  // rendered. v1.53: a draft can consist of nothing but plain categories and
+  // name-only flags (no selectable folders, no bound flags), so testing only
+  // the folder/bound attributes silently disabled the draft paste vocabulary
+  // on exactly the masterless bodies it exists for. The flat renderer emits
+  // data-bom-id inputs and none of these attributes — no false positives.
+  return !!document.querySelector(
+    '#body-options-list [data-draft-folder], #body-options-list [data-draft-flag-mids], ' +
+    '#body-options-list [data-draft-flag], #body-options-list [data-draft-cat], ' +
+    '#body-options-list [data-draft-cat-masterless]');
 }
 
 function _xpWaitFor(cond, ms) {
@@ -8233,6 +8524,40 @@ function _xpSetTick(tick) {
   });
 }
 
+// ── v1.53 draft-tree apply primitives ────────────────────────────────────────
+// Draft-matched actions drive the rendered panel's OWN inputs (found by their
+// data attribute, matched case-insensitively) so the renderer's handlers run
+// the radio clearing, branch restore/zero-out, door carry and persistence —
+// the same philosophy as _xpEnsureDoor's v2 path.
+
+function _xpFindDraftInput(attr, value) {
+  const want = String(value == null ? '' : value).trim().toUpperCase();
+  if (!want) return null;
+  return [...document.querySelectorAll(`#body-options-list input[${attr}]`)]
+    .find(el => (el.getAttribute(attr) || '').trim().toUpperCase() === want) || null;
+}
+
+// Select a radio container / radio flag (folders and categories run async
+// handlers that restore-or-zero whole branches, so settle before the caller's
+// next action lands inside the branch — the _xpEnsureDoor grace pattern).
+async function _xpApplyDraftSelect(sel) {
+  const el = _xpFindDraftInput(sel.attr, sel.value);
+  if (!el) return false;
+  if (el.checked) return true;                      // already the selected member
+  el.click();                                       // fires the real change handler
+  await _xpWaitFor(() => el.checked, 2000);
+  if (sel.kind !== 'flag') await new Promise(r => setTimeout(r, 400));
+  return true;
+}
+
+// Independent draft tickbox (flag, tickbox category or tickbox folder).
+function _xpApplyDraftTick(tick) {
+  const el = _xpFindDraftInput(tick.attr, tick.value);
+  if (!el) return false;
+  if (!!el.checked !== !!tick.on) el.click();
+  return true;
+}
+
 // ── Orchestration ────────────────────────────────────────────────────────────
 // Order: dims → door type → insulation pairs (incl. the door's pair) → mutex
 // radios → tickboxes → the shared render/save/recalc tail — so the rear-door
@@ -8275,6 +8600,22 @@ async function applyExcelPastePlan(plan) {
       (x.label.includes('KICK') ? 1 : 0) - (y.label.includes('KICK') ? 1 : 0));
     ticks.forEach(t => { _xpSetTick(t); applied++; });
     closeModal('modal-kickplate-warning');
+
+    // v1.53 — draft-tree actions: containers/radios first (plan order is
+    // outermost-ancestor first, so a door folder lands before the flags
+    // inside it), then independent ticks.
+    let draftMisses = 0;
+    for (const sel of plan.draftSelects) {
+      if (await _xpApplyDraftSelect(sel)) applied++; else draftMisses++;
+    }
+    plan.draftTicks.forEach(t => { if (_xpApplyDraftTick(t)) applied++; else draftMisses++; });
+    // v1.53 — pasted thicknesses for formula-referenced name-only flags land
+    // in draftFlagVars (metres) and reach the calc via body_variable_overrides.
+    if (plan.draftVars.length) {
+      plan.draftVars.forEach(v => { draftFlagVars[v.name] = v.value; applied++; });
+      _saveDraftFlagState(+plan.tid);
+    }
+    if (draftMisses) toast(`${draftMisses} explorer option${draftMisses === 1 ? '' : 's'} had no control on the panel — check them by hand`, 'warn');
   } catch (e) {
     failure = e;
   }
@@ -8302,10 +8643,16 @@ function _xpRenderPreview() {
   const applyBtn = document.getElementById('excel-paste-apply');
   if (!box || !applyBtn) return;
   const txt = document.getElementById('excel-paste-input')?.value || '';
-  const noTrailer = !(bomData || []).some(r => r.is_body_option);
+  // v1.53 — "no body type" means exactly that (no trailer selected). A body
+  // with zero is_body_option rows can still be fully draft-configured (Manni
+  // RIGIDS CB class); it gets the softer no-vocabulary note below instead.
+  const noTrailer = !(document.getElementById('trailer-select')?.value);
   if (!txt.trim()) { box.innerHTML = ''; applyBtn.disabled = true; return; }
 
   const plan = _xpCurrentPlan();
+  const noVocab = !noTrailer && !(bomData || []).some(r => r.is_body_option)
+    && !plan.draftSelects.length && !plan.draftTicks.length
+    && !document.querySelector('#body-options-list [data-draft-flag], #body-options-list [data-draft-cat-key], #body-options-list [data-draft-folder]');
   const line = (kind, label, detail, color) =>
     `<div data-xp-row="${kind}" data-xp-label="${escHtml(label)}" style="display:flex;justify-content:space-between;gap:12px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--border)">
        <span style="color:var(--text)">${escHtml(label)}</span>
@@ -8315,12 +8662,23 @@ function _xpRenderPreview() {
   let html = '';
   if (noTrailer) {
     html += `<div data-xp-row="warn" style="font-size:11px;color:var(--orange);padding:4px 6px">Select a body type first — nothing to match against.</div>`;
+  } else if (noVocab) {
+    html += `<div data-xp-row="warn" style="font-size:11px;color:var(--orange);padding:4px 6px">This body type has no body options or Explorer flags to match — dimensions still apply.</div>`;
   }
   plan.dims.forEach(d => { html += line('dim', d.label, `${d.value}`, 'var(--blue)'); });
   if (plan.door) html += line('door', 'Door type', `${escHtml(plan.door.group)} · ${escHtml(plan.door.side)}${plan.door.thickness != null ? ' ' + _xpMm(plan.door.thickness) : ''}`, 'var(--blue)');
   plan.pairs.forEach(p => { html += line('pair', `${p.group} insulation`, `${escHtml(p.side)}${p.thickness != null ? ' ' + _xpMm(p.thickness) : ' (keep current thickness)'}`, 'var(--blue)'); });
   plan.radios.forEach(r => { html += line('radio', r.label, '&#10003; selected (group radio)', '#56b08a'); });
   plan.ticks.forEach(t => { html += line('tick', t.label, t.on ? '&#10003; selected' : '&#10007; deselected', t.on ? '#56b08a' : 'var(--text-dim)'); });
+  plan.draftSelects.forEach(s => {
+    html += line('draftsel', s.label, s.derived ? '&#10003; selected (explorer — follows the option below)' : '&#10003; selected (explorer)', '#56b08a');
+  });
+  plan.draftTicks.forEach(t => {
+    html += line('drafttick', t.label, t.on ? '&#10003; selected (explorer)' : '&#10007; deselected (explorer)', t.on ? '#56b08a' : 'var(--text-dim)');
+  });
+  plan.draftVars.forEach(v => {
+    html += line('draftvar', `${v.label} thickness`, _xpMm(v.value), 'var(--blue)');
+  });
   plan.errors.forEach(e => {
     html += `<div data-xp-row="error" data-xp-label="${escHtml(e.label)}" style="display:flex;align-items:center;gap:6px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--border)">
        <span style="background:#2a0d0d;border:1px solid #b03030;color:#ff6b6b;border-radius:10px;padding:1px 8px;font-weight:700;font-size:9px;letter-spacing:.5px">DATA ERROR</span>

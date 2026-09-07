@@ -190,6 +190,15 @@ let drdSrdEnabled = {};         // groupName → boolean; master ON/OFF toggle f
 // visual-body-configurator-ui:{tid} when the trailer has a settings draft.
 let draftFlagState = {};
 let _draftFlagStateTrailer = null;  // which tid draftFlagState is seeded for
+// v1.53 — per-flag THICKNESS for name-only (unbound) flags, keyed by the same
+// flagBindingName/label as draftFlagState, value in METRES. A masterless draft
+// body (Manni RIGIDS CB class: real BOM, zero is_body_option rows) has no
+// template row to hold variable_value, so this map is the thickness channel:
+// it feeds the calc as name-keyed body_variable_overrides, which the formula
+// engine resolves for {FLAG NAME} tokens (case-insensitive). The editable
+// suffix renders ONLY for flags some formula on the body actually references
+// — the number shown can never be one the calc ignores.
+let draftFlagVars = {};
 // Selected category-radio per parent folder. Used to track masterless category
 // radios (those whose section has no resolvable owner master on this trailer
 // — e.g. a section that exists in the global pool but no body-option master
@@ -2786,6 +2795,7 @@ async function editCalculation(recordId) {
     //    values — these drive excluded_categories + flag_overrides server-side.
     _draftFlagStateTrailer = tid;
     if (snap.draft_flag_state)       draftFlagState          = { ...snap.draft_flag_state };
+    if (snap.draft_flag_vars)        draftFlagVars           = { ...snap.draft_flag_vars };   // v1.53 name-only thicknesses
     else if (payload.flag_overrides) Object.assign(draftFlagState, payload.flag_overrides);
     if (snap.draft_category_radio)   draftCategoryRadioState = { ...snap.draft_category_radio };
     if (snap.draft_masterless_cat)   draftMasterlessCatState = { ...snap.draft_masterless_cat };
@@ -3014,6 +3024,7 @@ function _buildUiSnapshot() {
     body_option_selections:    { ...bodyOptionSelections },
     drd_srd:                   { ...drdSrdEnabled },
     draft_flag_state:          { ...draftFlagState },
+    draft_flag_vars:           { ...draftFlagVars },   // v1.53 name-only thicknesses (metres)
     draft_category_radio:      { ...draftCategoryRadioState },
     draft_masterless_cat:      { ...draftMasterlessCatState },
     draft_folder:              { ...draftFolderState },
@@ -3657,8 +3668,22 @@ function _readSettingsDraft(tid) {
 
 function _saveDraftFlagState(tid) {
   try {
-    localStorage.setItem(`cfg_user_state_${tid}`, JSON.stringify({ flags: draftFlagState, choice: {} }));
+    localStorage.setItem(`cfg_user_state_${tid}`,
+      JSON.stringify({ flags: draftFlagState, flagVars: draftFlagVars, choice: {} }));
   } catch(_) {}
+}
+
+// v1.53 — the set of {TOKEN} names referenced by THIS body's formulas,
+// uppercased (the engine's variable lookup is case-insensitive). A name-only
+// flag gets its thickness affordance exactly when its name is in this set.
+function _wiredFlagVarNames(rows) {
+  const out = new Set();
+  (rows || []).forEach(r => {
+    const f = String((r && r.formula) || '');
+    if (f.indexOf('{') < 0) return;
+    for (const m of f.matchAll(/\{([^{}]+)\}/g)) out.add(m[1].trim().toUpperCase());
+  });
+  return out;
 }
 
 // Renders the settings-page draft tree into the body-options panel.
@@ -3919,12 +3944,18 @@ function renderBodyOptionsFromDraft(draft, tid) {
     });
 
     // 2) Override draftFlagState from saved cfg_user_state if present.
+    //    2b) v1.53 — same store carries the per-flag thickness map (metres).
+    draftFlagVars = {};
     try {
       const rawCfg = localStorage.getItem(`cfg_user_state_${tid}`);
       if (rawCfg) {
         const cfgState = JSON.parse(rawCfg);
         Object.entries(cfgState.flags || {}).forEach(([name, on]) => {
           if (name in draftFlagState) draftFlagState[name] = !!on;
+        });
+        Object.entries(cfgState.flagVars || {}).forEach(([name, v]) => {
+          const num = Number(v);
+          if (Number.isFinite(num) && num > 0) draftFlagVars[name] = num;
         });
       }
     } catch(_) {}
@@ -4127,6 +4158,29 @@ function renderBodyOptionsFromDraft(draft, tid) {
     return '';
   }
 
+  // v1.53 — thickness suffix for NAME-ONLY flags, the masterless counterpart
+  // of bvEditSpan: on a body with no is_body_option rows there is no
+  // variable_value to show, so the value lives in draftFlagVars (metres) and
+  // reaches the calc as a name-keyed body_variable_override. Rendered ONLY
+  // when some formula on this body references {NAME} (case-insensitive, the
+  // engine's own lookup rule) — the suffix can never show a number the calc
+  // ignores. Referenced-but-unset is LOUD: the engine substitutes 0 for an
+  // unknown token, which silently zeroes the row (the v1.44 quiet-zero class).
+  const wiredVarNames = _wiredFlagVarNames(bomData);
+  function flagVarSpan(name) {
+    if (!name || !wiredVarNames.has(String(name).trim().toUpperCase())) return '';
+    const esc = escHtml(String(name));
+    const v = Number(draftFlagVars[name]);
+    if (Number.isFinite(v) && v > 0) {
+      return ` <span class="flag-var-edit" data-flag-var="${esc}"` +
+        ` style="color:#58a6ff;font-size:10px;cursor:pointer;border-bottom:1px dotted #388bfd"` +
+        ` title="Click to edit — referenced in formulas as {${esc}}">(${v.toFixed(3)} m)</span>`;
+    }
+    return ` <span class="flag-var-edit" data-flag-var="${esc}"` +
+      ` style="color:var(--orange);font-size:10px;cursor:pointer;border-bottom:1px dotted var(--orange);font-weight:700"` +
+      ` title="This body's formulas reference {${esc}} — until a thickness is set the formula computes with 0">(set thickness)</span>`;
+  }
+
   // Recursive renderer.
   function renderNode(nodeId, depth) {
     const node = nodes[nodeId];
@@ -4187,7 +4241,7 @@ function renderBodyOptionsFromDraft(draft, tid) {
       }
       // Unbound flag → name-only fallback via flag_overrides.
       const on = !!draftFlagState[name];
-      return `<label style="${lblStyle}"><input type="${type}"${grpAttr} data-draft-flag="${esc}" ${on ? 'checked' : ''} style="${S.inp}"><span${flagJumpAttr}>${node.label}</span></label>`;
+      return `<label style="${lblStyle}"><input type="${type}"${grpAttr} data-draft-flag="${esc}" ${on ? 'checked' : ''} style="${S.inp}"><span${flagJumpAttr}>${node.label}${flagVarSpan(name)}</span></label>`;
     }
 
     if (node.type === 'category') {
@@ -4305,6 +4359,34 @@ function renderBodyOptionsFromDraft(draft, tid) {
         return;
       }
       syncInputs();
+      scheduleCalc();
+    });
+  });
+
+  // v1.53 — click-to-edit for name-only flag thickness (metres). promptModal,
+  // never a native prompt: the costings embed iframe swallows those silently.
+  list.querySelectorAll('.flag-var-edit').forEach(el => {
+    el.addEventListener('click', async (ev) => {
+      ev.preventDefault();       // a click inside the <label> must not toggle the flag
+      ev.stopPropagation();
+      const name = el.dataset.flagVar || '';
+      if (!name) return;
+      const cur = draftFlagVars[name];
+      const raw = await promptModal(
+        `Thickness for ${name} in METRES (e.g. 0.076 for 76 mm). Enter 0 to clear.`,
+        cur != null ? String(cur) : '',
+        { title: 'Insulation thickness', okText: 'Save' }
+      );
+      if (raw == null || String(raw).trim() === '') return;   // cancelled / empty
+      const v = Number(String(raw).trim().replace(',', '.'));
+      if (!Number.isFinite(v) || v < 0 || v >= 1) {
+        toast('Thickness must be a number between 0 and 1 metre', 'warn');
+        return;
+      }
+      if (v === 0) delete draftFlagVars[name];
+      else draftFlagVars[name] = v;
+      _saveDraftFlagState(tid);
+      renderBodyOptions(bomData);   // refresh the suffix text
       scheduleCalc();
     });
   });
@@ -5487,6 +5569,22 @@ async function runCalc() {
     });
   }
 
+  // v1.53 — name-only flag thicknesses ride the EXISTING name-keyed
+  // body_variable_overrides channel (the server overlays it onto the formula
+  // context on every calc — _apply_body_variable_overrides). Only names some
+  // formula on this body references are sent; edit-replay overrides win on
+  // key collision so a reopened quote still reproduces its saved figures.
+  const flagVarsPayload = {};
+  if (_draftFlagStateTrailer === +tid && Object.keys(draftFlagVars).length) {
+    const wired = _wiredFlagVarNames(bomData);
+    Object.entries(draftFlagVars).forEach(([name, v]) => {
+      const num = Number(v);
+      if (Number.isFinite(num) && num > 0 && wired.has(String(name).trim().toUpperCase())) {
+        flagVarsPayload[name] = num;
+      }
+    });
+  }
+
   // Optional-section exclusions (EXTRAS / OPTIONAL EXTRAS). The per-row excl
   // set is keyed by trailer_id in localStorage so it survives body-type
   // switches — read it directly rather than filtering through lastResult.items,
@@ -5514,7 +5612,8 @@ async function runCalc() {
     flag_overrides: Object.keys(flagOverridesPayload).length ? flagOverridesPayload : undefined,
     user_excluded_bom_ids: _optExcl,
     optional_sections_enabled: _optEnabledIds,
-    body_variable_overrides: (editBodyVarOverrides && Object.keys(editBodyVarOverrides).length) ? editBodyVarOverrides : undefined,
+    body_variable_overrides: (Object.keys(flagVarsPayload).length || (editBodyVarOverrides && Object.keys(editBodyVarOverrides).length))
+      ? { ...flagVarsPayload, ...(editBodyVarOverrides || {}) } : undefined,
     // v1.47 — free-hand OPTIONAL EXTRAS. Omitted entirely when there are none,
     // so a costing without them sends exactly the pre-v1.47 payload.
     free_hand_lines: freeHandLines.length ? freeHandLines.map(_fhWireLine) : undefined,
@@ -6801,6 +6900,7 @@ async function recallValidatedReference(refId) {
     //    values — they drive excluded_categories + flag_overrides server-side.
     _draftFlagStateTrailer = tid;
     if (snap.draft_flag_state)       draftFlagState          = { ...snap.draft_flag_state };
+    if (snap.draft_flag_vars)        draftFlagVars           = { ...snap.draft_flag_vars };   // v1.53 name-only thicknesses
     else if (payload.flag_overrides) Object.assign(draftFlagState, payload.flag_overrides);
     if (snap.draft_category_radio)   draftCategoryRadioState = { ...snap.draft_category_radio };
     if (snap.draft_masterless_cat)   draftMasterlessCatState = { ...snap.draft_masterless_cat };
@@ -8027,7 +8127,7 @@ function _xpDoorFromLabel(text) {
 function buildExcelPastePlan(rows) {
   const plan = { tid: document.getElementById('trailer-select')?.value || '',
                  dims: [], door: null, pairs: [], radios: [], ticks: [],
-                 draftSelects: [], draftTicks: [],
+                 draftSelects: [], draftTicks: [], draftVars: [],
                  skipped: [], errors: [], anything: false };
   const opts = (bomData || []).filter(r => r.is_body_option && r.material_name);
   const byName = {};
@@ -8064,6 +8164,9 @@ function buildExcelPastePlan(rows) {
     }
   });
   const _dvLookup = (map, label) => map[label] || map[_squash(label)] || null;
+  // v1.53 — {NAME} tokens this body's formulas reference: pasted thickness on
+  // a draft flag applies only when the value would actually reach a formula.
+  const draftWiredVarNames = draft ? _wiredFlagVarNames(bomData) : new Set();
 
   // Container/radio selections collect here first (with their DOM radio-group
   // key), then resolve below: dedupe, one-Y-per-radio-group, outermost first.
@@ -8115,11 +8218,21 @@ function buildExcelPastePlan(rows) {
       const fnode = _dvLookup(draftFlagsByName, rw.label);
       if (fnode) {
         if (rw.yn == null) { plan.skipped.push({ label: rw.label, why: 'no Y/N cell — skipped' }); return; }
-        if (rw.numerics.some(v => v > 0)) {
-          // Name-only flags have no BOM template row to hold a thickness.
-          plan.skipped.push({ label: `${rw.label} thickness`, why: 'no BOM template row on this body — selection applied, thickness kept' });
-        }
         const name = fnode.flagBindingName || fnode.label || '';
+        // v1.53 — pasted thickness lands in draftFlagVars when some formula
+        // on this body references {NAME}; otherwise the honest keep-note (a
+        // name-only flag has no BOM template row, and an unreferenced value
+        // would be a number the calc ignores). 0 = keep current, pair rules.
+        const tv = rw.numerics.length ? rw.numerics[0] : null;
+        if (tv != null && tv > 0) {
+          if (tv >= 1) {
+            plan.skipped.push({ label: `${rw.label} thickness`, why: `thickness ${tv} out of range — selection applied, thickness kept` });
+          } else if (draftWiredVarNames.has(String(name).trim().toUpperCase())) {
+            plan.draftVars.push({ label: rw.label, name, value: tv });
+          } else {
+            plan.skipped.push({ label: `${rw.label} thickness`, why: 'no formula on this body references it — selection applied, thickness kept' });
+          }
+        }
         if ((fnode.flagMode || 'tickbox') === 'radio') {
           const gkey = `dff-${fnode.parentId || 'root'}`;
           const rec = (draftFlagRadioRecs[gkey] = draftFlagRadioRecs[gkey] || { options: [] });
@@ -8284,14 +8397,24 @@ function buildExcelPastePlan(rows) {
   });
 
   plan.anything = !!(plan.dims.length || plan.pairs.length || plan.radios.length || plan.ticks.length
-                     || plan.door || plan.draftSelects.length || plan.draftTicks.length);
+                     || plan.door || plan.draftSelects.length || plan.draftTicks.length
+                     || plan.draftVars.length);
   return plan;
 }
 
 // ── Apply primitives (shared by both renderers) ─────────────────────────────
 
 function _xpIsV2Panel() {
-  return !!document.querySelector('#body-options-list [data-draft-folder], #body-options-list [data-draft-flag-mids]');
+  // "The draft renderer owns the panel" — true when ANY draft control is
+  // rendered. v1.53: a draft can consist of nothing but plain categories and
+  // name-only flags (no selectable folders, no bound flags), so testing only
+  // the folder/bound attributes silently disabled the draft paste vocabulary
+  // on exactly the masterless bodies it exists for. The flat renderer emits
+  // data-bom-id inputs and none of these attributes — no false positives.
+  return !!document.querySelector(
+    '#body-options-list [data-draft-folder], #body-options-list [data-draft-flag-mids], ' +
+    '#body-options-list [data-draft-flag], #body-options-list [data-draft-cat], ' +
+    '#body-options-list [data-draft-cat-masterless]');
 }
 
 function _xpWaitFor(cond, ms) {
@@ -8486,6 +8609,12 @@ async function applyExcelPastePlan(plan) {
       if (await _xpApplyDraftSelect(sel)) applied++; else draftMisses++;
     }
     plan.draftTicks.forEach(t => { if (_xpApplyDraftTick(t)) applied++; else draftMisses++; });
+    // v1.53 — pasted thicknesses for formula-referenced name-only flags land
+    // in draftFlagVars (metres) and reach the calc via body_variable_overrides.
+    if (plan.draftVars.length) {
+      plan.draftVars.forEach(v => { draftFlagVars[v.name] = v.value; applied++; });
+      _saveDraftFlagState(+plan.tid);
+    }
     if (draftMisses) toast(`${draftMisses} explorer option${draftMisses === 1 ? '' : 's'} had no control on the panel — check them by hand`, 'warn');
   } catch (e) {
     failure = e;
@@ -8546,6 +8675,9 @@ function _xpRenderPreview() {
   });
   plan.draftTicks.forEach(t => {
     html += line('drafttick', t.label, t.on ? '&#10003; selected (explorer)' : '&#10007; deselected (explorer)', t.on ? '#56b08a' : 'var(--text-dim)');
+  });
+  plan.draftVars.forEach(v => {
+    html += line('draftvar', `${v.label} thickness`, _xpMm(v.value), 'var(--blue)');
   });
   plan.errors.forEach(e => {
     html += `<div data-xp-row="error" data-xp-label="${escHtml(e.label)}" style="display:flex;align-items:center;gap:6px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--border)">

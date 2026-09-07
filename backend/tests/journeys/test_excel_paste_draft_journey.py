@@ -149,7 +149,7 @@ def test_draft_body_paste_preview_and_apply(page: Page, live_server: str, staged
     # …tick + detick, the honest thickness skip, the no-Y radio group, unknown.
     expect(preview.locator(f"[data-xp-row='drafttick'][data-xp-label='{MARK} FINNPLY FLOOR']")).to_contain_text("selected")
     expect(preview.locator(f"[data-xp-row='drafttick'][data-xp-label='{MARK} RICE GRAIN']")).to_contain_text("deselected")
-    expect(preview.locator(f"[data-xp-row='skip'][data-xp-label='{MARK} DRD EPS thickness']")).to_contain_text("no BOM template row")
+    expect(preview.locator(f"[data-xp-row='skip'][data-xp-label='{MARK} DRD EPS thickness']")).to_contain_text("no formula on this body references it")
     expect(preview.locator("[data-xp-row='skip']").filter(has_text=f"{MARK} SRD EPS")).to_contain_text("no Y option")
     expect(preview.locator(f"[data-xp-row='skip'][data-xp-label='{MARK} UNKNOWN THING']")).to_contain_text("not recognised")
     # Preview alone changed nothing: SRD still the door, RICE still ticked.

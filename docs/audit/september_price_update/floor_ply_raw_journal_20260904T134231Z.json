@@ -1,0 +1,50 @@
+{
+  "batch_at": "2026-09-04T13:42:31.475560+00:00",
+  "note": "September 2026 \u2014 floor plywood raw sheet price, /2.98 in formula",
+  "materials": [
+    {
+      "id": 1037,
+      "before": {
+        "price": 112.75167785234899,
+        "last_updated": "2026-09-04T07:40:21.783189"
+      }
+    },
+    {
+      "id": 1040,
+      "before": {
+        "price": 223.15436241610738,
+        "last_updated": "2026-09-04T07:40:21.783189"
+      }
+    },
+    {
+      "id": 1041,
+      "before": {
+        "price": 267.7852348993289,
+        "last_updated": "2026-09-04T07:40:21.783189"
+      }
+    }
+  ],
+  "lines": [
+    {
+      "bom_id": 6327,
+      "before": "(length+{Waste})*(width+{Waste})"
+    },
+    {
+      "bom_id": 5653,
+      "before": "(length+{Waste})*(width+{Waste})"
+    },
+    {
+      "bom_id": 2483,
+      "before": "(length+{Waste})*(width+{Waste})"
+    },
+    {
+      "bom_id": 5374,
+      "before": "(length+{Waste})*(width+{Waste})"
+    }
+  ],
+  "price_history_ids": [
+    272,
+    273,
+    274
+  ]
+}

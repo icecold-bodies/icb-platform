@@ -1,0 +1,32 @@
+{
+  "batch_at": "2026-09-07T14:04:05.205779+00:00",
+  "note": "September 2026 \u2014 icecream rear-door insulation thickness sync",
+  "rows": [
+    {
+      "bom_id": 5704,
+      "trailer": "ICECREAM UP TO 4.8",
+      "name": "DRD PU",
+      "before": {
+        "variable_value": 0.06,
+        "body_option_default": false
+      },
+      "after": {
+        "variable_value": 0.12,
+        "body_option_default": true
+      }
+    },
+    {
+      "bom_id": 5706,
+      "trailer": "ICECREAM UP TO 4.8",
+      "name": "SRD PU",
+      "before": {
+        "variable_value": 0.06,
+        "body_option_default": true
+      },
+      "after": {
+        "variable_value": 0.0,
+        "body_option_default": false
+      }
+    }
+  ]
+}

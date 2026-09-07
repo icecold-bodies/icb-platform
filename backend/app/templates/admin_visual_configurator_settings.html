@@ -711,6 +711,11 @@
     z-index: 5000;
     padding: 20px;
   }
+  /* The global confirm dialog (#modal-confirm, .modal-backdrop z-index:100)
+     must stack ABOVE this page's own modals: the snapshots modal's restore /
+     delete / cross-body flows open it while a .vs-modal-backdrop (z 5000) is
+     up, which otherwise covers the confirm's buttons and swallows the click. */
+  #modal-confirm { z-index: 6000; }
   .vs-modal {
     width: min(420px, 100%);
     border-radius: var(--radius);
@@ -1706,6 +1711,11 @@ function App() {
   const [snapshotList, setSnapshotList] = useState([]);
   const [snapshotLabel, setSnapshotLabel] = useState('');
   const [snapshotBusy, setSnapshotBusy] = useState(false);
+  // Cross-body restore (v1.53): source body picker + its snapshot list + the
+  // BOM-reference audit view. All reset on modal open and on trailer switch.
+  const [xbodySourceId, setXbodySourceId] = useState('');
+  const [xbodySnaps, setXbodySnaps] = useState(null);   // null = nothing loaded yet
+  const [xbodyAudit, setXbodyAudit] = useState(null);   // { snap, audit } when showing
   const catalogRefs = useRef({});
   // True when the current trailer had no saved draft — triggers auto-generate
   // in the categories effect. Reset immediately after generation so a manual
@@ -1748,6 +1758,11 @@ function App() {
     setActiveCatalogKey('');
     setSelectedId(null);
     setRuleEditor(null);
+    // The cross-body audit is computed against a specific TARGET trailer —
+    // switching bodies invalidates it (and the source picker's context).
+    setXbodySourceId('');
+    setXbodySnaps(null);
+    setXbodyAudit(null);
   }, [trailerId, bootstrapped]);
 
   useEffect(() => {
@@ -2193,6 +2208,9 @@ function App() {
 
   function openSnapshots() {
     setSnapshotLabel(snapshotDefaultLabel());
+    setXbodySourceId('');
+    setXbodySnaps(null);
+    setXbodyAudit(null);
     setSnapshotsOpen(true);
     loadSnapshots();
   }
@@ -2219,6 +2237,57 @@ function App() {
     }
   }
 
+  // Shared post-restore path (same-body AND cross-body): mirror the restored
+  // draft into local state — same path as initial bootstrap.
+  function applyRestoredDraftLocally(restoredRaw, baseMsg) {
+    // Defensive: strip category nodes whose sourceCategoryKey no longer
+    // exists in this trailer's current categories list. Without this, an
+    // older snapshot referencing a since-deleted category would render
+    // ghost nodes with no items. Keep restore robust — never silently break.
+    // (Cross-body restores arrive pre-stripped by the server; this re-run is
+    // idempotent and still guards the same-body path.)
+    const knownKeys = new Set(categories.map(c => c.key));
+    const orphanLabels = [];
+    const nodes = restoredRaw.nodes && typeof restoredRaw.nodes === 'object' ? restoredRaw.nodes : {};
+    const orphanIds = new Set();
+    Object.entries(nodes).forEach(([nid, n]) => {
+      if (!n || n.type !== 'category') return;
+      const key = (n.sourceCategoryKey || '').trim().toUpperCase();
+      if (!key) return;
+      if (!knownKeys.has(key)) {
+        orphanIds.add(nid);
+        orphanLabels.push(n.label || key);
+      }
+    });
+    let restored = restoredRaw;
+    if (orphanIds.size) {
+      const cleanedNodes = {};
+      Object.entries(nodes).forEach(([nid, n]) => {
+        if (orphanIds.has(nid)) return;
+        if (n && Array.isArray(n.childIds)) {
+          cleanedNodes[nid] = { ...n, childIds: n.childIds.filter(c => !orphanIds.has(c)) };
+        } else {
+          cleanedNodes[nid] = n;
+        }
+      });
+      const cleanedRoots = Array.isArray(restoredRaw.rootIds)
+        ? restoredRaw.rootIds.filter(r => !orphanIds.has(r))
+        : [];
+      restored = { ...restoredRaw, nodes: cleanedNodes, rootIds: cleanedRoots };
+    }
+
+    setTimeline({ past: [], present: { ...createEmptyDraft(), ...restored }, future: [] });
+    setCollapsed({});
+    setSelectedId(null);
+    let msg = baseMsg;
+    if (orphanLabels.length) {
+      const preview = orphanLabels.slice(0, 5).join(', ');
+      const tail = orphanLabels.length > 5 ? `, +${orphanLabels.length - 5} more` : '';
+      msg += ` Dropped ${orphanLabels.length} category node${orphanLabels.length===1?'':'s'} no longer present in this body type: ${preview}${tail}.`;
+    }
+    setNotice(msg);
+  }
+
   async function restoreSnapshot(snap) {
     const ok = await window.confirmModal(
       `Restore Explorer config to snapshot "${snap.label}"?\n\n` +
@@ -2239,54 +2308,89 @@ function App() {
         return;
       }
       const data = await r.json();
-      // Mirror the loaded draft into local state, same path as initial bootstrap
-      const restoredRaw = (data && data.draft) ? data.draft : createEmptyDraft();
-
-      // Defensive: strip category nodes whose sourceCategoryKey no longer
-      // exists in this trailer's current categories list. Without this, an
-      // older snapshot referencing a since-deleted category would render
-      // ghost nodes with no items. Keep restore robust — never silently break.
-      const knownKeys = new Set(categories.map(c => c.key));
-      const orphanLabels = [];
-      const nodes = restoredRaw.nodes && typeof restoredRaw.nodes === 'object' ? restoredRaw.nodes : {};
-      const orphanIds = new Set();
-      Object.entries(nodes).forEach(([nid, n]) => {
-        if (!n || n.type !== 'category') return;
-        const key = (n.sourceCategoryKey || '').trim().toUpperCase();
-        if (!key) return;
-        if (!knownKeys.has(key)) {
-          orphanIds.add(nid);
-          orphanLabels.push(n.label || key);
-        }
-      });
-      let restored = restoredRaw;
-      if (orphanIds.size) {
-        const cleanedNodes = {};
-        Object.entries(nodes).forEach(([nid, n]) => {
-          if (orphanIds.has(nid)) return;
-          if (n && Array.isArray(n.childIds)) {
-            cleanedNodes[nid] = { ...n, childIds: n.childIds.filter(c => !orphanIds.has(c)) };
-          } else {
-            cleanedNodes[nid] = n;
-          }
-        });
-        const cleanedRoots = Array.isArray(restoredRaw.rootIds)
-          ? restoredRaw.rootIds.filter(r => !orphanIds.has(r))
-          : [];
-        restored = { ...restoredRaw, nodes: cleanedNodes, rootIds: cleanedRoots };
-      }
-
-      setTimeline({ past: [], present: { ...createEmptyDraft(), ...restored }, future: [] });
-      setCollapsed({});
-      setSelectedId(null);
-      let msg = `Restored "${snap.label}". A pre-restore safety snapshot was saved.`;
-      if (orphanLabels.length) {
-        const preview = orphanLabels.slice(0, 5).join(', ');
-        const tail = orphanLabels.length > 5 ? `, +${orphanLabels.length - 5} more` : '';
-        msg += ` Dropped ${orphanLabels.length} category node${orphanLabels.length===1?'':'s'} no longer present in this body type: ${preview}${tail}.`;
-      }
-      setNotice(msg);
+      applyRestoredDraftLocally(
+        (data && data.draft) ? data.draft : createEmptyDraft(),
+        `Restored "${snap.label}". A pre-restore safety snapshot was saved.`
+      );
       await loadSnapshots();
+      setSnapshotsOpen(false);
+    } finally {
+      setSnapshotBusy(false);
+    }
+  }
+
+  // ── Cross-body restore (v1.53) ────────────────────────────────────────────
+  // A snapshot captured on another body type can seed THIS body's config. The
+  // server audits + remaps A's BOM references onto this body (flag bindings by
+  // name, missing sections dropped, item rules listed but never carried); the
+  // audit is shown BEFORE anything is written.
+  async function loadXbodySnaps(srcId) {
+    setXbodySourceId(srcId);
+    setXbodySnaps(null);
+    setXbodyAudit(null);
+    if (!srcId) return;
+    try {
+      const r = await fetch(`/api/configurator/trailers/${srcId}/draft-snapshots`,
+        { credentials: 'same-origin' });
+      setXbodySnaps(r.ok ? await r.json() : []);
+    } catch {
+      setXbodySnaps([]);
+    }
+  }
+
+  async function openXbodyAudit(snap) {
+    if (snapshotBusy) return;
+    setSnapshotBusy(true);
+    try {
+      const r = await fetch(
+        `/api/configurator/draft-snapshots/${snap.id}/cross-audit?target=${trailerId}`,
+        { credentials: 'same-origin' });
+      if (!r.ok) {
+        setNotice('Cross-body audit failed.');
+        return;
+      }
+      setXbodyAudit({ snap, audit: await r.json() });
+    } finally {
+      setSnapshotBusy(false);
+    }
+  }
+
+  async function confirmXbodyRestore() {
+    if (!xbodyAudit || snapshotBusy) return;
+    const { snap, audit } = xbodyAudit;
+    const s = audit.summary || {};
+    const ok = await window.confirmModal(
+      `Restore "${snap.label}" from ${audit.source.trailer_name} onto ${currentTrailerName}?\n\n` +
+      `${s.flags_matched || 0} flag binding${(s.flags_matched || 0) === 1 ? '' : 's'} remap to this body's options` +
+      (s.flags_unmatched ? `, ${s.flags_unmatched} stay unbound (remap them in the Explorer later)` : '') + `. ` +
+      (s.categories_dropped ? `${s.categories_dropped} section${s.categories_dropped === 1 ? '' : 's'} not on this body will be dropped. ` : '') +
+      (s.item_rules_total ? `Item inclusion rules are NOT carried across — use the audit list to reapply them per item. ` : '') +
+      `\n\nThis body's current config is auto-backed up first, so the restore itself can be rolled back.`,
+      { title: 'Cross-body restore', okText: 'Restore', danger: true }
+    );
+    if (!ok || snapshotBusy) return;
+    setSnapshotBusy(true);
+    try {
+      const r = await fetch(
+        `/api/configurator/draft-snapshots/${snap.id}/restore-to/${trailerId}`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]')?.content || '' },
+        });
+      if (!r.ok) {
+        setNotice('Cross-body restore failed.');
+        return;
+      }
+      const data = await r.json();
+      applyRestoredDraftLocally(
+        (data && data.draft) ? data.draft : createEmptyDraft(),
+        `Restored "${snap.label}" from ${audit.source.trailer_name}. ` +
+        `A pre-restore safety snapshot was saved.`
+      );
+      await loadSnapshots();
+      setXbodyAudit(null);
+      setXbodySourceId('');
+      setXbodySnaps(null);
       setSnapshotsOpen(false);
     } finally {
       setSnapshotBusy(false);
@@ -3021,6 +3125,57 @@ function App() {
                   </div>
                 )}
               </div>
+
+              <div style={{borderTop:'1px solid var(--border)',paddingTop:'12px'}}>
+                <div style={{fontSize:'12px',fontWeight:700,marginBottom:'4px'}}>
+                  🔀 Restore from another body type
+                </div>
+                <div style={{fontSize:'11px',color:'var(--text-dim)',lineHeight:'1.5',marginBottom:'8px'}}>
+                  Similar bodies share most of their structure. Pick a source body and one of its
+                  snapshots — you get a BOM-reference audit (what remaps, what doesn't) before
+                  anything is written to <strong style={{color:'var(--text-head)'}}>{currentTrailerName || 'this body'}</strong>.
+                </div>
+                <select
+                  value={xbodySourceId}
+                  onChange={(event) => loadXbodySnaps(event.target.value)}
+                  style={{width:'100%',padding:'6px 10px',borderRadius:'var(--radius)',border:'1px solid var(--border)',background:'var(--bg-input)',color:'var(--text)',fontSize:'12px'}}
+                >
+                  <option value="">Choose source body type…</option>
+                  {BOOT.trailers.filter(t => t.id !== trailerId).map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                {xbodySourceId && xbodySnaps !== null && (xbodySnaps.length ? (
+                  <div style={{display:'flex',flexDirection:'column',gap:'6px',marginTop:'8px'}}>
+                    {xbodySnaps.map(snap => (
+                      <div key={snap.id}
+                        style={{display:'flex',alignItems:'center',gap:'10px',padding:'8px 10px',background:'var(--bg-panel)',border:'1px solid var(--border)',borderRadius:'var(--radius)'}}>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:'12px',fontWeight:600,color:'var(--text-head)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                            {snap.label}
+                          </div>
+                          <div style={{fontSize:'10px',color:'var(--text-dim)',fontFamily:'var(--font-mono)'}}>
+                            {snap.created_at ? new Date(snap.created_at).toLocaleString() : ''}
+                            {snap.created_by ? ` · ${snap.created_by}` : ''}
+                          </div>
+                        </div>
+                        <button
+                          className="vs-icon-btn primary"
+                          title="Audit this snapshot against the current body, then restore it here"
+                          onClick={() => openXbodyAudit(snap)}
+                          disabled={snapshotBusy}
+                          style={{padding:'4px 10px',fontSize:'11px'}}>
+                          🔎 Audit &amp; restore…
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{fontSize:'11px',color:'var(--text-dim)',padding:'10px',marginTop:'8px',background:'var(--bg-panel)',border:'1px dashed var(--border)',borderRadius:'var(--radius)',textAlign:'center'}}>
+                    No snapshots on that body yet — open it in the Explorer and capture one first.
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="vs-modal-foot">
               <button className="vs-btn" onClick={() => setSnapshotsOpen(false)}>Close</button>
@@ -3028,6 +3183,139 @@ function App() {
           </div>
         </div>
       )}
+
+      {xbodyAudit && (() => {
+        const audit = xbodyAudit.audit;
+        const s = audit.summary || {};
+        const flags = audit.flags || { matched: [], unmatched: [] };
+        const cats = audit.categories || { matched: [], dropped: [] };
+        const rules = audit.item_rules || { matched: [], unmatched: [], unresolvable: [] };
+        const pill = (text, color) => (
+          <span style={{display:'inline-block',padding:'2px 8px',borderRadius:'999px',fontSize:'10px',fontWeight:700,border:`1px solid ${color}`,color:color,whiteSpace:'nowrap'}}>{text}</span>
+        );
+        const sectionHead = (text) => (
+          <div style={{fontSize:'12px',fontWeight:700,margin:'2px 0 6px'}}>{text}</div>
+        );
+        const listRow = {display:'flex',alignItems:'baseline',gap:'8px',padding:'3px 8px',fontSize:'11px',borderBottom:'1px solid var(--border)'};
+        const condText = (rule) => {
+          if ((rule.mode || 'include') === 'always_exclude') return 'always excluded';
+          const parts = (rule.conditions || []).map(c => `${c.option} = ${c.equals}`);
+          const joined = parts.join(' AND ');
+          return rule.mode === 'exclude' ? `exclude when ${joined}` : `include only when ${joined}`;
+        };
+        return (
+          <div className="vs-modal-backdrop" onClick={() => setXbodyAudit(null)}>
+            <div className="vs-modal" style={{width:'min(680px,100%)'}} onClick={(event) => event.stopPropagation()}>
+              <div className="vs-modal-head">
+                <h3>🔀 Cross-body restore audit</h3>
+              </div>
+              <div className="vs-modal-body" style={{gap:'14px',maxHeight:'70vh',overflowY:'auto'}}>
+                <div style={{fontSize:'12px',lineHeight:'1.5'}}>
+                  <strong style={{color:'var(--text-head)'}}>"{audit.source.label}"</strong>
+                  <span style={{color:'var(--text-dim)'}}> (captured on </span>
+                  <strong style={{color:'var(--text-head)'}}>{audit.source.trailer_name}</strong>
+                  <span style={{color:'var(--text-dim)'}}>{audit.source.created_at ? `, ${new Date(audit.source.created_at).toLocaleString()}` : ''}) → restore onto </span>
+                  <strong style={{color:'var(--text-head)'}}>{audit.target.trailer_name}</strong>
+                </div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:'6px'}}>
+                  {pill(`${s.flags_matched || 0} flag${(s.flags_matched || 0) === 1 ? '' : 's'} remap`, 'var(--green)')}
+                  {s.flags_unmatched ? pill(`${s.flags_unmatched} flag${s.flags_unmatched === 1 ? '' : 's'} unbound`, 'var(--orange)') : null}
+                  {pill(`${s.categories_matched || 0} section${(s.categories_matched || 0) === 1 ? '' : 's'} carry over`, 'var(--green)')}
+                  {s.categories_dropped ? pill(`${s.categories_dropped} section${s.categories_dropped === 1 ? '' : 's'} dropped`, 'var(--red)') : null}
+                  {s.item_rules_total ? pill(`${s.item_rules_total} item rule${s.item_rules_total === 1 ? '' : 's'} — not carried`, 'var(--orange)') : null}
+                </div>
+
+                <div>
+                  {sectionHead('Flag bindings')}
+                  {(flags.matched.length || flags.unmatched.length) ? (
+                    <div style={{border:'1px solid var(--border)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+                      {flags.matched.map(f => (
+                        <div key={`fm-${f.node_id}`} style={listRow}>
+                          <span style={{color:'var(--green)',fontWeight:700}}>✓</span>
+                          <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.label || f.binding_name}</span>
+                          <span style={{color:'var(--text-dim)',fontSize:'10px'}}>remaps to this body's "{f.binding_name}"</span>
+                        </div>
+                      ))}
+                      {flags.unmatched.map(f => (
+                        <div key={`fu-${f.node_id}`} style={listRow}>
+                          <span style={{color:'var(--orange)',fontWeight:700}}>⚠</span>
+                          <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.label || f.binding_name || '(unnamed flag)'}</span>
+                          <span style={{color:'var(--text-dim)',fontSize:'10px'}}>no option named "{f.binding_name || f.label}" here — kept, unbound</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{fontSize:'11px',color:'var(--text-dim)'}}>This snapshot has no flags.</div>
+                  )}
+                </div>
+
+                <div>
+                  {sectionHead('Sections')}
+                  <div style={{fontSize:'11px',color:'var(--text-dim)',marginBottom:'6px'}}>
+                    {s.categories_matched || 0} of {(s.categories_matched || 0) + (s.categories_dropped || 0)} section node{((s.categories_matched || 0) + (s.categories_dropped || 0)) === 1 ? '' : 's'} exist on {audit.target.trailer_name} and carry over.
+                  </div>
+                  {cats.dropped.length ? (
+                    <div style={{border:'1px solid var(--border)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+                      {cats.dropped.map(c => (
+                        <div key={`cd-${c.node_id}`} style={listRow}>
+                          <span style={{color:'var(--red)',fontWeight:700}}>✕</span>
+                          <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.label || c.section_key}</span>
+                          <span style={{color:'var(--text-dim)',fontSize:'10px'}}>no "{c.section_key}" section here — node (and its flags) dropped</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div>
+                  {sectionHead('Item inclusion rules')}
+                  <div style={{fontSize:'11px',color:'var(--text-dim)',lineHeight:'1.5',marginBottom:'6px'}}>
+                    Rules are wired to the source body's own BOM lines, so they are <strong style={{color:'var(--text-head)'}}>never carried across</strong>.
+                    This list is your reapply worksheet — open each matched item's rule editor after restoring.
+                  </div>
+                  {(rules.matched.length || rules.unmatched.length || rules.unresolvable.length) ? (
+                    <div style={{border:'1px solid var(--border)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+                      {rules.matched.map((r, i) => (
+                        <div key={`rm-${i}`} style={listRow}>
+                          <span style={{color:'var(--green)',fontWeight:700}}>✓</span>
+                          <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.item} <span style={{color:'var(--text-dim)'}}>({r.section})</span></span>
+                          <span style={{color:'var(--text-dim)',fontSize:'10px',fontFamily:'var(--font-mono)'}}>{condText(r)}</span>
+                        </div>
+                      ))}
+                      {rules.unmatched.map((r, i) => (
+                        <div key={`ru-${i}`} style={listRow}>
+                          <span style={{color:'var(--orange)',fontWeight:700}}>⚠</span>
+                          <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.item} <span style={{color:'var(--text-dim)'}}>({r.section})</span></span>
+                          <span style={{color:'var(--text-dim)',fontSize:'10px'}}>no matching item on {audit.target.trailer_name}</span>
+                        </div>
+                      ))}
+                      {rules.unresolvable.map((r, i) => (
+                        <div key={`rx-${i}`} style={listRow}>
+                          <span style={{color:'var(--text-dim)',fontWeight:700}}>?</span>
+                          <span style={{flex:1,minWidth:0}}>BOM item #{r.item_id}</span>
+                          <span style={{color:'var(--text-dim)',fontSize:'10px'}}>source line no longer exists — rule unreadable</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{fontSize:'11px',color:'var(--text-dim)'}}>This snapshot has no item rules.</div>
+                  )}
+                </div>
+              </div>
+              <div className="vs-modal-foot">
+                <button className="vs-btn" onClick={() => setXbodyAudit(null)} disabled={snapshotBusy}>Back</button>
+                <button
+                  className="vs-btn vs-btn-primary"
+                  onClick={confirmXbodyRestore}
+                  disabled={snapshotBusy}
+                  title="Captures a safety backup of this body's current config first">
+                  {snapshotBusy ? '…' : `↺ Restore onto ${audit.target.trailer_name}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {dialog && (
         <div className="vs-modal-backdrop" onClick={closeDialog}>

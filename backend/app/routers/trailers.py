@@ -1138,27 +1138,7 @@ async def admin_visual_configurator_categories(
             }
             ordered_keys.append(key)
 
-        if row.material and getattr(row.material, "name", None):
-            item_name = row.material.name
-            sap_code = row.material.sap_code or ""
-        elif row.linked_material and getattr(row.linked_material, "name", None):
-            item_name = row.linked_material.name
-            sap_code = row.linked_material.sap_code or ""
-        elif row.skin_formula and getattr(row.skin_formula, "name", None):
-            item_name = row.skin_formula.name
-            sap_code = ""
-        elif row.taping_block and getattr(row.taping_block, "name", None):
-            item_name = row.taping_block.name
-            sap_code = ""
-        elif row.floor_plate and getattr(row.floor_plate, "name", None):
-            item_name = row.floor_plate.name
-            sap_code = ""
-        elif row.mounting_cleat and getattr(row.mounting_cleat, "name", None):
-            item_name = row.mounting_cleat.name
-            sap_code = ""
-        else:
-            item_name = (row.notes or f"BOM item {row.id}").strip()
-            sap_code = ""
+        item_name, sap_code = _bom_item_catalog_name(row)
 
         conds = []
         cond_mode = "include"
@@ -1994,6 +1974,300 @@ async def configurator_delete_draft_snapshot(
     db.delete(snap)
     db.commit()
     return {"ok": True}
+
+
+# ─── Cross-body snapshot restore (Explorer config transplant) ────────────────
+# A draft snapshot captured on body A can seed body B's Explorer config —
+# similar bodies share most of their body-options structure. A's tree
+# references A's BOM rows in two places, so the payload is audited against B's
+# BOM and remapped by NAME before it lands on B:
+#   • flag nodes' flagBindingId (a body-option master row id) — remapped to
+#     B's same-named master, the identity rule _resolve_local_master already
+#     applies to cross-trailer section-owner FKs; no match → id cleared, the
+#     name kept so the calculator's name-fallback (midsForFlag) still applies.
+#   • category nodes' sourceCategoryKey (a section NAME) — nodes whose section
+#     doesn't exist on B are dropped with their subtree, mirroring the ghost-
+#     strip the settings page runs on same-body restore.
+#   • itemRules (keyed by A's item row ids) are NOT transplanted: they are
+#     per-item wiring to A's rows, and costing truth for item inclusion lives
+#     in bom_conditions on B's own rows (untouched here). The audit lists each
+#     rule with its name-match on B as a manual-reapply worksheet.
+# Same-body restore keeps its existing endpoint and exact semantics.
+
+
+def _bom_item_catalog_name(row: BillOfMaterial) -> tuple[str, str]:
+    """The (display name, SAP code) identity the settings catalogue shows for
+    a BOM item row. Single source for the categories endpoint AND the
+    cross-body audit — the audit must match items by exactly the name the
+    admin sees in the catalogue."""
+    if row.material and getattr(row.material, "name", None):
+        return row.material.name, (row.material.sap_code or "")
+    if row.linked_material and getattr(row.linked_material, "name", None):
+        return row.linked_material.name, (row.linked_material.sap_code or "")
+    if row.skin_formula and getattr(row.skin_formula, "name", None):
+        return row.skin_formula.name, ""
+    if row.taping_block and getattr(row.taping_block, "name", None):
+        return row.taping_block.name, ""
+    if row.floor_plate and getattr(row.floor_plate, "name", None):
+        return row.floor_plate.name, ""
+    if row.mounting_cleat and getattr(row.mounting_cleat, "name", None):
+        return row.mounting_cleat.name, ""
+    return (row.notes or f"BOM item {row.id}").strip(), ""
+
+
+def _bom_row_section_name(row: BillOfMaterial) -> str:
+    return (row.bom_section or (row.section.name if row.section else "")).strip()
+
+
+def _parse_draft_payload(raw: str | None) -> dict:
+    try:
+        parsed = json.loads(raw) if raw else {}
+    except (ValueError, TypeError):
+        parsed = {}
+    if not isinstance(parsed, dict):
+        parsed = {}
+    nodes = parsed.get("nodes")
+    item_rules = parsed.get("itemRules")
+    root_ids = parsed.get("rootIds")
+    return {
+        "nextId": parsed.get("nextId") or 1,
+        "rootIds": list(root_ids) if isinstance(root_ids, list) else [],
+        "nodes": dict(nodes) if isinstance(nodes, dict) else {},
+        "itemRules": dict(item_rules) if isinstance(item_rules, dict) else {},
+    }
+
+
+def _xbody_target_lookups(db: Session, trailer_id: int) -> dict:
+    rows = (
+        db.query(BillOfMaterial)
+        .options(*_bom_load_options())
+        .filter(BillOfMaterial.trailer_type_id == trailer_id)
+        .order_by(BillOfMaterial.sort_order, BillOfMaterial.id)
+        .all()
+    )
+    masters_by_name: dict[str, int] = {}
+    section_keys: set[str] = set()
+    items_by_identity: dict[tuple[str, str], list[int]] = {}
+    for row in rows:
+        if row.is_body_option:
+            # Mirror the settings body-options payload: masters are identified
+            # by their MATERIAL name only; first row (sort_order, id) wins.
+            name = row.material.name.strip() if (row.material and row.material.name) else ""
+            if name:
+                masters_by_name.setdefault(name.upper(), row.id)
+            continue
+        section = _bom_row_section_name(row)
+        if not section or section.upper() == "BODY OPTIONS":
+            continue
+        key = section.upper()
+        section_keys.add(key)
+        item_name, _sap = _bom_item_catalog_name(row)
+        items_by_identity.setdefault((key, item_name.strip().upper()), []).append(row.id)
+    return {"masters_by_name": masters_by_name, "section_keys": section_keys,
+            "items_by_identity": items_by_identity}
+
+
+def _cross_body_remap(
+    db: Session, snap: ConfiguratorDraftSnapshot, target: TrailerType,
+) -> tuple[dict, dict]:
+    """Remap `snap`'s payload onto `target`'s BOM; returns (draft, audit).
+    Pure computation — never writes. The snapshot row itself is untouched."""
+    draft = _parse_draft_payload(snap.payload)
+    lookups = _xbody_target_lookups(db, target.id)
+    nodes = draft["nodes"]
+
+    flags_matched: list[dict] = []
+    flags_unmatched: list[dict] = []
+    categories_matched: list[dict] = []
+    categories_dropped: list[dict] = []
+    drop_roots: list[str] = []
+
+    for nid, node in nodes.items():
+        if not isinstance(node, dict):
+            continue
+        ntype = node.get("type")
+        if ntype == "flag":
+            bind_name = (node.get("flagBindingName") or node.get("label") or "").strip()
+            target_mid = lookups["masters_by_name"].get(bind_name.upper()) if bind_name else None
+            entry = {"node_id": str(nid), "label": node.get("label") or "",
+                     "binding_name": bind_name}
+            if target_mid is not None:
+                node["flagBindingId"] = target_mid
+                flags_matched.append({**entry, "target_master_id": target_mid})
+            else:
+                node["flagBindingId"] = None
+                flags_unmatched.append(entry)
+        elif ntype == "category":
+            key = (node.get("sourceCategoryKey") or "").strip().upper()
+            if not key:
+                continue  # unkeyed category — kept, same as the client ghost-strip
+            entry = {"node_id": str(nid), "label": node.get("label") or "",
+                     "section_key": key}
+            if key in lookups["section_keys"]:
+                categories_matched.append(entry)
+            else:
+                categories_dropped.append(entry)
+                drop_roots.append(str(nid))
+
+    # Drop missing-section category nodes WITH their whole subtrees.
+    drop_ids: set[str] = set()
+
+    def _collect(nid: str) -> None:
+        if nid in drop_ids:
+            return
+        drop_ids.add(nid)
+        node = nodes.get(nid)
+        if isinstance(node, dict):
+            for child in node.get("childIds") or []:
+                _collect(str(child))
+
+    for nid in drop_roots:
+        _collect(nid)
+
+    if drop_ids:
+        kept: dict = {}
+        for nid, node in nodes.items():
+            if str(nid) in drop_ids:
+                continue
+            if isinstance(node, dict) and isinstance(node.get("childIds"), list):
+                node = {**node,
+                        "childIds": [c for c in node["childIds"] if str(c) not in drop_ids]}
+            kept[nid] = node
+        draft["nodes"] = kept
+        draft["rootIds"] = [r for r in draft["rootIds"] if str(r) not in drop_ids]
+        # Flags inside a dropped subtree leave with it — keep the flag audit
+        # to nodes that actually land on the target.
+        flags_matched = [f for f in flags_matched if f["node_id"] not in drop_ids]
+        flags_unmatched = [f for f in flags_unmatched if f["node_id"] not in drop_ids]
+
+    # itemRules: audit-only. Resolve each source item id to its catalogue
+    # identity (section, name) and look for a same-named item on the target.
+    rules = draft["itemRules"]
+    rule_ids: list[int] = []
+    for key in rules:
+        try:
+            rule_ids.append(int(str(key)))
+        except (ValueError, TypeError):
+            pass
+    rows_by_id: dict[int, BillOfMaterial] = {}
+    if rule_ids:
+        for row in (
+            db.query(BillOfMaterial)
+            .options(*_bom_load_options())
+            .filter(BillOfMaterial.id.in_(rule_ids))
+            .all()
+        ):
+            rows_by_id[row.id] = row
+
+    item_rules_matched: list[dict] = []
+    item_rules_unmatched: list[dict] = []
+    item_rules_unresolvable: list[dict] = []
+    for key, rule in rules.items():
+        rule = rule if isinstance(rule, dict) else {}
+        base = {"item_id": str(key),
+                "mode": rule.get("mode") or "include",
+                "conditions": rule.get("conditions") or []}
+        try:
+            row = rows_by_id.get(int(str(key)))
+        except (ValueError, TypeError):
+            row = None
+        if row is None:
+            item_rules_unresolvable.append(base)
+            continue
+        item_name, _sap = _bom_item_catalog_name(row)
+        section = _bom_row_section_name(row)
+        target_ids = lookups["items_by_identity"].get(
+            (section.upper(), item_name.strip().upper())) or []
+        entry = {**base, "item": item_name, "section": section}
+        if target_ids:
+            item_rules_matched.append({**entry, "target_item_ids": target_ids})
+        else:
+            item_rules_unmatched.append(entry)
+    draft["itemRules"] = {}
+
+    source_name = getattr(snap.trailer_type, "name", None) or f"body #{snap.trailer_type_id}"
+    audit = {
+        "source": {"trailer_id": snap.trailer_type_id, "trailer_name": source_name,
+                   "snapshot_id": snap.id, "label": snap.label,
+                   "created_at": snap.created_at.isoformat() if snap.created_at else None},
+        "target": {"trailer_id": target.id, "trailer_name": target.name},
+        "flags": {"matched": flags_matched, "unmatched": flags_unmatched},
+        "categories": {"matched": categories_matched, "dropped": categories_dropped},
+        "item_rules": {"carried": False, "matched": item_rules_matched,
+                       "unmatched": item_rules_unmatched,
+                       "unresolvable": item_rules_unresolvable},
+        "summary": {
+            "flags_matched": len(flags_matched),
+            "flags_unmatched": len(flags_unmatched),
+            "categories_matched": len(categories_matched),
+            "categories_dropped": len(categories_dropped),
+            "dropped_node_count": len(drop_ids),
+            "item_rules_total": len(rules),
+            "item_rules_matched": len(item_rules_matched),
+        },
+    }
+    return draft, audit
+
+
+@router.get("/api/configurator/draft-snapshots/{snap_id}/cross-audit")
+async def configurator_cross_body_audit(
+    snap_id: int, target: int, request: Request, db: Session = Depends(get_db),
+):
+    """Dry-run audit of restoring `snap_id` onto trailer `target`. No writes."""
+    _require_admin_api(request, db)
+    snap = db.query(ConfiguratorDraftSnapshot).filter_by(id=snap_id).first()
+    if not snap:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+    target_trailer = db.query(TrailerType).filter_by(id=target, is_active=True).first()
+    if not target_trailer:
+        raise HTTPException(status_code=404, detail="Target trailer not found")
+    _, audit = _cross_body_remap(db, snap, target_trailer)
+    return audit
+
+
+@router.post("/api/configurator/draft-snapshots/{snap_id}/restore-to/{trailer_id}")
+async def configurator_cross_body_restore(
+    snap_id: int, trailer_id: int, request: Request, db: Session = Depends(get_db),
+):
+    user = _require_admin_api(request, db)
+    snap = db.query(ConfiguratorDraftSnapshot).filter_by(id=snap_id).first()
+    if not snap:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+    if snap.trailer_type_id == trailer_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Snapshot already belongs to this body type — use the normal restore.")
+    target_trailer = db.query(TrailerType).filter_by(id=trailer_id, is_active=True).first()
+    if not target_trailer:
+        raise HTTPException(status_code=404, detail="Target trailer not found")
+
+    remapped, audit = _cross_body_remap(db, snap, target_trailer)
+
+    # Safety net: capture the target's current draft before overwriting it —
+    # restoring THIS auto-backup rolls the cross-body restore back.
+    pre = _capture_draft_snapshot(
+        db, trailer_id,
+        f"Auto-backup before cross-body restore of '{snap.label}' "
+        f"(from {audit['source']['trailer_name']}) — {date.today().isoformat()}",
+        getattr(user, "username", None),
+    )
+
+    draft = db.query(ConfiguratorDraft).filter_by(trailer_type_id=trailer_id).first()
+    if draft is None:
+        draft = ConfiguratorDraft(trailer_type_id=trailer_id)
+        db.add(draft)
+    draft.payload = json.dumps(remapped)
+    draft.updated_by = getattr(user, "username", None)
+    db.commit()
+
+    return {
+        "ok": True,
+        "restored_label": snap.label,
+        "source_trailer_name": audit["source"]["trailer_name"],
+        "pre_restore_snapshot_id": pre.id,
+        "draft": remapped,
+        "audit": audit,
+    }
 
 
 _LINKED_PREFIXES = {"DRD": "SRD", "SRD": "DRD"}  # legacy mutex pair — body_option_linked_id

@@ -8017,9 +8017,17 @@ function _xpDoorFromLabel(text) {
 
 // Parsed rows → an apply plan against the CURRENT trailer's body-option rows.
 // Pure read: builds actions, skips, and error chips; applies nothing.
+// v1.53 — bodies whose panel renders from the Explorer DRAFT can have few or
+// ZERO is_body_option rows (e.g. Manni RIGIDS CB: 104 BOM rows, 0 masters,
+// every flag name-only). Labels that match no master row are therefore also
+// matched against the current draft's flag / selectable-category / selectable-
+// folder nodes by name; matched ones apply through the rendered panel's own
+// inputs so radio clearing, branch restore, door carry and persistence behave
+// exactly as manual clicks (the _xpEnsureDoor precedent).
 function buildExcelPastePlan(rows) {
   const plan = { tid: document.getElementById('trailer-select')?.value || '',
                  dims: [], door: null, pairs: [], radios: [], ticks: [],
+                 draftSelects: [], draftTicks: [],
                  skipped: [], errors: [], anything: false };
   const opts = (bomData || []).filter(r => r.is_body_option && r.material_name);
   const byName = {};
@@ -8028,6 +8036,63 @@ function buildExcelPastePlan(rows) {
     (byName[k] = byName[k] || []).push(r);
   });
 
+  // Draft-tree vocabulary — only when the draft panel is the active renderer.
+  // Explorer labels are hand-typed and drift from the Excel wording in
+  // whitespace ("ALU KICKPLATES" vs "ALU KICK PLATES"), so every lookup falls
+  // back to a spaces-stripped key. Master matching above stays exact.
+  const draft = _xpIsV2Panel() ? (_readSettingsDraft(plan.tid) || null) : null;
+  const dnodes = (draft && draft.nodes && typeof draft.nodes === 'object') ? draft.nodes : {};
+  const _squash = (s) => String(s || '').toUpperCase().replace(/\s+/g, '');
+  const draftFlagsByName = {};   // NAME → flag node (first in tree order wins)
+  const draftContByName = {};    // NAME → selectable category/folder node
+  const _addKey = (map, key, n) => {
+    const nm = (key || '').trim().toUpperCase();
+    if (!nm) return;
+    if (!(nm in map)) map[nm] = n;
+    const sq = _squash(nm);
+    if (!(sq in map)) map[sq] = n;
+  };
+  Object.values(dnodes).forEach(n => {
+    if (!n) return;
+    if (n.type === 'flag') {
+      _addKey(draftFlagsByName, n.flagBindingName || n.label || '', n);
+    } else if (n.type === 'category' && (n.selectionMode === 'radio' || n.selectionMode === 'tickbox')) {
+      _addKey(draftContByName, n.sourceCategoryKey, n);
+      _addKey(draftContByName, n.label, n);
+    } else if (n.type === 'folder' && (n.folderMode === 'radio' || n.folderMode === 'tickbox')) {
+      _addKey(draftContByName, n.label, n);
+    }
+  });
+  const _dvLookup = (map, label) => map[label] || map[_squash(label)] || null;
+
+  // Container/radio selections collect here first (with their DOM radio-group
+  // key), then resolve below: dedupe, one-Y-per-radio-group, outermost first.
+  const draftSelRecs = [];   // {node, kind, attr, value, label, groupKey|null, derived, explicitYn}
+  const _contEntry = (n, derived) => {
+    if (n.type === 'folder') {
+      return { node: n, kind: 'folder', attr: 'data-draft-folder', value: String(n.id),
+               label: n.label || 'folder', derived,
+               groupKey: (n.folderMode === 'radio') ? `dff-${n.parentId || 'root'}` : null };
+    }
+    return { node: n, kind: 'cat', attr: 'data-draft-cat-key',
+             value: n.sourceCategoryKey || n.label || '', label: n.label || n.sourceCategoryKey || '',
+             derived, groupKey: (n.selectionMode === 'radio') ? `dfc-${n.parentId || 'root'}` : null };
+  };
+  // Selecting a node implies its selectable ancestors are on (an Excel Y means
+  // "this option is quoted", so its branch must be active). Outermost first.
+  const _deriveAncestors = (n) => {
+    const chain = [];
+    let cur = n.parentId ? dnodes[n.parentId] : null;
+    while (cur) {
+      if ((cur.type === 'folder' && (cur.folderMode === 'radio' || cur.folderMode === 'tickbox')) ||
+          (cur.type === 'category' && (cur.selectionMode === 'radio' || cur.selectionMode === 'tickbox'))) {
+        chain.unshift(_contEntry(cur, true));
+      }
+      cur = cur.parentId ? dnodes[cur.parentId] : null;
+    }
+    chain.forEach(e => draftSelRecs.push(e));
+  };
+
   // A settings block never repeats a label — a duplicate is a stray copy; the
   // LAST line wins everywhere (preview and apply agree by construction).
   const byLabel = new Map();
@@ -8035,6 +8100,7 @@ function buildExcelPastePlan(rows) {
 
   const pairRecs = {};    // gkey → {group, sides:{EPS:{row,yn,val}, PU:{...}}}
   const radioRecs = {};   // gkey → {group, sub, options:[{row,yn,label}]} — non-pair mutex subgroups
+  const draftFlagRadioRecs = {};   // DOM group (dff-<pid>) → {options:[{node,name,yn,label}]}
   [...byLabel.values()].forEach(rw => {
     if (rw.label in _XP_DIM_FIELDS) {
       const v = rw.numerics.length ? rw.numerics[0] : null;   // FIRST numeric = internal size; second (cutting size) ignored
@@ -8044,7 +8110,44 @@ function buildExcelPastePlan(rows) {
       return;
     }
     const matches = byName[rw.label];
-    if (!matches) { plan.skipped.push({ label: rw.label, why: 'not recognised — skipped' }); return; }
+    if (!matches) {
+      // v1.53 — draft-tree fallback: unbound flags, then selectable containers.
+      const fnode = _dvLookup(draftFlagsByName, rw.label);
+      if (fnode) {
+        if (rw.yn == null) { plan.skipped.push({ label: rw.label, why: 'no Y/N cell — skipped' }); return; }
+        if (rw.numerics.some(v => v > 0)) {
+          // Name-only flags have no BOM template row to hold a thickness.
+          plan.skipped.push({ label: `${rw.label} thickness`, why: 'no BOM template row on this body — selection applied, thickness kept' });
+        }
+        const name = fnode.flagBindingName || fnode.label || '';
+        if ((fnode.flagMode || 'tickbox') === 'radio') {
+          const gkey = `dff-${fnode.parentId || 'root'}`;
+          const rec = (draftFlagRadioRecs[gkey] = draftFlagRadioRecs[gkey] || { options: [] });
+          rec.options.push({ node: fnode, name, yn: rw.yn, label: rw.label });
+        } else {
+          if (rw.yn === 'Y') _deriveAncestors(fnode);
+          plan.draftTicks.push({ label: rw.label, attr: 'data-draft-flag', value: name, on: rw.yn === 'Y' });
+        }
+        return;
+      }
+      const cnode = _dvLookup(draftContByName, rw.label);
+      if (cnode) {
+        if (rw.yn == null) { plan.skipped.push({ label: rw.label, why: 'no Y/N cell — skipped' }); return; }
+        const entry = _contEntry(cnode, false);
+        if (entry.groupKey) {           // radio container: Y selects, N alone leaves it
+          entry.explicitYn = rw.yn;
+          entry.label = rw.label;
+          if (rw.yn === 'Y') _deriveAncestors(cnode);
+          draftSelRecs.push(entry);
+        } else {                        // tickbox container: independent on/off
+          if (rw.yn === 'Y') _deriveAncestors(cnode);
+          plan.draftTicks.push({ label: rw.label, attr: entry.attr, value: entry.value, on: rw.yn === 'Y' });
+        }
+        return;
+      }
+      plan.skipped.push({ label: rw.label, why: 'not recognised — skipped' });
+      return;
+    }
     // A trailer can carry duplicate-named masters (v2 hides legacy copies) —
     // prefer the row that is a real EPS/PU pair member, then a rendered one.
     const row = matches.find(r => _insulationPairFor(r.id))
@@ -8116,7 +8219,72 @@ function buildExcelPastePlan(rows) {
     plan.door = doorActions[0];
   }
 
-  plan.anything = !!(plan.dims.length || plan.pairs.length || plan.radios.length || plan.ticks.length || plan.door);
+  // v1.53 — resolve draft flag radio groups (one Y wins; several Y = data
+  // error; no Y = untouched), deriving each winner's selectable ancestors so
+  // the containing branch (e.g. the DRD DOORS folder) switches with it.
+  Object.values(draftFlagRadioRecs).forEach(rec => {
+    const yes = rec.options.filter(o => o.yn === 'Y');
+    if (yes.length > 1) {
+      plan.errors.push({ label: yes.map(o => o.label).join(' / '), why: 'more than one option marked Y in this radio group — group skipped' });
+      return;
+    }
+    if (!yes.length) {
+      plan.skipped.push({ label: rec.options.map(o => o.label).join(' / '), why: 'no Y option in this radio group — left unchanged' });
+      return;
+    }
+    const chosen = yes[0];
+    _deriveAncestors(chosen.node);
+    draftSelRecs.push({ node: chosen.node, kind: 'flag', attr: 'data-draft-flag',
+                        value: chosen.name, label: chosen.label, derived: false,
+                        groupKey: `dff-${chosen.node.parentId || 'root'}` });
+  });
+
+  // Dedupe (first occurrence wins — ancestors land before dependents), then
+  // reject radio groups asked to select TWO different members (e.g. Y options
+  // under both DRD and SRD): drop the whole group, keep everything else.
+  const seenSel = new Set();
+  const deduped = [];
+  draftSelRecs.forEach(e => {
+    const k = `${e.attr}|${String(e.value).trim().toUpperCase()}`;
+    if (seenSel.has(k)) return;
+    seenSel.add(k);
+    deduped.push(e);
+  });
+  const badGroups = new Set();
+  const byGroup = {};
+  deduped.forEach(e => {
+    if (!e.groupKey) return;
+    (byGroup[e.groupKey] = byGroup[e.groupKey] || []).push(e);
+  });
+  const droppedNodeIds = new Set();
+  Object.entries(byGroup).forEach(([gkey, entries]) => {
+    if (new Set(entries.map(e => e.node.id)).size > 1) {
+      badGroups.add(gkey);
+      entries.forEach(e => droppedNodeIds.add(String(e.node.id)));
+      plan.errors.push({ label: entries.map(e => e.label).join(' / '),
+                         why: 'the pasted options need BOTH sides of one radio group — group skipped' });
+    }
+  });
+  // A dropped container takes its branch's selections with it ("group
+  // skipped" includes the contents of both branches).
+  const _inDroppedBranch = (n) => {
+    let cur = n;
+    while (cur) {
+      if (droppedNodeIds.has(String(cur.id))) return true;
+      cur = cur.parentId ? dnodes[cur.parentId] : null;
+    }
+    return false;
+  };
+  plan.draftSelects = deduped
+    .filter(e => (!e.groupKey || !badGroups.has(e.groupKey)) && !_inDroppedBranch(e.node))
+    .map(e => ({ label: e.label, attr: e.attr, value: e.value, kind: e.kind, derived: !!e.derived }));
+  plan.draftTicks = plan.draftTicks.filter(t => {
+    const n = t.attr === 'data-draft-flag' ? _dvLookup(draftFlagsByName, String(t.label).trim().toUpperCase()) : null;
+    return !(n && _inDroppedBranch(n));
+  });
+
+  plan.anything = !!(plan.dims.length || plan.pairs.length || plan.radios.length || plan.ticks.length
+                     || plan.door || plan.draftSelects.length || plan.draftTicks.length);
   return plan;
 }
 
@@ -8233,6 +8401,40 @@ function _xpSetTick(tick) {
   });
 }
 
+// ── v1.53 draft-tree apply primitives ────────────────────────────────────────
+// Draft-matched actions drive the rendered panel's OWN inputs (found by their
+// data attribute, matched case-insensitively) so the renderer's handlers run
+// the radio clearing, branch restore/zero-out, door carry and persistence —
+// the same philosophy as _xpEnsureDoor's v2 path.
+
+function _xpFindDraftInput(attr, value) {
+  const want = String(value == null ? '' : value).trim().toUpperCase();
+  if (!want) return null;
+  return [...document.querySelectorAll(`#body-options-list input[${attr}]`)]
+    .find(el => (el.getAttribute(attr) || '').trim().toUpperCase() === want) || null;
+}
+
+// Select a radio container / radio flag (folders and categories run async
+// handlers that restore-or-zero whole branches, so settle before the caller's
+// next action lands inside the branch — the _xpEnsureDoor grace pattern).
+async function _xpApplyDraftSelect(sel) {
+  const el = _xpFindDraftInput(sel.attr, sel.value);
+  if (!el) return false;
+  if (el.checked) return true;                      // already the selected member
+  el.click();                                       // fires the real change handler
+  await _xpWaitFor(() => el.checked, 2000);
+  if (sel.kind !== 'flag') await new Promise(r => setTimeout(r, 400));
+  return true;
+}
+
+// Independent draft tickbox (flag, tickbox category or tickbox folder).
+function _xpApplyDraftTick(tick) {
+  const el = _xpFindDraftInput(tick.attr, tick.value);
+  if (!el) return false;
+  if (!!el.checked !== !!tick.on) el.click();
+  return true;
+}
+
 // ── Orchestration ────────────────────────────────────────────────────────────
 // Order: dims → door type → insulation pairs (incl. the door's pair) → mutex
 // radios → tickboxes → the shared render/save/recalc tail — so the rear-door
@@ -8275,6 +8477,16 @@ async function applyExcelPastePlan(plan) {
       (x.label.includes('KICK') ? 1 : 0) - (y.label.includes('KICK') ? 1 : 0));
     ticks.forEach(t => { _xpSetTick(t); applied++; });
     closeModal('modal-kickplate-warning');
+
+    // v1.53 — draft-tree actions: containers/radios first (plan order is
+    // outermost-ancestor first, so a door folder lands before the flags
+    // inside it), then independent ticks.
+    let draftMisses = 0;
+    for (const sel of plan.draftSelects) {
+      if (await _xpApplyDraftSelect(sel)) applied++; else draftMisses++;
+    }
+    plan.draftTicks.forEach(t => { if (_xpApplyDraftTick(t)) applied++; else draftMisses++; });
+    if (draftMisses) toast(`${draftMisses} explorer option${draftMisses === 1 ? '' : 's'} had no control on the panel — check them by hand`, 'warn');
   } catch (e) {
     failure = e;
   }
@@ -8302,10 +8514,16 @@ function _xpRenderPreview() {
   const applyBtn = document.getElementById('excel-paste-apply');
   if (!box || !applyBtn) return;
   const txt = document.getElementById('excel-paste-input')?.value || '';
-  const noTrailer = !(bomData || []).some(r => r.is_body_option);
+  // v1.53 — "no body type" means exactly that (no trailer selected). A body
+  // with zero is_body_option rows can still be fully draft-configured (Manni
+  // RIGIDS CB class); it gets the softer no-vocabulary note below instead.
+  const noTrailer = !(document.getElementById('trailer-select')?.value);
   if (!txt.trim()) { box.innerHTML = ''; applyBtn.disabled = true; return; }
 
   const plan = _xpCurrentPlan();
+  const noVocab = !noTrailer && !(bomData || []).some(r => r.is_body_option)
+    && !plan.draftSelects.length && !plan.draftTicks.length
+    && !document.querySelector('#body-options-list [data-draft-flag], #body-options-list [data-draft-cat-key], #body-options-list [data-draft-folder]');
   const line = (kind, label, detail, color) =>
     `<div data-xp-row="${kind}" data-xp-label="${escHtml(label)}" style="display:flex;justify-content:space-between;gap:12px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--border)">
        <span style="color:var(--text)">${escHtml(label)}</span>
@@ -8315,12 +8533,20 @@ function _xpRenderPreview() {
   let html = '';
   if (noTrailer) {
     html += `<div data-xp-row="warn" style="font-size:11px;color:var(--orange);padding:4px 6px">Select a body type first — nothing to match against.</div>`;
+  } else if (noVocab) {
+    html += `<div data-xp-row="warn" style="font-size:11px;color:var(--orange);padding:4px 6px">This body type has no body options or Explorer flags to match — dimensions still apply.</div>`;
   }
   plan.dims.forEach(d => { html += line('dim', d.label, `${d.value}`, 'var(--blue)'); });
   if (plan.door) html += line('door', 'Door type', `${escHtml(plan.door.group)} · ${escHtml(plan.door.side)}${plan.door.thickness != null ? ' ' + _xpMm(plan.door.thickness) : ''}`, 'var(--blue)');
   plan.pairs.forEach(p => { html += line('pair', `${p.group} insulation`, `${escHtml(p.side)}${p.thickness != null ? ' ' + _xpMm(p.thickness) : ' (keep current thickness)'}`, 'var(--blue)'); });
   plan.radios.forEach(r => { html += line('radio', r.label, '&#10003; selected (group radio)', '#56b08a'); });
   plan.ticks.forEach(t => { html += line('tick', t.label, t.on ? '&#10003; selected' : '&#10007; deselected', t.on ? '#56b08a' : 'var(--text-dim)'); });
+  plan.draftSelects.forEach(s => {
+    html += line('draftsel', s.label, s.derived ? '&#10003; selected (explorer — follows the option below)' : '&#10003; selected (explorer)', '#56b08a');
+  });
+  plan.draftTicks.forEach(t => {
+    html += line('drafttick', t.label, t.on ? '&#10003; selected (explorer)' : '&#10007; deselected (explorer)', t.on ? '#56b08a' : 'var(--text-dim)');
+  });
   plan.errors.forEach(e => {
     html += `<div data-xp-row="error" data-xp-label="${escHtml(e.label)}" style="display:flex;align-items:center;gap:6px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--border)">
        <span style="background:#2a0d0d;border:1px solid #b03030;color:#ff6b6b;border-radius:10px;padding:1px 8px;font-weight:700;font-size:9px;letter-spacing:.5px">DATA ERROR</span>

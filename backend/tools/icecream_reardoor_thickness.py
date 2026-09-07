@@ -100,6 +100,10 @@ def main() -> int:
                          "stale or absent sheet.")
     ap.add_argument("--export-truth", metavar="FILE",
                     help="read the workbook, write the sheet truth to FILE, exit")
+    ap.add_argument("--all-pairs", action="store_true",
+                    help="also sync FRONT/SIDES/ROOF/FLOOR insulation pairs to the "
+                         "sheet (default: rear-door DRD/SRD pair only, others "
+                         "reported)")
     args = ap.parse_args()
 
     if args.export_truth:
@@ -182,6 +186,28 @@ def main() -> int:
 
             targets = {door: (thickness, True), other: (0.0, False),
                        "DRD EPS": (0.0, False), "SRD EPS": (0.0, False)}
+
+            # --all-pairs: the non-rear-door pairs too (FRONT/SIDES/ROOF/FLOOR).
+            # These are not an either/or door choice — each is simply an EPS/PU
+            # pair whose 'Y' side the sheet names. Prod's Medium body sat at
+            # 0.12 on ROOF+FLOOR where the sheet says 0.145 (~17% under-cost).
+            if args.all_pairs:
+                for grp in ("FRONT", "SIDES", "ROOF", "FLOOR"):
+                    eps_n, pu_n = f"{grp} EPS", f"{grp} PU"
+                    yes = [n for n in (eps_n, pu_n) if sheet_vals[n][1]]
+                    if len(yes) != 1:
+                        problems.append(f"{tname!r} {grp}: sheet marks {len(yes)} sides 'Y' "
+                                        f"({yes}) — refused, left untouched")
+                        continue
+                    chosen = yes[0]
+                    unchosen = pu_n if chosen == eps_n else eps_n
+                    want = sheet_vals[chosen][0]
+                    if want <= 0:
+                        problems.append(f"{tname!r} {grp}: sheet marks {chosen} 'Y' but its "
+                                        f"thickness is {want} — refused, left untouched")
+                        continue
+                    targets[chosen] = (want, True)
+                    targets[unchosen] = (0.0, False)
             for nm, (want_v, want_d) in targets.items():
                 cands = by_name.get(nm, [])
                 if len(cands) != 1:
@@ -198,9 +224,10 @@ def main() -> int:
                     "before_d": cur_d, "after_d": want_d,
                     "sheet_door": door, "sheet_thickness": thickness,
                 })
-            # non-rear-door pairs: check + report only
+            # non-rear-door pairs: check + report only (skipped when --all-pairs
+            # is syncing them for real)
             for nm, (want_v, is_yes) in sheet_vals.items():
-                if nm in REAR_DOOR_NAMES or not nm.endswith(" PU"):
+                if args.all_pairs or nm in REAR_DOOR_NAMES or not nm.endswith(" PU"):
                     continue
                 cands = by_name.get(nm, [])
                 if len(cands) == 1:

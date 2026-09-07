@@ -1,0 +1,32 @@
+{
+  "batch_at": "2026-09-07T14:54:55.257767+00:00",
+  "note": "September 2026 \u2014 icecream rear-door insulation thickness sync",
+  "rows": [
+    {
+      "bom_id": 5710,
+      "trailer": "ICECREAM UP TO 4.8",
+      "name": "ROOF PU",
+      "before": {
+        "variable_value": 0.12,
+        "body_option_default": true
+      },
+      "after": {
+        "variable_value": 0.145,
+        "body_option_default": true
+      }
+    },
+    {
+      "bom_id": 5712,
+      "trailer": "ICECREAM UP TO 4.8",
+      "name": "FLOOR PU",
+      "before": {
+        "variable_value": 0.12,
+        "body_option_default": true
+      },
+      "after": {
+        "variable_value": 0.145,
+        "body_option_default": true
+      }
+    }
+  ]
+}

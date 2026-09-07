@@ -59,10 +59,17 @@ SPEC = {
          "SIDES": dict(kind="length", thickness=0.1, expected_h=3247.808671),
          "ROOF": dict(kind="length", thickness=0.1, expected_h=3247.808671),
          "FLOOR": dict(kind="length", thickness=0.1, expected_h=3247.808671)},
-    # 'icecream up to 4.8' (C4=5.3) — prod name ICECREAM BODY MEDIUM
+    # 'icecream up to 4.8' (C4=5.3 at the 4 Sep revision) — prod ICECREAM BODY MEDIUM
+    # ⚠ The rear door on this sheet moved SRD -> DRD in Burt's 7 Sep revision
+    # (D11='Y', D13='N'). Verifying SRD here reported a permanent false MISMATCH
+    # (the row is correctly zero once DRD carries the thickness — see the
+    # rear-door invariant in calculator.js). Same kind/thickness, so expected_h
+    # is unchanged. _c4/expected_h stay pinned to the 4 Sep revision: this check
+    # proves the FORMULA reproduces Burt at a known length, not that the sheet's
+    # current length is X.
     17: {"_c4": 5.3, "_sheet": "icecream up to 4.8",
          "FRONT": dict(kind="sheets2", thickness=0.12, expected_h=2926.025781),
-         "SRD": dict(kind="sheets2", thickness=0.12, expected_h=2926.025781),
+         "DRD": dict(kind="sheets2", thickness=0.12, expected_h=2926.025781),
          "SIDES": dict(kind="length", thickness=0.12, expected_h=6415.671283),
          "ROOF": dict(kind="length", thickness=0.145, expected_h=7752.269467),
          "FLOOR": dict(kind="length", thickness=0.145, expected_h=7752.269467)},

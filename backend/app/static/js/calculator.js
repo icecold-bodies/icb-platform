@@ -1039,7 +1039,30 @@ async function editBodyVariable(span) {
   inp.addEventListener('blur', async () => {
     const v = parseFloat(inp.value);
     if (isNaN(v) || v < 0) { restore(`(${Number(current).toFixed(3)} m)`, null); return; }
-    if (v === parseFloat(current)) { restore(`(${v.toFixed(3)} m)`, v); return; }
+    // v1.52.1 — pin FIRST and unconditionally, exactly as _xpSetThickness does.
+    // Inside an edit, editBodyVarOverrides rides every recompute payload and the
+    // server replays it over the template (_apply_body_variable_overrides), so a
+    // hand-typed thickness that never reached the pin left the totals frozen at
+    // the saved figures — the change PUT through and runCalc() ran, but the
+    // recompute silently used the OLD value (the N9936 mechanism again; v1.42.1
+    // fixed the toggle path and the paste path, never this one). Pinning before
+    // the unchanged-value early return matters too: when the template already
+    // holds v but the pin still holds the saved figure, re-typing v is exactly
+    // how a user tries to break the freeze.
+    const _row = (typeof bomData !== 'undefined' ? bomData : []).find(b => String(b.id) === String(bomId));
+    const _pinKey = (_row && _row.material_name != null) ? String(_row.material_name) : null;
+    const _pinBefore = (editBodyVarOverrides && _pinKey) ? editBodyVarOverrides[_pinKey] : undefined;
+    if (_row) _pinBodyVar(_row, v);
+    const _pinMoved = !!(editBodyVarOverrides && _pinKey)
+      && Number(_pinBefore) !== Number(editBodyVarOverrides[_pinKey]);
+    if (v === parseFloat(current)) {
+      // Template already holds v, so there is nothing to PUT — but releasing a
+      // stale pin still changes the numbers, so recompute when the pin moved.
+      restore(`(${v.toFixed(3)} m)`, v);
+      if (_pinMoved && typeof lastResult !== 'undefined' && lastResult
+          && typeof runCalc === 'function') runCalc();
+      return;
+    }
     try {
       await api('PUT', `/api/bom/${bomId}`, { variable_value: v });
       restore(`(${v.toFixed(3)} m)`, v);

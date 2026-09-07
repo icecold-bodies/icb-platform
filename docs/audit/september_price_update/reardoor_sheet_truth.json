@@ -1,0 +1,152 @@
+{
+  "16": {
+    "FRONT EPS": [
+      0.0,
+      false
+    ],
+    "FRONT PU": [
+      0.1,
+      true
+    ],
+    "DRD EPS": [
+      0.0,
+      false
+    ],
+    "DRD PU": [
+      0.1,
+      true
+    ],
+    "SRD EPS": [
+      0.0,
+      false
+    ],
+    "SRD PU": [
+      0.0,
+      false
+    ],
+    "SIDES EPS": [
+      0.0,
+      false
+    ],
+    "SIDES PU": [
+      0.1,
+      true
+    ],
+    "ROOF EPS": [
+      0.0,
+      false
+    ],
+    "ROOF PU": [
+      0.1,
+      true
+    ],
+    "FLOOR EPS": [
+      0.0,
+      false
+    ],
+    "FLOOR PU": [
+      0.1,
+      true
+    ]
+  },
+  "17": {
+    "FRONT EPS": [
+      0.0,
+      false
+    ],
+    "FRONT PU": [
+      0.12,
+      true
+    ],
+    "DRD EPS": [
+      0.0,
+      false
+    ],
+    "DRD PU": [
+      0.12,
+      true
+    ],
+    "SRD EPS": [
+      0.0,
+      false
+    ],
+    "SRD PU": [
+      0.0,
+      false
+    ],
+    "SIDES EPS": [
+      0.0,
+      false
+    ],
+    "SIDES PU": [
+      0.12,
+      true
+    ],
+    "ROOF EPS": [
+      0.0,
+      false
+    ],
+    "ROOF PU": [
+      0.145,
+      true
+    ],
+    "FLOOR EPS": [
+      0.0,
+      false
+    ],
+    "FLOOR PU": [
+      0.145,
+      true
+    ]
+  },
+  "18": {
+    "FRONT EPS": [
+      0.0,
+      false
+    ],
+    "FRONT PU": [
+      0.12,
+      true
+    ],
+    "DRD EPS": [
+      0.0,
+      false
+    ],
+    "DRD PU": [
+      0.12,
+      true
+    ],
+    "SRD EPS": [
+      0.0,
+      false
+    ],
+    "SRD PU": [
+      0.0,
+      false
+    ],
+    "SIDES EPS": [
+      0.0,
+      false
+    ],
+    "SIDES PU": [
+      0.12,
+      true
+    ],
+    "ROOF EPS": [
+      0.0,
+      false
+    ],
+    "ROOF PU": [
+      0.125,
+      true
+    ],
+    "FLOOR EPS": [
+      0.0,
+      false
+    ],
+    "FLOOR PU": [
+      0.1,
+      true
+    ]
+  }
+}

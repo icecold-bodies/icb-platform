@@ -94,7 +94,26 @@ def main() -> int:
     ap.add_argument("--out-dir", default=".")
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--revert", metavar="JOURNAL_JSON")
+    ap.add_argument("--truth-json", metavar="FILE",
+                    help="sheet truth exported by --export-truth; for hosts without "
+                         "the workbook (the prod VM). Keeps prod from ever reading a "
+                         "stale or absent sheet.")
+    ap.add_argument("--export-truth", metavar="FILE",
+                    help="read the workbook, write the sheet truth to FILE, exit")
     args = ap.parse_args()
+
+    if args.export_truth:
+        t = read_sheet_truth()
+        Path(args.export_truth).write_text(json.dumps(
+            {str(k): {n: list(v) for n, v in vals.items()} for k, vals in t.items()},
+            indent=2))
+        print(f"sheet truth -> {args.export_truth}")
+        for tid, vals in t.items():
+            door = [n for n in ("DRD PU", "SRD PU") if vals[n][1]]
+            print(f"  tid {tid} {SHEETS[tid]!r}: rear door {door or ['-']} "
+                  f"@ {vals[door[0]][0] if door else '-'}")
+        return 0
+
     if not args.db:
         raise SystemExit("no DATABASE_URL — refusing to guess a database.")
     out_dir = Path(args.out_dir)
@@ -113,7 +132,20 @@ def main() -> int:
         print(f"reverted {args.revert} ({len(j['rows'])} rows)")
         return 0
 
-    truth = read_sheet_truth()
+    if args.truth_json:
+        raw = json.loads(Path(args.truth_json).read_text())
+        truth = {int(k): {n: (float(v[0]), bool(v[1])) for n, v in vals.items()}
+                 for k, vals in raw.items()}
+        missing = set(SHEETS) - set(truth)
+        if missing:
+            raise SystemExit(f"--truth-json is missing trailer ids {sorted(missing)}")
+        for tid, vals in truth.items():
+            absent = set(OPTION_ROWS) - set(vals)
+            if absent:
+                raise SystemExit(f"--truth-json tid {tid} missing options {sorted(absent)}")
+        print(f"sheet truth from {args.truth_json}")
+    else:
+        truth = read_sheet_truth()
     with eng.begin() as conn:
         deltas, reports, problems = [], [], []
         for tid, sheet in SHEETS.items():

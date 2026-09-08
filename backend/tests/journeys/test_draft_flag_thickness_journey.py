@@ -59,25 +59,39 @@ def staged():
                               default_length=4.0, default_width=2.0, default_height=2.0)
         m_ins = Material(name=f"{MARK} INSULATION BOARD", unit_of_measure="m3", price_per_unit=2.0)
         m_riv = Material(name=f"{MARK} RIVETS", unit_of_measure="each", price_per_unit=1.0)
-        db.add_all([trailer, m_ins, m_riv])
+        m_wall = Material(name=f"{MARK} WALL BOARD", unit_of_measure="m3", price_per_unit=3.0)
+        db.add_all([trailer, m_ins, m_riv, m_wall])
         db.flush()
         db.add(BillOfMaterial(trailer_type_id=trailer.id, material_id=m_ins.id,
                               formula_expression=f"width*height*{{{MARK} FLOOR PU}}*75",
                               bom_section=f"{MARK} FLOOR"))
         db.add(BillOfMaterial(trailer_type_id=trailer.id, material_id=m_riv.id,
                               formula_expression="2", bom_section=f"{MARK} FLOOR"))
+        # The pair-deduction model: the formula sums BOTH sides of the radio
+        # pair, so exactly one side may carry a value at a time (copy-zero).
+        db.add(BillOfMaterial(trailer_type_id=trailer.id, material_id=m_wall.id,
+                              formula_expression=(
+                                  f"width*({{{MARK} WALL EPS}}+{{{MARK} WALL PU}})*10"),
+                              bom_section=f"{MARK} FLOOR"))
         draft = {
-            "nextId": 4,
+            "nextId": 6,
             "rootIds": ["1"],
             "nodes": {
                 "1": {"id": "1", "type": "category", "label": f"{MARK} FLOOR",
-                      "sourceCategoryKey": None, "parentId": None, "childIds": ["2", "3"]},
+                      "sourceCategoryKey": None, "parentId": None,
+                      "childIds": ["2", "3", "4", "5"]},
                 "2": {"id": "2", "type": "flag", "label": f"{MARK} FLOOR PU",
                       "parentId": "1", "childIds": [], "flagMode": "tickbox",
                       "flagValue": 1, "flagBindingName": "", "flagBindingId": None},
                 "3": {"id": "3", "type": "flag", "label": f"{MARK} EXTRA",
                       "parentId": "1", "childIds": [], "flagMode": "tickbox",
                       "flagValue": 0, "flagBindingName": "", "flagBindingId": None},
+                "4": {"id": "4", "type": "flag", "label": f"{MARK} WALL EPS",
+                      "parentId": "1", "childIds": [], "flagMode": "radio",
+                      "flagValue": 0, "flagBindingName": "", "flagBindingId": None},
+                "5": {"id": "5", "type": "flag", "label": f"{MARK} WALL PU",
+                      "parentId": "1", "childIds": [], "flagMode": "radio",
+                      "flagValue": 1, "flagBindingName": "", "flagBindingId": None},
             },
             "itemRules": {},
         }
@@ -171,3 +185,47 @@ def test_excel_paste_applies_wired_thickness(page: Page, live_server: str, stage
     # 2*2*0.076*75 = 22.8
     assert it is not None and abs(float(it.get("quantity") or 0) - 22.8) < 1e-6
     shot(page, "04-paste-applied-thickness", journey=JOURNEY)
+
+
+def _wall_item(result: dict) -> dict | None:
+    for it in result.get("items") or []:
+        if f"{MARK} WALL BOARD" in str(it.get("material") or ""):
+            return it
+    return None
+
+
+def test_radio_switch_carries_thickness_copy_zero(page: Page, live_server: str, staged) -> None:
+    """The pair-deduction model (-{X EPS}-{X PU} / ({X EPS}+{X PU})) needs the
+    classic copy-zero: switching the radio carries the thickness to the new
+    side and clears the old, or stale values double-count."""
+    _open_body(page, live_server, staged["trailer"])
+
+    # Set WALL PU (the selected radio side) to 0.05 through the prompt.
+    pu_suffix = page.locator(f".flag-var-edit[data-flag-var='{MARK} WALL PU']")
+    expect(pu_suffix).to_have_text("(set thickness)", timeout=T)
+    pu_suffix.click()
+    expect(page.locator("#modal-prompt")).to_be_visible(timeout=T)
+    page.locator("#prompt-input").fill("0.05")
+    with page.expect_response("**/api/calculate") as r1:
+        page.locator("#modal-prompt button.btn-primary").click()
+    res1 = r1.value.json()
+    assert (res1.get("body_variables") or {}).get(f"{MARK} WALL PU") == 0.05
+    it1 = _wall_item(res1)
+    # width * (EPS 0 + PU 0.05) * 10 = 2 * 0.05 * 10 = 1.0
+    assert it1 is not None and abs(float(it1.get("quantity") or 0) - 1.0) < 1e-6
+    expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} WALL PU']")).to_have_text("(0.050 m)", timeout=T)
+    shot(page, "05-radio-pu-thickness-set", journey=JOURNEY)
+
+    # Switch the radio to EPS → thickness CARRIES to EPS, PU clears.
+    with page.expect_response("**/api/calculate") as r2:
+        page.locator(f"input[data-draft-flag='{MARK} WALL EPS']").check()
+    res2 = r2.value.json()
+    bv = res2.get("body_variables") or {}
+    assert bv.get(f"{MARK} WALL EPS") == 0.05
+    assert f"{MARK} WALL PU" not in bv
+    it2 = _wall_item(res2)
+    # Same pair sum — the quantity must NOT double or drop: still 1.0.
+    assert it2 is not None and abs(float(it2.get("quantity") or 0) - 1.0) < 1e-6
+    expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} WALL EPS']")).to_have_text("(0.050 m)", timeout=T)
+    expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} WALL PU']")).to_have_text("(set thickness)")
+    shot(page, "06-radio-switch-copy-zero", journey=JOURNEY)

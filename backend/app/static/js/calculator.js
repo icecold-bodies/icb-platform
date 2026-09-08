@@ -4417,12 +4417,37 @@ function renderBodyOptionsFromDraft(draft, tid) {
   // Wire unbound-flag handlers (legacy text-based via flag_overrides).
   list.querySelectorAll('[data-draft-flag]').forEach(el => {
     el.addEventListener('change', () => {
+      let varsMoved = false;
       if (el.type === 'radio' && el.name) {
         clearFlagRadioGroup(el.name);
+        // v1.53 — thickness follows the selection (the classic copy-zero,
+        // name-keyed): carry a sibling's thickness onto the newly selected
+        // side when it has none of its own, then clear every sibling's value.
+        // Formulas deduct BOTH sides of a pair (-{X EPS}-{X PU}), so a stale
+        // value on the deselected side would silently double-deduct.
+        const myName = el.dataset.draftFlag;
+        const sibNames = [...list.querySelectorAll(`input[name="${el.name}"][data-draft-flag]`)]
+          .map(s => s.dataset.draftFlag)
+          .filter(n => n && n !== myName);
+        const carried = sibNames
+          .map(n => Number(draftFlagVars[n]))
+          .find(v => Number.isFinite(v) && v > 0);
+        sibNames.forEach(n => {
+          if (n in draftFlagVars) { delete draftFlagVars[n]; varsMoved = true; }
+        });
+        if (myName && !(Number(draftFlagVars[myName]) > 0) && carried) {
+          draftFlagVars[myName] = carried;
+          varsMoved = true;
+        }
       }
       draftFlagState[el.dataset.draftFlag] = el.checked;
       _saveDraftFlagState(tid);
       saveBodyOptSel();
+      if (varsMoved) {
+        renderBodyOptions(bomData);   // refresh the (x.xxx m) suffixes
+        scheduleCalc();
+        return;
+      }
       syncInputs();
       scheduleCalc();
     });

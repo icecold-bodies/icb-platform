@@ -41,7 +41,9 @@ Michael's instruction: every hardcoded insulation-thickness and waste constant i
 | 11444 | R250820/1A | `width*height*{ROOF PU}*50*1.1` | `width*height*({ROOF EPS}+{ROOF PU})*50*1.1` |
 | 11448 | R250820/1A | `width*height*{FLOOR PU}*75` | `width*height*({FLOOR EPS}+{FLOOR PU})*75` |
 
-## Prod sequencing (NOT yet applied)
+## Prod path (probed 8 Sep — updated)
 
-1. Prod runs v1.52.x and does NOT have the v1.53 draft-flag code (#176/#177/#178 + the copy-zero PR) — applying these formulas on prod before that release would compute every insulation row at 0 with no way to set values. **Code release first, then this data change.**
-2. The prod apply script must locate rows by trailer NAME + current formula text (prod row ids differ) and verify the Waste global exists there.
+1. **Prod already runs the v1.53 draft-flag code** (#176/#177/#178 rode the 7 Sep v1.52.2 deploy — verified: `/openapi.json` has the cross-audit route and the served calculator bundle carries `draftFlagVars`). The remaining code piece is this PR's copy-zero (#180) — deploy it with the next prod pull+restart, ideally before users switch EPS/PU radios on wired bodies.
+2. **The data change is staged as `backend/tools/manni_placeholder_migration.py`** — locates rows by trailer NAME + section + material + exact current formula (prod ids differ), verifies the `Waste` global (0.05), dry-runs by default, `--apply` is all-or-nothing, and skips rows already migrated (safe to re-run). Self-checked against dev: reports 26/26 already done.
+3. Prerequisites the tool enforces on prod: trailer `Manni RIGIDS CB` exists there with the SAME pre-migration formulas, and the `Waste` global exists. If the body doesn't exist on prod yet, the tool aborts loudly — nothing to do until it does.
+4. After applying: thickness values are per-browser (one Excel paste, or click the orange suffixes, per machine); until then wired rows compute 0 with a visible warning.

@@ -129,14 +129,19 @@ def test_suffix_lifecycle_edit_and_calc(page: Page, live_server: str, staged) ->
     expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} EXTRA']")).to_have_count(0)
     shot(page, "01-set-thickness-loud", journey=JOURNEY)
 
-    # Engine truth for the unset state: no variable sent, quantity computes 0
-    # (the engine substitutes 0 for the unknown token — visibly, not silently).
+    # Engine truth for the unset state (v1.53 explicit-zero contract): the
+    # wired flag is SENT as an explicit 0 — a defined value, not an unknown —
+    # so the quantity computes 0 with NO formula error on the row. (The old
+    # behaviour omitted the name and every wired row screamed "Calculation
+    # Error — unknown {X}", which is exactly Michael's 8 Sep report.)
     with page.expect_response("**/api/calculate") as r0:
         page.locator("#f-margin").fill("0")   # any input change → debounced recalc
     res0 = r0.value.json()
-    assert f"{MARK} FLOOR PU" not in (res0.get("body_variables") or {})
+    assert (res0.get("body_variables") or {}).get(f"{MARK} FLOOR PU") == 0
     it0 = _ins_item(res0)
     assert it0 is not None and float(it0.get("quantity") or 0) == 0.0
+    assert not it0.get("formula_error"), it0
+    assert not it0.get("formula_unknown_vars"), it0
 
     # Click-to-edit through the in-page prompt (never a native prompt).
     suffix.click()
@@ -222,7 +227,7 @@ def test_radio_switch_carries_thickness_copy_zero(page: Page, live_server: str, 
     res2 = r2.value.json()
     bv = res2.get("body_variables") or {}
     assert bv.get(f"{MARK} WALL EPS") == 0.05
-    assert f"{MARK} WALL PU" not in bv
+    assert bv.get(f"{MARK} WALL PU") == 0   # explicit zero — the cleared side stays DEFINED
     it2 = _wall_item(res2)
     # Same pair sum — the quantity must NOT double or drop: still 1.0.
     assert it2 is not None and abs(float(it2.get("quantity") or 0) - 1.0) < 1e-6

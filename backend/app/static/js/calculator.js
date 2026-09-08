@@ -1828,15 +1828,44 @@ function _bodyVariablesFromBom() {
   return out.filter(v => seen.has(v.name) ? false : seen.add(v.name));
 }
 
+// v1.53 — the current trailer's draft FLAG names as formula variables. On
+// draft bodies (Manni RIGIDS CB class) these are the {SECTION EPS}/{SECTION
+// PU} tokens the pair-deduction formulas reference. Unset is a DEFINED state
+// (value 0): the unselected side of a pair, or a thickness not yet entered —
+// so the calc payload sends explicit zeros and neither the engine's unknown-
+// token warning nor the formula editor's "will resolve to 0 ⚠" applies to
+// them. Only names the draft actually declares are returned — never library
+// or master names, so a zero can't shadow a real definition.
+function _draftFlagVariables() {
+  const tidVal = document.getElementById('trailer-select')?.value;
+  if (!tidVal || _draftFlagStateTrailer !== +tidVal) return [];
+  const draft = _readSettingsDraft(+tidVal);
+  if (!draft || !draft.nodes) return [];
+  const out = [];
+  const seen = new Set();
+  Object.values(draft.nodes).forEach(n => {
+    if (!n || n.type !== 'flag') return;
+    const name = (n.flagBindingName || n.label || '').trim();
+    if (!name || seen.has(name.toUpperCase())) return;
+    seen.add(name.toUpperCase());
+    const v = Number(draftFlagVars[name]);
+    const set = Number.isFinite(v) && v > 0;
+    out.push({ name, value: set ? v : 0, set });
+  });
+  return out;
+}
+
 function _renderFormulaBodyVariableChips() {
   const wrap = document.getElementById('formula-edit-bv-section');
   const list = document.getElementById('formula-edit-bv-chips');
   if (!wrap || !list) return;
   const vars = _bodyVariablesFromBom();
+  const flags = _draftFlagVariables()
+    .sort((a, b) => a.name.localeCompare(b.name));
   const globals = Object.entries(lastGlobalVars || {})
     .map(([name, value]) => ({name, value: Number(value)}))
     .sort((a, b) => a.name.localeCompare(b.name));
-  if (!vars.length && !globals.length) { wrap.style.display = 'none'; return; }
+  if (!vars.length && !flags.length && !globals.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
   const chip = (v, opts) => {
     const tok = `{${v.name}}`;
@@ -1850,9 +1879,11 @@ function _renderFormulaBodyVariableChips() {
       ${escHtml(tok)} <span style="opacity:.65;margin-left:3px;font-size:10px">${v.value.toFixed(3)}</span>
     </button>`;
   };
-  // Body variables (blue) followed by globals (purple) so the user can see both.
+  // Body variables (blue), then draft flag variables (teal), then globals
+  // (purple) so the user can see all three vocabularies.
   list.innerHTML = [
     ...vars.map(v => chip(v, {borderColor:'#388bfd', textColor:'#58a6ff', unitSuffix:' m', tooltipLabel:'body variable — click to insert'})),
+    ...flags.map(f => chip(f, {borderColor:'#2f6f5a', textColor:'#56b08a', unitSuffix:' m', tooltipLabel:'explorer flag thickness (set per costing; unset = 0) — click to insert'})),
     ...globals.map(g => chip(g, {borderColor:'#a371f7', textColor:'#a371f7', unitSuffix:'', tooltipLabel:'global variable — click to insert'})),
   ].join('');
 }
@@ -2037,12 +2068,19 @@ function _updateResolvedFormulaVars() {
   // rule as the server's calculate_bom (body vars win on a name collision). The
   // editor used to look at body vars only, which made tokens like {Waste} resolve
   // to 0 with a warning even though Waste is a defined global.
+  // v1.53 — draft FLAG variables join the lookup last (they ride
+  // body_variable_overrides server-side, which overlays body vars): the
+  // {SECTION EPS}/{SECTION PU} pair tokens are DEFINED as 0 when unset, so
+  // the editor must show them as flag variables, never as unknowns.
   const vars = _bodyVariablesFromBom();
   const lookup = {};
   Object.entries(lastGlobalVars || {}).forEach(([n, v]) => {
     if (n) lookup[n.toUpperCase()] = { name: n, value: Number(v), source: 'global' };
   });
   vars.forEach(v => { lookup[v.name.toUpperCase()] = { ...v, source: 'body' }; });
+  _draftFlagVariables().forEach(f => {
+    lookup[f.name.toUpperCase()] = { name: f.name, value: f.value, source: 'flag', set: f.set };
+  });
 
   // Substitute {NAME} tokens with literal numbers, then eval against geometry context
   let expr = rawExpr;
@@ -2059,12 +2097,17 @@ function _updateResolvedFormulaVars() {
   list.innerHTML = tokens.length ? tokens.map(tok => {
     const inner = tok.slice(1, -1).trim();
     const v = lookup[inner.toUpperCase()];
+    if (v && v.source === 'flag') {
+      const hint = v.set ? 'explorer flag thickness (this browser)' :
+        'explorer flag thickness — unset in this browser, resolves to 0 (the unselected side of a pair is meant to)';
+      return `<span style="display:inline-block;margin-right:12px" title="${hint}"><span style="color:#56b08a">${escHtml(tok)}</span> = <span style="color:var(--text)">${v.value.toFixed(3)} m</span></span>`;
+    }
     if (v) {
       const unit = v.source === 'global' ? '' : ' m';
       const colour = v.source === 'global' ? '#a371f7' : '#58a6ff';
       return `<span style="display:inline-block;margin-right:12px"><span style="color:${colour}">${escHtml(tok)}</span> = <span style="color:var(--text)">${v.value.toFixed(3)}${unit}</span></span>`;
     } else {
-      return `<span style="display:inline-block;margin-right:12px;color:#f0a500" title="No matching Body or Global Variable — will resolve to 0">${escHtml(tok)} = <span style="color:#f0a500">0 ⚠</span></span>`;
+      return `<span style="display:inline-block;margin-right:12px;color:#f0a500" title="No matching Body, Flag or Global Variable — will resolve to 0">${escHtml(tok)} = <span style="color:#f0a500">0 ⚠</span></span>`;
     }
   }).join('') : `<span style="opacity:.6">No body variables in this formula</span>`;
 
@@ -5623,13 +5666,16 @@ async function runCalc() {
   // formula on this body references are sent; edit-replay overrides win on
   // key collision so a reopened quote still reproduces its saved figures.
   const flagVarsPayload = {};
-  if (_draftFlagStateTrailer === +tid && Object.keys(draftFlagVars).length) {
+  if (_draftFlagStateTrailer === +tid) {
+    // Send EVERY wired draft-flag name, with an EXPLICIT 0 when unset — an
+    // unset pair token ({X EPS} while PU is the quoted side) is a defined
+    // state, not an unknown, so the engine must not flag it as a calculation
+    // error. Only names the draft declares are sent (never library/master
+    // names), so a zero can never shadow a real definition; genuine formula
+    // typos still surface through the unknown-token warning.
     const wired = _wiredFlagVarNames(bomData);
-    Object.entries(draftFlagVars).forEach(([name, v]) => {
-      const num = Number(v);
-      if (Number.isFinite(num) && num > 0 && wired.has(String(name).trim().toUpperCase())) {
-        flagVarsPayload[name] = num;
-      }
+    _draftFlagVariables().forEach(f => {
+      if (wired.has(f.name.trim().toUpperCase())) flagVarsPayload[f.name] = f.value;
     });
   }
 

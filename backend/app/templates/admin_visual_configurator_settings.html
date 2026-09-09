@@ -1900,6 +1900,7 @@ function App() {
       flagMode: 'tickbox',
       flagBindingName: '',
       flagBindingId: null,
+      flagVarDefault: '',
     });
   }
 
@@ -1918,6 +1919,7 @@ function App() {
       flagMode: node.flagMode || 'tickbox',
       flagBindingName: node.flagBindingName || resolvedBindingName || '',
       flagBindingId: node.flagBindingId || (resolvedBinding ? resolvedBinding.id : null),
+      flagVarDefault: (Number(node.flagVarDefault) > 0) ? String(node.flagVarDefault) : '',
     });
   }
 
@@ -1929,6 +1931,11 @@ function App() {
     if (!dialog) return;
     const label = (dialog.label || '').trim();
     if (!label) return;
+    // v1.53 — server-side default thickness (metres). Every browser inherits
+    // it on the costing page; a per-browser value or an explicit 0 overrides.
+    const fvRaw = String(dialog.flagVarDefault == null ? '' : dialog.flagVarDefault).trim().replace(',', '.');
+    const fvNum = Number(fvRaw);
+    const flagVarDefault = (fvRaw !== '' && Number.isFinite(fvNum) && fvNum > 0 && fvNum < 1) ? fvNum : null;
     if (dialog.mode === 'create') {
       commit(next => {
         const id = `node-${next.nextId++}`;
@@ -1946,6 +1953,7 @@ function App() {
           flagValue: dialog.nodeType === 'flag' ? 0 : 0,
           flagBindingName: dialog.nodeType === 'flag' ? (dialog.flagBindingName || '') : '',
           flagBindingId: dialog.nodeType === 'flag' ? (dialog.flagBindingId || null) : null,
+          flagVarDefault: dialog.nodeType === 'flag' ? flagVarDefault : null,
           sourceCategoryId: null,
           sourceCategoryKey: null,
         };
@@ -1964,6 +1972,7 @@ function App() {
             next.nodes[dialog.nodeId].flagMode = dialog.flagMode || 'tickbox';
             next.nodes[dialog.nodeId].flagBindingName = dialog.flagBindingName || '';
             next.nodes[dialog.nodeId].flagBindingId = dialog.flagBindingId || null;
+            next.nodes[dialog.nodeId].flagVarDefault = flagVarDefault;
           }
         }
         return next;
@@ -3387,6 +3396,18 @@ function App() {
                         </option>
                       ))}
                     </select>
+                  </label>
+                  <label>
+                    Default thickness (m) — optional
+                    <input
+                      value={dialog.flagVarDefault || ''}
+                      onChange={(event) => setDialog(current => ({ ...current, flagVarDefault: event.target.value }))}
+                      placeholder="e.g. 0.038 — every browser inherits this on the costing page"
+                    />
+                    <span style={{fontSize:'10px',color:'var(--text-dim)'}}>
+                      Used when a formula references {'{'}this flag's name{'}'}. Sales can still
+                      override per costing; leaving it blank keeps today's set-per-browser behaviour.
+                    </span>
                   </label>
                 </>
               )}

@@ -125,12 +125,17 @@ def build_edits_prod41() -> list[tuple[str, str, str, str]]:
     e: list[tuple[str, str, str, str]] = []
     add = lambda *a: e.append(a)  # noqa: E731
 
-    fpu_o, fpu_n = F("FRONT")
+    # NB: unlike the dev profile (whose PU factors had already been wired to
+    # {X PU} tokens in the first migration step), prod 41's pre-migration
+    # formulas hold the LITERAL thickness constants — the old-sides below must
+    # be token-free (enforced in verify_equivalence). This exact mistake
+    # caused the 8 Sep prod abort: token old-sides matched nothing.
+    _, fpu_n = F("FRONT")
     add("FRONT", "RHINO PANEL", f"{A_o}*{B_o}", f"{A_n}*{B_n}")
     add("FRONT", "Rhinotex Bioshield", f"{A_o}*{B_o}", f"{A_n}*{B_n}")
-    add("FRONT", "PU INJECTION", f"width*{D_o}*{fpu_o}*50*1.1", f"width*{D_n}*{fpu_n}*50*1.1")
+    add("FRONT", "PU INJECTION", f"width*{D_o}*0.062*50*1.1", f"width*{D_n}*{fpu_n}*50*1.1")
 
-    spu_o, spu_n = F("SRD")
+    _, spu_n = F("SRD")
     add("SRD", "WOVEX SKIN", f"{A_o}*{B_o}", f"{A_n}*{B_n}")
     add("SRD", "PU INJECTION", f"{A_o}*{B_o}*0*40*1.1", f"{A_n}*{B_n}*{spu_n}*40*1.1")
     add("DOOR FITTINGS SRD", "28779 DOOR CAPPING", f"({B_o}*2+0.85+0.85)", f"({B_n}*2+0.85+0.85)")
@@ -138,23 +143,23 @@ def build_edits_prod41() -> list[tuple[str, str, str, str]]:
     add("DOOR FITTINGS SRD", "2316 DOOR RUBBER", f"({B_o}*2+0.85+0.85)", f"({B_n}*2+0.85+0.85)")
     add("DOOR FITTINGS SRD", "2317 DOOR RUBBER", f"({B_o}*2+0.85+0.85)", f"({B_n}*2+0.85+0.85)")
 
-    dpu_o, dpu_n = F("DRD")
+    _, dpu_n = F("DRD")
     add("DRD", "RHINO PANEL", f"{C_o}*{D_o}", f"{C_n}*{D_n}")
     add("DRD", "Rhinotex Bioshield", f"{C_o}*{D_o}", f"{C_n}*{D_n}")
-    add("DRD", "PU INJECTION", f"{C_o}*{D_o}*{dpu_o}*50*1.1", f"{C_n}*{D_n}*{dpu_n}*50*1.1")
+    add("DRD", "PU INJECTION", f"{C_o}*{D_o}*0.038*50*1.1", f"{C_n}*{D_n}*{dpu_n}*50*1.1")
     add("DOOR FITTINGS DRD", "28779 DOOR CAPPING", f"({D_o}*3+{C_o}*2)", f"({D_n}*3+{C_n}*2)")
     add("DOOR FITTINGS DRD", "28777 DOOR CAPPING", f"{D_o}", f"{D_n}")
     add("DOOR FITTINGS DRD", "2316 DOOR RUBBER", f"({D_o}*3+{C_o}*2)", f"({D_n}*3+{C_n}*2)")
     add("DOOR FITTINGS DRD", "2317 DOOR RUBBER", f"({D_o}*3+{C_o}*2)", f"({D_n}*3+{C_n}*2)")
 
-    sipu_o, sipu_n = F("SIDES")
+    _, sipu_n = F("SIDES")
     add("SIDES", "WOVEX SKIN", f"length*{D_o}", f"length*{D_n}")
-    add("SIDES", "PU INJECTION", f"length*{D_o}*{sipu_o}*50*1.1", f"length*{D_n}*{sipu_n}*50*1.1")
+    add("SIDES", "PU INJECTION", f"length*{D_o}*0.038*50*1.1", f"length*{D_n}*{sipu_n}*50*1.1")
 
-    rpu_o, rpu_n = F("ROOF")
-    add("ROOF", "PU INJECTION", f"length*width*{rpu_o}*50*1.1", f"length*width*{rpu_n}*50*1.1")
-    flpu_o, flpu_n = F("FLOOR")
-    add("FLOOR", "PU INJECTION", f"length*width*{flpu_o}*75", f"length*width*{flpu_n}*75")
+    _, rpu_n = F("ROOF")
+    add("ROOF", "PU INJECTION", "length*width*0.038*50*1.1", f"length*width*{rpu_n}*50*1.1")
+    _, flpu_n = F("FLOOR")
+    add("FLOOR", "PU INJECTION", "length*width*0.076*75", f"length*width*{flpu_n}*75")
     return e
 
 
@@ -185,6 +190,18 @@ def main() -> int:
     args = ap.parse_args()
 
     edits = PROFILES[args.profile]()
+
+    if args.profile == "prod41":
+        # prod 41 has never been migrated: every old-side must be the literal
+        # pre-migration text. A token in an old-side means the mapping was
+        # copied from the dev profile (whose PU factors were already wired) —
+        # the value-equivalence oracle cannot catch that (a seeded token
+        # evaluates identically to its literal), so enforce it textually.
+        tokened = [f"{s} / {m}" for s, m, old, _new in edits if "{" in old]
+        if tokened:
+            print("ABORT — prod41 old-sides must be literal (pre-migration state); "
+                  "tokens found in:", ", ".join(tokened))
+            return 2
 
     mismatches = verify_equivalence(edits)
     if mismatches:

@@ -47,3 +47,9 @@ Michael's instruction: every hardcoded insulation-thickness and waste constant i
 2. **The data change is staged as `backend/tools/manni_placeholder_migration.py`** — locates rows by trailer NAME + section + material + exact current formula (prod ids differ), verifies the `Waste` global (0.05), dry-runs by default, `--apply` is all-or-nothing, and skips rows already migrated (safe to re-run). Self-checked against dev: reports 26/26 already done.
 3. Prerequisites the tool enforces on prod: trailer `Manni RIGIDS CB` exists there with the SAME pre-migration formulas, and the `Waste` global exists. If the body doesn't exist on prod yet, the tool aborts loudly — nothing to do until it does.
 4. After applying: thickness values are per-browser (one Excel paste, or click the orange suffixes, per machine); until then wired rows compute 0 with a visible warning.
+
+## PROD OUTCOME — 9 Sep 2026
+
+Applied to **prod trailer 41** (`Manni RIGIDS CB`, the active v2 body) by Michael via the paste-block: `--profile prod41 --apply` → **APPLIED 22 formula updates** after a clean reviewed dry-run (oracle 20/20, 22-row plan, 0 already done). Independently verified read-only via psql: 22 rows on trailer 41 now contain `{tokens}`, **0 rows retain a `0.038` literal**. First attempt (8 Sep) had aborted safely — the five PU INJECTION old-sides carried dev-profile tokens instead of prod's literals; fixed in #183 with a token-free-old-side guard (the equivalence oracle cannot see textual drift: a seeded token evaluates identically to its literal).
+
+Prod trailer 3 (`MANNI RIGIDS CB`, inactive classic, Michael's own hand pair/{Waste} edits) deliberately untouched. Per-browser seeding rule applies on prod as on dev: one Excel paste (or clicking the orange suffixes) per machine; until then the six PU INJECTION rows compute 0 with the orange "set thickness" prompt.

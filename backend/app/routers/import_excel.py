@@ -471,7 +471,11 @@ async def admin_import_example_screenshot(request: Request, db: Session = Depend
     path = bundled if os.path.exists(bundled) else legacy
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="Screenshot not found")
-    return FileResponse(path, media_type="image/png")
+    # v1.51 — same rule as the quotation PDF: this path ends in ".png", which
+    # Cloudflare caches by extension, and the response sits behind require_admin.
+    # An authenticated response must never be cacheable by an intermediary.
+    return FileResponse(path, media_type="image/png",
+                        headers={"Cache-Control": "no-store, private"})
 
 
 @router.get("/admin/import/sample-template.xlsx")
@@ -497,7 +501,8 @@ async def admin_import_sample_template(request: Request, db: Session = Depends(g
             return StreamingResponse(
                 buf,
                 media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                headers={"Content-Disposition": 'attachment; filename="trailer_import_example.xlsx"'},
+                headers={"Content-Disposition": 'attachment; filename="trailer_import_example.xlsx"',
+                         "Cache-Control": "no-store, private"},
             )
     except Exception:
         pass
@@ -586,7 +591,8 @@ async def admin_import_sample_template(request: Request, db: Session = Depends(g
     return StreamingResponse(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": 'attachment; filename="trailer_import_sample.xlsx"'},
+        headers={"Content-Disposition": 'attachment; filename="trailer_import_sample.xlsx"',
+                 "Cache-Control": "no-store, private"},
     )
 
 

@@ -4010,8 +4010,22 @@ function renderBodyOptionsFromDraft(draft, tid) {
     });
 
     // 2) Override draftFlagState from saved cfg_user_state if present.
-    //    2b) v1.53 — same store carries the per-flag thickness map (metres).
+    //    2a) v1.53 — SERVER-SIDE thickness defaults: a flag node's
+    //        flagVarDefault (metres, set in the Explorer) is the base layer,
+    //        so a fresh browser inherits the body's design thicknesses with
+    //        no paste or clicking. The node field travels with snapshots and
+    //        cross-body restores for free.
+    //    2b) per-browser layer from cfg_user_state ON TOP — including
+    //        explicit ZERO tombstones ("this side deliberately cleared", the
+    //        copy-zero write): without them, a radio switch would resurrect
+    //        the deselected side's default on the next load and the
+    //        -{X EPS}-{X PU} pairs would double-deduct.
     draftFlagVars = {};
+    Object.values(nodes).filter(n => n && n.type === 'flag').forEach(n => {
+      const name = n.flagBindingName || n.label || '';
+      const dv = Number(n.flagVarDefault);
+      if (name && Number.isFinite(dv) && dv > 0) draftFlagVars[name] = dv;
+    });
     try {
       const rawCfg = localStorage.getItem(`cfg_user_state_${tid}`);
       if (rawCfg) {
@@ -4021,7 +4035,7 @@ function renderBodyOptionsFromDraft(draft, tid) {
         });
         Object.entries(cfgState.flagVars || {}).forEach(([name, v]) => {
           const num = Number(v);
-          if (Number.isFinite(num) && num > 0) draftFlagVars[name] = num;
+          if (Number.isFinite(num) && num >= 0) draftFlagVars[name] = num;
         });
       }
     } catch(_) {}
@@ -4439,7 +4453,7 @@ function renderBodyOptionsFromDraft(draft, tid) {
       if (!name) return;
       const cur = draftFlagVars[name];
       const raw = await promptModal(
-        `Thickness for ${name} in METRES (e.g. 0.076 for 76 mm). Enter 0 to clear.`,
+        `Thickness for ${name} in METRES (e.g. 0.076 for 76 mm). Enter 0 to clear this side.`,
         cur != null ? String(cur) : '',
         { title: 'Insulation thickness', okText: 'Save' }
       );
@@ -4449,8 +4463,7 @@ function renderBodyOptionsFromDraft(draft, tid) {
         toast('Thickness must be a number between 0 and 1 metre', 'warn');
         return;
       }
-      if (v === 0) delete draftFlagVars[name];
-      else draftFlagVars[name] = v;
+      draftFlagVars[name] = v;   // 0 = explicit tombstone (server default stays suppressed)
       _saveDraftFlagState(tid);
       renderBodyOptions(bomData);   // refresh the suffix text
       scheduleCalc();
@@ -4476,7 +4489,11 @@ function renderBodyOptionsFromDraft(draft, tid) {
           .map(n => Number(draftFlagVars[n]))
           .find(v => Number.isFinite(v) && v > 0);
         sibNames.forEach(n => {
-          if (n in draftFlagVars) { delete draftFlagVars[n]; varsMoved = true; }
+          // Explicit ZERO tombstone, never delete: a deleted entry would let
+          // the flag's server-side default resurrect on the next load and
+          // double-count in the -{X EPS}-{X PU} deduction pairs.
+          if (Number(draftFlagVars[n]) !== 0) varsMoved = true;
+          draftFlagVars[n] = 0;
         });
         if (myName && !(Number(draftFlagVars[myName]) > 0) && carried) {
           draftFlagVars[myName] = carried;

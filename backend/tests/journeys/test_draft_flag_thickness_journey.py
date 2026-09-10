@@ -60,7 +60,8 @@ def staged():
         m_ins = Material(name=f"{MARK} INSULATION BOARD", unit_of_measure="m3", price_per_unit=2.0)
         m_riv = Material(name=f"{MARK} RIVETS", unit_of_measure="each", price_per_unit=1.0)
         m_wall = Material(name=f"{MARK} WALL BOARD", unit_of_measure="m3", price_per_unit=3.0)
-        db.add_all([trailer, m_ins, m_riv, m_wall])
+        m_deck = Material(name=f"{MARK} DECK BOARD", unit_of_measure="m3", price_per_unit=1.0)
+        db.add_all([trailer, m_ins, m_riv, m_wall, m_deck])
         db.flush()
         db.add(BillOfMaterial(trailer_type_id=trailer.id, material_id=m_ins.id,
                               formula_expression=f"width*height*{{{MARK} FLOOR PU}}*75",
@@ -73,13 +74,16 @@ def staged():
                               formula_expression=(
                                   f"width*({{{MARK} WALL EPS}}+{{{MARK} WALL PU}})*10"),
                               bom_section=f"{MARK} FLOOR"))
+        db.add(BillOfMaterial(trailer_type_id=trailer.id, material_id=m_deck.id,
+                              formula_expression=f"width*{{{MARK} DECK PU}}*5",
+                              bom_section=f"{MARK} FLOOR"))
         draft = {
-            "nextId": 6,
+            "nextId": 7,
             "rootIds": ["1"],
             "nodes": {
                 "1": {"id": "1", "type": "category", "label": f"{MARK} FLOOR",
                       "sourceCategoryKey": None, "parentId": None,
-                      "childIds": ["2", "3", "4", "5"]},
+                      "childIds": ["2", "3", "4", "5", "6"]},
                 "2": {"id": "2", "type": "flag", "label": f"{MARK} FLOOR PU",
                       "parentId": "1", "childIds": [], "flagMode": "tickbox",
                       "flagValue": 1, "flagBindingName": "", "flagBindingId": None},
@@ -92,6 +96,10 @@ def staged():
                 "5": {"id": "5", "type": "flag", "label": f"{MARK} WALL PU",
                       "parentId": "1", "childIds": [], "flagMode": "radio",
                       "flagValue": 1, "flagBindingName": "", "flagBindingId": None},
+                "6": {"id": "6", "type": "flag", "label": f"{MARK} DECK PU",
+                      "parentId": "1", "childIds": [], "flagMode": "tickbox",
+                      "flagValue": 1, "flagBindingName": "", "flagBindingId": None,
+                      "flagVarDefault": 0.04},
             },
             "itemRules": {},
         }
@@ -234,3 +242,46 @@ def test_radio_switch_carries_thickness_copy_zero(page: Page, live_server: str, 
     expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} WALL EPS']")).to_have_text("(0.050 m)", timeout=T)
     expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} WALL PU']")).to_have_text("(set thickness)")
     shot(page, "06-radio-switch-copy-zero", journey=JOURNEY)
+
+
+def _deck_item(result: dict) -> dict | None:
+    for it in result.get("items") or []:
+        if f"{MARK} DECK BOARD" in str(it.get("material") or ""):
+            return it
+    return None
+
+
+def test_server_default_inherited_and_tombstone(page: Page, live_server: str, staged) -> None:
+    """flagVarDefault on the draft flag is the base layer: a FRESH browser
+    inherits the thickness with no paste and no clicking; an explicit 0 is a
+    persisted tombstone that keeps the default suppressed across reloads."""
+    _open_body(page, live_server, staged["trailer"])
+
+    # Inherited immediately — blue suffix, no interaction, engine truth 0.04.
+    deck = page.locator(f".flag-var-edit[data-flag-var='{MARK} DECK PU']")
+    expect(deck).to_have_text("(0.040 m)", timeout=T)
+    with page.expect_response("**/api/calculate") as r0:
+        page.locator("#f-margin").fill("0")
+    res0 = r0.value.json()
+    assert (res0.get("body_variables") or {}).get(f"{MARK} DECK PU") == 0.04
+    it0 = _deck_item(res0)
+    # width * 0.04 * 5 = 2 * 0.04 * 5 = 0.4
+    assert it0 is not None and abs(float(it0.get("quantity") or 0) - 0.4) < 1e-9
+    assert not it0.get("formula_error")
+    shot(page, "07-default-inherited-fresh-browser", journey=JOURNEY)
+
+    # Explicit 0 → tombstone: orange now, and STILL orange after a reload
+    # (the browser layer's zero beats the server default).
+    deck.click()
+    expect(page.locator("#modal-prompt")).to_be_visible(timeout=T)
+    page.locator("#prompt-input").fill("0")
+    with page.expect_response("**/api/calculate") as r1:
+        page.locator("#modal-prompt button.btn-primary").click()
+    expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} DECK PU']")).to_have_text("(set thickness)", timeout=T)
+    assert (r1.value.json().get("body_variables") or {}).get(f"{MARK} DECK PU") == 0
+
+    page.goto("/calculator")
+    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    page.select_option("#trailer-select", str(staged["trailer"]))
+    expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} DECK PU']")).to_have_text("(set thickness)", timeout=T)
+    shot(page, "08-tombstone-survives-reload", journey=JOURNEY)

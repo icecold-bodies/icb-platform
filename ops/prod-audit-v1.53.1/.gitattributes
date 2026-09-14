@@ -1,0 +1,2 @@
+kit/*.sh text eol=lf
+kit/*.py text eol=lf

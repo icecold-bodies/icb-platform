@@ -175,3 +175,19 @@ Calcs 93, 97–102 (A9985, A9989–A9994/09/2026). Their saved `body_variables` 
   - an alembic error misreported as a schema change;
   - the fetched log missing its final banner.
 - **Simulation re-run after the fixes** (round 2): every requested scenario passed, plus new ones: Cloudflare gating against a separate edge server, a stale and an unreachable edge, restart at target, interrupted fast-forward, record semantics, the log banner, seed identity, the restore guard against Explorer edits, and restore after rollback. It exposed one more defect: untracked files the release adds could survive a rollback and loop. Content-based classification now fixes it, and round 3 re-verified the final kit.
+
+## OUTCOME — deployed 14 Sep 2026 15:59:51 SAST, all checks green
+
+| Step | Result |
+|---|---|
+| VerifyBaseline (15:44) | ALL CHECKS PASSED — HEAD `04b332f`; `5e46664…` served on all 3 local URLs and on Cloudflare `?v=178`; alembic `0047`; service active since Fri 11 Sep 06:16 |
+| Deploy run `20260914-155933` | Preflight clean → fetch: `04b332f..94ed70b` (4 commits) → guard: 27 paths exactly as reviewed → `DEPLOY` typed → ff-only `Updating 04b332f..94ed70b`, 27 files → no restart → ALL CHECKS PASSED → record `head=94ed70b… from=04b332f… restart=0` |
+| Served after | `calculator.js?v=180` sha `23f2471931502a40…`, 526 535 bytes, `_masterBodyVarNameSet` = 5, on `https://127.0.0.1`, `https://192.168.0.251`, `http://127.0.0.1:8000` and the Cloudflare door |
+| Verify run `20260914-160016` | ALL CHECKS PASSED; deploy record matches HEAD |
+| CA check from the Windows PC (16:4x) | LAN `https://192.168.0.251/…?v=180` and domain `https://mes.icecoldgrp.online/…?v=180` both `sha=23f2471931502a40`, domain `cf-cache-status: HIT` (edge holds the NEW bundle); `/health` `{"status":"ok"}` |
+| Schema / service | alembic `0047` before and after; service not restarted (still since Fri 11 Sep 06:16:21) — zero downtime |
+
+**Still open:**
+- Browser click-through on the domain (§6).
+- Optional §5 Manni seeding — Michael's decision.
+- The 7 mispriced pending quotes (§8) — remedy WO.

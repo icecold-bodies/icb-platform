@@ -40,6 +40,7 @@ EPS = f"{MARK} SIDES EPS"
 PU = f"{MARK} SIDES PU"
 ROOF = f"{MARK} ROOF THK"
 DECK = f"{MARK} DECK THK"
+FLOOR = f"{MARK} FLOOR PU"          # its master's material name carries a TRAILING SPACE
 
 
 def _purge(db) -> None:
@@ -132,15 +133,27 @@ def staged():
         tb = v2_body("BOUND BODY")
         b_eps = master(tb, m_eps, False, BOUND_START["eps"])
         b_pu = master(tb, m_pu, True, BOUND_START["pu"])
+        # Whitespace-drift master: the BOM material is "JXMB FLOOR PU " while the
+        # Explorer stores the stripped name — midsForFlag's untrimmed name lookup
+        # misses, so the flag renders UNBOUND (the only way flagVarSpan's master
+        # guard is reachable), yet the engine (strip().upper()) resolves the token.
+        m_floor_pu, m_floor = mat("FLOOR PU ", "each"), mat("FLOOR BOARD", price=1.0)
+        b_floor = BillOfMaterial(trailer_type_id=tb.id, material_id=m_floor_pu.id, formula_expression="1",
+                                 is_body_option=True, body_option_group=f"{MARK} FLOOR",
+                                 variable_value=0.07, bom_section="BODY OPTIONS")
+        db.add(b_floor)
+        db.flush()
         ids["bound"] = {"tt": tb.id, "eps_m": b_eps.id, "pu_m": b_pu.id, **sides_items(tb),
-                        "roof": item(tb, m_roof, f"width*{{{ROOF}}}*5", f"{MARK} ROOF")}
+                        "roof": item(tb, m_roof, f"width*{{{ROOF}}}*5", f"{MARK} ROOF"),
+                        "floor": item(tb, m_floor, f"width*{{{FLOOR}}}*10", f"{MARK} ROOF")}
         db.add(ConfiguratorDraft(trailer_type_id=tb.id, payload=json.dumps({
-            "nextId": 6, "rootIds": ["1", "4"], "itemRules": {}, "nodes": {
+            "nextId": 7, "rootIds": ["1", "4"], "itemRules": {}, "nodes": {
                 "1": _cat("1", f"{MARK} SIDES", ["2", "3"]),
                 "2": _flag("2", EPS, "1", "radio", 0, EPS, b_eps.id),
                 "3": _flag("3", PU, "1", "radio", 1, PU, b_pu.id),
-                "4": _cat("4", f"{MARK} ROOF", ["5"]),
+                "4": _cat("4", f"{MARK} ROOF", ["5", "6"]),
                 "5": _flag("5", ROOF, "4", "tickbox", 1, flagVarDefault=0.04),
+                "6": _flag("6", FLOOR, "4", "tickbox", 1),
             }})))
 
         # (2) STALE-BINDING body — the PU flag's flagBindingId points at a row
@@ -283,6 +296,10 @@ def test_masterbound_flags_do_not_shadow_master_values(page: Page, live_server: 
     expect(page.locator(f".flag-var-edit[data-flag-var='{EPS}']")).to_have_count(0)
     # the name-only wired control on the SAME body keeps its (inherited) suffix
     expect(page.locator(f".flag-var-edit[data-flag-var='{ROOF}']")).to_have_text("(0.040 m)", timeout=T)
+    # whitespace-drift master: UNBOUND render, but its name IS a master body
+    # variable → flagVarSpan's guard suppresses the suffix (pre-fix: "(set thickness)")
+    expect(page.locator(f"input[data-draft-flag='{FLOOR}']")).to_be_attached()
+    expect(page.locator(f".flag-var-edit[data-flag-var='{FLOOR}']")).to_have_count(0)
 
     # Engine truth for the settled state.
     with page.expect_response(_calc_where(
@@ -298,6 +315,9 @@ def test_masterbound_flags_do_not_shadow_master_values(page: Page, live_server: 
     assert _qty(res1, b["eps_board"]) == 0
     assert abs(_qty(res1, b["skin"]) - 5.076) < 1e-6           # 2*(2.6-0-0.062); shadow = 5.2
     assert not _item(res1, b["pu_board"]).get("formula_error")
+    assert FLOOR not in _bvo(req1), _bvo(req1)                  # trimmed-name guard
+    assert bv1.get(FLOOR + " ") == 0.07, bv1
+    assert abs(_qty(res1, b["floor"]) - 1.4) < 1e-6             # 2*0.07*10; shadow = 0
 
     # Formula editor: ONE blue chip per master name with the real value, the
     # resolver reads 0.062, no teal duplicates — the teal control survives.

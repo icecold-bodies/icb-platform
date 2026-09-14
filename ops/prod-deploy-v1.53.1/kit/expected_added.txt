@@ -1,0 +1,16 @@
+backend/tests/journeys/test_masterbound_flag_shadow_journey.py
+backend/tools/set_manni_flag_defaults.py
+docs/screenshots/journeys/draft_flag_thickness/07-default-inherited-fresh-browser.png
+docs/screenshots/journeys/draft_flag_thickness/08-tombstone-survives-reload.png
+docs/screenshots/journeys/masterbound_flag_shadow/01-editor-single-blue-chip-real-value.png
+docs/screenshots/journeys/masterbound_flag_shadow/02-radio-flip-moves-quantities-and-total.png
+docs/screenshots/journeys/masterbound_flag_shadow/03-paste-master-bound-thickness-skipped.png
+docs/screenshots/journeys/masterbound_flag_shadow/04-stale-binding-healed-bound.png
+docs/screenshots/journeys/masterbound_flag_shadow/05-healed-flag-flip-moves-total.png
+docs/screenshots/journeys/masterbound_flag_shadow/06-masterless-teal-chip-default.png
+docs/screenshots/journeys/masterbound_flag_shadow/07-tombstone-survives-reload-on-wire.png
+docs/screenshots/journeys/masterbound_flag_shadow/08-body-switch-master-value-restored.png
+docs/screenshots/v1_53_1-masterbound-flag-shadow/freezer23-editor-after.png
+docs/screenshots/v1_53_1-masterbound-flag-shadow/freezer23-editor-before.png
+docs/screenshots/v1_53_1-masterbound-flag-shadow/freezer23-panel-after.png
+docs/screenshots/v1_53_1-masterbound-flag-shadow/freezer23-panel-before.png

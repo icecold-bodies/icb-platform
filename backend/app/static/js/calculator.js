@@ -1828,25 +1828,47 @@ function _bodyVariablesFromBom() {
   return out.filter(v => seen.has(v.name) ? false : seen.add(v.name));
 }
 
+// v1.53.1 — uppercased, trimmed names of this body's MASTER body variables:
+// exactly _bodyVariablesFromBom()'s set (is_body_option rows with a non-null
+// variable_value), which mirrors the server's _build_body_variables keys. A
+// draft flag carrying one of these names is master-bound — its thickness lives
+// on the BOM row's variable_value, so the draft-flag channel must never speak
+// for it. Shared by every draft-flag-variable consumer so they cannot drift.
+function _masterBodyVarNameSet() {
+  return new Set(_bodyVariablesFromBom().map(v => String(v.name).trim().toUpperCase()));
+}
+
 // v1.53 — the current trailer's draft FLAG names as formula variables. On
 // draft bodies (Manni RIGIDS CB class) these are the {SECTION EPS}/{SECTION
 // PU} tokens the pair-deduction formulas reference. Unset is a DEFINED state
 // (value 0): the unselected side of a pair, or a thickness not yet entered —
 // so the calc payload sends explicit zeros and neither the engine's unknown-
 // token warning nor the formula editor's "will resolve to 0 ⚠" applies to
-// them. Only names the draft actually declares are returned — never library
-// or master names, so a zero can't shadow a real definition.
+// them.
+// v1.53.1 — a flag named after a MASTER body variable is excluded here (the
+// single choke point for the calc payload, the editor resolver and the teal
+// chips). Master-bound v2 bodies (FREEZER 2.3 METER class) name their Explorer
+// flags after the master rows, and an explicit 0 for such a name overlaid the
+// real variable_value server-side (_apply_body_variable_overrides) and in the
+// resolver — thicknesses read 0.000 and radio flips never moved the totals.
+// Read-time filtering also makes master-named entries already parked in
+// draftFlagVars (cfg_user_state, a snapshot's draft_flag_vars) inert; an
+// edit's pinned saved body_variables (editBodyVarOverrides) are deliberately
+// untouched — saved-quote replay reproduces its saved figures. Name-only flags
+// (no master, or a master whose variable_value is NULL) keep the
+// value-or-explicit-0 contract.
 function _draftFlagVariables() {
   const tidVal = document.getElementById('trailer-select')?.value;
   if (!tidVal || _draftFlagStateTrailer !== +tidVal) return [];
   const draft = _readSettingsDraft(+tidVal);
   if (!draft || !draft.nodes) return [];
+  const masterNames = _masterBodyVarNameSet();
   const out = [];
   const seen = new Set();
   Object.values(draft.nodes).forEach(n => {
     if (!n || n.type !== 'flag') return;
     const name = (n.flagBindingName || n.label || '').trim();
-    if (!name || seen.has(name.toUpperCase())) return;
+    if (!name || seen.has(name.toUpperCase()) || masterNames.has(name.toUpperCase())) return;
     seen.add(name.toUpperCase());
     const v = Number(draftFlagVars[name]);
     const set = Number.isFinite(v) && v > 0;
@@ -3850,9 +3872,12 @@ function renderBodyOptionsFromDraft(draft, tid) {
     if (node.flagBindingId) {
       const seedRow = bomData.find(r => r.id === Number(node.flagBindingId));
       if (seedRow) return [seedRow.id];
-      return [];
+      // v1.53.1 — STALE binding (the bound row was deleted/re-imported): heal
+      // by name below instead of rendering unbound. Unbound, a master-named
+      // flag has no thickness affordance at all once master names are kept
+      // out of the draft-flag channel (_masterBodyVarNameSet).
     }
-    // No ID — fall back to the first master matching the bound name (or label).
+    // No (live) ID — fall back to the first master matching the bound name (or label).
     const nm = (node.flagBindingName || node.label || '').toUpperCase();
     const arr = masterIdsByName[nm];
     return arr && arr.length ? [arr[0]] : [];
@@ -4246,9 +4271,14 @@ function renderBodyOptionsFromDraft(draft, tid) {
   // engine's own lookup rule) — the suffix can never show a number the calc
   // ignores. Referenced-but-unset is LOUD: the engine substitutes 0 for an
   // unknown token, which silently zeroes the row (the v1.44 quiet-zero class).
+  // v1.53.1 — never for a MASTER-named flag: its thickness is the BOM row's
+  // variable_value (bvEditSpan), and a draft-flag value for that name is
+  // never sent (_draftFlagVariables), so the suffix would show a dead number.
   const wiredVarNames = _wiredFlagVarNames(bomData);
+  const masterVarNames = _masterBodyVarNameSet();
   function flagVarSpan(name) {
-    if (!name || !wiredVarNames.has(String(name).trim().toUpperCase())) return '';
+    const key = String(name || '').trim().toUpperCase();
+    if (!key || masterVarNames.has(key) || !wiredVarNames.has(key)) return '';
     const esc = escHtml(String(name));
     const v = Number(draftFlagVars[name]);
     if (Number.isFinite(v) && v > 0) {
@@ -5687,9 +5717,11 @@ async function runCalc() {
     // Send EVERY wired draft-flag name, with an EXPLICIT 0 when unset — an
     // unset pair token ({X EPS} while PU is the quoted side) is a defined
     // state, not an unknown, so the engine must not flag it as a calculation
-    // error. Only names the draft declares are sent (never library/master
-    // names), so a zero can never shadow a real definition; genuine formula
-    // typos still surface through the unknown-token warning.
+    // error. Only names the draft declares are sent, and never a name that is
+    // a MASTER body variable on this body (v1.53.1 — _draftFlagVariables
+    // excludes them: master-bound flags carry the BOM row's own name, and a
+    // zero here overlaid its real variable_value). Genuine formula typos
+    // still surface through the unknown-token warning.
     const wired = _wiredFlagVarNames(bomData);
     _draftFlagVariables().forEach(f => {
       if (wired.has(f.name.trim().toUpperCase())) flagVarsPayload[f.name] = f.value;
@@ -8278,6 +8310,10 @@ function buildExcelPastePlan(rows) {
   // v1.53 — {NAME} tokens this body's formulas reference: pasted thickness on
   // a draft flag applies only when the value would actually reach a formula.
   const draftWiredVarNames = draft ? _wiredFlagVarNames(bomData) : new Set();
+  // v1.53.1 — a flag named after a MASTER body variable never parks a pasted
+  // thickness in draftFlagVars: the value would never reach the calc (see
+  // _draftFlagVariables) — the thickness belongs on the BOM row.
+  const draftMasterVarNames = draft ? _masterBodyVarNameSet() : new Set();
 
   // Container/radio selections collect here first (with their DOM radio-group
   // key), then resolve below: dedupe, one-Y-per-radio-group, outermost first.
@@ -8336,7 +8372,9 @@ function buildExcelPastePlan(rows) {
         // would be a number the calc ignores). 0 = keep current, pair rules.
         const tv = rw.numerics.length ? rw.numerics[0] : null;
         if (tv != null && tv > 0) {
-          if (tv >= 1) {
+          if (draftMasterVarNames.has(String(name).trim().toUpperCase())) {
+            plan.skipped.push({ label: `${rw.label} thickness`, why: 'master-bound — edit the body variable' });
+          } else if (tv >= 1) {
             plan.skipped.push({ label: `${rw.label} thickness`, why: `thickness ${tv} out of range — selection applied, thickness kept` });
           } else if (draftWiredVarNames.has(String(name).trim().toUpperCase())) {
             plan.draftVars.push({ label: rw.label, name, value: tv });

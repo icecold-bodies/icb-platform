@@ -34,6 +34,7 @@ export type PermissionKey =
   | 'costings.admin'
   | 'costings.validated_refs_manage'  // v1.45 — mark/retire a validated reference
   | 'costings.delete_own_draft'       // v1.50 — soft-delete your OWN pending, unscheduled costing
+  | 'costings.capture_for_user'       // v1.52 — capture / re-assign a costing on behalf of another user
   | 'planning.view'
   | 'planning.acknowledge'         // v4
   | 'planning.schedule'            // v4.18 — drag-drop schedule / move
@@ -109,7 +110,13 @@ export interface Costing {
   chassis_supplied_by?: 'customer' | 'in-house'
   extras_count: number
   extras_list?: string[]
-  created_by: string
+  created_by: string               // the CREATOR — who saved it (authorship; the delete gate keys on it)
+  // v1.52 capture-for-user — who the costing is FOR: the captured-for rep, else the
+  // creator. Resolved server-side (services/costing_attribution); the Rep column and
+  // "My costings" read these, never a client-side fallback of their own.
+  rep?: string
+  rep_user_id?: number | null
+  captured_for?: boolean
   created_at: string
   cost_zar: number
   selling_zar: number              // WO v4.30 §0.2a — post-discount headline (== gross when no discount)
@@ -346,7 +353,12 @@ export interface LiveCalculation {
   customer: string
   contact_name?: string | null     // customer-contacts WO — attention-of snapshot (0035)
   end_user_company?: string | null // v1.47 lane B — end-user snapshot (0040)
-  user: string
+  user: string                     // the creator's username
+  // v1.52 capture-for-user — the costing's rep, resolved server-side (rep → creator).
+  created_by_user_id?: number | null
+  sales_rep?: string
+  sales_rep_user_id?: number | null
+  captured_for?: boolean
   created_at: string
   grand_total: number | null       // WO v4.30 §0.2a — net of discount (the headline)
   gross_total?: number | null      // pre-discount selling
@@ -395,6 +407,15 @@ export interface LiveCalculation {
   chassis_received_by?: string | null
 }
 
+// v1.52 capture-for-user — "My costings": the ones you CREATED or that were captured
+// FOR you. It widens and never moves: a costing an admin captured for Nadie is in
+// Nadie's list AND still in the admin's own. Usernames, like the board's existing
+// delete gate — both sides are the server's current names.
+export function isMyCosting(c: Costing, sessionUsername: string | null): boolean {
+  if (!sessionUsername) return true   // no live identity to filter on — hide nothing
+  return c.created_by === sessionUsername || c.rep === sessionUsername
+}
+
 // Map a live FastAPI row into the Costing shape the dashboard renders.
 // We don't have all the rich fields (body_category, extras_list, etc.) from
 // the live endpoint, so we synthesize sensible placeholders.
@@ -426,6 +447,11 @@ export function liveToCosting(r: LiveCalculation): Costing {
     requires_chassis: true,
     extras_count: 0,
     created_by: r.user || '',
+    // v1.52 — `sales_rep` is always present from a current server; `user` covers a
+    // row served by a backend from before this lane (same person, by definition).
+    rep: r.sales_rep || r.user || '',
+    rep_user_id: r.sales_rep_user_id ?? null,
+    captured_for: !!r.captured_for,
     created_at: r.created_at,
     cost_zar: 0,
     selling_zar: r.grand_total ?? 0,                         // net (headline)

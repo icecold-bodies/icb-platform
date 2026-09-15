@@ -1312,6 +1312,12 @@ function _saveReturnState(tid) {
       trailer_id: String(tid),
       user_id: (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : undefined,
       ts: Date.now(),
+      // v1.52 — who the in-flight costing is being captured for. Rides THIS one-shot,
+      // user-scoped detour payload only — never the durable last-session store, where a
+      // pick made yesterday would silently credit today's new costing to someone else.
+      capture_for_user_id:  (typeof captureForUserId !== 'undefined') ? captureForUserId : null,
+      capture_for_username: (typeof _captureForUsername === 'function')
+                              ? _captureForUsername(captureForUserId) : null,
       // The body-options panel state. For v2 configurator bodies this lives in
       // the draft stores, which LAST_SESSION does not carry — and whose restore
       // is deliberately skipped for v2 on plain loads (the Excel-audit rule),
@@ -1405,6 +1411,9 @@ async function _restoreReturnState(tid) {
   // pins (legacy records) and the saved body-variable pins ride the payload —
   // without them the recompute would run from defaults and an Overwrite would
   // corrupt the quote.
+  if (st.capture_for_user_id != null && typeof setCaptureFor === 'function') {
+    setCaptureFor(st.capture_for_user_id, st.capture_for_username);
+  }
   if (st.editing && st.editing.record_id && typeof editingRecordId !== 'undefined') {
     editingRecordId    = st.editing.record_id;
     editingVersion     = st.editing.version || 1;
@@ -2608,6 +2617,133 @@ function _selectedEndUser() {
   return allEndUsers.find(e => String(e.id) === String(id)) || null;
 }
 
+// ── v1.52 — "Capture for": an admin saves a costing ON BEHALF OF another user ──
+// The costing is still SAVED by whoever is logged in (calculations.user_id, never
+// rewritten); it is CREDITED to the person picked here (sales_rep_user_id). The
+// block is only rendered for holders of costings.capture_for_user and the server
+// re-checks that key on every save, so nothing here is the control. Default = you,
+// which stores exactly what a save from a page without this block stores.
+//
+// captureForUserId is the source of truth, not the <select>: the user list loads
+// asynchronously and an edit can hydrate before it arrives, so the value has to
+// round-trip even when the list is late or never comes.
+let captureForUsers = [];
+let captureForUserId = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : null;
+const _captureForNames = {};   // id → username, from the list and from edit payloads
+
+function _canCaptureFor() {
+  return typeof canCaptureForUser !== 'undefined' && !!canCaptureForUser
+      && !!document.getElementById('capture-for-select');
+}
+
+function _currentUserId() {
+  return (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : null;
+}
+
+/** The picker's label. The follow-on business-partner lane widens the picker HERE
+ *  (and in CAPTURE_FOR_USER_FIELDS server-side) — nothing else needs to change. */
+function _captureForLabel(u) {
+  return u.role ? `${u.username} (${u.role})` : u.username;
+}
+
+function _captureForUsername(id) {
+  if (id == null) return null;
+  if (_captureForNames[id]) return _captureForNames[id];
+  if (+id === +_currentUserId() && typeof CURRENT_USER_NAME !== 'undefined') return CURRENT_USER_NAME;
+  return null;
+}
+
+async function loadCaptureForUsers() {
+  if (!_canCaptureFor()) return;
+  try {
+    captureForUsers = await api('GET', '/api/capture-for/users');
+    captureForUsers.forEach(u => { _captureForNames[u.id] = u.username; });
+  } catch (e) {
+    captureForUsers = [];
+    const note = document.getElementById('capture-for-note');
+    if (note) {
+      note.textContent = 'Could not load the user list — this costing stays credited as shown.';
+      note.style.display = '';
+    }
+  }
+  renderCaptureForOptions();
+}
+
+function renderCaptureForOptions() {
+  const sel = document.getElementById('capture-for-select');
+  if (!sel) return;
+  const me = _currentUserId();
+  const rows = captureForUsers.slice();
+  // Never let the <select> quietly show somebody else: a chosen id that is not in
+  // the list (list failed, user since removed) still gets an option of its own.
+  if (captureForUserId != null && !rows.some(u => +u.id === +captureForUserId)) {
+    rows.unshift({ id: captureForUserId, role: '',
+                   username: _captureForUsername(captureForUserId) || `User #${captureForUserId}` });
+  }
+  sel.innerHTML = rows.map(u =>
+    `<option value="${u.id}">${escHtml(_captureForLabel(u))}${+u.id === +me ? ' — you' : ''}</option>`
+  ).join('');
+  sel.value = captureForUserId != null ? String(captureForUserId) : '';
+  _renderCaptureForNote();
+}
+
+function _renderCaptureForNote() {
+  const note = document.getElementById('capture-for-note');
+  if (!note) return;
+  if (captureForUserId == null || +captureForUserId === +_currentUserId()) {
+    if (captureForUsers.length) { note.style.display = 'none'; note.textContent = ''; }
+    return;
+  }
+  note.textContent = `Credited to ${_captureForUsername(captureForUserId) || 'the selected user'}`
+                   + ' — you stay the creator.';
+  note.style.display = '';
+}
+
+/** Programmatic set: edit hydration and the permanent-price return trip. Never
+ *  touches the repair surface's contact name — a reopened costing keeps what it was
+ *  saved with. */
+function setCaptureFor(userId, username) {
+  captureForUserId = (userId != null && userId !== '') ? +userId : _currentUserId();
+  if (username && captureForUserId != null) _captureForNames[captureForUserId] = username;
+  renderCaptureForOptions();
+}
+
+/** The user picked someone. The repair surface's "Your contact (ICB)" NAME prefill
+ *  follows the pick — the rep, else the logged-in user (v1.47 D8) — but only while the
+ *  field is empty or still shows the previous prefill: a typed name is never replaced. */
+function onCaptureForChange() {
+  const sel = document.getElementById('capture-for-select');
+  const prevName = _captureForUsername(captureForUserId);
+  captureForUserId = (sel && sel.value) ? +sel.value : _currentUserId();
+  const contact = document.getElementById('f-repair-contact');
+  if (contact && (!contact.value || contact.value === prevName)) {
+    contact.value = _defaultRepairContactName();
+    onRepairMetaInput();
+  }
+  _renderCaptureForNote();
+}
+
+/** The name "Your contact (ICB)" is prefilled with: the captured-for user, else you. */
+function _defaultRepairContactName() {
+  return _captureForUsername(captureForUserId)
+      || ((typeof CURRENT_USER_NAME !== 'undefined') ? (CURRENT_USER_NAME || '') : '');
+}
+
+/** The /api/approve field — ABSENT on a page without the control, which is how the
+ *  server knows to leave an edited costing's attribution exactly as it is. */
+function _captureForPayload() {
+  return _canCaptureFor() ? { sales_rep_user_id: captureForUserId } : {};
+}
+
+/** Saved once, stays saved (v1.49 rule 2): changing who a SAVED costing is for is the
+ *  costing page's re-assign, not a second save from here. */
+function _setCaptureForLocked(locked) {
+  const sel = document.getElementById('capture-for-select');
+  if (!sel) return;
+  sel.disabled = !!locked;
+  sel.title = locked ? 'Saved. Change who it is for from the costing page while it is pending.' : '';
+}
+
 function applyCalculationInputs(payload) {
   // v1.47 — restore the costing's FREE-HAND OPTIONAL EXTRAS. The GET has
   // returned them since the feature shipped, but nothing read them, so
@@ -2723,6 +2859,8 @@ async function _openSavedRepair(payload, recordId, forEdit) {
     editingRecordId    = recordId;
     editingQuoteNumber = payload.quote_number || null;
     editingVersion     = payload.version || 1;
+    // v1.52 — the repair's rep, re-selected exactly as the body edit path does.
+    setCaptureFor(payload.sales_rep_user_id, payload.sales_rep_username);
     // Kept so the surface can offer the repair QUOTATION (its document number
     // was issued at save time) and "View full results". It does NOT mean the
     // user just saved — see justSavedHere, and _resetSavedOnce below.
@@ -2931,6 +3069,9 @@ async function editCalculation(recordId) {
     editingRecordId    = recordId;
     editingVersion     = payload.version || 1;
     editingQuoteNumber = payload.quote_number || null;
+    // v1.52 — re-select who this costing is FOR, so an admin who only fixes a price
+    // saves it back to the same person instead of silently taking it over.
+    setCaptureFor(payload.sales_rep_user_id, payload.sales_rep_username);
     showEditBanner(payload);
 
     // 6) Recompute from the fully-restored state, then prove it balances with
@@ -3201,6 +3342,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Customer-contacts WO — a user click on the customer list re-populates the
   // Attention picker (programmatic selections go through setCustomer instead).
   document.getElementById('cust-select')?.addEventListener('change', onCustomerChanged);
+  // v1.52 — the "Capture for" list. Not awaited: an ?edit= below may hydrate the
+  // choice first, and captureForUserId (not the <select>) carries it either way.
+  loadCaptureForUsers();
 
   // v1.45 — resolve this user's validated-reference capabilities once, so the
   // mark action is shown only to someone who could actually use it.
@@ -5824,6 +5968,26 @@ async function approveCosting() {
     end_user_id: endUserId  ? +endUserId  : null,
   };
 
+  // v1.50 P3 — refresh the repair's OWN fields from the surface at save time.
+  // lastCalcPayload captures them at CALC time, but typing the type (or the
+  // vehicle block, or a document header field) does not re-cost — deliberately,
+  // v1.47: the type gates the SAVE, not the price. So a user who filled those
+  // in AFTER the last line change was saving a STALE payload: the server
+  // 422'd "Type of repair is required" against a form that plainly showed one.
+  //
+  // v1.52 — done HERE, ahead of the edit branch below. It used to sit after it,
+  // so an EDITED repair skipped the refresh entirely: change its type, its
+  // vehicle registration or its "Your contact" name and phone without touching
+  // a line, press Overwrite, and the old values were saved back over the new.
+  if (repairMode) {
+    Object.assign(_pendingApproveBase, {
+      repair_type: String(document.getElementById('f-repair-type')?.value || '').trim(),
+      repair_scope: String(document.getElementById('f-repair-scope')?.value || '').trim() || null,
+      ..._repairDocFields(),
+      repair_vehicle: _readRepairVehicle(),
+    });
+  }
+
   // Editing an existing pending costing → ask whether to overwrite the original
   // record or save a new revision (the "validate the save" step). This replaces
   // the new-quote duplicate flow below.
@@ -5859,21 +6023,9 @@ async function approveCosting() {
   // v1.47 — a repair is an independent job, not a revision of another repair.
   // Two repairs for one customer are two separate quotes, so the duplicate /
   // revision flow (which keys on customer + body type) is skipped: the server
-  // saves every repair as version 1 with its own quote number.
-  //
-  // v1.50 P3 — refresh the repair's OWN fields from the surface at save time.
-  // lastCalcPayload captures them at CALC time, but typing the type (or the
-  // vehicle block, or a document header field) does not re-cost — deliberately,
-  // v1.47: the type gates the SAVE, not the price. So a user who filled those
-  // in AFTER the last line change was saving a STALE payload: the server
-  // 422'd "Type of repair is required" against a form that plainly showed one.
+  // saves every repair as version 1 with its own quote number. (Its own fields
+  // were refreshed from the surface at the top of this function.)
   if (repairMode) {
-    Object.assign(_pendingApproveBase, {
-      repair_type: String(document.getElementById('f-repair-type')?.value || '').trim(),
-      repair_scope: String(document.getElementById('f-repair-scope')?.value || '').trim() || null,
-      ..._repairDocFields(),
-      repair_vehicle: _readRepairVehicle(),
-    });
     await _doApprove(null, null);
     return;
   }
@@ -5942,6 +6094,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       ui_snapshot: _buildUiSnapshot(),
       discount_kind:  discountKind,
       discount_input: discountKind ? discountInput : null,
+      ..._captureForPayload(),   // v1.52 — who this costing is FOR (absent without the control)
     });
     lastRecordId   = result.record_id;
     justSavedHere  = true;   // v1.49 rule 2 — arms the save-once gate + the line lock
@@ -6025,6 +6178,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
 // change, so the label, the gate and the line lock cannot drift apart.
 function _resetSavedOnce() {
   justSavedHere = false;
+  _setCaptureForLocked(false);
   const b = document.getElementById('approve-btn');
   if (!b) return;
   b.title = '';
@@ -6074,6 +6228,7 @@ function _savedCountdown(quoteNumber) {
 // v1.49 (Michael's rule 2). After a save the button is disabled and reads
 // "Saved" with a title explaining how to make another one. Idempotent.
 function _markSavedOnce() {
+  _setCaptureForLocked(true);
   const b = document.getElementById('approve-btn');
   if (!b) return;
   b.disabled = true;
@@ -9527,9 +9682,10 @@ function enterRepairMode() {
   renderRepairSurface();
   // D8 — "Your Contact" defaults to the signed-in user. Only the NAME: the User
   // model has no phone column (§3.0), so the telephone is typed per quote.
+  // v1.52 — or to the user this costing is being captured FOR, when one is picked.
   const _contactEl = document.getElementById('f-repair-contact');
-  if (_contactEl && !_contactEl.value && typeof CURRENT_USER_NAME !== 'undefined') {
-    _contactEl.value = CURRENT_USER_NAME || '';
+  if (_contactEl && !_contactEl.value) {
+    _contactEl.value = _defaultRepairContactName();
   }
   document.getElementById('summary-area').innerHTML =
     '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;text-align:center">'

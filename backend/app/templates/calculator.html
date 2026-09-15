@@ -530,6 +530,23 @@
       </div>
     </div>
 
+    {% if user_can(user, 'costings.capture_for_user') %}
+    <!-- v1.52 — "Capture for" (Michael, 15 Sep). Rendered ONLY for holders of
+         costings.capture_for_user (admin). Credits the costing to the chosen person;
+         the creator stays whoever saves it. Defaults to you. Display only — the
+         server re-checks the key on every save. -->
+    <div id="capture-for-block" style="padding:6px 12px;border-top:1px solid var(--border);background:var(--bg-panel)">
+      <div class="cust-panel-label">Capture for</div>
+      <select id="capture-for-select" class="form-control" onchange="onCaptureForChange()"
+        title="Who this costing is being captured for"
+        style="width:100%;font-size:12px;background:var(--bg-input);border:1px solid var(--border);
+        border-radius:var(--radius);color:var(--text);padding:4px">
+        <option value="{{ user.id }}">{{ user.username }} — you</option>
+      </select>
+      <div id="capture-for-note" style="display:none;font-size:11px;color:var(--text-dim);margin-top:4px"></div>
+    </div>
+    {% endif %}
+
     <!-- v1.46 (Michael) — economical footer: Total Cost on ONE line, no
          Selling Price line, and the unused Print / Full Report buttons gone,
          so the category totals above are no longer squashed to the top.
@@ -1636,6 +1653,9 @@ const CURRENT_USER_NAME = {{ user.username | tojson }};
 // v1.50 P3 — shows the template create/manage actions. Display only: the
 // server enforces costings.repair_templates_manage on every write regardless.
 const canManageRepairTemplates = {{ 'true' if user_can(user, 'costings.repair_templates_manage') else 'false' }};
+// v1.52 — shows the "Capture for" dropdown. Display only: /api/approve refuses a
+// foreign sales_rep_user_id from anyone without costings.capture_for_user.
+const canCaptureForUser = {{ 'true' if user_can(user, 'costings.capture_for_user') else 'false' }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
 {# v1.51 - ONE tag. #168 (PU foam, v=170) and #169 (repair quote doc,
@@ -1648,7 +1668,7 @@ const canManageRepairTemplates = {{ 'true' if user_can(user, 'costings.repair_te
    v=172 rather than either of them: both 170 and 171 have already been
    served, so a fresh number is the only value guaranteed not to hit a
    stale cached copy of one lane's file. #}
-<script defer src="/static/js/calculator.js?v=180"></script>
+<script defer src="/static/js/calculator.js?v=181"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

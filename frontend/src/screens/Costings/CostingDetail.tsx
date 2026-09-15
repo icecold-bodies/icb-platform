@@ -413,6 +413,11 @@ export function CostingDetail() {
                 value={`${dmy(c.created_at)} ${hhmm(c.created_at)}`}
                 sub={`by ${c.created_by}`}
               />
+              <CaptureForPanel
+                calculationId={c.calculation_id ?? null}
+                mode={mode}
+                onChanged={(msg) => { setToast(msg); void refresh() }}
+              />
             </div>
 
             <BodyOptionsPanel calculationId={c.calculation_id ?? null} mode={mode} />
@@ -830,6 +835,140 @@ function SignoffCheck({
 }
 
 // v1.42 QCO — icon-labelled field for the Quotation/Configuration Overview card.
+// ── v1.52 capture-for-user ─────────────────────────────────────────────────────
+// Who this costing is FOR, how it came to be, and — for an admin, while it is still
+// pending — the control to change it. Everything is the server's: the GET decides
+// can_reassign and the POST re-applies every condition, so this panel decides nothing.
+type RepJournalEntry = {
+  action: 'capture' | 'reassign'
+  from_user_id: number | null
+  from_username: string | null
+  to_user_id: number | null
+  to_username: string | null
+  actor_username: string | null
+  created_at: string | null
+}
+type CostingAttribution = {
+  calculation_id: number
+  status: string
+  creator: { id: number | null; username: string | null }
+  sales_rep: { id: number | null; username: string | null }
+  captured_for: boolean
+  can_reassign: boolean
+  journal: RepJournalEntry[]
+}
+type CaptureForUser = { id: number; username: string; role: string | null }
+
+/** One journal entry in plain words, e.g. "Captured for Nadie by admin · 15 Sep 2026". */
+function attributionLine(j: RepJournalEntry): string {
+  const by = j.actor_username ?? 'someone'
+  const when = j.created_at ? ` · ${dmy(j.created_at)}` : ''
+  if (j.action === 'capture') return `Captured for ${j.to_username ?? '—'} by ${by}${when}`
+  return `Re-assigned from ${j.from_username ?? '—'} to ${j.to_username ?? '—'} by ${by}${when}`
+}
+
+function CaptureForPanel({ calculationId, mode, onChanged }: {
+  calculationId: number | null
+  mode: string
+  onChanged: (message: string) => void
+}) {
+  const [data, setData] = useState<CostingAttribution | null>(null)
+  const [users, setUsers] = useState<CaptureForUser[]>([])
+  const [pick, setPick] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (mode !== 'live' || calculationId == null) return
+    let alive = true
+    apiGet<CostingAttribution>(`/api/calculations/${calculationId}/sales-rep`)
+      .then((r) => { if (alive) { setData(r); setPick(String(r.sales_rep.id ?? '')) } })
+      .catch(() => { if (alive) setData(null) })
+    return () => { alive = false }
+  }, [calculationId, mode])
+
+  const canReassign = !!data?.can_reassign
+  useEffect(() => {
+    if (!canReassign) return
+    let alive = true
+    apiGet<CaptureForUser[]>('/api/capture-for/users')
+      .then((r) => { if (alive) setUsers(r) })
+      .catch(() => { if (alive) setUsers([]) })
+    return () => { alive = false }
+  }, [canReassign])
+
+  // Nothing to say on a costing nobody captured for anyone and the viewer cannot
+  // change: the "Created … by" line above already names its one person.
+  if (mode !== 'live' || calculationId == null || !data) return null
+  if (!data.captured_for && !data.journal.length && !data.can_reassign) return null
+  const current = data
+
+  async function reassign() {
+    if (!calculationId || !pick) return
+    setBusy(true)
+    setError('')
+    try {
+      const r = await apiPost<CostingAttribution & { changed: boolean }>(
+        `/api/calculations/${calculationId}/sales-rep`, { sales_rep_user_id: Number(pick) })
+      setData(r)
+      setPick(String(r.sales_rep.id ?? ''))
+      if (r.changed) onChanged(`Now captured for ${r.sales_rep.username ?? '—'}`)
+    } catch (e: any) {
+      setError(e?.detail || e?.message || 'Could not re-assign this costing')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // A rep who is no longer in the user list still shows as the current choice.
+  const repId = current.sales_rep.id
+  const options: CaptureForUser[] = repId == null || users.some((u) => u.id === repId)
+    ? users
+    : [{ id: repId, username: current.sales_rep.username ?? `User #${repId}`, role: null }, ...users]
+
+  return (
+    <div data-testid="capture-for-panel">
+      <InfoField
+        accent="amber"
+        icon={<UserCheck size={13} strokeWidth={2.5} />}
+        label="Sales rep"
+        value={<span data-testid="capture-for-rep">{current.sales_rep.username ?? '—'}</span>}
+      />
+      {current.journal.map((j, i) => (
+        <div key={i} data-testid="capture-for-line" className="mt-0.5 text-xs text-muted">
+          {attributionLine(j)}
+        </div>
+      ))}
+      {canReassign && (
+        <div className="mt-2 flex items-center gap-2">
+          <select
+            data-testid="capture-for-reassign"
+            aria-label="Captured for"
+            value={pick}
+            disabled={busy}
+            onChange={(e) => setPick(e.target.value)}
+            className="min-w-0 flex-1 rounded-md border border-line bg-white px-2 py-1 text-xs"
+          >
+            {options.map((u) => (
+              <option key={u.id} value={u.id}>{u.role ? `${u.username} (${u.role})` : u.username}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            data-testid="capture-for-reassign-save"
+            onClick={() => void reassign()}
+            disabled={busy || !pick || pick === String(repId ?? '')}
+            className="rounded-md border border-line bg-white px-2.5 py-1 text-xs font-semibold text-body hover:bg-surface-alt disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {busy ? 'Saving…' : 'Re-assign'}
+          </button>
+        </div>
+      )}
+      {error && <div data-testid="capture-for-error" className="mt-1 text-xs text-status-red">{error}</div>}
+    </div>
+  )
+}
+
 // Accent alternates per column (blue = identity/build, amber = commercial/provenance)
 // to mirror the ratified reference design.
 function InfoField({

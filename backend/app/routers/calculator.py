@@ -23,6 +23,7 @@ from ..services import (
     compute_chassis_cost, resolve_report_template, strip_excluded_items,
     get_section_snapshot, get_formula_lib, get_global_vars,
 )
+from ..services import costing_attribution as attribution   # v1.52 — capture-for-user (rep vs creator)
 from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
 from ..services import insulation_foam as pu_foam   # v1.51 — 32D PU FOAM vs 4G FOAM
 from ..services import quote_document           # v1.51 — print modes
@@ -1054,6 +1055,18 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     # "new_version" saves a fresh revision (optionally reusing its quote number).
     edit_record_id = body.get("edit_record_id")
 
+    # v1.52 capture-for-user — who this costing is FOR (calculations.sales_rep_user_id).
+    # ABSENT when the page has no "Capture for" dropdown: every non-admin, Calculator 2.
+    requested_rep = (body["sales_rep_user_id"] if "sales_rep_user_id" in body
+                     else attribution.ABSENT)
+    # A save that CREATES a record is gated here, ahead of the Replace path's delete and
+    # the BOM compute, so a refused attribution can never leave half a save behind. An
+    # overwrite is gated as soon as the record it overwrites is loaded — still before
+    # anything on it (or a document number) is touched.
+    is_overwrite = version_action == "overwrite" and bool(edit_record_id)
+    new_rep = None if is_overwrite else attribution.plan_rep_change(
+        db, user, requested_rep, creator_id=user.id, is_new=True)
+
     # ── REPAIRS mode (v1.47 Lane C) ───────────────────────────────────────────
     # A repair has no body, so none of the BOM / body-option / version machinery
     # below applies. It saves through the SAME record, quote-numbering and
@@ -1113,6 +1126,9 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                         detail="That costing is not a repair — reopen it from the "
                                "costings list and save it there.",
                     )
+                rep = attribution.plan_rep_change(
+                    db, user, requested_rep, creator_id=rec.user_id,
+                    current_stored=rec.sales_rep_user_id, is_new=False)
                 try:
                     _prev = json.loads(rec.result_json) if rec.result_json else {}
                 except Exception:
@@ -1160,6 +1176,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 rec.customer_id = customer_id
                 for _k, _v in contact_fields.items():
                     setattr(rec, _k, _v)
+                rec.sales_rep_user_id = rep.stored
+                attribution.record_rep_change(db, rec, rep, user)
             else:
                 # Every repair is an independent job — no revision/replace/duplicate
                 # flow. Two repairs for one customer are two separate quotes, not a
@@ -1170,6 +1188,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 rec = CalculationRecord(
                     trailer_type_id=None,
                     user_id=user.id,
+                    sales_rep_user_id=new_rep.stored,
                     customer_id=customer_id,
                     dimensions_json=json.dumps({}),
                     result_json=json.dumps(result),
@@ -1178,6 +1197,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 )
                 db.add(rec)
                 db.flush()
+                attribution.record_rep_change(db, rec, new_rep, user)
                 try:
                     assign_quote_number(rec, db=db, user=user, trailer=None)
                 except Exception:
@@ -1214,6 +1234,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         result["customer_name"] = _cust.name if _cust else None
         result["contact_id"]    = rec.contact_id
         result["contact_name"]  = rec.contact_name
+        result["sales_rep_user_id"]  = attribution.rep_user_id(rec)
+        result["sales_rep_username"] = attribution.rep_username(rec, None)
         return JSONResponse(result)
 
     tt = db.query(TrailerType).filter_by(id=trailer_id).first()
@@ -1323,6 +1345,9 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                     detail="That costing is a repair — reopen it from the costings "
                            "list and save it there.",
                 )
+            rep = attribution.plan_rep_change(
+                db, user, requested_rep, creator_id=rec.user_id,
+                current_stored=rec.sales_rep_user_id, is_new=False)
             try:
                 _prev = json.loads(rec.result_json) if rec.result_json else {}
             except Exception:
@@ -1337,6 +1362,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                 setattr(rec, _k, _v)
             for _k, _v in end_user_fields.items():
                 setattr(rec, _k, _v)
+            rec.sales_rep_user_id = rep.stored
+            attribution.record_rep_change(db, rec, rep, user)
             rec.discount_kind   = result.get("discount_kind")
             rec.discount_input  = result.get("discount_input")
             rec.discount_amount = result.get("discount_amount")
@@ -1352,6 +1379,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             result["contact_name"]  = rec.contact_name
             result["end_user_id"]      = rec.end_user_id
             result["end_user_company"] = rec.end_user_company
+            result["sales_rep_user_id"]  = attribution.rep_user_id(rec)
+            result["sales_rep_username"] = attribution.rep_username(rec, None)
             return JSONResponse(result)
 
         if customer_id and version_action is None:
@@ -1395,6 +1424,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         rec = CalculationRecord(
             trailer_type_id=trailer_id,
             user_id=user.id,
+            sales_rep_user_id=new_rep.stored,
             customer_id=customer_id,
             dimensions_json=json.dumps(dims),
             result_json=json.dumps(result),
@@ -1408,6 +1438,7 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         )
         db.add(rec)
         db.flush()
+        attribution.record_rep_change(db, rec, new_rep, user)
         if reuse_quote_number and version_action == "new_version" and (customer_id or edit_record_id):
             # Copy the parent quote's number onto this revision so the whole
             # revision family shares one identifier. assign_quote_number below
@@ -1446,6 +1477,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     result["contact_name"] = rec.contact_name
     result["end_user_id"]      = rec.end_user_id
     result["end_user_company"] = rec.end_user_company
+    result["sales_rep_user_id"]  = attribution.rep_user_id(rec)
+    result["sales_rep_username"] = attribution.rep_username(rec, None)
     return JSONResponse(result)
 
 
@@ -1613,7 +1646,15 @@ async def api_list_calculations(
             "customer": r.customer.name if r.customer else "—",
             "contact_name": getattr(r, "contact_name", None),   # attention-of snapshot (0035)
             "end_user_company": getattr(r, "end_user_company", None),   # end-user snapshot (0040)
+            # `user` is the CREATOR and keeps meaning exactly that — the board's
+            # delete-your-own-draft gate compares it with the session username.
             "user":     r.user.username if r.user else "—",
+            "created_by_user_id": r.user_id,
+            # v1.52 capture-for-user — who the costing is FOR (the Rep column and
+            # "My costings"): the captured-for rep, else the creator.
+            "sales_rep":          attribution.rep_username(r),
+            "sales_rep_user_id":  attribution.rep_user_id(r),
+            "captured_for":       attribution.is_captured_for_someone_else(r),
             "created_at": r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "—",
             "grand_total": grand_total if full_access else None,   # net of discount (headline)
             "gross_total":     float(rd.get("selling_price") or rd.get("grand_total") or 0) if full_access else None,
@@ -1702,6 +1743,114 @@ async def api_mark_calculation_accepted(record_id: int, request: Request, db: Se
         "approved_at": rec.approved_at.strftime("%Y-%m-%d %H:%M"),
         "approver": user.username,
     }
+
+
+# ─── Capture for user (v1.52) ─────────────────────────────────────────────────
+#
+# The calculator's "Capture for" dropdown saves through /api/approve (above); these
+# three routes are the rest of the feature: the dropdown's user list, and the costing
+# detail page's attribution line + re-assign control. The rule itself lives in
+# services/costing_attribution — nothing here decides who may credit whom.
+
+def _costing_status(rec) -> str:
+    return rec.status or ("accepted" if rec.approved_at else "pending")
+
+
+def _attribution_payload(db: Session, rec, caller) -> dict:
+    status = _costing_status(rec)
+    return {
+        "calculation_id": rec.id,
+        "status": status,
+        "creator": {"id": rec.user_id,
+                    "username": rec.user.username if rec.user else None},
+        "sales_rep": {"id": attribution.rep_user_id(rec),
+                      "username": attribution.rep_username(rec, None)},
+        "captured_for": attribution.is_captured_for_someone_else(rec),
+        # Display only, like every other can_* on these payloads: the POST below
+        # re-applies each condition and is the authority.
+        "can_reassign": (user_can(caller, attribution.CAPTURE_PERMISSION, db)
+                         and status == "pending"
+                         and not getattr(rec, "deleted_at", None)),
+        "journal": attribution.rep_journal(db, rec.id),
+    }
+
+
+@router.get("/api/capture-for/users")
+async def api_capture_for_users(request: Request, db: Session = Depends(get_db)):
+    """Every user the "Capture for" dropdown offers (Manage Users order)."""
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401)
+    if not user_can(user, attribution.CAPTURE_PERMISSION, db):
+        raise HTTPException(status_code=403,
+                            detail=f"Permission denied: {attribution.CAPTURE_PERMISSION}")
+    return attribution.capture_for_candidates(db)
+
+
+@router.get("/api/calculations/{record_id}/sales-rep")
+async def api_get_costing_attribution(record_id: int, request: Request,
+                                      db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401)
+    rec = db.query(CalculationRecord).filter_by(id=record_id).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="Calculation not found")
+    return _attribution_payload(db, rec, user)
+
+
+@router.post("/api/calculations/{record_id}/sales-rep")
+async def api_reassign_costing(record_id: int, request: Request,
+                               db: Session = Depends(get_db)):
+    """Change who a PENDING costing was captured for. Body: {"sales_rep_user_id": id|null}.
+
+    Frozen once the costing is decided (accepted, declined or further on), with the rest
+    of the quote — the same line the edit path draws. The creator is never touched.
+    """
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401)
+    # The route IS the admin control, so it is gated outright — even a request that
+    # would change nothing is refused to a caller without the key.
+    if not user_can(user, attribution.CAPTURE_PERMISSION, db):
+        raise HTTPException(status_code=403,
+                            detail=f"Permission denied: {attribution.CAPTURE_PERMISSION}")
+    body = await request.json()
+    if not isinstance(body, dict) or "sales_rep_user_id" not in body:
+        raise HTTPException(status_code=422, detail="sales_rep_user_id is required.")
+    # Row-locked so two admins re-assigning the same costing journal in order, each
+    # "from" being the other's "to".
+    rec = (db.query(CalculationRecord).filter_by(id=record_id)
+             .with_for_update().first())
+    if not rec:
+        raise HTTPException(status_code=404, detail="Calculation not found")
+    if getattr(rec, "deleted_at", None):
+        raise HTTPException(
+            status_code=409,
+            detail="This costing has been deleted. Restore it before changing who it "
+                   "was captured for.")
+    status = _costing_status(rec)
+    if status != "pending":
+        raise HTTPException(
+            status_code=409,
+            detail=(f"This costing is {status}, so who it was captured for is frozen "
+                    "with the rest of the quote. Only a pending costing can be "
+                    "re-assigned."))
+    change = attribution.plan_rep_change(
+        db, user, body.get("sales_rep_user_id"), creator_id=rec.user_id,
+        current_stored=rec.sales_rep_user_id, is_new=False)
+    if change.changed:
+        rec.sales_rep_user_id = change.stored
+        attribution.record_rep_change(db, rec, change, user)
+        db.commit()
+        db.refresh(rec)
+        logging.getLogger(__name__).info(
+            "COSTING RE-ASSIGNED id=%s quote=%s from=%s to=%s by=%s", rec.id,
+            rec.quote_number, getattr(change.from_user, "username", None),
+            getattr(change.to_user, "username", None), user.username)
+    else:
+        db.rollback()   # release the row lock
+    return {"changed": change.changed, **_attribution_payload(db, rec, user)}
 
 
 @router.post("/api/calculations/{record_id}/decline")
@@ -1936,6 +2085,14 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "id": rec.id,
         "trailer_type_id": rec.trailer_type_id,
         "customer_id":     rec.customer_id,
+        # v1.52 capture-for-user. sales_rep_user_id is the RESOLVED rep (captured-for,
+        # else the creator) — what the calculator's "Capture for" dropdown re-selects
+        # on edit, so an admin who only fixes a price never silently re-assigns.
+        "created_by_user_id":  rec.user_id,
+        "created_by_username": rec.user.username if rec.user else None,
+        "sales_rep_user_id":   attribution.rep_user_id(rec),
+        "sales_rep_username":  attribution.rep_username(rec, None),
+        "captured_for":        attribution.is_captured_for_someone_else(rec),
         # Contact snapshot (migration 0035) — contact_id drives edit-mode re-selection;
         # the snapshot fields are the historical display values.
         "contact_id":        rec.contact_id,

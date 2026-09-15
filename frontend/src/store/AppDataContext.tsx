@@ -46,6 +46,10 @@ const SERVER_KEYS = new Set<string>([
   // TRUE for an unlisted key, so leaving it out would have offered the Delete
   // right-click to every logged-in user rather than to the roles actually granted it.
   'costings.delete_own_draft',
+  // v1.52 — re-assign who a pending costing was captured for (costing detail page).
+  // Seeded {admin} only; listed so live mode reads the real grant rather than the
+  // permissive fallback, which would offer the control to every logged-in user.
+  'costings.capture_for_user',
 ])
 const KEY_ALIAS: Record<string, string> = {
   'materials.count': 'stores.count',

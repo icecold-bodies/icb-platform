@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db, TrailerType, Material, CalculationRecord, Customer
 from ..deps import get_current_user, user_can
+from ..services.costing_attribution import rep_username   # v1.52 capture-for-user
 
 router = APIRouter()
 
@@ -131,6 +132,10 @@ def build_dashboard_context(request: Request, db: Session, user) -> dict:
         # rather than dug out of result_data in the template: the number lives
         # in two places for historical reasons, and a Jinja expression that has
         # to know both is a second implementation waiting to drift.
+        # v1.52 — the person column: the captured-for rep, else the creator. Resolved
+        # here for the same reason as the R-number below — one implementation, not a
+        # Jinja copy of the fallback.
+        r.rep_username = rep_username(r)
         r.repair_doc_number = None
         if getattr(r, "is_repair", False) and isinstance(r.result_data, dict):
             r.repair_doc_number = (

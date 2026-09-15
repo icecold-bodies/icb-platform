@@ -3,7 +3,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, timedelta
 
-from ..database import get_db, User, UserSession, Permission, RolePermission, UserPermission
+from ..database import (get_db, User, UserSession, Permission, RolePermission, UserPermission,
+                        CalculationRecord)
 from ..deps import (
     get_current_user, require_user, require_admin,
     user_can, pwd_context,
@@ -176,6 +177,13 @@ async def delete_user(user_id: int, request: Request, db: Session = Depends(get_
     current_user = get_current_user(request, db)
     if current_user and current_user.id == user_id:
         raise HTTPException(status_code=400, detail="Cannot delete your own account")
+    # v1.52 capture-for-user — costings captured FOR this user fall back to their
+    # creators, which is what 0017's ON DELETE SET NULL on sales_rep_user_id means. Said
+    # here rather than left to that FK: a database built from the 0001 baseline also has
+    # a model-created FK on the same column with no ON DELETE, and it would refuse the
+    # delete. The capture journal keeps the username snapshot either way.
+    db.query(CalculationRecord).filter(CalculationRecord.sales_rep_user_id == u.id).update(
+        {CalculationRecord.sales_rep_user_id: None}, synchronize_session=False)
     db.delete(u)
     db.commit()
     return {"success": True}

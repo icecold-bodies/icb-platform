@@ -551,7 +551,43 @@ class CalculationRecord(Base):
     trailer_type = relationship("TrailerType", back_populates="calculations")
     user         = relationship("User", back_populates="calculations", foreign_keys=[user_id])
     approver     = relationship("User", back_populates="approved_calculations", foreign_keys=[approved_by_user_id])
+    # v1.52 capture-for-user — the user sales_rep_user_id points at. One-way (no
+    # back_populates): nothing walks from a User to "costings captured for them"; that
+    # question is asked through services/costing_attribution, which also owns the
+    # rep -> creator fallback. Read it through that module, never directly.
+    sales_rep    = relationship("User", foreign_keys=[sales_rep_user_id])
     customer     = relationship("Customer", back_populates="calculations")
+
+
+class CalculationSalesRepAudit(Base):
+    """Journal of every capture-for and re-assign of a costing (v1.52, migration 0048).
+
+    Append-only, one row per change of WHO a costing is attributed to. `user_id` on the
+    costing is the creator and is never rewritten; `sales_rep_user_id` carries the
+    attribution and this table is its history. House audit idiom (production_jobs_audit,
+    chassis_records_audit, floor_events): every person is stored twice — an id FK that
+    goes NULL if the user is ever removed, and the USERNAME snapshotted at write time, so
+    the line still reads "Captured for Nadie by admin" after either is renamed or deleted.
+
+    action: 'capture'  — the costing was SAVED for someone other than its creator
+            'reassign' — the attribution was changed on an existing pending costing
+    """
+    __tablename__ = "calculations_sales_rep_audit"
+    id             = Column(Integer, primary_key=True)
+    # CASCADE: costings are only ever soft-deleted by the app; the hard deletes that
+    # remain (the save modal's "Replace", test teardown) must not start failing because
+    # a costing carries a journal.
+    calculation_id = Column(Integer, ForeignKey("calculations.id", ondelete="CASCADE"),
+                            nullable=False)
+    action         = Column(String(16), nullable=False)
+    from_user_id   = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    from_username  = Column(String(100), nullable=True)
+    to_user_id     = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    to_username    = Column(String(100), nullable=True)
+    actor_user_id  = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    actor_username = Column(String(100), nullable=True)
+    created_at     = Column(DateTime(timezone=True), nullable=False,
+                            default=lambda: datetime.now(timezone.utc))
 
 
 class ChassisConstant(Base):
@@ -1272,6 +1308,15 @@ PERMISSION_CATALOGUE = [
     # estimators own their own template library. USING a template needs no key —
     # any costings user may pull one into a repair.
     ("costings.repair_templates_manage", "Create, edit and retire reusable repair templates", "admin", {"admin", "full"}),
+    # v1.52 (Michael, 15 Sep) — capture a costing ON BEHALF OF another user: the save
+    # credits sales_rep_user_id to the chosen person while user_id stays the real
+    # creator. Fifth in the costings.* family, but seeded {admin} ONLY — unlike the
+    # four above this is not Internal Sales' own work, it is attributing work to
+    # someone else. Anyone else needs an explicit per-user allow.
+    #
+    # Enforced in services/costing_attribution.plan_rep_change, which /api/approve and
+    # the re-assign route both call: hiding the calculator dropdown is display only.
+    ("costings.capture_for_user", "Capture a costing on behalf of another user", "admin", {"admin"}),
     # ── MES permission keys (v1.40.1) ────────────────────────────────────────
     # Mirrors the data inserts of migrations 0005 / 0013 / 0016 / 0017 / 0028
     # VERBATIM (names, descriptions, grants). Those migrations seed migrated DBs,

@@ -21,7 +21,7 @@ import { useCostings } from '../../store/CostingsContext'
 import { useAppData } from '../../store/AppDataContext'
 import { Toast } from '../../components/ui/overlays'
 import { apiDelete, apiGet, apiPost } from '../../lib/api'
-import { ALL_STATUSES, liveToCosting, type Costing, type LiveCalculation, type StatusName } from '../../data/costingsData'
+import { ALL_STATUSES, isMyCosting, liveToCosting, type Costing, type LiveCalculation, type StatusName } from '../../data/costingsData'
 import { Tooltip } from '../../components/ui/Tooltip'
 import { QuoteNumberCell, quoteSearchText } from './quoteIdentity'
 import { Card } from '../../components/ui/primitives'
@@ -202,12 +202,15 @@ export function CostingsDashboard() {
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase()
     return costings.filter((c) => {
-      // "My costings" only makes sense in Mock mode for the Sales Rep demo
-      // profile (Burt). In Live mode the data's created_by is the FastAPI
-      // username (e.g. 'admin'), unrelated to the React profile — the auto
-      // scope-flip above sets scope='all' on first Live load so nothing's
-      // hidden, but if the user manually picks "Mine" we honour it.
+      // Mock mode: "My costings" is the Sales Rep demo profile (Burt).
       if (scope === 'mine' && mode === 'mock' && profile.id === 'rep_burt' && c.created_by !== 'BURT') {
+        return false
+      }
+      // v1.52 — Live mode: the costings the session user created OR that were
+      // captured for them. Until v1.52 a Live "My costings" click filtered nothing;
+      // the auto scope-flip above still opens the board on "All", so nothing is
+      // hidden unless the user picks "My costings" themselves.
+      if (scope === 'mine' && mode === 'live' && !isMyCosting(c, sessionUsername)) {
         return false
       }
       if (filter.size && !filter.has(c.status)) return false
@@ -222,7 +225,7 @@ export function CostingsDashboard() {
         (c.contact_name ?? '').toLowerCase().includes(ql)
       )
     })
-  }, [costings, q, filter, scope, profile, mode])
+  }, [costings, q, filter, scope, profile, mode, sessionUsername])
 
   // v1.49 — the Deleted view swaps the table's source. The status chips and the
   // mine/all scope describe LIVE work, so they are not applied to a recycle bin.
@@ -497,7 +500,12 @@ export function CostingsDashboard() {
                       <span className="text-muted">—</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs">{c.created_by}</td>
+                  {/* v1.52 — the Rep is who the costing is FOR (captured-for, else the
+                      creator), resolved server-side. The creator stays on the detail page. */}
+                  <td data-testid="costing-rep" className="px-3 py-2 font-mono text-xs"
+                      title={c.captured_for ? `Captured for ${c.rep} by ${c.created_by}` : undefined}>
+                    {c.rep || c.created_by}
+                  </td>
                   <td className="px-3 py-2 text-xs text-muted">{dmy(c.created_at)}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{zarShort(c.selling_zar)}</td>
                   <td className="px-3 py-2">

@@ -34,6 +34,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db, CalculationRecord, TrailerType, BillOfMaterial
 from ..deps import get_current_user, user_can
 from ..services import resolve_report_template, strip_excluded_items, _bom_load_options
+from ..services.costing_attribution import rep_username   # v1.52 capture-for-user
 from ..services.document_context import (
     VALID_DETAILS, VALID_FORMATS,
     body_type_with_length, build_doc_ctx, parse_ratios,
@@ -1132,7 +1133,8 @@ def _doc_ctx_for_record(rec: CalculationRecord, db: Session, *, detail, ratios_r
         recently_updated_mats=recently_updated_mats,
         generated_at=datetime.now().strftime("%d %b %Y %H:%M"),
     )
-    username = rec.user.username if rec.user else "unknown"
+    # v1.52 — whose costing the file is: the captured-for rep, else the creator.
+    username = rep_username(rec, "unknown")
     stem = f"Costing_{trailer_name.replace(' ', '_')}_{rec.id}_{username}"
     return ctx, stem
 

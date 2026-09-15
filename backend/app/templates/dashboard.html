@@ -323,7 +323,7 @@
             <span style="color:var(--text-dim);font-size:11px">Rev1</span>
             {% endif %}
           </td>
-          <td>{{ r.user.username if r.user else '—' }}</td>
+          <td>{{ r.rep_username }}</td>
           <td class="td-num" style="color:var(--blue-hi)">
             {% if r.result_data %}
               {% set gross = r.result_data.get('selling_price') or r.result_data.get('grand_total') or 0 %}
@@ -672,7 +672,7 @@ async function filterRecent(filter, clickedCard) {
         <td class="body-cell"><span class="body-name">${escH(r.trailer)}</span><span class="row-pills">${renderStatePill(r)}${renderRepairPill(r)}</span></td>
         <td class="customer-cell">${escH(r.customer || '—')}</td>
         <td class="td-mono" style="text-align:center">${verBadge}</td>
-        <td>${escH(r.user)}</td>
+        <td>${escH(r.sales_rep || r.user)}</td>
         <td class="td-num" style="color:var(--blue-hi)">${
           r.grand_total ? 'R ' + Number(r.grand_total).toLocaleString('en-ZA', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—'
         }</td>

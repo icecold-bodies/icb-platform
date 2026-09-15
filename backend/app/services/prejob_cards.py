@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from app.database import CalculationRecord, User
 from app.models.mes import ChassisRecord, PrejobCard, PrejobTemplate, ProductionJob
+from app.services.costing_attribution import rep_user_id
 
 logger = logging.getLogger("icb.prejob")
 
@@ -316,7 +317,8 @@ def create_card(db: Session, calculation_id: int, template_id: int, user) -> Pre
         customer_notes=None,
         created_by_user_id=getattr(user, "id", None),
         # §0.13 — quote-time capture defaults the dropdown; calc owner is the soft fallback.
-        sales_rep_user_id=calc.sales_rep_user_id or calc.user_id,
+        # v1.52 — resolved by the one attribution helper (captured-for rep, else creator).
+        sales_rep_user_id=rep_user_id(calc),
         status="draft",
     )
     # Scope addition — bake the CORE tokens at creation ("substitutions become invisible at

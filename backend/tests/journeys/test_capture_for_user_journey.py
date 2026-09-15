@@ -345,7 +345,10 @@ def test_an_admin_edit_keeps_who_the_costing_is_for(page: Page, staged) -> None:
     expect(page.locator("#capture-for-select")).to_have_value(str(staged["nadie"]), timeout=T)
     expect(page.locator("#capture-for-note")).to_contain_text(f"Credited to {NADIE}")
     expect(page.locator("#f-repair-contact")).to_have_value(NADIE)
+    # Change only surface fields that do not re-cost — the type and the quotation's
+    # contact phone. Through v1.51 an Overwrite silently saved the OLD values of both.
     page.fill("#f-repair-type", "Door seal (edited)")
+    page.fill("#f-repair-contact-tel", "082 999 0152")
     expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)
     page.click("#approve-btn")
     overwrite = page.locator("#modal-edit-save button[onclick*='overwrite']")
@@ -354,7 +357,11 @@ def test_an_admin_edit_keeps_who_the_costing_is_for(page: Page, staged) -> None:
     expect(page.locator("#approve-btn")).to_contain_text("Saved", timeout=T)
 
     row = _row(rec_id)
-    assert json.loads(row["result_json"])["repair_type"] == "Door seal (edited)", "the edit did not save"
+    saved = json.loads(row["result_json"])
+    assert saved["repair_type"] == "Door seal (edited)", "the edited type was not saved"
+    assert saved["input_state"]["icb_contact_phone"] == "082 999 0152", \
+        "the edited Your Contact phone was not saved"
+    assert saved["input_state"]["icb_contact_name"] == NADIE
     assert row["sales_rep_user_id"] == staged["nadie"], "the edit silently re-assigned the costing"
     assert row["user_id"] == staged["admin"]
     assert _journal(rec_id) == [("capture", "admin", NADIE, "admin")]

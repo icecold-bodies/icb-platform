@@ -5968,6 +5968,26 @@ async function approveCosting() {
     end_user_id: endUserId  ? +endUserId  : null,
   };
 
+  // v1.50 P3 — refresh the repair's OWN fields from the surface at save time.
+  // lastCalcPayload captures them at CALC time, but typing the type (or the
+  // vehicle block, or a document header field) does not re-cost — deliberately,
+  // v1.47: the type gates the SAVE, not the price. So a user who filled those
+  // in AFTER the last line change was saving a STALE payload: the server
+  // 422'd "Type of repair is required" against a form that plainly showed one.
+  //
+  // v1.52 — done HERE, ahead of the edit branch below. It used to sit after it,
+  // so an EDITED repair skipped the refresh entirely: change its type, its
+  // vehicle registration or its "Your contact" name and phone without touching
+  // a line, press Overwrite, and the old values were saved back over the new.
+  if (repairMode) {
+    Object.assign(_pendingApproveBase, {
+      repair_type: String(document.getElementById('f-repair-type')?.value || '').trim(),
+      repair_scope: String(document.getElementById('f-repair-scope')?.value || '').trim() || null,
+      ..._repairDocFields(),
+      repair_vehicle: _readRepairVehicle(),
+    });
+  }
+
   // Editing an existing pending costing → ask whether to overwrite the original
   // record or save a new revision (the "validate the save" step). This replaces
   // the new-quote duplicate flow below.
@@ -6003,21 +6023,9 @@ async function approveCosting() {
   // v1.47 — a repair is an independent job, not a revision of another repair.
   // Two repairs for one customer are two separate quotes, so the duplicate /
   // revision flow (which keys on customer + body type) is skipped: the server
-  // saves every repair as version 1 with its own quote number.
-  //
-  // v1.50 P3 — refresh the repair's OWN fields from the surface at save time.
-  // lastCalcPayload captures them at CALC time, but typing the type (or the
-  // vehicle block, or a document header field) does not re-cost — deliberately,
-  // v1.47: the type gates the SAVE, not the price. So a user who filled those
-  // in AFTER the last line change was saving a STALE payload: the server
-  // 422'd "Type of repair is required" against a form that plainly showed one.
+  // saves every repair as version 1 with its own quote number. (Its own fields
+  // were refreshed from the surface at the top of this function.)
   if (repairMode) {
-    Object.assign(_pendingApproveBase, {
-      repair_type: String(document.getElementById('f-repair-type')?.value || '').trim(),
-      repair_scope: String(document.getElementById('f-repair-scope')?.value || '').trim() || null,
-      ..._repairDocFields(),
-      repair_vehicle: _readRepairVehicle(),
-    });
     await _doApprove(null, null);
     return;
   }

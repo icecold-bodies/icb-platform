@@ -246,6 +246,7 @@ def test_admin_captures_a_repair_for_nadie_then_reassigns_it(page: Page, browser
         expect(nadie_page.locator("#trailer-select")).to_be_visible(timeout=T)
         expect(nadie_page.locator("#capture-for-block")).to_have_count(0)
         assert nadie_page.evaluate("() => canCaptureForUser") is False
+        shot(nadie_page, "03b-calculator-no-control-as-nadie", JOURNEY)
         # … and is refused by the API when she tries anyway.
         refused = _post(nadie_page, "/api/approve", {
             "is_repair": True, "trailer_type_id": None, "customer_id": staged["customer"],

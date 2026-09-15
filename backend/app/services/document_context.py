@@ -200,7 +200,8 @@ def build_doc_ctx(*, mode: str, heading: str, sub: str, client_name: str,
                   recently_updated_mats: set | None = None,
                   generated_at: str = "") -> dict:
     """Assemble the renderer-neutral document context. ``result`` must already
-    be exclusion-stripped (and, for previews, screen-ordered) by the caller."""
+    be screen-ordered (services/bom_order, for saved costings and previews alike)
+    and then exclusion-stripped by the caller."""
     items = list(result.get("items") or [])
     optional_cats = {it["category"] for it in items if it.get("section_is_optional")}
     include_items = detail == "items"

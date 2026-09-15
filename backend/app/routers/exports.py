@@ -35,6 +35,7 @@ from ..database import get_db, CalculationRecord, TrailerType, BillOfMaterial
 from ..deps import get_current_user, user_can
 from ..services import resolve_report_template, strip_excluded_items, _bom_load_options
 from ..services.costing_attribution import rep_username   # v1.52 capture-for-user
+from ..services.bom_order import order_result_items        # v1.54 — the calculator's BOM line order
 from ..services.document_context import (
     VALID_DETAILS, VALID_FORMATS,
     body_type_with_length, build_doc_ctx, parse_ratios,
@@ -1069,6 +1070,9 @@ def _doc_ctx_for_record(rec: CalculationRecord, db: Session, *, detail, ratios_r
     """(doc_ctx, filename_stem) for an APPROVED/saved costing record."""
     dims = json.loads(rec.dimensions_json or "{}")
     result = json.loads(rec.result_json or "{}")
+    # v1.54 — lines in the calculator's order, not the stored A–Z one. Ordered BEFORE
+    # the strip, because the calculator orders the full list (see services/bom_order).
+    result = order_result_items(db, result, rec.trailer_type_id)
     result = strip_excluded_items(result)   # only selected items on exports
 
     tt = db.query(TrailerType).filter_by(id=rec.trailer_type_id).first()
@@ -1166,6 +1170,14 @@ def _doc_ctx_for_preview(body: dict, db: Session):
     if not trailer_name:
         trailer_name = str(body.get("trailer_name") or "").strip() or "Body Type"
 
+    # Line items in the SAME order as the costings page (Michael 4 Aug). Sheet
+    # mode (default): the calculator's own order, from the one shared rule in
+    # services/bom_order — ordered BEFORE the strip, as the calculator orders the
+    # full list. Alpha mode: sections A–Z, as the calculator's alpha toggle shows it.
+    mode = str(body.get("bom_sort_mode") or "sheet").lower()
+    if mode != "alpha":
+        result = order_result_items(db, result, tt.id if tt is not None else None)
+
     result = strip_excluded_items(result)  # match saved-export semantics
 
     bom_rows = []
@@ -1173,31 +1185,10 @@ def _doc_ctx_for_preview(body: dict, db: Session):
         bom_rows = (db.query(BillOfMaterial)
                     .filter_by(trailer_type_id=tt.id).all())
 
-    # Line items in the SAME order as the costings page (Michael 4 Aug). Sheet
-    # mode (default): items keyed by BOM sort_order; alpha mode: sections A–Z.
-    items_live = list(result.get("items", []))
-    if items_live:
-        mode = str(body.get("bom_sort_mode") or "sheet").lower()
-        if mode == "alpha":
-            items_live.sort(key=lambda it: ((it.get("category") or "Uncategorised"),
-                                            str(it.get("material") or "")))
-        else:
-            so_by_bom = {r.id: r.sort_order for r in bom_rows
-                         if r.sort_order is not None}
-            keys: dict[int, float] = {}
-            for idx, it in enumerate(items_live):
-                bid = it.get("bom_id")
-                keys[id(it)] = so_by_bom.get(bid, idx) if bid is not None else idx
-            cat_first: dict[str, float] = {}
-            for it in items_live:
-                cat = it.get("category") or "Uncategorised"
-                k = keys[id(it)]
-                if cat not in cat_first or k < cat_first[cat]:
-                    cat_first[cat] = k
-            items_live.sort(key=lambda it: (
-                cat_first[it.get("category") or "Uncategorised"], keys[id(it)]))
+    if mode == "alpha" and result.get("items"):
         result = dict(result)
-        result["items"] = items_live
+        result["items"] = sorted(result["items"], key=lambda it: (
+            (it.get("category") or "Uncategorised"), str(it.get("material") or "")))
 
     # Spec block: the SELECTED body options exactly like the calculator's Body
     # Options panel — canonical read-only decoder, from the client's live state.
@@ -1610,6 +1601,7 @@ async def report_for_record(record_id: int, request: Request, db: Session = Depe
 
     dims = json.loads(rec.dimensions_json or "{}")
     result = json.loads(rec.result_json or "{}")
+    result = order_result_items(db, result, rec.trailer_type_id)   # v1.54 — calculator order
     result = strip_excluded_items(result)  # only selected items on the report
     customer = None
     if rec.customer:

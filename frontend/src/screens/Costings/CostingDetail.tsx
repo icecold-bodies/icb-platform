@@ -1373,7 +1373,10 @@ function LiveBom({ calculationId, mode }: { calculationId: number | null; mode: 
               {!collapsed.has(g.cat) && (
                 <>
                   {g.items.map((l, i) => (
-                    <tr key={`${l.bom_id ?? l.material_code ?? l.material}-${i}`} className="border-t border-line">
+                    // v1.54 — rows render in the order the server sends, which is the
+                    // calculator's (services/bom_order); the hooks let a journey prove it.
+                    <tr key={`${l.bom_id ?? l.material_code ?? l.material}-${i}`} className="border-t border-line"
+                        data-testid="live-bom-row" data-bom-id={l.bom_id ?? ''}>
                       <td className="px-3 py-2" />
                       <td className="px-3 py-2 text-body">{l.material}</td>
                       <td className="px-3 py-2 font-mono text-xs text-muted">{l.material_code ?? '—'}</td>

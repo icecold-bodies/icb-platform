@@ -24,6 +24,7 @@ from ..services import (
     get_section_snapshot, get_formula_lib, get_global_vars,
 )
 from ..services import costing_attribution as attribution   # v1.52 — capture-for-user (rep vs creator)
+from ..services.bom_order import order_result_items        # v1.54 — the calculator's BOM line order
 from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
 from ..services import insulation_foam as pu_foam   # v1.51 — 32D PU FOAM vs 4G FOAM
 from ..services import quote_document           # v1.51 — print modes
@@ -1494,6 +1495,8 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
         raise HTTPException(status_code=404)
     dims   = json.loads(rec.dimensions_json)
     result = json.loads(rec.result_json)
+    # v1.54 — the calculator's line order (services/bom_order), before the strip.
+    result = order_result_items(db, result, rec.trailer_type_id)
     result = strip_excluded_items(result)  # report shows only selected items
     tt     = db.query(TrailerType).filter_by(id=rec.trailer_type_id).first()
 
@@ -2176,7 +2179,13 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "net_total":       rec.net_total       if rec.net_total       is not None else result_data.get("net_total"),
         # The saved result itself (sans the bulky input_state echo) so the editor
         # can display the original figures and run a balance check against them.
-        "saved_result":  {k: v for k, v in result_data.items() if k != "input_state"},
+        # v1.54 — its items in the calculator's line order: this is what the costing
+        # page's bill of materials renders. The editor's consumers (edit replay,
+        # optional-section restore, balance check) key on bom_id and totals, never on
+        # position, so the order is free to follow the calculator.
+        "saved_result":  {k: v for k, v in order_result_items(
+                              db, result_data, rec.trailer_type_id).items()
+                          if k != "input_state"},
         # Derived door/insulation/floor-type summary for the costing detail page
         # (v1.42 body options panel). None when nothing is derivable.
         "body_options_display": body_options_display,

@@ -24,6 +24,7 @@ from ..database import CalculationRecord, User, get_db
 from ..deps import require_user, user_can
 from ..models.mes import PlanFloorState, PrejobCard, ProductionJob
 from ..services import chassis as chassis_svc
+from ..services.bom_order import order_result_items   # v1.54 — the calculator's BOM line order
 
 router = APIRouter(prefix="/api/plan", tags=["plan"])
 
@@ -186,6 +187,9 @@ def job_card(job_number: str, db: Session = Depends(get_db), user: User = Depend
                 result = json.loads(rec.result_json)
             except Exception:
                 result = {}
+            # v1.54 — the job's BOM in the calculator's line order, like every other
+            # view of a saved costing (services/bom_order).
+            result = order_result_items(db, result, rec.trailer_type_id)
             show_cost = user_can(user, "bom.view_full_cost", db)
             cats: dict = {}
             order: list = []

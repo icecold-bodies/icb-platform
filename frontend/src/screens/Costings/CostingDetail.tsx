@@ -25,6 +25,7 @@ import {
   Star,
   Building2,
   FileText,
+  Ruler,
 } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
 import { apiGet, apiPost } from '../../lib/api'
@@ -152,6 +153,14 @@ export function CostingDetail() {
       </div>
     )
   }
+
+  // v1.56 (Michael, 16 Sep) — the parameters the body was priced at, beside its type.
+  // Absent ones drop out of BOTH lines, so the numbers and their labels stay aligned;
+  // a repair has no geometry at all and the row does not render.
+  const parameters = ([['Length', c.body_length], ['Width', c.body_width],
+                       ['Height', c.body_height]] as const)
+    .filter(([, m]) => typeof m === 'number' && isFinite(m) && m > 0)
+    .map(([label, m]) => ({ label, metres: String(Math.round((m as number) * 100) / 100) }))
 
   const style = styleForStatus(c.status)
   const canPreJob = hasPermission('costings.pre_job_card')
@@ -387,6 +396,16 @@ export function CostingDetail() {
             <div className="space-y-4 lg:pr-6">
               <InfoField icon={<User size={13} strokeWidth={2.5} />} label="Customer" value={c.customer_name} />
               <InfoField icon={<Truck size={13} strokeWidth={2.5} />} label="Body type" value={`${c.body_type}${lengthSuffix(c.body_length)}`} />
+              {parameters.length > 0 && (
+                <div data-testid="costing-parameters">
+                  <InfoField
+                    icon={<Ruler size={13} strokeWidth={2.5} />}
+                    label="Parameters"
+                    value={`${parameters.map((p) => p.metres).join(' × ')} m`}
+                    sub={parameters.map((p) => p.label).join(' × ')}
+                  />
+                </div>
+              )}
               <InfoField icon={<MapPin size={13} strokeWidth={2.5} />} label="Site" value={c.site} />
             </div>
 

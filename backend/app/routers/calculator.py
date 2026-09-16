@@ -1561,6 +1561,19 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
 
 # ─── Calculations list ────────────────────────────────────────────────────────
 
+def _dim_m(value) -> "float | None":
+    """One entered body parameter, in metres — None when there is none to show.
+
+    A repair carries `dimensions_json = {}`, and legacy rows can carry a blank, so the
+    absent case is normal rather than an error: the costing page simply omits the line.
+    """
+    try:
+        metres = float(value)
+    except (TypeError, ValueError):
+        return None
+    return metres if metres > 0 else None
+
+
 @router.get("/api/calculations")
 async def api_list_calculations(
     request: Request, db: Session = Depends(get_db),
@@ -1603,10 +1616,13 @@ async def api_list_calculations(
             except Exception: pass
         # v1.44 R6 — the entered length rides along so every body-type display
         # can append "({length} m)" (dashboard rows, detail card, doc headers).
-        _len = None
+        # v1.56 (Michael, 16 Sep) — width and height ride along with it, so the costing
+        # page can show the parameters the body was priced at, not only its type.
+        _len = _wid = _hgt = None
         if r.dimensions_json:
             try:
-                _len = json.loads(r.dimensions_json).get("length")
+                _dims = json.loads(r.dimensions_json)
+                _len, _wid, _hgt = _dims.get("length"), _dims.get("width"), _dims.get("height")
             except Exception:
                 pass
         # Headline total = net (after discount). Prefer the column, then result_json,
@@ -1645,7 +1661,9 @@ async def api_list_calculations(
             # keeps that body's name, exactly as before.
             "trailer":  (r.trailer_type.name if r.trailer_type
                          else ("REPAIRS" if bool(getattr(r, "is_repair", False)) else "—")),
-            "body_length": (float(_len) if _len not in (None, "", 0) else None),
+            "body_length": _dim_m(_len),
+            "body_width":  _dim_m(_wid),
+            "body_height": _dim_m(_hgt),
             "customer": r.customer.name if r.customer else "—",
             "contact_name": getattr(r, "contact_name", None),   # attention-of snapshot (0035)
             "end_user_company": getattr(r, "end_user_company", None),   # end-user snapshot (0040)

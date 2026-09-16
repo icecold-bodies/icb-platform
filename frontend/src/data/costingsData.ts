@@ -99,6 +99,8 @@ export interface Costing {
                                    // body is FOR when the customer is a reseller/middleman
   body_type: string
   body_length?: number | null      // v1.44 R6 — entered length (m) for "({length} m)" displays
+  body_width?: number | null       // v1.56 — entered width (m), shown beside the body type
+  body_height?: number | null      // v1.56 — entered height (m), shown beside the body type
   body_category: string
   quote_type: 'New Build' | 'Repair'
   has_repair_quote?: boolean       // v1.48 — server says this repair has a letterhead quotation
@@ -350,6 +352,8 @@ export interface LiveCalculation {
   quote_number: string | null
   trailer: string
   body_length?: number | null      // v1.44 R6 — entered length (m)
+  body_width?: number | null       // v1.56 — entered width (m)
+  body_height?: number | null      // v1.56 — entered height (m)
   customer: string
   contact_name?: string | null     // customer-contacts WO — attention-of snapshot (0035)
   end_user_company?: string | null // v1.47 lane B — end-user snapshot (0040)
@@ -430,6 +434,8 @@ export function liveToCosting(r: LiveCalculation): Costing {
     end_user_company: r.end_user_company ?? undefined,
     body_type: r.trailer || '—',
     body_length: r.body_length ?? null,
+    body_width: r.body_width ?? null,
+    body_height: r.body_height ?? null,
     body_category: '',
     quote_type: r.is_repair ? 'Repair' : 'New Build',
     has_repair_quote: !!r.has_repair_quote,

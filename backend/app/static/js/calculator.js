@@ -2350,6 +2350,62 @@ function bindLiveCalcControl(id, options = {}) {
   });
 }
 
+// ── v1.55 — Enter walks to the next parameter, the way it walks a column in Excel ──
+// Michael (16 Sep): typing a parameter and pressing Enter should commit the value and
+// jump to the next box. Before this, Enter did nothing at all here (no <form> wraps
+// these controls, so there was never an implicit submit to suppress).
+//
+// The chain is the BODY tab's parameter block in screen order. Its first entry is the
+// body-type select; Enter WRAPS to the first typed parameter instead, because landing
+// back on that select and pressing Enter again would walk the body list.
+const ENTER_CHAIN = ['trailer-select', 'f-length', 'f-width', 'f-height', 'f-margin', 'f-ratio'];
+
+/** The chain as it stands right now: hidden and disabled boxes drop out, so a REPAIRS
+ *  costing (dimensions hidden) walks Margin -> Ratio -> Margin, and a collapsed
+ *  parameter panel is never focused. */
+function _enterChainFields() {
+  return ENTER_CHAIN
+    .map(id => document.getElementById(id))
+    .filter(el => el && !el.disabled && el.offsetParent !== null);
+}
+
+/** Price the costing NOW rather than on the 700 ms typing debounce — Enter means
+ *  "I'm done with this value", so the money moves with the jump. Same guard and same
+ *  entry point the debounce uses, so a repair (no bomData) still recalculates. */
+function _recalcNow() {
+  clearTimeout(calcTimer);
+  if (repairMode || bomData.length) runCalc();
+}
+
+function _focusNextParameter(el) {
+  const fields = _enterChainFields();
+  const i = fields.indexOf(el);
+  if (i === -1) return;
+  // Past the end: back to the first TYPED parameter (never the body-type select).
+  const next = fields[i + 1] || fields.find(f => f.id !== 'trailer-select') || fields[0];
+  if (!next || next === el) return;
+  next.focus();
+  if (typeof next.select === 'function') next.select();   // typing replaces, as in Excel
+}
+
+function bindEnterAdvance() {
+  ENTER_CHAIN.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('keydown', e => {
+      // Plain Enter only. A modifier is somebody reaching for another shortcut, and
+      // isComposing is an IME still mid-word.
+      if (e.key !== 'Enter' || e.isComposing) return;
+      if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+      // On a <select>, the browser handles Enter itself while the dropdown is open and
+      // never sends it here, so this only ever runs on a closed one.
+      e.preventDefault();
+      _recalcNow();
+      _focusNextParameter(el);
+    });
+  });
+}
+
 async function loadCustomers() {
   try {
     allCustomers = await api('GET', '/api/customers');
@@ -3394,6 +3450,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     .forEach(id => bindLiveCalcControl(id));
   bindLiveCalcControl('f-margin');
   bindLiveCalcControl('f-ratio', { events: ['change'] });
+  bindEnterAdvance();   // v1.55 — Enter jumps to the next parameter
 });
 
 const VALIDATED_FIELDS = [

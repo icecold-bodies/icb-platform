@@ -1,7 +1,7 @@
 {
- "pack": "smoke",
- "pack_fingerprint": "f8e3374b969c",
- "generated_at": "2026-09-25T14:09:05+00:00",
+ "pack": "chillers",
+ "pack_fingerprint": "0f5604bdf1b9",
+ "generated_at": "2026-09-25T14:12:11+00:00",
  "tool_version": "1.57.0",
  "workbook_month": "2026-09",
  "workbook": {
@@ -15,10 +15,10 @@
  "stale_links": {
   "3": "PRICE 20.04.2004.xls"
  },
- "scenario_count": 18,
+ "scenario_count": 84,
  "sheets": {
+  "UP TO 2.3 CHILLER BODY": "up_to_2_3_chiller_body.json",
   "UP TO 5.5 CHILLER AND 2.3 WIDE": "up_to_5_5_chiller_and_2_3_wide.json",
-  " UP TO 4.8 MT FREEZER  (2": "up_to_4_8_mt_freezer_2.json",
-  "icecream up to 4.8": "icecream_up_to_4_8.json"
+  " 4.9 & UP CHILLER AND 2.5 WIDE ": "4_9_up_chiller_and_2_5_wide.json"
  }
 }

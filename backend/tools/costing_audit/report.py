@@ -73,15 +73,19 @@ def write_markdown(rep: RunReport, path: Path, *, html_name: str | None = None) 
         lines += ["", f"### Unverifiable ({len(unver)} cells)", ""]
         for (sheet, sec, reason), n in sorted(seen.items()):
             lines.append(f"- {sheet} · {sec} · {reason} ({n} scenarios)")
-    acc = [c for c in rep.cells if c.status == "ACCEPTED"]
-    if acc:
+    for kind, title in (("known_defect", "Known defects — accepted, tracked, awaiting a work order"),
+                        ("tolerated", "Tolerated differences")):
+        acc = [c for c in rep.cells if c.status == "ACCEPTED" and (c.accepted or {}).get("kind", "tolerated") == kind]
+        if not acc:
+            continue
         seen = {}
         for c in acc:
-            key = (c.sheet.strip(), c.section_excel or c.section_mes, (c.accepted or {}).get("reason"))
+            a = c.accepted or {}
+            key = (c.sheet.strip(), c.section_excel or c.section_mes, a.get("reason"), a.get("review_by"))
             seen[key] = seen.get(key, 0) + 1
-        lines += ["", f"### Accepted differences ({len(acc)} cells)", ""]
-        for (sheet, sec, reason), n in sorted(seen.items()):
-            lines.append(f"- {sheet} · {sec} · {reason} ({n})")
+        lines += ["", f"### {title} ({len(acc)} cells)", ""]
+        for (sheet, sec, reason, rb), n in sorted(seen.items()):
+            lines.append(f"- {sheet} · {sec} · {reason} — review by {rb} ({n})")
     findings = {}
     for s in rep.scenarios:
         for f in s.findings:
@@ -112,7 +116,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .st{display:inline-block;min-width:74px;text-align:center;border-radius:3px;padding:1px 6px;font-weight:600;cursor:pointer}
 .PASS{background:#d9f2e3;color:#146c3a}.FLAG{background:#fbd9d9;color:#a11a1a}.PRESENCE{background:#fbd9d9;color:#a11a1a}
 .UNMAPPED{background:#fbd9d9;color:#a11a1a}.EXPIRED{background:#f6c4c4;color:#7a0d0d}.NO_GOLDEN{background:#f6c4c4;color:#7a0d0d}
-.ACCEPTED{background:#e3e5e8;color:#555}.UNVERIFIABLE{background:#ffe9c2;color:#8a5a00}.SKIP{background:#f6f7f9;color:#aaa}
+.ACCEPTED{background:#e3e5e8;color:#555}.ACCEPTED.known_defect{background:#ffe0b3;color:#7a4a00}.UNVERIFIABLE{background:#ffe9c2;color:#8a5a00}.SKIP{background:#f6f7f9;color:#aaa}
 .warn{background:#fff4d6;border:1px solid #f0c060;padding:8px 12px;margin:8px 0;border-radius:4px}
 #detail{margin-top:18px}#detail h2,#detail h3{margin:14px 0 6px;font-size:15px}.muted{color:#777}
 .counts span{margin-right:12px}.tri td.MISSING_IN_MES,.tri td.EXTRA_IN_MES{color:#a11a1a}
@@ -125,7 +129,7 @@ const D = window.__AUDIT__;
 const rank = {FLAG:0,PRESENCE:1,UNMAPPED:2,EXPIRED:3,NO_GOLDEN:4,UNVERIFIABLE:5,ACCEPTED:6,PASS:7,SKIP:8};
 const fmt = v => (v==null? '' : (typeof v==='number'? v.toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2}) : String(v)));
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function worst(cells){ let w='SKIP'; for(const c of cells){ if((rank[c.status]??9) < (rank[w]??9)) w=c.status; } return w; }
+function worst(cells){ let w='SKIP', k=''; for(const c of cells){ if((rank[c.status]??9) < (rank[w]??9)){ w=c.status; k=(c.accepted&&c.accepted.kind)||''; } } return w+(k?' '+k:''); }
 function byScenario(){ const m={}; for(const c of D.cells){ (m[c.scenario_id] ||= []).push(c);} return m; }
 function matrix(){
   const bs = byScenario(); const sheets=[]; const cols=[]; const grid={};
@@ -133,7 +137,7 @@ function matrix(){
     if(!sheets.includes(c.sheet)) sheets.push(c.sheet); if(!cols.includes(lab)) cols.push(lab); grid[c.sheet+'|'+lab]={sid, st: worst(cells)}; }
   let h='<table><tr><th>body \\ scenario</th>'+cols.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr>';
   for(const s of sheets){ h+='<tr><th>'+esc(s.trim())+'</th>'; for(const col of cols){ const g=grid[s+'|'+col];
-    h+= g? '<td><span class="st '+g.st+'" onclick="showScenario(\''+esc(g.sid)+'\')">'+g.st+'</span></td>' : '<td></td>'; } h+='</tr>'; }
+    h+= g? '<td><span class="st '+g.st+'" onclick="showScenario(\''+esc(g.sid)+'\')">'+g.st.split(' ')[0]+'</span></td>' : '<td></td>'; } h+='</tr>'; }
   return h+'</table>';
 }
 function showScenario(sid){

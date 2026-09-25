@@ -47,7 +47,7 @@ division.
 | SKIP | both zero (the rear door not fitted, …) |
 | UNVERIFIABLE | Excel cannot price it: `STALE_LINK` (missing 2004 price file), `ERROR_CELL`, `NO_4G_REFERENCE` (PU rate hard-coded, no 4G spelling), `EXCEL_NO_PRICE:EPS` (the insulation's price cell is empty) — never PASS |
 | UNMAPPED | Excel section with no MES section of that name |
-| ACCEPTED / EXPIRED | covered by `accepted_differences.yaml` (expired = past `review_by`, fails) |
+| ACCEPTED / EXPIRED | covered by `accepted_differences.yaml` — `kind: known_defect` (amber; diagnosed, tracked, awaiting a work order — the entry list IS the WO list) or `kind: tolerated` (grey); expired = past `review_by`, fails |
 | NO_GOLDEN | the pack has a scenario the golden lacks — re-run `audit golden` |
 
 Line triage pairs lines by normalised description (duplicates in order,

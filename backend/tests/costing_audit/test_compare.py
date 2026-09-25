@@ -148,11 +148,42 @@ def test_accepted_and_expired():
     assert next(c for c in cells if c.section_excel == "FRONT").status == "FLAG"
 
 
+def test_known_defect_kind_passes_but_is_listed_as_a_defect(tmp_path):
+    broken = _base_mes(front_eps_price=52.5)
+    acc = [Accepted(body="*", section="FRONT", variant="*", reason="EPS price stale", owner="BA",
+                    review_by=date(2099, 1, 1), index=0, kind="known_defect")]
+    goldens = {"t~as_sheet": _golden(BASE_GOLDEN)}
+    rep = build_report(pack_name="unit", tolerance_pct=1.0, manifest={}, mes_source="fake", goldens=goldens,
+                       results={"t~as_sheet": broken}, scenario_ids=["t~as_sheet"], accepted=acc, warnings=[])
+    assert rep.exit_code == 0
+    front = next(c for c in rep.cells if c.section_excel == "FRONT")
+    assert front.status == "ACCEPTED" and front.accepted["kind"] == "known_defect"
+    md = write_all(rep, tmp_path, stem="unit")["md"].read_text(encoding="utf-8")
+    assert "Known defects" in md and "EPS price stale" in md and "Tolerated differences" not in md
+
+
+def test_accepted_lists_keep_comma_bearing_sheet_names(tmp_path):
+    p = tmp_path / "acc.yaml"
+    p.write_text('- body: [" UP TO 2,3 MTR FREEZER ", "icecream up to 3,2"]\n'
+                 '  section: [FLOOR, "REAR FRAME + FLOOR PLATE"]\n'
+                 '  variant: [as_sheet, srd]\n'
+                 '  reason: r\n', encoding="utf-8")
+    a = load_accepted(p)[0]
+    assert a.matches(sheet="icecream up to 3,2", trailer_id=16, section_names=["REAR FRAME & FLOOR PLATE"], variant="srd")
+    assert a.matches(sheet=" UP TO 2,3 MTR FREEZER ", trailer_id=19, section_names=["FLOOR"], variant="as_sheet")
+    assert not a.matches(sheet="icecream up to 4.8", trailer_id=17, section_names=["FLOOR"], variant="as_sheet")
+    assert not a.matches(sheet="icecream up to 3,2", trailer_id=16, section_names=["FLOOR"], variant="all_pu")
+    assert a.to_dict()["body"] == [" UP TO 2,3 MTR FREEZER ", "icecream up to 3,2"]
+
+
 def test_load_accepted_validates(tmp_path):
     p = tmp_path / "acc.yaml"
     p.write_text('- body: "*"\n  section: SIDES\n  reason: r\n  owner: BA\n  review_by: 2026-12-31\n', encoding="utf-8")
     acc = load_accepted(p)
-    assert acc[0].review_by == date(2026, 12, 31) and acc[0].variant == "*"
+    assert acc[0].review_by == date(2026, 12, 31) and acc[0].variant == "*" and acc[0].kind == "tolerated"
+    p.write_text('- body: "*"\n  section: SIDES\n  reason: r\n  kind: maybe\n', encoding="utf-8")
+    with pytest.raises(ValueError):
+        load_accepted(p)
     p.write_text('- body: "*"\n  section: SIDES\n', encoding="utf-8")
     with pytest.raises(ValueError):
         load_accepted(p)

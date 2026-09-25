@@ -1,0 +1,107 @@
+name: Costing audit
+
+# Excel <-> MES parity gate (v1.57). Compares the MES calculator against the
+# committed GOLDEN (Burt's workbook, recalculated locally by `audit golden`)
+# through the real /api/calculate code path. Never needs Excel or LibreOffice.
+#
+#   pull_request   touching the calculation engine / BOM models / the tool:
+#                  the SMOKE pack (3 bodies x 3 lengths x 2 variants) must
+#                  produce no unaccepted FLAG.
+#   schedule       nightly: every committed pack.
+#   workflow_dispatch: every committed pack, on demand.
+#
+# The MES master data comes from tests/costing_audit/mes_snapshot/<pack>.json,
+# loaded into the isolated CI database (icb_test) — CI has no ICB database, so
+# this is an ENGINE-drift gate; data drift is what a local `audit run` against
+# the live dev database catches.
+
+on:
+  pull_request:
+    paths:
+      - "backend/app/formula_engine.py"
+      - "backend/app/routers/calculator.py"
+      - "backend/app/services/__init__.py"
+      - "backend/app/services/insulation_foam.py"
+      - "backend/app/database.py"
+      - "backend/alembic/versions/**"
+      - "backend/tools/costing_audit/**"
+      - "backend/tests/costing_audit/**"
+      - ".github/workflows/costing-audit.yml"
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  audit:
+    name: costing audit (${{ matrix.pack }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # PRs run the smoke pack only; nightly/manual runs every pack that has golden.
+        pack: ${{ fromJSON(github.event_name == 'pull_request' && '["smoke"]' || '["smoke","chillers","freezers","icecream"]') }}
+    env:
+      DATABASE_URL: postgresql+psycopg://icb_app:icb_app_dev@localhost:5432/icb_test
+      SESSION_SECRET: ci-test-secret-not-for-production
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up PostgreSQL
+        id: postgres
+        uses: ikalnytskyi/action-setup-postgres@v6
+        with:
+          username: postgres
+          password: postgres
+          port: 5432
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install system libs for pycairo (Linux)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev pkg-config
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Bootstrap database
+        run: |
+          psql "${{ steps.postgres.outputs.connection-uri }}" -f deploy/postgres/init.sql
+          psql "${{ steps.postgres.outputs.connection-uri }}" -f deploy/postgres/init_test.sql
+
+      - name: Alembic upgrade head (icb_test)
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Unit tests for the audit tool
+        working-directory: backend
+        run: pytest tests/costing_audit -o addopts=""
+
+      - name: Audit run — pack ${{ matrix.pack }}
+        working-directory: backend
+        run: |
+          python -m tools.costing_audit run --pack ${{ matrix.pack }} --mes-snapshot \
+            --out ../costing_audit_reports --stem costing_audit_${{ matrix.pack }}
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: costing-audit-${{ matrix.pack }}
+          path: costing_audit_reports/
+          if-no-files-found: warn
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f costing_audit_reports/costing_audit_${{ matrix.pack }}.md ]; then
+            cat costing_audit_reports/costing_audit_${{ matrix.pack }}.md >> "$GITHUB_STEP_SUMMARY"
+          fi

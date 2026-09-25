@@ -1,0 +1,8 @@
+# Burt's workbooks never enter git (v1.57 rule 6). Scenario copies, recalculated
+# outputs and any stray workbook under this tree are ignored; test_gitignore.py
+# asserts these rules are present.
+*.xlsx
+*.xls
+*.xlsm
+work/
+reports/

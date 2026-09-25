@@ -1,0 +1,15 @@
+# Known, explained Excel <-> MES differences (v1.57 costing audit).
+#
+# An entry turns matching FLAG / PRESENCE / UNMAPPED cells grey (ACCEPTED) and
+# stops them failing CI. An entry whose review_by has passed turns those cells
+# EXPIRED, which FAILS — so the acceptance gets re-reviewed, not forgotten.
+#
+#   - body: "UP TO 5.5 CHILLER AND 2.3 WIDE"   # exact sheet spelling, trailer id, or "*"
+#     section: "SUB FRAME + LIGHT BOX ASSY"    # Excel or MES spelling (name-normalised), or "*"
+#     variant: "*"                              # as_sheet | all_eps | all_pu | srd | drd | foam_4g | "*"
+#     reason: "one line: what differs and why it is right (or tolerated for now)"
+#     owner: "BA"
+#     review_by: 2026-12-31
+#
+# Anything you cannot explain stays a FLAG for the BA — do not accept it.
+[]

@@ -1,0 +1,19 @@
+# Costing audit — CHILLERS. Three size classes, each swept across its length
+# band and the six named variants. Add lengths/widths/heights freely; every
+# combination becomes a scenario. Then: audit golden --pack chillers ...
+name: chillers
+workbook_month: "2026-09"
+tolerance_pct: 1.0
+gate_mode: as_sheet
+bodies:
+  - sheet: "UP TO 2.3 CHILLER BODY"
+    lengths: [1.8, 2.3, 2.7]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: "UP TO 5.5 CHILLER AND 2.3 WIDE"
+    lengths: [3.0, 4.2, 5.5]
+    widths: [2.3]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: " 4.9 & UP CHILLER AND 2.5 WIDE "
+    lengths: [4.9, 5.8, 7.5, 8.5]
+    widths: [2.5, 2.6]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]

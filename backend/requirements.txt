@@ -32,6 +32,7 @@ cryptography==46.0.6
 # --- Excel import ---
 openpyxl==3.1.5
 xlrd==2.0.2
+PyYAML==6.0.2          # v1.57 — costing audit packs (tools/costing_audit)
 
 # --- Word template import (WO v4.33 — Pre-Job Card template parser + its CI tests) ---
 # Reads .docx only; the one-time .doc conversion uses Word COM via pywin32, which stays a

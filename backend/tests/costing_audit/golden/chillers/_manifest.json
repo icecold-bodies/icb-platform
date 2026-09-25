@@ -1,0 +1,24 @@
+{
+ "pack": "chillers",
+ "pack_fingerprint": "0f5604bdf1b9",
+ "generated_at": "2026-09-25T14:12:11+00:00",
+ "tool_version": "1.57.0",
+ "workbook_month": "2026-09",
+ "workbook": {
+  "dir": "C:\\Users\\micge\\Documents\\Burt Costing Model\\September costings",
+  "files": {
+   "GRP Costings 2018.xlsx": "d87a573177dc8da203580982e5a4e0ff58a4456c559c1f8a5b096539ddf6a6c6",
+   "PRICE 2017 MARCH.xlsx": "6956102ee71d3b440e328927b7d4aa2568df992c8eb742cb0f255c3c2d1ccd04",
+   "FORMULAS 2018.xls": "8fd4a5730c8215dbddf5505e65bce8fbd4cf821149238fbca88b648c95b6ec6d"
+  }
+ },
+ "stale_links": {
+  "3": "PRICE 20.04.2004.xls"
+ },
+ "scenario_count": 84,
+ "sheets": {
+  "UP TO 2.3 CHILLER BODY": "up_to_2_3_chiller_body.json",
+  "UP TO 5.5 CHILLER AND 2.3 WIDE": "up_to_5_5_chiller_and_2_3_wide.json",
+  " 4.9 & UP CHILLER AND 2.5 WIDE ": "4_9_up_chiller_and_2_5_wide.json"
+ }
+}

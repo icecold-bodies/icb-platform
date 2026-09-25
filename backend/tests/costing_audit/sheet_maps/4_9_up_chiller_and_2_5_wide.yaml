@@ -1,0 +1,8 @@
+# Sheet-map override for the 4.9 & UP CHILLER sheet, which holds TWO
+# configurations side by side. The LIVE one is the right-hand block
+# (inputs N4/N5/N6, thickness N8-N19, flags O8-O22, lines in L..S, gated U).
+# The left block (A..J) is dead: 102 error cells and references to a missing
+# 2004 price file. Discovery already prefers the block whose GRAND TOTAL
+# recalculates; this file pins it so the choice never depends on that heuristic.
+sheet: " 4.9 & UP CHILLER AND 2.5 WIDE "
+label_col: L

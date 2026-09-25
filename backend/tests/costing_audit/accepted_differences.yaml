@@ -1,0 +1,145 @@
+# Known, explained Excel <-> MES differences (v1.57 costing audit).
+#
+# An entry stops matching FLAG / PRESENCE / UNMAPPED cells failing CI.
+#   kind: known_defect  -> amber, listed under "Known defects" in every summary: the
+#                          mechanism is DIAGNOSED, not right. This list IS the work-order
+#                          list; delete the entry when its fix lands and CI enforces it.
+#   kind: tolerated     -> grey: a legitimate or tolerated difference.
+# An entry whose review_by has passed turns its cells EXPIRED, which FAILS — so every
+# acceptance is re-reviewed, never forgotten.
+#
+#   - body: "UP TO 5.5 CHILLER AND 2.3 WIDE"   # exact sheet spelling, trailer id, "*", or a list
+#     section: "SUB FRAME + LIGHT BOX ASSY"    # Excel or MES spelling (name-normalised), "*", or a list
+#     variant: "*"                              # as_sheet | all_eps | all_pu | srd | drd | foam_4g | "*" | a list
+#     kind: known_defect
+#     reason: "one line: what differs and why"
+#     owner: "BA"
+#     review_by: 2026-10-31
+#
+# Anything you cannot explain stays a FLAG for the BA — do not accept it.
+#
+# ── Baseline seeded from the first September run (25 Sep 2026, workbook d87a5731…) ──
+# Each entry names the mechanism the line triage showed. Tags: [MES] a calculator/BOM
+# defect on the MES side; [DATA] a price/quantity/line difference between the MES BOM
+# and Burt's sheet to reconcile with Burt; [RULING] the two sides disagree by design and
+# Michael/Burt must say which is right.
+
+- body: ["UP TO 2.3 CHILLER BODY", "UP TO 5.5 CHILLER AND 2.3 WIDE", " 4.9 & UP CHILLER AND 2.5 WIDE "]
+  section: ["FRONT", "SIDES", "ROOF", "FLOOR"]
+  variant: all_pu
+  kind: known_defect
+  reason: "[MES] chiller PU insulation lines carry a literal x0 quantity formula (2.44*1.22*0*2, 1.22*2.44*0*(length+{Waste})/1.22): PU prices at R0 on FRONT/SIDES/ROOF/FLOOR (ZERO_FORMULA); the icecream/freezer bodies use {PANEL PU} tokens and price live. SIDES/ROOF/FLOOR skins also hard-code both roof and floor deductions where Burt's cells deduct only the roof under PU."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: ["UP TO 2.3 CHILLER BODY", " 4.9 & UP CHILLER AND 2.5 WIDE "]
+  section: DRD
+  variant: all_pu
+  kind: known_defect
+  reason: "[MES] DRD PU line priced at the raw 32D rate (R4 100 x 2.98 sheets) instead of the per-sheet price Burt uses (R185.20/sheet): MES DRD +R11.6k (2.3 chiller) / +R23.3k (4.9 chiller) under PU."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: ["UP TO 2.3 CHILLER BODY", "UP TO 5.5 CHILLER AND 2.3 WIDE", " 4.9 & UP CHILLER AND 2.5 WIDE "]
+  section: SRD
+  variant: srd
+  kind: known_defect
+  reason: "[MES] SRD EPS line formula ends in *0 (ZERO_FORMULA) on the chillers: EPS on a single rear door prices at R0 (-R400 to -R780); the 4MM PF PLYWOOD / GLUE LINE rows under SRD are R0 on Burt's side instead."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: "REAR FRAME + FLOOR PLATE"
+  variant: srd
+  kind: known_defect
+  reason: "[RULING] Burt gates REAR FRAME + FLOOR PLATE on the DRD flags, so a single-rear-door body carries R0 there; MES always includes the section (R2.4k-R5.5k). Which is right needs Burt/Michael."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: ["icecream up to 3,2", "icecream up to 4.8"]
+  section: FLOOR
+  variant: "*"
+  kind: known_defect
+  reason: "[MES] master ALU EXTRUTION FLOOR defaults ON for ICECREAM UP TO 3,2 and UP TO 4.8 and adds R13k-R27k (13 x length m at R428.95); Burt's sheets have no such line or flag."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: ["UP TO 2.3 CHILLER BODY", " 4.9 & UP CHILLER AND 2.5 WIDE ", " UP TO 4.8 MT FREEZER  (2"]
+  section: "SUB FRAME + LIGHT BOX ASSY"
+  variant: "*"
+  kind: known_defect
+  reason: "[DATA] Excel line 1MM GALV PLATE (R157-R240) has no MES line on this body."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "UP TO 5.5 CHILLER AND 2.3 WIDE"
+  section: "SUB FRAME + LIGHT BOX ASSY"
+  variant: "*"
+  kind: known_defect
+  reason: "[DATA] MES prices 1.2MM GALV PLATE R449.52 where Excel prices 1MM GALV PLATE R239.72."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: ["DRD", "SRD"]
+  variant: "*"
+  kind: known_defect
+  reason: "[DATA] 130*62MM TAPPING BLOCKS: Excel 2 x R234 per size (R936 a double door) vs MES 6 x R68 per size (R816): R60 per size, 1-3 % of the door section."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: "SRD DOOR FITTINGS"
+  variant: srd
+  kind: known_defect
+  reason: "[DATA] SRD DOOR FITTINGS on every body: MES CSLB HINGES R293.46 x2 (Excel R146.73 x2 - the pair price applied per hinge) and SILPLUS X WHITE R232.30 (Excel R116.15); per body also 34MM LOCKING POLE R126 (Excel R42), 28782 BIG HORIZ CAPPING R197.20 (Excel R240.58), ALU CORNERS R45 (Excel R54.90), 28780 BIG VERTICAL renamed 28778; Burt prices 2317 DOOR RUBBER / 28777 DOOR CAPPING at R0 on some sheets."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "icecream up to 4.8"
+  section: ["DRD", "DRD DOOR FITTINGS", "REAR FRAME + FLOOR PLATE"]
+  variant: "*"
+  kind: known_defect
+  reason: "[DATA] icecream 4.8 door lines: 4MM PF PLYWOOD quantity, 28779 DOOR CAPPING (-R324), 3MM 3CR12 FLOOR PLATE (+R77.50) differ from Burt's sheet (2-6 % of the section) - see the triage."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " UP TO 2,3 MTR FREEZER "
+  section: ["ROOF", "FLOOR"]
+  variant: all_pu
+  kind: known_defect
+  reason: "[MES] FREEZER 2.3 METER ROOF/FLOOR PU lines carry a literal x0 quantity formula (1.22*2.44*0*(length+{Waste})/1.22): PU prices at R0 (ZERO_FORMULA), -R1.4k to -R1.8k per panel."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: [" UP TO 2,3 MTR FREEZER ", "icecream up to 3,2"]
+  section: "REAR FRAME + FLOOR PLATE"
+  variant: "*"
+  kind: known_defect
+  reason: "[DATA] 3MM 3CR12 FLOOR PLATE priced R1 040.16 in MES vs R965.76 on Burt's sheet (+R59-R63, 2-3 % of the section)."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " 4.9 & UP FREEZER BODY (2"
+  section: SIDES
+  variant: "*"
+  kind: known_defect
+  reason: "[MES] FREEZER LARGE SIDES skin formulas take the panel height from WIDTH: (length+{Waste})*(width-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) where Burt uses HEIGHT (C6); +1.2 % at W 2.6 / H 2.56 and growing with the W-H gap."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " 4.9 & UP FREEZER BODY (2"
+  section: FLOOR
+  variant: "*"
+  kind: known_defect
+  reason: "[DATA] 100*50 LVL Beam quantity: MES ((length+{Waste})/0.356-7.27/1.22)*2.736 = R3 187 vs Burt's beam count x spacing = R3 825 at 4.9 m (-R640, 2.8 % of the section)."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " icecream 4.9 up"
+  section: ["SIDES", "ROOF", "FLOOR", "ALUMINIUM", "SUB FRAME + LIGHT BOX ASSY", "REFLEXITE TAPE"]
+  variant: "*"
+  kind: known_defect
+  reason: "[MES] ICECREAM 4.9 UP has the length 6.7 HARD-CODED in its formulas ((6.7+{Waste})*..., 6.7*2) on SIDES, ROOF, FLOOR, ALUMINIUM, SUB FRAME + LIGHT BOX ASSY and REFLEXITE TAPE: MES prices this body at 6.7 m whatever length is entered (+R10k at 4.9 m, under-priced above 6.7 m). Burt's sheet uses C4."
+  owner: BA
+  review_by: 2026-10-31

@@ -1,0 +1,15 @@
+# Costing audit — ICE CREAM bodies.
+name: icecream
+workbook_month: "2026-09"
+tolerance_pct: 1.0
+gate_mode: as_sheet
+bodies:
+  - sheet: "icecream up to 3,2"
+    lengths: [2.4, 3.2]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: "icecream up to 4.8"
+    lengths: [3.6, 4.2, 4.8]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: " icecream 4.9 up"
+    lengths: [4.9, 6.7, 8.0]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]

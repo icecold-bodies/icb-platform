@@ -225,7 +225,7 @@ class MesProbe:
         lines = [MesLine(section=it.get("category", ""), desc=it.get("material", ""),
                          qty=float(it.get("quantity") or 0), price=float(it.get("unit_price") or 0),
                          total=float(it.get("line_cost") or 0), excluded=bool(it.get("excluded")),
-                         bom_id=it.get("bom_id"))
+                         bom_id=it.get("bom_id"), formula=it.get("formula"))
                  for it in result.get("items", [])]
         return MesResult(trailer_id=sc.trailer_id, trailer_name=tname,
                          sections={k: float(v) for k, v in (result.get("category_totals") or {}).items()},

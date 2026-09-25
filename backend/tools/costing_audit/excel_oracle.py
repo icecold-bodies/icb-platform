@@ -87,6 +87,21 @@ class GoldenScenario:
                 "sections": {k: asdict(v) for k, v in self.sections.items()}}
 
 
+def _num(v) -> float | None:
+    """A cell's numeric value. The PRICE workbook stores some prices as TEXT
+    ('146.7300' on FITTINGS); Excel coerces them in arithmetic, so do we."""
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    if isinstance(v, str):
+        try:
+            return float(v.strip().replace(",", "."))
+        except ValueError:
+            return None
+    return None
+
+
 def _panel_for_section(section_name: str) -> str | None:
     """FRONT/SIDES/ROOF/FLOOR/DRD/SRD section -> the panel whose insulation it carries."""
     first = norm_name(section_name).split()[:1]
@@ -276,12 +291,8 @@ class ExcelOracle:
                 t = wsv[l.total_cell].value if l.total_cell else None
                 if norm_name(l.desc) == "PU":
                     has_pu_line = True
-                lines.append(GoldenLine(
-                    desc=l.desc,
-                    qty=float(q) if isinstance(q, (int, float)) else None,
-                    price=float(p) if isinstance(p, (int, float)) else None,
-                    total=float(t) if isinstance(t, (int, float)) else None,
-                    stale=l.stale_link))
+                lines.append(GoldenLine(desc=l.desc, qty=_num(q), price=_num(p), total=_num(t),
+                                        stale=l.stale_link))
             # An insulation line the scenario switched ON that the sheet prices at 0
             # (e.g. the 4.8 FREEZER's EPS reference points at an empty price cell):
             # Excel cannot price this panel/insulation — never a PASS, never a

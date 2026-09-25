@@ -120,10 +120,16 @@ def export_snapshot(trailer_ids: list[int], out_path: Path, *, log=print) -> dic
     return doc
 
 
-def load_snapshot(path: Path, *, allow_non_test_db: bool = False, log=print) -> dict[str, int]:
+INSERT_CHUNK = 200      # rows per INSERT — Postgres allows 65 535 bind parameters
+
+
+def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool = False,
+                  log=print) -> dict[str, int]:
     """Insert the snapshot rows (ON CONFLICT DO NOTHING, ids preserved) into
     DATABASE_URL. Refuses a non-`_test` database unless explicitly allowed: this
-    writes master data and belongs in CI / a scratch DB, never in dev or prod."""
+    writes master data and belongs in CI / a scratch DB, never in dev or prod.
+    `rollback=True` does everything inside a transaction that is rolled back —
+    the loader's own test, leaving the shared test database exactly as found."""
     _ensure_backend_on_path()
     from sqlalchemy import text
     from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -153,7 +159,9 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, log=print) -> 
             return True
         return (val,) in present.get(fk.column.table.name, set())
 
-    with engine.begin() as conn:
+    conn = engine.connect()
+    txn = conn.begin()
+    try:
         for name, items in doc["tables"].items():
             t = tables[name]
             fk_cols = {fk.parent.name for fk in t.foreign_keys}
@@ -175,11 +183,11 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, log=print) -> 
                         row[col] = None
                 batch.append(row)
             skipped = 0
-            if batch:
-                stmt = pg_insert(t).values(batch).on_conflict_do_nothing()
-                res = conn.execute(stmt)
+            for start in range(0, len(batch), INSERT_CHUNK):
+                chunk = batch[start:start + INSERT_CHUNK]
+                res = conn.execute(pg_insert(t).values(chunk).on_conflict_do_nothing())
                 if res.rowcount is not None and res.rowcount >= 0:
-                    skipped = len(batch) - res.rowcount
+                    skipped += len(chunk) - res.rowcount
             counts[name] = len(batch) - skipped
             if skipped:
                 # Rows that already existed keep their current values — the
@@ -197,13 +205,21 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, log=print) -> 
             t = tables[name]
             pk = list(t.primary_key.columns)
             if len(pk) == 1 and pk[0].autoincrement is not False:
-                try:
+                seq = conn.execute(text(f"SELECT pg_get_serial_sequence('{t.fullname}', '{pk[0].name}')")).scalar()
+                if seq:
                     conn.execute(text(
-                        f"SELECT setval(pg_get_serial_sequence('{t.fullname}', '{pk[0].name}'), "
-                        f"COALESCE((SELECT MAX({pk[0].name}) FROM {t.fullname}), 1))"))
-                except Exception:
-                    pass
-    log("[snapshot] loaded: " + ", ".join(f"{k} {v}" for k, v in counts.items()))
+                        f"SELECT setval('{seq}', COALESCE((SELECT MAX({pk[0].name}) FROM {t.fullname}), 1))"))
+        if rollback:
+            txn.rollback()
+        else:
+            txn.commit()
+    except Exception:
+        txn.rollback()
+        raise
+    finally:
+        conn.close()
+    log("[snapshot] " + ("dry-run (rolled back): " if rollback else "loaded: ")
+        + ", ".join(f"{k} {v}" for k, v in counts.items()))
     if dangling:
         log(f"[snapshot] {len(dangling)} dangling FK(s) written NULL (orphans in the source database): "
             + "; ".join(dangling[:8]) + (" ..." if len(dangling) > 8 else ""))

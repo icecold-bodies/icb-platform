@@ -11,9 +11,11 @@
   const app = document.getElementById('app');
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const R0 = (n) => Math.round(n);
-  const fmtR = (n) => 'R ' + R0(n).toLocaleString('en-ZA').replace(/,/g, ' ');
-  // Unit prices at 2 dp (Michael, 17 Aug), SA money style like the app: "R 3 795,74"
-  const fmtP = (n) => { const neg = n < 0; const parts = Math.abs(n).toFixed(2).split('.'); return (neg ? '−' : '') + 'R ' + parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ',' + parts[1]; };
+  // ALL money at 2 dp in SA style — "R 3 795,74" / "R 109 540,22" — matching the live app
+  // (Michael, 17 Aug: unit prices, then line totals; subtotals and the bar follow so the
+  // visible lines add up to the visible subtotal).
+  const fmtR = (n) => { const neg = n < 0; const parts = Math.abs(n).toFixed(2).split('.'); return (neg ? '−' : '') + 'R ' + parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ',' + parts[1]; };
+  const fmtP = fmtR;
   const moneyP = (n) => S.role === 'user' ? '<span class="masked">••••</span>' : fmtP(n);
   const fmtQ = (n) => (Math.round(n * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
   const body = () => M.BODIES.find((b) => b.id === S.bodyId);
@@ -433,7 +435,7 @@
       + '<td class="qty num">' + qtyCell(l) + '</td>'
       + '<td class="unit">' + esc(l.added ? l.added.unit : l.row.unit) + '</td>'
       + '<td class="price num">' + priceCell(l) + '</td>'
-      + '<td class="total num">' + (l.state === 'user-off' || l.state === 'gated' ? '—' : (l.state === 'unpriced' || l.state === 'err' ? '<span class="cell bad ro">R 0</span>' : money(l.total))) + '</td>'
+      + '<td class="total num">' + (l.state === 'user-off' || l.state === 'gated' ? '—' : (l.state === 'unpriced' || l.state === 'err' ? '<span class="cell bad ro">R 0,00</span>' : money(l.total))) + '</td>'
       + '<td class="menu-cell"><button data-act="rowmenu" data-key="' + esc(l.key) + '" title="line actions">⋯</button>' + (S.ui.rowMenu === l.key ? rowMenu(l) : '') + '</td>'
       + '</tr>';
   }

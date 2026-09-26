@@ -4,7 +4,12 @@
 `/api/calculate` code path) · **Workbook:** `GRP Costings 2018.xlsx` sha256 `d87a573177dc…` + PRICE 2017 MARCH +
 FORMULAS 2018, recalculated by LibreOffice 26.8 · **Tolerance:** 1.0 % per section.
 
-This folder holds the four pack reports (`costing_audit_<pack>.html` — open in a browser, click a cell → section
+
+> **26 Sep 2026 (v1.57.1):** the dev reports in this folder were re-run on 26 Sep with the cause-guarded accepted
+> list and now include the **explosive** pack; the table below is the 25 Sep first run. The **prod run** is the
+> section at the end.
+
+This folder holds the pack reports (`costing_audit_<pack>.html` — open in a browser, click a cell → section
 table → line triage; `.csv`; `.md` summary) and `discover_tick_through.txt`, the auto-detected cell map of the three
 §3.0 sheets for Michael's one-time tick-through. Later runs are CI artifacts, not committed.
 
@@ -95,3 +100,48 @@ python -m tools.costing_audit golden --pack chillers --workbook-dir "C:\Users\mi
 ```
 
 Tool README: `backend/tools/costing_audit/README.md`.
+
+## Prod run — 26 Sep 2026 (v1.57.1)
+
+Run on the prod VM (`icb_platform`, prod's engine `6b77d52`, in-process, read-only, under `/tmp`) against the
+same September golden, plus the new **explosive** pack on both sides. Reports under `prod/`
+(`prod_costing_audit_<pack>.html` / `.md` / `.csv`), re-evaluated offline against
+`backend/tests/costing_audit/accepted_differences.prod.yaml` — **prod has its own accepted list**: the two
+databases have drifted apart, and from v1.57.1 every accepted entry is tied to a mechanism (`cause:`), so a
+cell that fails for a different reason in the same section stays a FLAG.
+
+| pack | scenarios | PROD: PASS / ACCEPTED / UNVERIFIABLE | DEV (26 Sep): PASS / ACCEPTED / UNVERIFIABLE | cells that differ dev↔prod |
+|---|---:|---|---|---:|
+| chillers | 84 | 782 / 124 / 0 | 680 / 226 / 0 | 404 of 1,074 |
+| freezers | 54 | 475 / 80 / 27 | 427 / 128 / 27 | 242 of 690 |
+| icecream | 48 | 330 / 146 / 40 | 294 / 182 / 40 | 174 of 612 |
+| explosive | 54 | 376 / 164 / 36 | 405 / 135 / 36 | 195 of 684 |
+
+Unaccepted on either side: **0**. The dev database moved between 25 and 26 Sep (CHILLER MEDIUM's SUB FRAME
+gained a 1MM GALV PLATE line — 18 cells changed).
+
+**Where prod is closer to Burt than dev** — dev-only defects, or dev data prod never got: the tapping-block
+spelling (prod = R936, PASS), the 1MM GALV PLATE, the 3MM 3CR12 plate price on icecream 4.8, the LVL-beam rule
+on FREEZER LARGE, the DRD PU at the raw rate on CHILLER 2.3 / LARGE (prod prices it per sheet), the chiller PU
+`×0` lines (prod's have real formulas), and ICECREAM 4.9 UP's **SIDES** (prod uses `length`; its ROOF / FLOOR /
+ALUMINIUM / SUB FRAME / REFLEXITE still carry the hard-coded 6.7 on prod too).
+
+**Prod-specific defects — these are live quotes:**
+
+1. **[MES] Single rear door PU on every body: prod charges ≈ R24.4k for the door's PU** — `1.22*2.44*2` sheets
+   × **R4 100** unit price where Burt has R245/sheet (R1.5k). Freezers, icecream, explosive and chillers alike:
+   **+R23k on any SRD quote.** Dev has the mirror-image defect on the same line (`×0`, R0). Largest live-quote
+   error the audit has found; first prod work order.
+2. **[MES] CHILLER MEDIUM DRD DOOR FITTINGS: 2317 DOOR RUBBER quantity `×0`** on prod (−R672 per double door).
+3. **[DATA] Explosive bodies: an extra `6MM PF PLYWOOD` line on ROOF and SIDES** (Burt has 4MM), and PU on
+   EXPLOSIVE 4.9 AND UP as `12.08 × R234` where Burt has `2.98 × R172`: +R1.3k roof, +R1.5k sides.
+4. **[RULING] Chiller PU prices on prod are R334.50/sheet vs Burt's R185.20** (+R890 on a PU front, +R4k on
+   sides). Burt's chiller sheets hard-code a 2018 rate (3090); prod may be the current one — Burt's call.
+5. **[DATA]** FREEZER 2.3 METER ROOF/FLOOR PU at 4.51 × R557.50 vs Burt's 2.98 × R311 (+R1.1k per panel);
+   icecream 3,2 SRD carries a 3MM ALU BUFFER PLATE Burt does not; icecream 4.8 DRD PU quantity (+R1.8k).
+
+The dev-side findings of 25 Sep stand (ICECREAM 4.9 UP hard-coded 6.7 m; chiller PU R0; DRD PU raw rate;
+ALU EXTRUTION FLOOR default; FREEZER LARGE sides from width; REAR FRAME on SRD bodies) plus, now visible under
+the cause guards, **[MES] DEV SRD PU `×0` on every freezer, icecream and explosive body** (−R1.5k–R2.2k).
+
+**How to repeat the prod run:** `backend/tools/costing_audit/README.md`, "Running the audit on prod".

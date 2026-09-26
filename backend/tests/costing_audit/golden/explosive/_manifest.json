@@ -1,0 +1,24 @@
+{
+ "pack": "explosive",
+ "pack_fingerprint": "3cfcc819e0a0",
+ "generated_at": "2026-09-26T07:10:40+00:00",
+ "tool_version": "1.57.0",
+ "workbook_month": "2026-09",
+ "workbook": {
+  "dir": "C:\\Users\\micge\\Documents\\Burt Costing Model\\September costings",
+  "files": {
+   "GRP Costings 2018.xlsx": "d87a573177dc8da203580982e5a4e0ff58a4456c559c1f8a5b096539ddf6a6c6",
+   "PRICE 2017 MARCH.xlsx": "6956102ee71d3b440e328927b7d4aa2568df992c8eb742cb0f255c3c2d1ccd04",
+   "FORMULAS 2018.xls": "8fd4a5730c8215dbddf5505e65bce8fbd4cf821149238fbca88b648c95b6ec6d"
+  }
+ },
+ "stale_links": {
+  "3": "PRICE 20.04.2004.xls"
+ },
+ "scenario_count": 54,
+ "sheets": {
+  "EXPLOSIVE UP TO 2.7": "explosive_up_to_2_7.json",
+  "EXPLOSIVE 2.7 TO 4.8": "explosive_2_7_to_4_8.json",
+  "EXPLOSIVE 4.9 AND UP": "explosive_4_9_and_up.json"
+ }
+}

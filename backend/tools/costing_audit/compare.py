@@ -75,6 +75,7 @@ class Cell:
     accepted: dict | None = None
     likely_cause: str | None = None
     triage: list[LineTriage] = field(default_factory=list)
+    base_status: str | None = None     # the status before any acceptance (FLAG/PRESENCE/UNMAPPED)
 
     @property
     def failing(self) -> bool:
@@ -233,6 +234,66 @@ class MesLine_like:      # structural type for triage (MesLine or a test double)
     excluded: bool
 
 
+def apply_accepted(cell: Cell, accepted: list[Accepted], today: date | None = None) -> Cell:
+    """Grey a FLAG / PRESENCE / UNMAPPED cell when an accepted entry covers its
+    body, section, variant AND (when the entry names one) its likely cause."""
+    if cell.status in ("FLAG", "PRESENCE", "UNMAPPED"):
+        cell.base_status = cell.status
+        names = [cell.section_excel, cell.section_mes]
+        hits = [a for a in accepted if a.matches(sheet=cell.sheet, trailer_id=cell.trailer_id,
+                                                 section_names=names, variant=cell.variant,
+                                                 cause=f"{cell.reason or ''} {cell.likely_cause or ''}")]
+        if hits:
+            a = hits[0]
+            cell.accepted = a.to_dict()
+            cell.status = "EXPIRED" if a.expired(today) else "ACCEPTED"
+            if cell.status == "EXPIRED":
+                cell.reason = f"accepted entry {a.index} review_by {a.review_by} has passed"
+    return cell
+
+
+def _underlying_status(c: dict) -> str:
+    """The pre-acceptance status of a saved cell (older reports carry no base_status)."""
+    if c.get("base_status"):
+        return c["base_status"]
+    if c.get("status") not in ("ACCEPTED", "EXPIRED"):
+        return c["status"]
+    r = c.get("reason") or ""
+    if r.startswith(("EXTRA_IN_MES", "MISSING_IN_MES", "EXTRA_SECTION_IN_MES")):
+        return "PRESENCE"
+    if "no MES section" in r:
+        return "UNMAPPED"
+    return "FLAG"
+
+
+def reapply_accepted(report: dict, accepted: list[Accepted], *, today: date | None = None,
+                     note: str | None = None) -> RunReport:
+    """Rebuild a RunReport from a saved report JSON with a (different) accepted
+    list applied — re-evaluates a run, e.g. the prod run, without re-running MES."""
+    cells: list[Cell] = []
+    for c in report["cells"]:
+        d = dict(c)
+        tri = [LineTriage(**t) for t in d.pop("triage", [])]
+        d.pop("accepted", None)
+        base = _underlying_status(d)
+        d["status"] = base
+        d["base_status"] = None
+        if str(d.get("reason") or "").startswith("accepted entry"):
+            d["reason"] = None
+        cell = Cell(**d, triage=tri)
+        cells.append(apply_accepted(cell, accepted, today))
+    rows = [ScenarioRow(**s) for s in report.get("scenarios", [])]
+    warnings = list(report.get("warnings") or [])
+    if note:
+        warnings.append(note)
+    return RunReport(pack=report["pack"], tolerance_pct=report["tolerance_pct"],
+                     generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                     golden_manifest=report.get("golden_manifest") or {},
+                     mes_source=str(report.get("mes_source", "?")) + " (re-evaluated from the run of "
+                                + str(report.get("generated_at", "?")) + ")",
+                     warnings=warnings, cells=cells, scenarios=rows)
+
+
 def compare_scenario(golden: dict, mes: MesResult, *, tolerance_pct: float,
                      accepted: list[Accepted], today: date | None = None) -> list[Cell]:
     sc = golden["scenario"]
@@ -243,17 +304,7 @@ def compare_scenario(golden: dict, mes: MesResult, *, tolerance_pct: float,
                 variant=sc["variant"], length=sc["length"], width=sc["width"], height=sc["height"])
 
     def finish(cell: Cell) -> Cell:
-        if cell.status in ("FLAG", "PRESENCE", "UNMAPPED"):
-            names = [cell.section_excel, cell.section_mes]
-            hits = [a for a in accepted if a.matches(sheet=cell.sheet, trailer_id=cell.trailer_id,
-                                                     section_names=names, variant=cell.variant)]
-            if hits:
-                a = hits[0]
-                cell.accepted = a.to_dict()
-                cell.status = "EXPIRED" if a.expired(today) else "ACCEPTED"
-                if cell.status == "EXPIRED":
-                    cell.reason = f"accepted entry {a.index} review_by {a.review_by} has passed"
-        return cell
+        return apply_accepted(cell, accepted, today)
 
     for ex_name, gs in golden["sections"].items():
         mes_name = mapper.to_mes(ex_name)

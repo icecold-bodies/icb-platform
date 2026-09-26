@@ -3,10 +3,17 @@
     - body: "UP TO 5.5 CHILLER AND 2.3 WIDE"   # exact sheet name, trailer id, "*", or a list
       section: "SUB FRAME + LIGHT BOX ASSY"    # Excel or MES spelling (name-normalised), "*", or a list
       variant: "*"                              # as_sheet | all_pu | ... | "*" | a list
+      cause: "TAPPING BLOCKS"                   # optional: only cells whose likely cause contains this
       kind: known_defect                        # known_defect | tolerated (default)
       reason: "one line — what differs and why (a diagnosed MES/Excel defect, or a tolerated quirk)"
       owner: "BA"
       review_by: 2026-12-31
+
+`cause` (a string or a list of strings; case/space-insensitive substring of the
+cell's likely cause) ties the acceptance to a MECHANISM, not just a section: a
+cell in the same section that fails for a different reason stays a FLAG.
+Without it a R60 tapping-block entry greyed a R23k PU error in the same
+section — which is exactly what the first prod run showed.
 
 An ACCEPTED cell does not fail CI. `tolerated` renders grey (a legitimate or
 tolerated difference); `known_defect` renders amber and is listed under
@@ -38,11 +45,17 @@ class Accepted:
     review_by: date | None
     index: int
     kind: str = "tolerated"
+    cause: str | list[str] | None = None
 
     def expired(self, today: date | None = None) -> bool:
         return self.review_by is not None and (today or date.today()) > self.review_by
 
-    def matches(self, *, sheet: str, trailer_id: int, section_names: list[str], variant: str) -> bool:
+    def matches(self, *, sheet: str, trailer_id: int, section_names: list[str], variant: str,
+                cause: str | None = None) -> bool:
+        if self.cause:
+            have = norm_name(cause or "")
+            if not any(norm_name(c) and norm_name(c) in have for c in _as_list(self.cause)):
+                return False
         bodies = _as_list(self.body)
         if "*" not in bodies and not any(norm_name(b) == norm_name(sheet) or b == str(trailer_id) for b in bodies):
             return False
@@ -55,6 +68,7 @@ class Accepted:
 
     def to_dict(self) -> dict:
         return {"body": self.body, "section": self.section, "variant": self.variant, "kind": self.kind,
+                "cause": self.cause,
                 "reason": self.reason, "owner": self.owner,
                 "review_by": self.review_by.isoformat() if self.review_by else None}
 
@@ -89,7 +103,9 @@ def load_accepted(path: Path | None = None) -> list[Accepted]:
             raise ValueError(f"{p.name}: entry {i} kind must be tolerated | known_defect")
         def _field(v):
             return [str(x) for x in v] if isinstance(v, (list, tuple)) else str(v)
+        cause = e.get("cause")
         out.append(Accepted(body=_field(e["body"]), section=_field(e["section"]),
                             variant=_field(e.get("variant", "*")), reason=str(e["reason"]),
-                            owner=str(e.get("owner", "?")), review_by=rb, index=i, kind=kind))
+                            owner=str(e.get("owner", "?")), review_by=rb, index=i, kind=kind,
+                            cause=_field(cause) if cause else None))
     return out

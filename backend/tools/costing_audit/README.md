@@ -95,7 +95,9 @@ python -m tools.costing_audit discover --workbook-dir DIR [--sheet NAME]...
 python -m tools.costing_audit golden   --pack P --workbook-dir DIR
 python -m tools.costing_audit run      --pack P [--tolerance X] [--out DIR]
 python -m tools.costing_audit run      --pack P --live-excel --workbook-dir DIR
-python -m tools.costing_audit snapshot --pack P
+python -m tools.costing_audit run      --pack P --env prod          # prod's accepted list
+python -m tools.costing_audit reaccept --report R.json [--env prod] # re-evaluate a saved run
+python -m tools.costing_audit snapshot --pack P [--pack Q ...]
 ```
 
 * **discover** prints the auto-detected cell map per sheet (inputs, flag
@@ -113,9 +115,42 @@ python -m tools.costing_audit snapshot --pack P
   summary; exit 1 on any unaccepted FLAG. `--base-url http://127.0.0.1:8011`
   posts to a side-port server instead (never :8000). `--mes-snapshot` loads
   the pack's MES snapshot first (refuses a non-`_test` database).
-* **snapshot** exports the calc-path rows the pack's bodies need (trailers,
+* **reaccept** re-applies an accepted list to a saved report JSON and rewrites
+  the HTML/CSV/JSON/MD — no MES, no database. This is how a run made on the
+  prod VM is re-evaluated on a laptop after the prod list changes.
+* **snapshot** exports the calc-path rows the packs' bodies need (trailers,
   BOM, materials, sections, recipes, formulas, global variables, the 4G
-  factor) from the dev database for CI.
+  factor) from the dev database for CI; several `--pack`s make one
+  `mes_snapshot/all.json`.
+
+### Accepted differences: per environment, tied to a mechanism
+
+`accepted_differences.yaml` is the **dev** baseline; `accepted_differences.prod.yaml`
+the **prod** one (`--env prod`, or `--accepted PATH`). The two databases have
+drifted apart — prod matches Burt where dev does not and carries defects dev
+does not — so one list cannot describe both. Every entry may carry `cause:`
+(a string or list; case/space-insensitive substring of the cell's reason or
+likely cause): the acceptance then only greys cells failing for THAT
+mechanism, and a cell in the same section failing for another reason stays a
+FLAG. Without it the first prod run hid a R23k SRD PU error behind a R60
+tapping-block entry.
+
+### Running the audit on prod
+
+Prod's Postgres is not exposed, so the run happens on the VM, read-only,
+under `/tmp`, with prod's own app code and database — nothing under
+`/opt/icb-platform` changes and nothing is a deploy. Stage the tool + tests
+folders and a `pip install --target /tmp/icb-audit-deps PyYAML` beside them,
+then (the DB-touching part is the operator's paste):
+
+```
+set -a; . /etc/icb/backend.env; set +a
+cd /tmp/icb-audit/backend
+PYTHONPATH=/opt/icb-platform/backend:/tmp/icb-audit-deps /opt/icb-platform/.venv/bin/python   -m tools.costing_audit run --pack chillers --env prod --out /tmp/icb-audit-reports-prod
+```
+
+Copy the reports back; `reaccept --env prod` re-evaluates them later without
+another prod run.
 
 ## Burt issued a new sheet — three steps
 

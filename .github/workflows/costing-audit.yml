@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         # PRs run the smoke pack only; nightly/manual runs every pack that has golden.
-        pack: ${{ fromJSON(github.event_name == 'pull_request' && '["smoke"]' || '["smoke","chillers","freezers","icecream"]') }}
+        pack: ${{ fromJSON(github.event_name == 'pull_request' && '["smoke"]' || '["smoke","chillers","freezers","icecream","explosive"]') }}
     env:
       DATABASE_URL: postgresql+psycopg://icb_app:icb_app_dev@localhost:5432/icb_test
       SESSION_SECRET: ci-test-secret-not-for-production

@@ -1,0 +1,17 @@
+# Costing audit — EXPLOSIVE bodies. Note: the explosive sheets carry no FLOOR EPS/PU
+# rows (rows 18-19 empty) and MES explosive bodies have no rear doors — the door and
+# floor variants surface that as findings rather than pricing them.
+name: explosive
+workbook_month: "2026-09"
+tolerance_pct: 1.0
+gate_mode: as_sheet
+bodies:
+  - sheet: "EXPLOSIVE UP TO 2.7"
+    lengths: [1.8, 2.3, 2.7]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: "EXPLOSIVE 2.7 TO 4.8"
+    lengths: [2.7, 4.2, 4.8]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: "EXPLOSIVE 4.9 AND UP"
+    lengths: [4.9, 8.0, 14.7]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]

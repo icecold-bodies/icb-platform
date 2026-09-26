@@ -111,7 +111,10 @@ def cmd_run(a) -> int:
             snap = snapshot_path("all")          # one snapshot covering every pack's bodies
         load_snapshot(snap, allow_non_test_db=a.allow_non_test_db, log=_log)
     tolerance = float(a.tolerance) if a.tolerance is not None else pack.tolerance_pct
-    accepted = load_accepted(Path(a.accepted) if a.accepted else None)
+    accepted_path = _accepted_path(a.accepted, a.env)
+    accepted = load_accepted(accepted_path)
+    if a.env:
+        warnings.append(f"accepted list: {accepted_path.name} (--env {a.env})")
     probe = MesProbe(base_url=a.base_url, log=_log)
     mes_source = a.base_url or _db_label()
     # scenario order + ids come from the golden (the pack expansion needs the sheet maps,
@@ -132,6 +135,39 @@ def cmd_run(a) -> int:
     _log(Path(paths["md"]).read_text(encoding="utf-8"))
     _log("reports: " + ", ".join(str(p) for p in paths.values()))
     return rep.exit_code
+
+
+def _accepted_path(explicit: str | None, env: str | None) -> Path:
+    """--accepted PATH wins; --env NAME picks tests/costing_audit/accepted_differences.<NAME>.yaml
+    (each environment's data drifts on its own — dev and prod need their own baselines)."""
+    if explicit:
+        return Path(explicit)
+    if env:
+        p = ACCEPTED_FILE.with_name(f"accepted_differences.{env}.yaml")
+        if not p.is_file():
+            raise SystemExit(f"no accepted list for --env {env!r}: {p}")
+        return p
+    return ACCEPTED_FILE
+
+
+def cmd_reaccept(a) -> int:
+    """Re-evaluate a saved report JSON against an accepted list — no MES, no DB."""
+    import json
+    from .accepted import load_accepted
+    from .compare import reapply_accepted
+    from .report import write_all
+    accepted_path = _accepted_path(a.accepted, a.env)
+    accepted = load_accepted(accepted_path)
+    rc = 0
+    for rp in a.report:
+        doc = json.loads(Path(rp).read_text(encoding="utf-8"))
+        rep = reapply_accepted(doc, accepted, note=f"accepted list: {accepted_path.name}")
+        out_dir = Path(a.out) if a.out else Path(rp).parent
+        stem = a.stem or Path(rp).stem
+        paths = write_all(rep, out_dir, stem=stem)
+        _log(Path(paths["md"]).read_text(encoding="utf-8"))
+        rc = max(rc, rep.exit_code)
+    return rc
 
 
 def _panel(d: dict):
@@ -196,11 +232,20 @@ def build_parser() -> argparse.ArgumentParser:
                    help="load tests/costing_audit/mes_snapshot/<pack>.json (or PATH) into the _test DB first")
     r.add_argument("--allow-non-test-db", action="store_true", help=argparse.SUPPRESS)
     r.add_argument("--accepted", default=None, help=f"default {ACCEPTED_FILE}")
+    r.add_argument("--env", default=None, help="use tests/costing_audit/accepted_differences.<env>.yaml (e.g. prod)")
     r.add_argument("--live-excel", action="store_true", help="golden + run in one go (local only)")
     r.add_argument("--no-prove", action="store_true")
     r.add_argument("--out", default=None, help="report folder (default ./costing_audit_reports)")
     r.add_argument("--stem", default=None, help="report file stem (default costing_audit_<pack>)")
     r.set_defaults(fn=cmd_run)
+
+    ra = sub.add_parser("reaccept", help="re-apply an accepted list to a saved report JSON (no MES needed)")
+    ra.add_argument("--report", required=True, action="append", help="report JSON (repeatable)")
+    ra.add_argument("--accepted", default=None)
+    ra.add_argument("--env", default=None)
+    ra.add_argument("--out", default=None, help="folder for the rewritten reports (default: beside the JSON)")
+    ra.add_argument("--stem", default=None, help="only with one --report")
+    ra.set_defaults(fn=cmd_reaccept)
 
     s = sub.add_parser("snapshot", help="export the MES master data the packs' bodies need (for CI)")
     s.add_argument("--pack", required=True, action="append", help="repeatable; several packs -> mes_snapshot/all.json")
@@ -210,6 +255,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # The summaries carry non-cp1252 characters; a redirected Windows stdout
+    # must never turn a finished run into a UnicodeEncodeError exit 1.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
     backend = Path(__file__).resolve().parents[2]
     if str(backend) not in sys.path:
         sys.path.insert(0, str(backend))

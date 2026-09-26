@@ -1,0 +1,152 @@
+# Known, explained Excel <-> MES differences — PROD database baseline (v1.57.1).
+# Used by `audit run --env prod` (on the VM) and `audit reaccept --env prod` (offline, on a
+# saved prod report). Same schema and rules as accepted_differences.yaml (the dev list).
+# Seeded from the first prod run, 26 Sep 2026 (icb_platform, prod engine 6b77d52).
+#
+# Prod's BOM data is NOT dev's: prod matches Burt where dev does not (tapping blocks, the
+# 1MM GALV PLATE, 3MM 3CR12 plate price, LVL beam rule, ICECREAM 4.9 UP sides) and carries
+# defects dev does not (the SRD PU line at the raw R4 100 rate on every body).
+
+- body: "*"
+  section: SRD
+  variant: srd
+  cause: ["BOTH PU", "DIFF PU"]
+  kind: known_defect
+  reason: "[MES] PROD: the single-rear-door PU line is priced at the raw 32D rate — 1.22*2.44*2 sheets x R4 100 = R24.4k — where Burt has R245/sheet (R1.5k): +R23k on every SRD quote, on every body (chillers, freezers, icecream, explosive). Largest live-quote error found."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: ["UP TO 2.3 CHILLER BODY", "UP TO 5.5 CHILLER AND 2.3 WIDE", " 4.9 & UP CHILLER AND 2.5 WIDE "]
+  section: ["FRONT", "SIDES", "ROOF", "FLOOR", "DRD"]
+  variant: all_pu
+  cause: ["DIFF PU", "BOTH PU", "Rhinotex", "TAPPING BLOCKS"]
+  kind: known_defect
+  reason: "[RULING] PROD prices chiller PU at R334.50/sheet (the September 32D rate) where Burt's chiller sheets hard-code a 2018 rate (3090 -> R185.20/sheet): MES +R890 (front) to +R4k (sides) per PU panel. Prod is likely the current one; Burt's sheets need the [1]PU! link."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: ["UP TO 2.3 CHILLER BODY", " 4.9 & UP CHILLER AND 2.5 WIDE "]
+  section: SRD
+  variant: srd
+  cause: ["DIFF EPS", "BOTH EPS"]
+  kind: known_defect
+  reason: "[DATA] PROD SRD EPS line priced differently from Burt on CHILLER 2.3 / CHILLER LARGE (-R127 to -R148)."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " UP TO 2,3 MTR FREEZER "
+  section: ["ROOF", "FLOOR"]
+  variant: all_pu
+  cause: ["BOTH PU", "DIFF PU"]
+  kind: known_defect
+  reason: "[DATA] PROD FREEZER 2.3 METER ROOF/FLOOR PU: 4.51 sheets x R557.50 (R2.5k) where Burt has 2.98 x R311.27 (R1.4k): +R1.1k per panel under PU."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " UP TO 2,3 MTR FREEZER "
+  section: "REAR FRAME + FLOOR PLATE"
+  variant: "*"
+  cause: "3MM 3CR12 FLOOR PLATE"
+  kind: known_defect
+  reason: "[DATA] 3MM 3CR12 FLOOR PLATE priced R1 040.16 on prod vs R965.76 on Burt's sheet (+R63, 2.8 % of the section) on FREEZER 2.3 METER."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "UP TO 5.5 CHILLER AND 2.3 WIDE"
+  section: "DRD DOOR FITTINGS"
+  variant: "*"
+  cause: "DOOR RUBBER"
+  kind: known_defect
+  reason: "[MES] PROD CHILLER MEDIUM DRD DOOR FITTINGS: 2317 DOOR RUBBER quantity formula ends in *0 (ZERO_FORMULA): -R672 per double door."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: "REAR FRAME + FLOOR PLATE"
+  variant: srd
+  cause: "EXTRA_IN_MES"
+  kind: known_defect
+  reason: "[RULING] Burt gates REAR FRAME + FLOOR PLATE on the DRD flags, so a single-rear-door body carries R0 there; MES always includes the section (R2.4k-R5.5k). Which is right needs Burt/Michael."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: ["icecream up to 3,2", "icecream up to 4.8"]
+  section: FLOOR
+  variant: "*"
+  cause: "ALU EXTRUTION FLOOR"
+  kind: known_defect
+  reason: "[MES] master ALU EXTRUTION FLOOR defaults ON for ICECREAM UP TO 3,2 and UP TO 4.8 and adds R13k-R27k (13 x length m at R428.95); Burt's sheets have no such line or flag."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " icecream 4.9 up"
+  section: ["ROOF", "FLOOR", "ALUMINIUM", "SUB FRAME + LIGHT BOX ASSY", "REFLEXITE TAPE"]
+  variant: "*"
+  cause: ["Rhinotex", "GLUE LINE", "LVL Beam", "R.T. TUBE", "INT LAMINATION", "ANTI-SKID", "HORIZONTALE CAP", "LONG RIVETS", "SILPLUS", "300 WA PLATE", "REFLEXITE TAPE"]
+  kind: known_defect
+  reason: "[MES] ICECREAM 4.9 UP has the length 6.7 HARD-CODED in its ROOF, FLOOR, ALUMINIUM, SUB FRAME + LIGHT BOX ASSY and REFLEXITE TAPE formulas on prod too (SIDES is correct on prod): priced at 6.7 m whatever length is entered."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: "SUB FRAME + LIGHT BOX ASSY"
+  variant: "*"
+  cause: ["GALV PLATE", "MOUNTING CLEATS"]
+  kind: known_defect
+  reason: "[DATA] Burt's 1MM GALV PLATE (FREEZER MEDIUM, explosive bodies) / MOUNTING CLEATS (EXPLOSIVE 2.7 TO 4.8) lines have no MES line on prod."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: ["DRD", "SRD"]
+  variant: "*"
+  cause: "TAPPING BLOCKS"
+  kind: known_defect
+  reason: "[DATA] 130*62MM TAPPING BLOCKS: on prod the icecream and EXPLOSIVE 4.9 AND UP bodies price them differently from Burt (missing or one size only); the chillers/freezers match."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: "SRD DOOR FITTINGS"
+  variant: srd
+  cause: ["CSLB HINGES", "SILPLUS", "LOCKING POLE", "CAPPING", "ALU CORNERS", "BIG VERTICAL", "DOOR RUBBER"]
+  kind: known_defect
+  reason: "[DATA] SRD DOOR FITTINGS on every body: MES CSLB HINGES R293.46 x2 (Excel R146.73 x2 - the pair price applied per hinge) and SILPLUS X WHITE R232.30 (Excel R116.15); per body also 34MM LOCKING POLE, 28782 BIG HORIZ CAPPING, ALU CORNERS, 28780/28778 BIG VERTICAL."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "icecream up to 4.8"
+  section: ["DRD", "DRD DOOR FITTINGS"]
+  variant: "*"
+  cause: ["DIFF PU", "BOTH PU", "4MM PF PLYWOOD", "28779 DOOR CAPPING", "CSLB HINGES"]
+  kind: known_defect
+  reason: "[DATA] PROD icecream 4.8 double door: PU line quantity (+R1.8k) and CSLB HINGES priced differently from Burt's sheet."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "icecream up to 3,2"
+  section: SRD
+  variant: srd
+  cause: "3MM ALU BUFFER PLATE"
+  kind: known_defect
+  reason: "[DATA] PROD icecream 3,2 SRD carries a 3MM ALU BUFFER PLATE line Burt's sheet does not (+R235)."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " 4.9 & UP FREEZER BODY (2"
+  section: SIDES
+  variant: "*"
+  cause: ["Rhinotex", "GLUE LINE", "PLYWOOD", "PICTURE FRAME"]
+  kind: known_defect
+  reason: "[MES] FREEZER LARGE SIDES skin formulas take the panel height from WIDTH where Burt uses HEIGHT; +1.2 % at W 2.6 / H 2.56 and growing with the W-H gap (prod too)."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: ["EXPLOSIVE 2.7 TO 4.8", "EXPLOSIVE 4.9 AND UP"]
+  section: ["ROOF", "SIDES", "FRONT"]
+  variant: "*"
+  cause: ["6MM PF PLYWOOD", "4MM PF PLYWOOD", "BOTH PU", "DIFF PU"]
+  kind: known_defect
+  reason: "[DATA] PROD explosive bodies carry a 6MM PF PLYWOOD line on ROOF/SIDES where Burt has 4MM PF PLYWOOD (+R60 to +R1.3k), and EXPLOSIVE 4.9 AND UP prices PU as 12.08 x R234.15 per panel where Burt has 2.98 x R172 (+R370 front, +R1.5k sides, +R750 roof)."
+  owner: BA
+  review_by: 2026-10-31

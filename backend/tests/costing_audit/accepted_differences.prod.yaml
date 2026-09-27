@@ -19,7 +19,7 @@
 - body: ["UP TO 2.3 CHILLER BODY", "UP TO 5.5 CHILLER AND 2.3 WIDE", " 4.9 & UP CHILLER AND 2.5 WIDE "]
   section: ["FRONT", "SIDES", "ROOF", "FLOOR", "DRD"]
   variant: all_pu
-  cause: ["DIFF PU", "BOTH PU", "Rhinotex", "TAPPING BLOCKS"]
+  cause: ["DIFF PU", "BOTH PU", "Rhinotex", "TAPPING BLOCKS", "GLUE LINE", "PLYWOOD", "PICTURE FRAME"]
   kind: known_defect
   reason: "[RULING] PROD prices chiller PU at R334.50/sheet (the September 32D rate) where Burt's chiller sheets hard-code a 2018 rate (3090 -> R185.20/sheet): MES +R890 (front) to +R4k (sides) per PU panel. Prod is likely the current one; Burt's sheets need the [1]PU! link."
   owner: BA
@@ -73,9 +73,9 @@
 - body: ["icecream up to 3,2", "icecream up to 4.8"]
   section: FLOOR
   variant: "*"
-  cause: "ALU EXTRUTION FLOOR"
+  cause: ["ALU EXTRUTION FLOOR", "12MM PF PLYWOOD"]
   kind: known_defect
-  reason: "[MES] master ALU EXTRUTION FLOOR defaults ON for ICECREAM UP TO 3,2 and UP TO 4.8 and adds R13k-R27k (13 x length m at R428.95); Burt's sheets have no such line or flag."
+  reason: "[MES] master ALU EXTRUTION FLOOR defaults ON for ICECREAM UP TO 3,2 and UP TO 4.8 and adds R13k-R27k (13 x length m at R428.95); Burt's sheets have no such line or flag. On PROD ICECREAM UP TO 4.8 the FLOOR also lacks Burt's 12MM PF PLYWOOD line (-R2.5k) — consistent with the ALU floor option replacing the plywood floor; to confirm in prod's Body Templates."
   owner: BA
   review_by: 2026-10-31
 
@@ -109,7 +109,7 @@
 - body: "*"
   section: "SRD DOOR FITTINGS"
   variant: srd
-  cause: ["CSLB HINGES", "SILPLUS", "LOCKING POLE", "CAPPING", "ALU CORNERS", "BIG VERTICAL", "DOOR RUBBER"]
+  cause: ["CSLB HINGES", "SILPLUS", "LOCKING POLE", "CAPPING", "ALU CORNERS", "VERTICAL", "DOOR RUBBER", "LONG RIVETS"]
   kind: known_defect
   reason: "[DATA] SRD DOOR FITTINGS on every body: MES CSLB HINGES R293.46 x2 (Excel R146.73 x2 - the pair price applied per hinge) and SILPLUS X WHITE R232.30 (Excel R116.15); per body also 34MM LOCKING POLE, 28782 BIG HORIZ CAPPING, ALU CORNERS, 28780/28778 BIG VERTICAL."
   owner: BA
@@ -124,12 +124,12 @@
   owner: BA
   review_by: 2026-10-31
 
-- body: "icecream up to 3,2"
-  section: SRD
-  variant: srd
-  cause: "3MM ALU BUFFER PLATE"
+- body: ["icecream up to 3,2", "icecream up to 4.8", " icecream 4.9 up"]
+  section: ["DRD", "SRD"]
+  variant: "*"
+  cause: "ALU BUFFER PLATE"
   kind: known_defect
-  reason: "[DATA] PROD icecream 3,2 SRD carries a 3MM ALU BUFFER PLATE line Burt's sheet does not (+R235)."
+  reason: "[DATA] PROD icecream bodies carry a 3MM ALU BUFFER PLATE line in the rear-door section that Burt's sheets do not (+R494 on a double door, +R235 on icecream 3,2's single door)."
   owner: BA
   review_by: 2026-10-31
 
@@ -143,10 +143,48 @@
   review_by: 2026-10-31
 
 - body: ["EXPLOSIVE 2.7 TO 4.8", "EXPLOSIVE 4.9 AND UP"]
-  section: ["ROOF", "SIDES", "FRONT"]
+  section: ["ROOF", "SIDES", "FRONT", "DRD"]
   variant: "*"
   cause: ["6MM PF PLYWOOD", "4MM PF PLYWOOD", "BOTH PU", "DIFF PU"]
   kind: known_defect
-  reason: "[DATA] PROD explosive bodies carry a 6MM PF PLYWOOD line on ROOF/SIDES where Burt has 4MM PF PLYWOOD (+R60 to +R1.3k), and EXPLOSIVE 4.9 AND UP prices PU as 12.08 x R234.15 per panel where Burt has 2.98 x R172 (+R370 front, +R1.5k sides, +R750 roof)."
+  reason: "[DATA] PROD explosive bodies carry a 6MM PF PLYWOOD line on ROOF/SIDES where Burt has 4MM PF PLYWOOD (+R60 to +R1.3k), and EXPLOSIVE 4.9 AND UP prices PU as 12.08 x R234.15 per panel where Burt has 2.98 x R172 (+R370 front, +R1.5k sides, +R750 roof, +R487 double rear door)."
+  owner: BA
+  review_by: 2026-10-31
+
+# ── v1.57.2: mechanisms surfaced when an entry had to EXPLAIN the whole difference ──
+
+- body: "UP TO 2.3 CHILLER BODY"
+  section: DRD
+  variant: all_pu
+  cause: "MISSING_IN_MES EPS"
+  kind: known_defect
+  reason: "[RULING] Burt's UP TO 2.3 CHILLER sheet charges the double rear door's EPS line (R432) even when the door is PU — the line carries no insulation gate, so the sheet prices EPS and PU together. MES charges PU only. Burt to confirm which is right."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: SRD
+  variant: srd
+  cause: ["PLYWOOD", "GLUE LINE"]
+  kind: known_defect
+  reason: "[RULING] Burt's SRD sections carry 4MM PF PLYWOOD and one GLUE LINE at R0 (the total cells are hard-coded 0) where MES charges them: +R480 to +R590 per single rear door. Does a single rear door get the inner plywood skin?"
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " UP TO 4.8 MT FREEZER  (2"
+  section: "SUB FRAME + LIGHT BOX ASSY"
+  variant: "*"
+  cause: "MOUNTING BRACKET"
+  kind: known_defect
+  reason: "[DATA] SMALL MOUNTING BRACKET priced differently from Burt's sheet on FREEZER MEDIUM (-R126), prod as dev."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "EXPLOSIVE UP TO 2.7"
+  section: SRD
+  variant: srd
+  cause: "ALU PLATE"
+  kind: known_defect
+  reason: "[DATA] 0.9 MM ALU PLATE on the EXPLOSIVE UP TO 2.7 single rear door priced/quantified differently from Burt's sheet (-R325), prod as dev."
   owner: BA
   review_by: 2026-10-31

@@ -218,12 +218,52 @@ def triage_lines(excel_lines: list[dict], mes_lines: list[MesLine_like],
     for m in leftovers:
         out.append(LineTriage(m.desc, None, None, None, m.qty, m.price, m.total, round(m.total, 2), "EXTRA_IN_MES",
                               mes_formula=getattr(m, "formula", None)))
-    cause = None
-    diffs = [t for t in out if t.cls != "OK"]
-    if diffs:
-        top = max(diffs, key=lambda t: abs(t.delta))
-        cause = f"{top.cls} {top.desc} ({top.delta:+.2f})" + (f" [{top.hint}]" if top.hint else "")
-    return out, cause
+    out = regroup_renames(out)
+    return out, likely_cause(out)
+
+
+def _word_sig(desc: str) -> frozenset:
+    """A line name without its size/number tokens: '130*62MM TAPPING BLOCKS' and
+    'TAPPING BLOCKS_200MM' both -> {TAPPING, BLOCKS}; '1MM GALV PLATE' and
+    '1.2MM GALV PLATE' -> {GALV, PLATE}."""
+    return frozenset(t for t in norm_name(desc).replace("_", " ").split() if not any(ch.isdigit() for ch in t))
+
+
+def regroup_renames(tri: list[LineTriage]) -> list[LineTriage]:
+    """Pair a MISSING_IN_MES line with the EXTRA_IN_MES line(s) that carry the same
+    words (a rename or a size variant), so a rename shows as one GROUP_DIFF row
+    with its real net difference instead of a big missing + a big extra."""
+    missing = [t for t in tri if t.cls == "MISSING_IN_MES"]
+    extra = [t for t in tri if t.cls == "EXTRA_IN_MES"]
+    if not missing or not extra:
+        return tri
+    used: set[int] = set()
+    merged: dict[int, LineTriage] = {}
+    for t in missing:
+        sig = _word_sig(t.desc)
+        if not sig:
+            continue
+        grp = [x for x in extra if id(x) not in used and _word_sig(x.desc) == sig]
+        if not grp:
+            continue
+        used.update(id(x) for x in grp)
+        et = t.excel_total or 0.0
+        mt = sum(x.mes_total or 0.0 for x in grp)
+        delta = mt - et
+        cls = "OK" if abs(delta) <= max(abs(et), 1.0) * LINE_TOL_PCT / 100.0 else "GROUP_DIFF"
+        merged[id(t)] = LineTriage(f"{t.desc} ~ {' + '.join(x.desc for x in grp)}", t.excel_qty, t.excel_price,
+                                   t.excel_total, sum(x.mes_qty or 0.0 for x in grp),
+                                   grp[0].mes_price if len(grp) == 1 else None, mt, round(delta, 2), cls,
+                                   mes_formula=grp[0].mes_formula if len(grp) == 1 else None)
+    return [merged.get(id(t), t) for t in tri if id(t) not in used]
+
+
+def likely_cause(tri: list[LineTriage]) -> str | None:
+    diffs = [t for t in tri if t.cls != "OK"]
+    if not diffs:
+        return None
+    top = max(diffs, key=lambda t: abs(t.delta))
+    return f"{top.cls} {top.desc} ({top.delta:+.2f})" + (f" [{top.hint}]" if top.hint else "")
 
 
 class MesLine_like:      # structural type for triage (MesLine or a test double)
@@ -234,22 +274,68 @@ class MesLine_like:      # structural type for triage (MesLine or a test double)
     excluded: bool
 
 
-def apply_accepted(cell: Cell, accepted: list[Accepted], today: date | None = None) -> Cell:
-    """Grey a FLAG / PRESENCE / UNMAPPED cell when an accepted entry covers its
-    body, section, variant AND (when the entry names one) its likely cause."""
-    if cell.status in ("FLAG", "PRESENCE", "UNMAPPED"):
-        cell.base_status = cell.status
-        names = [cell.section_excel, cell.section_mes]
-        hits = [a for a in accepted if a.matches(sheet=cell.sheet, trailer_id=cell.trailer_id,
-                                                 section_names=names, variant=cell.variant,
-                                                 cause=f"{cell.reason or ''} {cell.likely_cause or ''}")]
-        if hits:
-            a = hits[0]
-            cell.accepted = a.to_dict()
-            cell.status = "EXPIRED" if a.expired(today) else "ACCEPTED"
-            if cell.status == "EXPIRED":
-                cell.reason = f"accepted entry {a.index} review_by {a.review_by} has passed"
+def _mark(cell: Cell, primary: Accepted, others: list[Accepted], today: date | None) -> Cell:
+    cell.accepted = primary.to_dict()
+    if others:
+        cell.accepted["also"] = [o.to_dict() for o in others]
+        if any(o.kind == "known_defect" for o in others):
+            cell.accepted["kind"] = "known_defect"
+    expired = [a for a in [primary, *others] if a.expired(today)]
+    cell.status = "EXPIRED" if expired else "ACCEPTED"
+    if expired:
+        cell.reason = f"accepted entry {expired[0].index} review_by {expired[0].review_by} has passed"
     return cell
+
+
+def apply_accepted(cell: Cell, accepted: list[Accepted], today: date | None = None,
+                   tolerance_pct: float = 1.0) -> Cell:
+    """Grey a FLAG / PRESENCE / UNMAPPED cell when accepted entries cover it.
+
+    PRESENCE / UNMAPPED (a whole section on one side only): an in-scope entry
+    whose cause names the cell's reason or likely cause covers it.
+    FLAG (both sides priced): the lines named by the in-scope entries' causes
+    must account for the section's net difference to within the tolerance —
+    otherwise the cell stays a FLAG, and its reason says what is unexplained."""
+    if cell.status not in ("FLAG", "PRESENCE", "UNMAPPED"):
+        return cell
+    cell.base_status = cell.status
+    names = [cell.section_excel, cell.section_mes]
+    scope = [a for a in accepted if a.in_scope(sheet=cell.sheet, trailer_id=cell.trailer_id,
+                                                section_names=names, variant=cell.variant)]
+    if not scope:
+        return cell
+    blanket = [a for a in scope if not a.cause_tokens()]
+    if blanket:                                    # an entry without a cause covers the whole cell
+        return _mark(cell, blanket[0], [], today)
+    text = f"{cell.reason or ''} {cell.likely_cause or ''}"
+    if cell.status != "FLAG" or not cell.triage:
+        hits = [a for a in scope if a.names_cause(text)]
+        return _mark(cell, hits[0], hits[1:], today) if hits else cell
+    covered: dict[int, Accepted] = {}
+    for a in scope:
+        toks = a.cause_tokens()
+        for t in cell.triage:
+            if t.cls != "OK" and id(t) not in covered and any(k in norm_name(f"{t.cls} {t.desc}") for k in toks):
+                covered[id(t)] = a
+    if not covered:
+        return cell
+    net = (cell.mes_total or 0.0) - (cell.excel_total or 0.0)
+    explained = sum(t.delta for t in cell.triage if id(t) in covered)
+    rest = net - explained
+    base = abs(cell.excel_total or 0.0)
+    if (abs(rest) / base * 100.0 if base > 0.005 else abs(rest)) > (tolerance_pct if base > 0.005 else 1.0):
+        cell.reason = (f"accepted cause(s) explain {explained:+,.2f} of {net:+,.2f}; "
+                       f"unexplained {rest:+,.2f}").replace(",", " ")
+        return cell
+    weight: dict[int, float] = {}
+    by_index: dict[int, Accepted] = {}
+    for t in cell.triage:
+        a = covered.get(id(t))
+        if a is not None:
+            weight[a.index] = weight.get(a.index, 0.0) + abs(t.delta)
+            by_index[a.index] = a
+    order = sorted(by_index.values(), key=lambda a: -weight[a.index])
+    return _mark(cell, order[0], order[1:], today)
 
 
 def _underlying_status(c: dict) -> str:
@@ -273,15 +359,17 @@ def reapply_accepted(report: dict, accepted: list[Accepted], *, today: date | No
     cells: list[Cell] = []
     for c in report["cells"]:
         d = dict(c)
-        tri = [LineTriage(**t) for t in d.pop("triage", [])]
+        tri = regroup_renames([LineTriage(**t) for t in d.pop("triage", [])])
         d.pop("accepted", None)
         base = _underlying_status(d)
         d["status"] = base
         d["base_status"] = None
-        if str(d.get("reason") or "").startswith("accepted entry"):
+        if str(d.get("reason") or "").startswith(("accepted entry", "accepted cause")):
             d["reason"] = None
+        if tri:
+            d["likely_cause"] = likely_cause(tri)
         cell = Cell(**d, triage=tri)
-        cells.append(apply_accepted(cell, accepted, today))
+        cells.append(apply_accepted(cell, accepted, today, report["tolerance_pct"]))
     rows = [ScenarioRow(**s) for s in report.get("scenarios", [])]
     warnings = list(report.get("warnings") or [])
     if note:
@@ -304,7 +392,7 @@ def compare_scenario(golden: dict, mes: MesResult, *, tolerance_pct: float,
                 variant=sc["variant"], length=sc["length"], width=sc["width"], height=sc["height"])
 
     def finish(cell: Cell) -> Cell:
-        return apply_accepted(cell, accepted, today)
+        return apply_accepted(cell, accepted, today, tolerance_pct)
 
     for ex_name, gs in golden["sections"].items():
         mes_name = mapper.to_mes(ex_name)

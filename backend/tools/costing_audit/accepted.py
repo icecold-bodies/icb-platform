@@ -15,6 +15,14 @@ cell in the same section that fails for a different reason stays a FLAG.
 Without it a R60 tapping-block entry greyed a R23k PU error in the same
 section — which is exactly what the first prod run showed.
 
+From v1.57.2 an entry must also EXPLAIN the difference: on a FLAG cell (both
+sides priced) the lines its cause names — across every in-scope entry — must
+account for the section's net difference to within the tolerance, or the cell
+stays a FLAG with the unexplained remainder in its reason. A R60 tapping-block
+entry can no longer grey a section whose real difference is a missing EPS line.
+PRESENCE / UNMAPPED cells (the whole section on one side only) are judged on
+the reason text, as before.
+
 An ACCEPTED cell does not fail CI. `tolerated` renders grey (a legitimate or
 tolerated difference); `known_defect` renders amber and is listed under
 "Known defects (tracked)" in every summary — the entry IS the work-order
@@ -50,12 +58,24 @@ class Accepted:
     def expired(self, today: date | None = None) -> bool:
         return self.review_by is not None and (today or date.today()) > self.review_by
 
+    def cause_tokens(self) -> list[str]:
+        return [t for t in (norm_name(c) for c in _as_list(self.cause)) if t] if self.cause else []
+
+    def names_cause(self, text: str | None) -> bool:
+        """True when the entry has no cause, or one of its cause tokens is in `text`."""
+        toks = self.cause_tokens()
+        if not toks:
+            return True
+        have = norm_name(text or "")
+        return any(t in have for t in toks)
+
     def matches(self, *, sheet: str, trailer_id: int, section_names: list[str], variant: str,
                 cause: str | None = None) -> bool:
-        if self.cause:
-            have = norm_name(cause or "")
-            if not any(norm_name(c) and norm_name(c) in have for c in _as_list(self.cause)):
-                return False
+        return (self.in_scope(sheet=sheet, trailer_id=trailer_id, section_names=section_names, variant=variant)
+                and self.names_cause(cause))
+
+    def in_scope(self, *, sheet: str, trailer_id: int, section_names: list[str], variant: str) -> bool:
+        """Body, section and variant only — the cause is judged separately."""
         bodies = _as_list(self.body)
         if "*" not in bodies and not any(norm_name(b) == norm_name(sheet) or b == str(trailer_id) for b in bodies):
             return False

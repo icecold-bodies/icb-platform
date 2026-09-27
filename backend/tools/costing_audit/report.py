@@ -259,8 +259,10 @@ function showScenario(sid){
   h += '</tbody></table><details><summary class="small">MES payload</summary><pre>'+esc(JSON.stringify(sr.payload||{},null,1))+'</pre></details>';
   $('left').innerHTML = h;
   $('left').scrollTop = 0;
-  // open the most interesting section on the right: the first non-PASS/SKIP one with lines, else the first
-  let pick = cells.findIndex(c => !['PASS','SKIP'].includes(c.status) && (c.triage||[]).length);
+  // open the most interesting section on the right: an unaccepted one first, then any other difference
+  const RED = ['FLAG','PRESENCE','UNMAPPED','EXPIRED','NO_GOLDEN'];
+  let pick = cells.findIndex(c => RED.includes(c.status));
+  if (pick < 0) pick = cells.findIndex(c => !['PASS','SKIP'].includes(c.status) && (c.triage||[]).length);
   if (pick < 0) pick = cells.findIndex(c => !['PASS','SKIP'].includes(c.status));
   showSection(pick < 0 ? 0 : pick);
 }
@@ -274,7 +276,8 @@ function showSection(i){
   let h = '<h3>'+esc(c.section_excel || c.section_mes)+' <span class="st '+c.status+kindOf(c)+'" style="margin-left:6px">'+esc(SHORT[c.status]||c.status)+'</span></h3>';
   h += '<div class="small" style="margin-bottom:6px">Excel <b>'+fmt(c.excel_total)+'</b> · MES <b>'+fmt(c.mes_total)+'</b>'+(c.variance_pct!=null?' · '+fmt(c.variance_pct)+' %':'')+
        (c.likely_cause?' · likely cause: <b>'+esc(c.likely_cause)+'</b>':'')+'</div>';
-  if (c.accepted) h += '<div class="warn">'+(c.accepted.kind==='known_defect'?'Known defect':'Accepted')+': '+esc(c.accepted.reason)+' — '+esc(c.accepted.owner)+', review by '+esc(c.accepted.review_by)+'</div>';
+  if (c.accepted) for (const a of [c.accepted, ...(c.accepted.also||[])])
+    h += '<div class="warn">'+(a.kind==='known_defect'?'Known defect':'Accepted')+': '+esc(a.reason)+' — '+esc(a.owner)+', review by '+esc(a.review_by)+'</div>';
   const tri = c.triage || [];
   if (!tri.length){
     h += '<div class="placeholder">'+(c.status==='PASS'?'Within tolerance — the line comparison is only recorded for sections that differ.'
@@ -324,10 +327,12 @@ div.addEventListener('pointerdown', e => {
 div.addEventListener('dblclick', () => { split = setSplit(0.5); try { localStorage.setItem(KEY, '0.5'); } catch(e) {} });
 
 renderGrid();
-// start on the first scenario that is not all-PASS, so both halves are populated on open
+// open on the first unaccepted difference (what needs action), else the first non-PASS scenario
 const first = bodies.flatMap(b => Object.values(byBody[b]).sort((x,y)=>x.dims[0]-y.dims[0]||x.dims[1]-y.dims[1]||x.dims[2]-y.dims[2])
   .flatMap(r => variants.map(v => r.v[v]).filter(Boolean)));
-const start = first.find(sid => !['PASS','SKIP'].includes(worst(cellsBySid[sid]).status)) || first[0];
+const FAILING = ['FLAG','PRESENCE','UNMAPPED','EXPIRED','NO_GOLDEN'];
+const start = first.find(sid => FAILING.includes(worst(cellsBySid[sid]).status))
+           || first.find(sid => !['PASS','SKIP'].includes(worst(cellsBySid[sid]).status)) || first[0];
 if (start){
   showScenario(start);
   const el = document.querySelector('#grid .st.sel'); if (el) el.scrollIntoView({block:'nearest'});

@@ -31,7 +31,7 @@
 - body: ["UP TO 2.3 CHILLER BODY", "UP TO 5.5 CHILLER AND 2.3 WIDE", " 4.9 & UP CHILLER AND 2.5 WIDE "]
   section: ["FRONT", "SIDES", "ROOF", "FLOOR"]
   variant: all_pu
-  cause: ["DIFF PU", "BOTH PU", "Rhinotex"]
+  cause: ["DIFF PU", "BOTH PU", "Rhinotex", "GLUE LINE", "PLYWOOD", "PICTURE FRAME"]
   kind: known_defect
   reason: "[MES] chiller PU insulation lines carry a literal x0 quantity formula (2.44*1.22*0*2, 1.22*2.44*0*(length+{Waste})/1.22): PU prices at R0 on FRONT/SIDES/ROOF/FLOOR (ZERO_FORMULA); the icecream/freezer bodies use {PANEL PU} tokens and price live. SIDES/ROOF/FLOOR skins also hard-code both roof and floor deductions where Burt's cells deduct only the roof under PU."
   owner: BA
@@ -130,7 +130,7 @@
 - body: "*"
   section: "SRD DOOR FITTINGS"
   variant: srd
-  cause: ["CSLB HINGES", "SILPLUS", "LOCKING POLE", "CAPPING", "ALU CORNERS", "BIG VERTICAL", "DOOR RUBBER"]
+  cause: ["CSLB HINGES", "SILPLUS", "LOCKING POLE", "CAPPING", "ALU CORNERS", "VERTICAL", "DOOR RUBBER", "LONG RIVETS"]
   kind: known_defect
   reason: "[DATA] SRD DOOR FITTINGS on every body: MES CSLB HINGES R293.46 x2 (Excel R146.73 x2 - the pair price applied per hinge) and SILPLUS X WHITE R232.30 (Excel R116.15); per body also 34MM LOCKING POLE R126 (Excel R42), 28782 BIG HORIZ CAPPING R197.20 (Excel R240.58), ALU CORNERS R45 (Excel R54.90), 28780 BIG VERTICAL renamed 28778; Burt prices 2317 DOOR RUBBER / 28777 DOOR CAPPING at R0 on some sheets."
   owner: BA
@@ -139,7 +139,7 @@
 - body: "icecream up to 4.8"
   section: ["DRD", "DRD DOOR FITTINGS", "REAR FRAME + FLOOR PLATE"]
   variant: "*"
-  cause: ["4MM PF PLYWOOD", "28779 DOOR CAPPING", "3MM 3CR12 FLOOR PLATE", "CSLB HINGES"]
+  cause: ["4MM PF PLYWOOD", "28779 DOOR CAPPING", "3MM 3CR12 FLOOR PLATE", "CSLB HINGES", "Rhinotex", "GLUE LINE"]
   kind: known_defect
   reason: "[DATA] icecream 4.8 door lines: 4MM PF PLYWOOD quantity, 28779 DOOR CAPPING (-R324), 3MM 3CR12 FLOOR PLATE (+R77.50) differ from Burt's sheet (2-6 % of the section) - see the triage."
   owner: BA
@@ -163,12 +163,12 @@
   owner: BA
   review_by: 2026-10-31
 
-- body: " 4.9 & UP FREEZER BODY (2"
+- body: [" 4.9 & UP FREEZER BODY (2", "icecream up to 4.8"]
   section: FLOOR
   variant: "*"
   cause: "LVL Beam"
   kind: known_defect
-  reason: "[DATA] 100*50 LVL Beam quantity: MES ((length+{Waste})/0.356-7.27/1.22)*2.736 = R3 187 vs Burt's beam count x spacing = R3 825 at 4.9 m (-R640, 2.8 % of the section)."
+  reason: "[DATA] 100*50 LVL Beam quantity rule differs from Burt's beam count x spacing: FREEZER LARGE -R640 at 4.9 m (2.8 % of the section), ICECREAM UP TO 4.8 -R209."
   owner: BA
   review_by: 2026-10-31
 
@@ -178,5 +178,52 @@
   cause: "EXTRA_IN_MES PU"
   kind: known_defect
   reason: "[MES] EXPLOSIVE 2.7 TO 4.8 FLOOR carries a PU line (+R680) on dev that Burt's sheet does not have (the explosive sheets carry no FLOOR EPS/PU rows); prod does not carry it."
+  owner: BA
+  review_by: 2026-10-31
+
+# ── v1.57.2: mechanisms surfaced when an entry had to EXPLAIN the whole difference ──
+
+- body: "UP TO 2.3 CHILLER BODY"
+  section: DRD
+  variant: all_pu
+  cause: "MISSING_IN_MES EPS"
+  kind: known_defect
+  reason: "[RULING] Burt's UP TO 2.3 CHILLER sheet charges the double rear door's EPS line (R432) even when the door is PU — the line carries no insulation gate, so the sheet prices EPS and PU together. MES charges PU only. Burt to confirm which is right."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "*"
+  section: SRD
+  variant: srd
+  cause: ["PLYWOOD", "GLUE LINE"]
+  kind: known_defect
+  reason: "[RULING] Burt's SRD sections carry 4MM PF PLYWOOD and one GLUE LINE at R0 (the total cells are hard-coded 0) where MES charges them: +R480 to +R590 per single rear door. Does a single rear door get the inner plywood skin?"
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "UP TO 5.5 CHILLER AND 2.3 WIDE"
+  section: DRD
+  variant: all_pu
+  cause: ["Rhinotex", "PLYWOOD", "GLUE LINE"]
+  kind: known_defect
+  reason: "[MES] DEV CHILLER MEDIUM DRD skin formulas hard-code the EPS deductions (width-0.06, height-0.076-0.076), so under PU the door skins come out ~1 % small (-R66)."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: " UP TO 4.8 MT FREEZER  (2"
+  section: "SUB FRAME + LIGHT BOX ASSY"
+  variant: "*"
+  cause: "MOUNTING BRACKET"
+  kind: known_defect
+  reason: "[DATA] SMALL MOUNTING BRACKET priced differently from Burt's sheet on FREEZER MEDIUM (-R126)."
+  owner: BA
+  review_by: 2026-10-31
+
+- body: "EXPLOSIVE UP TO 2.7"
+  section: SRD
+  variant: srd
+  cause: "ALU PLATE"
+  kind: known_defect
+  reason: "[DATA] 0.9 MM ALU PLATE on the EXPLOSIVE UP TO 2.7 single rear door priced/quantified differently from Burt's sheet (-R325)."
   owner: BA
   review_by: 2026-10-31

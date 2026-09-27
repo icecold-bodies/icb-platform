@@ -139,7 +139,11 @@ does not — so one list cannot describe both. Every entry may carry `cause:`
 likely cause): the acceptance then only greys cells failing for THAT
 mechanism, and a cell in the same section failing for another reason stays a
 FLAG. Without it the first prod run hid a R23k SRD PU error behind a R60
-tapping-block entry.
+tapping-block entry. From v1.57.2 an entry must also *explain* the difference: on a
+FLAG cell the lines named by the in-scope entries' causes must account for the
+section's net difference to within the tolerance, or the cell stays a FLAG and
+its reason shows the unexplained remainder. Renamed lines (`130*62MM TAPPING
+BLOCKS` ~ `TAPPING BLOCKS_200MM`) pair up by their words, ignoring sizes.
 
 ### Running the audit on prod
 

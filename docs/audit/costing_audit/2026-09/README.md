@@ -145,3 +145,36 @@ ALU EXTRUTION FLOOR default; FREEZER LARGE sides from width; REAR FRAME on SRD b
 the cause guards, **[MES] DEV SRD PU `×0` on every freezer, icecream and explosive body** (−R1.5k–R2.2k).
 
 **How to repeat the prod run:** `backend/tools/costing_audit/README.md`, "Running the audit on prod".
+
+## 27 Sep 2026 (v1.57.2) — stricter acceptance, prod chillers after Michael's fixes
+
+**Rule change.** An accepted entry now has to *explain* a flagged section: the lines its cause names — across every
+in-scope entry — must account for the section's net difference to within the tolerance, or the cell stays a FLAG
+with the unexplained remainder in its reason. Renamed lines pair up (`130*62MM TAPPING BLOCKS` ~
+`TAPPING BLOCKS_200MM + _250MM`, `1MM GALV PLATE` ~ `1.2MM GALV PLATE`) instead of showing as a large missing line
+plus a large extra one. Premise checked first: on all 737 flagged cells (dev + prod) the net difference equals the
+sum of the line differences to within 3 cents. Under the old rule, a R60 tapping-block entry was greying sections
+whose real difference was a missing EPS line or R480 of plywood.
+
+**What the stricter rule surfaced** (now in the accepted lists, each tied to its lines):
+- **[RULING] Burt's UP TO 2.3 CHILLER charges the double rear door's EPS (R432) even when the door is PU** — the
+  line has no insulation gate, so the sheet prices EPS and PU together. MES charges PU only (dev and prod).
+- **[RULING] Burt's SRD sections carry 4MM PF PLYWOOD + a GLUE LINE at R0** (cells hard-coded 0) where MES charges
+  them: +R480 to +R590 per single rear door. Does a single rear door get the inner plywood skin?
+- **PROD, all icecream bodies:** an extra `3MM ALU BUFFER PLATE` on the rear door (+R494 double, +R235 single).
+- **PROD ICECREAM UP TO 4.8 FLOOR** has no `12MM PF PLYWOOD` line (−R2.5k) — consistent with the ALU EXTRUTION
+  FLOOR option replacing the plywood floor; to confirm in prod's Body Templates.
+- **PROD EXPLOSIVE 4.9 AND UP double rear door** PU +R487 (same PU pricing as its panels); small [DATA] items on
+  FREEZER MEDIUM (mounting bracket −R126), EXPLOSIVE UP TO 2.7 (0.9 MM ALU PLATE −R325), and dev-only skin sizes.
+
+**Prod chillers, 27 Sep 08:03 (after Michael's data fixes on prod).** 837 PASS / 66 ACCEPTED / 168 SKIP /
+**3 FLAG**. Fixed today and now PASS: CHILLER 2.3 PU panels (all four); CHILLER LARGE PU panels and double rear
+door; CHILLER LARGE SRD EPS and SRD door fittings; CHILLER MEDIUM SRD door fittings. **Introduced today: CHILLER 2.3
+SRD DOOR FITTINGS now carries `SB 51111 DOOR SET` ×2 (Burt ×1) and `CSLB HINGES` ×4 (Burt ×2) — the double-door
+quantities on a single door, +R800 per SRD quote** (the three FLAG cells, deliberately not accepted). Still open on
+the chillers: the +R23k single-rear-door PU, CHILLER MEDIUM's PU panels (front half-priced, sides/roof/floor over),
+and the 2317 DOOR RUBBER ×0 on CHILLER MEDIUM.
+
+**Report layout.** From v1.57.2 the HTML report lists, per body, one row per L × W × H with the variants as columns
+(top half, scrolls up/down); the clicked scenario's sections and the selected section's lines stay fixed in the
+bottom half; the page opens on the first unaccepted difference.

@@ -85,25 +85,17 @@ def cmd_golden(a) -> int:
 
 def cmd_run(a) -> int:
     from .accepted import load_accepted
-    from .compare import build_report
-    from .excel_oracle import read_golden
     from .mes_probe import MesProbe
     from .report import write_all
-    from .scenarios import load_pack, expand_pack, Scenario
+    from .runner import golden_for, cost_and_compare
+    from .scenarios import load_pack
     pack = load_pack(_pack_path(a.pack))
-    warnings: list[str] = []
     if a.live_excel:
         if not a.workbook_dir:
             raise SystemExit("--live-excel needs --workbook-dir")
         _golden(a.pack, a.workbook_dir, golden_dir=a.golden_dir, work_dir=a.work_dir, soffice=a.soffice,
                 sheet_maps=a.sheet_maps, prove=not a.no_prove)
-    manifest, goldens = read_golden(pack.name, a.golden_dir)
-    if manifest.get("pack_fingerprint") != pack.fingerprint():
-        warnings.append("the pack file changed since this golden was generated — scenarios may be missing "
-                        "(NO_GOLDEN) or stale; re-run `audit golden`")
-    pm, gm = pack.raw.get("workbook_month"), manifest.get("workbook_month")
-    if pm and gm and str(pm) > str(gm):
-        warnings.append(f"pack names workbook month {pm} but the golden was generated from {gm} — regenerate golden")
+    manifest, goldens, warnings = golden_for(pack, a.golden_dir)
     if a.mes_snapshot is not None:
         from .mes_snapshot import load_snapshot, snapshot_path
         snap = Path(a.mes_snapshot) if a.mes_snapshot else snapshot_path(pack.name)
@@ -117,19 +109,12 @@ def cmd_run(a) -> int:
         warnings.append(f"accepted list: {accepted_path.name} (--env {a.env})")
     probe = MesProbe(base_url=a.base_url, log=_log)
     mes_source = a.base_url or _db_label()
-    # scenario order + ids come from the golden (the pack expansion needs the sheet maps,
-    # which live only on the oracle side); every golden scenario of this pack runs.
-    ids = list(goldens.keys())
-    results = {}
+    # every golden scenario of this pack runs (runner.cost_and_compare — the admin page's path too)
     try:
-        for sid in ids:
-            g = goldens[sid]["scenario"]
-            sc = Scenario(**{**g, "panels": {k: _panel(v) for k, v in g["panels"].items()}})
-            results[sid] = probe.cost(sc)
+        rep = cost_and_compare(pack.name, manifest, goldens, probe=probe, accepted=accepted,
+                               tolerance_pct=tolerance, mes_source=mes_source, warnings=warnings)
     finally:
         probe.close()
-    rep = build_report(pack_name=pack.name, tolerance_pct=tolerance, manifest=manifest, mes_source=mes_source,
-                       goldens=goldens, results=results, scenario_ids=ids, accepted=accepted, warnings=warnings)
     out_dir = Path(a.out) if a.out else Path("costing_audit_reports")
     paths = write_all(rep, out_dir, stem=a.stem)
     _log(Path(paths["md"]).read_text(encoding="utf-8"))
@@ -168,11 +153,6 @@ def cmd_reaccept(a) -> int:
         _log(Path(paths["md"]).read_text(encoding="utf-8"))
         rc = max(rc, rep.exit_code)
     return rc
-
-
-def _panel(d: dict):
-    from .scenarios import PanelSpec
-    return PanelSpec(d["insulation"], float(d["thickness"]))
 
 
 def _db_label() -> str:

@@ -72,23 +72,31 @@ def _ensure_backend_on_path() -> None:
 
 
 class MesProbe:
-    """One probe per run; caches BOM rows per trailer (read-only)."""
+    """One probe per run; caches BOM rows per trailer (read-only).
 
-    def __init__(self, base_url: str | None = None, log=print):
+    `session`: cost on this SQLAlchemy session instead of opening one — the admin
+    page's run passes a session on a READ-ONLY connection (v1.59). The caller owns
+    it: close() leaves an injected session alone."""
+
+    def __init__(self, base_url: str | None = None, log=print, session=None):
         self.base_url = base_url.rstrip("/") if base_url else None
         self.log = log
         self._rows: dict[int, list] = {}
         self._trailers: dict[int, object] = {}
         self._db = None
-        if not self.base_url:
+        self._owns_db = False
+        if session is not None:
+            self._db = session
+        elif not self.base_url:
             _ensure_backend_on_path()
             from app.database import SessionLocal
             self._db = SessionLocal()
+            self._owns_db = True
 
     def close(self) -> None:
-        if self._db is not None:
+        if self._db is not None and self._owns_db:
             self._db.close()
-            self._db = None
+        self._db = None
 
     # ── BOM masters ─────────────────────────────────────────────────────
     def _load(self, trailer_id: int):

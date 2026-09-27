@@ -123,22 +123,32 @@ def export_snapshot(trailer_ids: list[int], out_path: Path, *, log=print) -> dic
 INSERT_CHUNK = 200      # rows per INSERT — Postgres allows 65 535 bind parameters
 
 
-def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool = False,
-                  log=print) -> dict[str, int]:
-    """Insert the snapshot rows (ON CONFLICT DO NOTHING, ids preserved) into
-    DATABASE_URL. Refuses a non-`_test` database unless explicitly allowed: this
-    writes master data and belongs in CI / a scratch DB, never in dev or prod.
-    `rollback=True` does everything inside a transaction that is rolled back —
-    the loader's own test, leaving the shared test database exactly as found."""
-    _ensure_backend_on_path()
-    from sqlalchemy import text
-    from sqlalchemy.dialects.postgresql import insert as pg_insert
-    from app.database import Base, engine
+def _guard_test_db(allow_non_test_db: bool, what: str) -> None:
     from app.config import settings
     from app.db_guard import resolve_db_name
     dbname = resolve_db_name(settings.DATABASE_URL)
     if not dbname.endswith("_test") and not allow_non_test_db:
-        raise RuntimeError(f"refusing to load a snapshot into {dbname!r} (not a _test database)")
+        raise RuntimeError(f"refusing to {what} {dbname!r} (not a _test database)")
+
+
+def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool = False,
+                  log=print, conn=None, inserted: dict | None = None) -> dict[str, int]:
+    """Insert the snapshot rows (ON CONFLICT DO NOTHING, ids preserved) into
+    DATABASE_URL. Refuses a non-`_test` database unless explicitly allowed: this
+    writes master data and belongs in CI / a scratch DB, never in dev or prod.
+    `rollback=True` does everything inside a transaction that is rolled back —
+    the loader's own test, leaving the shared test database exactly as found.
+
+    `conn`: load onto this connection inside a SAVEPOINT (the caller owns the outer
+    transaction — the admin page's read-only proof rolls it back).
+    `inserted`: a dict filled with {table: [primary-key tuples]} of the rows THIS call
+    inserted (rows already present are skipped, and not listed) — unload_snapshot()
+    removes exactly those, by primary key."""
+    _ensure_backend_on_path()
+    from sqlalchemy import select, text
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+    from app.database import Base, engine
+    _guard_test_db(allow_non_test_db, "load a snapshot into")
     doc = json.loads(Path(path).read_text(encoding="utf-8"))
     md = Base.metadata
     tables = md.tables
@@ -159,8 +169,12 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool
             return True
         return (val,) in present.get(fk.column.table.name, set())
 
-    conn = engine.connect()
-    txn = conn.begin()
+    own_conn = conn is None
+    if own_conn:
+        conn = engine.connect()
+        txn = conn.begin()
+    else:
+        txn = conn.begin_nested()
     try:
         for name, items in doc["tables"].items():
             t = tables[name]
@@ -183,9 +197,16 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool
                         row[col] = None
                 batch.append(row)
             skipped = 0
+            pk_cols = list(t.primary_key.columns)
             for start in range(0, len(batch), INSERT_CHUNK):
                 chunk = batch[start:start + INSERT_CHUNK]
-                res = conn.execute(pg_insert(t).values(chunk).on_conflict_do_nothing())
+                stmt = pg_insert(t).values(chunk).on_conflict_do_nothing()
+                if inserted is not None:
+                    got = conn.execute(stmt.returning(*pk_cols)).fetchall()
+                    inserted.setdefault(name, []).extend(tuple(r) for r in got)
+                    skipped += len(chunk) - len(got)
+                    continue
+                res = conn.execute(stmt)
                 if res.rowcount is not None and res.rowcount >= 0:
                     skipped += len(chunk) - res.rowcount
             counts[name] = len(batch) - skipped
@@ -193,9 +214,29 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool
                 # Rows that already existed keep their current values — the
                 # target is not a snapshot mirror, and nothing here overwrites.
                 log(f"[snapshot] {name}: {skipped} row(s) already present, left untouched")
+            # A skipped row may have clashed on a NATURAL key (an app-seeded 'FREEZER'
+            # group under another id): its snapshot id then does not exist here.
+            # Re-read which snapshot ids really exist — always, since the driver can
+            # report rowcount -1 for a multi-row insert — so an FK to a skipped row
+            # is written NULL and logged below instead of failing the whole load.
+            if len(pk_cols) == 1:
+                ids = [p[0] for p in present[name]]
+                have: set = set()
+                for start in range(0, len(ids), 1000):
+                    have |= {(r[0],) for r in conn.execute(
+                        select(pk_cols[0]).where(pk_cols[0].in_(ids[start:start + 1000])))}
+                if len(have) < len(ids) and not skipped:
+                    log(f"[snapshot] {name}: {len(ids) - len(have)} snapshot row(s) not present "
+                        "(already there under another key)")
+                present[name] = have
             inserted_tables.append(name)
-        for name, pkv, vals in deferred:
+        for name, pkv, vals0 in deferred:
             t = tables[name]
+            vals = {k: v for k, v in vals0.items() if _resolvable(t, k, v)}
+            for k in set(vals0) - set(vals):
+                dangling.append(f"{name}.{k}={vals0[k]} (row {list(pkv.values())})")
+            if not vals:
+                continue
             cond = " AND ".join(f"{k} = :pk_{k}" for k in pkv)
             sets = ", ".join(f"{k} = :v_{k}" for k in vals)
             conn.execute(text(f"UPDATE {t.fullname} SET {sets} WHERE {cond}"),
@@ -217,12 +258,56 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool
         txn.rollback()
         raise
     finally:
-        conn.close()
+        if own_conn:
+            conn.close()
+    if rollback and inserted is not None:
+        inserted.clear()                      # nothing stayed
     log("[snapshot] " + ("dry-run (rolled back): " if rollback else "loaded: ")
         + ", ".join(f"{k} {v}" for k, v in counts.items()))
     if dangling:
         log(f"[snapshot] {len(dangling)} dangling FK(s) written NULL (orphans in the source database): "
             + "; ".join(dangling[:8]) + (" ..." if len(dangling) > 8 else ""))
+    return counts
+
+
+def unload_snapshot(inserted: dict, *, allow_non_test_db: bool = False, log=print) -> dict[str, int]:
+    """Delete exactly the rows a load_snapshot(inserted=...) call inserted — by primary
+    key, never by a natural key (a shared test DB may hold other rows with the same
+    names). FK columns between those rows are cleared first (the snapshot's cyclic
+    bom_sections <-> bill_of_materials pair), then the rows go children-first. A row
+    that something else still references makes the DELETE fail loud (ordered DELETE,
+    never TRUNCATE CASCADE) and the whole unload rolls back."""
+    _ensure_backend_on_path()
+    from sqlalchemy import and_, or_, tuple_
+    from app.database import Base, engine
+    _guard_test_db(allow_non_test_db, "unload a snapshot from")
+    tables = Base.metadata.tables
+    names = [n for n in inserted if inserted[n]]
+    counts: dict[str, int] = {}
+
+    def where(t, pks):
+        cols = list(t.primary_key.columns)
+        if len(cols) == 1:
+            return cols[0].in_([p[0] for p in pks])
+        return tuple_(*cols).in_(pks)
+
+    with engine.begin() as conn:
+        for name in names:
+            t = tables[name]
+            cyclic = [fk.parent for fk in t.foreign_keys
+                      if fk.column.table.name in inserted and fk.parent.nullable]
+            for start in range(0, len(inserted[name]), INSERT_CHUNK):
+                pks = inserted[name][start:start + INSERT_CHUNK]
+                if cyclic:
+                    conn.execute(t.update().where(and_(where(t, pks), or_(*[c.isnot(None) for c in cyclic])))
+                                 .values({c.name: None for c in cyclic}))
+        for name in reversed(names):
+            t = tables[name]
+            n = 0
+            for start in range(0, len(inserted[name]), INSERT_CHUNK):
+                n += conn.execute(t.delete().where(where(t, inserted[name][start:start + INSERT_CHUNK]))).rowcount
+            counts[name] = n
+    log("[snapshot] unloaded: " + ", ".join(f"{k} {v}" for k, v in counts.items()))
     return counts
 
 

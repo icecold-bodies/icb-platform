@@ -110,9 +110,15 @@ python -m tools.costing_audit snapshot --pack P [--pack Q ...]
   Before trusting anything it recalculates a *null* scenario per sheet and
   requires it to reproduce Excel's own cached totals (prove-then-trust).
 * **run** costs the golden's scenarios through MES and writes
-  `costing_audit_<pack>.html` (self-contained, no CDN: matrix bodies ×
-  scenarios → section table → line triage), `.csv`, `.json` and a Markdown
-  summary; exit 1 on any unaccepted FLAG. `--base-url http://127.0.0.1:8011`
+  `costing_audit_<pack>.html`, `.csv`, `.json` and a Markdown summary; exit 1
+  on any unaccepted FLAG. The HTML is self-contained (no CDN) and laid out for
+  reading, not scrolling sideways: the **top half** lists, per body, one row
+  per L × W × H tested with the variants as columns (worst status per
+  scenario; hover for the counts and grand totals); the **bottom half** stays
+  put — the clicked scenario's sections on the left, the selected section's
+  lines on the right (Excel and MES as `qty × price = total`, differing lines
+  first, the MES quantity formula under each line). Drag the bar between the
+  halves to resize (double-click resets; the browser remembers the split). `--base-url http://127.0.0.1:8011`
   posts to a side-port server instead (never :8000). `--mes-snapshot` loads
   the pack's MES snapshot first (refuses a non-`_test` database).
 * **reaccept** re-applies an accepted list to a saved report JSON and rewrites

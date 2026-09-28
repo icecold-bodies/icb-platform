@@ -1,0 +1,7 @@
+database     icb_platform
+alembic      0048
+prod_code    ?
+snapshot     all.json  7e07c4c237492a9f17a4bf89ca79771807a9506f7a5765db5ed1cbd92e9514b7  3166194 bytes
+chillers_rc  0
+other_red    none
+finished     2026-09-28T07:29:10+02:00

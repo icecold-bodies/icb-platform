@@ -1,6 +1,6 @@
 {
  "pack": "chillers",
- "pack_fingerprint": "0f5604bdf1b9",
+ "pack_fingerprint": "af303744a6e4",
  "generated_at": "2026-09-25T14:12:11+00:00",
  "tool_version": "1.57.0",
  "workbook_month": "2026-09",
@@ -15,10 +15,30 @@
  "stale_links": {
   "3": "PRICE 20.04.2004.xls"
  },
- "scenario_count": 84,
+ "scenario_count": 98,
  "sheets": {
   "UP TO 2.3 CHILLER BODY": "up_to_2_3_chiller_body.json",
   "UP TO 5.5 CHILLER AND 2.3 WIDE": "up_to_5_5_chiller_and_2_3_wide.json",
   " 4.9 & UP CHILLER AND 2.5 WIDE ": "4_9_up_chiller_and_2_5_wide.json"
- }
+ },
+ "additions": [
+  {
+   "variant": "srd_pu",
+   "scenarios": 14,
+   "added_at": "2026-09-28T09:38:35+00:00",
+   "generated_at": "2026-09-28T09:35:54+00:00",
+   "tool_version": "1.57.0",
+   "workbook": {
+    "dir": "C:\\Users\\micge\\Documents\\Burt Costing Model\\September costings",
+    "files": {
+     "GRP Costings 2018.xlsx": "af64176d4ff9456162311fdb1d218aac0a1e5c341b8edb3eaf4220e5c5f30de3",
+     "PRICE 2017 MARCH.xlsx": "6956102ee71d3b440e328927b7d4aa2568df992c8eb742cb0f255c3c2d1ccd04",
+     "FORMULAS 2018.xls": "8fd4a5730c8215dbddf5505e65bce8fbd4cf821149238fbca88b648c95b6ec6d"
+    },
+    "saved": "2026-09-27T07:43:22+02:00 (file mtime); read from a byte-copy on 28 Sep, the original left untouched"
+   },
+   "why": "v1.58: the chillers' SRD PU line had no audit cell (the named srd variant is EPS on every chiller). The September workbook had been saved again on 27 Sep 07:43, so only these scenarios come from that save; the other scenarios keep the 25 Sep source above.",
+   "check": "outside SRD every added scenario equals the committed srd scenario of the same size within 1.0 % (max 0.55 % over 123 section cells)"
+  }
+ ]
 }

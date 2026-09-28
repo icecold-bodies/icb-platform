@@ -10,3 +10,6 @@ backend/migrations/pgloader/*.sql   text eol=lf
 # normalises line endings before shipping them, but they are also run directly
 # from prod's own checkout, where nothing would fix them.
 deploy/prod/*.sh                    text eol=lf
+
+# v1.57.3 — ops scripts pasted/run on the Linux VM (prod_baseline.sh): LF everywhere.
+ops/**/*.sh         text eol=lf

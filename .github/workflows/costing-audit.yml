@@ -10,10 +10,11 @@ name: Costing audit
 #   schedule       nightly: every committed pack.
 #   workflow_dispatch: every committed pack, on demand.
 #
-# The MES master data comes from tests/costing_audit/mes_snapshot/<pack>.json,
+# The MES master data comes from tests/costing_audit/mes_snapshot/all.json,
 # loaded into the isolated CI database (icb_test) — CI has no ICB database, so
-# this is an ENGINE-drift gate; data drift is what a local `audit run` against
-# the live dev database catches.
+# this is an ENGINE-drift gate over PROD's pricing (v1.57.3): the snapshot is
+# exported from prod and paired with prod's accepted list (`--env prod`). Dev
+# is Michael's workbench and keeps its own list for local runs.
 
 on:
   pull_request:
@@ -88,7 +89,7 @@ jobs:
       - name: Audit run — pack ${{ matrix.pack }}
         working-directory: backend
         run: |
-          python -m tools.costing_audit run --pack ${{ matrix.pack }} --mes-snapshot \
+          python -m tools.costing_audit run --pack ${{ matrix.pack }} --mes-snapshot --env prod \
             --out ../costing_audit_reports --stem costing_audit_${{ matrix.pack }}
 
       - name: Upload report

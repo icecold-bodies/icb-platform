@@ -347,14 +347,19 @@ def test_a_full_run_changes_no_pricing_data(svc, loaded, people, run_ids):
           f"{len(r.report_json_gz) / 1e3:.0f} kB stored")
 
 
-def test_the_page_run_matches_the_ci_gate_on_smoke(svc, loaded, people, run_ids):
+def test_the_page_run_matches_the_ci_gate_on_smoke(svc, loaded, people, run_ids, monkeypatch):
     """Same code as the CLI: on the committed snapshot the smoke pack has no unaccepted
-    difference — exactly what the Costing audit CI gate asserts with `audit run`."""
+    difference — exactly what the Costing audit CI gate asserts with `audit run`.
+    v1.57.3: the committed snapshot is PROD's pricing and the gate runs `--env prod`, so
+    the page judges it as prod would (on icb_platform) — with the prod accepted list."""
+    monkeypatch.setattr(svc, "environment_for", lambda _db_name: "prod")
     rid = svc.start_run("smoke", _admin(people), submit=lambda fn, *a: fn(*a))
     run_ids.append(rid)
     r = _row(rid)
     assert r.status == "passed", (r.error, r.count_flag)
     assert r.count_flag == 0 and r.count_expired == 0 and r.count_pass > 0
+    assert any("accepted list: accepted_differences.prod.yaml" in w
+               for w in svc.decode_report(r.report_json_gz)["warnings"])
 
 
 # ── 3: background, one at a time, lock, stale, timeout ────────────────────────

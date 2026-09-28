@@ -1,0 +1,360 @@
+== prod: db=icb_platform alembic=0048 code=? mode=apply  2026-09-28T13:16:56+02:00
+== dry-run (READ ONLY)
+database icb_platform (--target prod); manifest manifest.yaml sha256 f7d0232fe9aa9d05…, 36 entries
+── F1
+  APPLY bom=3576   FREEZER 2.3 METER / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=3576   FREEZER 2.3 METER / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=2415   FREEZER MEDIUM / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=2415   FREEZER MEDIUM / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=2560   FREEZER LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=2560   FREEZER LARGE / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=5306   ICECREAM BODY LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=5306   ICECREAM BODY LARGE / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=5184   EXPLOSIVE UP TO 2.7 / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=5184   EXPLOSIVE UP TO 2.7 / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=6345   EXPLOSIVE 2.7 TO 4.8 / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=6345   EXPLOSIVE 2.7 TO 4.8 / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=3948   EXPLOSIVE 4.9 AND UP / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=3948   EXPLOSIVE 4.9 AND UP / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+── F1c
+  APPLY bom=3179   CHILLER MEDIUM / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=3179   CHILLER MEDIUM / SRD / PU  .unit_price_override
+          null
+       -> 3090.0
+  APPLY bom=3319   CHILLER LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=3319   CHILLER LARGE / SRD / PU  .unit_price_override
+          null
+       -> 3090.0
+  APPLY bom=3699   CHILLER 2.3 METER / SRD / PU  .formula_expression
+          '(1.22*2.44*{SRD PU})'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)'
+── F2
+  APPLY bom=5835   ICECREAM BODY SMALL / BODY OPTIONS / ALU EXTRUTION FLOOR  .body_option_default
+          True
+       -> False
+  APPLY bom=5713   ICECREAM BODY MEDIUM / BODY OPTIONS / ALU EXTRUTION FLOOR  .body_option_default
+          True
+       -> False
+── F3
+  APPLY bom=5364   ICECREAM BODY LARGE / ROOF / EPS  .formula_expression
+          '(6.7+{Waste})*(width+{Waste})'
+       -> '(length+{Waste})*(width+{Waste})'
+  APPLY bom=5375   ICECREAM BODY LARGE / FLOOR / 76*50*2 R.T. TUBE  .formula_expression
+          '(6.7+{Waste})/1.05*3'
+       -> '(length+{Waste})/1.05*3'
+  APPLY bom=5377   ICECREAM BODY LARGE / FLOOR / 100*50 LVL Beam  .formula_expression
+          '((6.7+{Waste})/0.416-6.75/1.05)*3'
+       -> '((length+{Waste})/0.416-(length+{Waste})/1.05)*3'
+  APPLY bom=5378   ICECREAM BODY LARGE / FLOOR / 2*300 INT LAMINATION  .formula_expression
+          '((6.7+{Waste})+0.4)*((width+{Waste})+0.7)*2'
+       -> '((length+{Waste})+0.4)*((width+{Waste})+0.7)*2'
+  APPLY bom=5379   ICECREAM BODY LARGE / FLOOR / ANTI-SKID FINAL COAT  .formula_expression
+          '((6.7+{Waste})+0.4)*((width+{Waste})+0.7)*2/2'
+       -> '((length+{Waste})+0.4)*((width+{Waste})+0.7)*2/2'
+  APPLY bom=5380   ICECREAM BODY LARGE / FLOOR / ALU EXTRUTION FLOOR  .formula_expression
+          '13*(6.7+{Waste})'
+       -> '13*(length+{Waste})'
+  APPLY bom=5381   ICECREAM BODY LARGE / FLOOR / RICE GRAIN ALU FLOOR  .formula_expression
+          '1/7.3*(6.7+{Waste})'
+       -> '1/7.3*(length+{Waste})'
+  APPLY bom=5382   ICECREAM BODY LARGE / FLOOR / 1ST ROW KICK PLATE  .formula_expression
+          '((6.7+{Waste})*2+(width+{Waste}))'
+       -> '((length+{Waste})*2+(width+{Waste}))'
+  APPLY bom=5383   ICECREAM BODY LARGE / FLOOR / 2ND ROW KICK PLATE  .formula_expression
+          '((6.7+{Waste})*2+(width+{Waste}))'
+       -> '((length+{Waste})*2+(width+{Waste}))'
+  APPLY bom=5384   ICECREAM BODY LARGE / ALUMINIUM / 28782 BIG HORIZONTALE CAP  .formula_expression
+          '((6.7+{Waste})*4+height+height)'
+       -> '((length+{Waste})*4+height+height)'
+  APPLY bom=5386   ICECREAM BODY LARGE / ALUMINIUM / 0661-0631 LONG RIVETS  .formula_expression
+          '(((6.7+{Waste})*4+height+height)*20+(width+{Waste})*2*20+16)'
+       -> '(((length+{Waste})*4+height+height)*20+(width+{Waste})*2*20+16)'
+  APPLY bom=5387   ICECREAM BODY LARGE / ALUMINIUM / SILPLUS - X WHITE  .formula_expression
+          '6.7*2'
+       -> 'length*2'
+  APPLY bom=5389   ICECREAM BODY LARGE / SUB FRAME + LIGHT BOX ASSY / 5MM 300 WA PLATE  .formula_expression
+          '(6.7+{Waste})*2'
+       -> '(length+{Waste})*2'
+  APPLY bom=5422   ICECREAM BODY LARGE / REFLEXITE TAPE / 50MM REFLEXITE TAPE  .formula_expression
+          '((width+{Waste})+(6.7+{Waste})*2)'
+       -> '((width+{Waste})+(length+{Waste})*2)'
+── F4
+  APPLY bom=3216   CHILLER MEDIUM / DRD DOOR FITTINGS / 2317 DOOR RUBBER  .formula_expression
+          '((width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3) * 0'
+       -> '(width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3'
+
+36 to apply, 0 already applied.
+(DRY RUN — nothing written. Re-run with --apply.)
+== pre-apply backup (data only): bill_of_materials + bom_override_history
+== apply — one transaction
+database icb_platform (--target prod); manifest manifest.yaml sha256 f7d0232fe9aa9d05…, 36 entries
+── F1
+  APPLY bom=3576   FREEZER 2.3 METER / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=3576   FREEZER 2.3 METER / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=2415   FREEZER MEDIUM / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=2415   FREEZER MEDIUM / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=2560   FREEZER LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=2560   FREEZER LARGE / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=5306   ICECREAM BODY LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=5306   ICECREAM BODY LARGE / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=5184   EXPLOSIVE UP TO 2.7 / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=5184   EXPLOSIVE UP TO 2.7 / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=6345   EXPLOSIVE 2.7 TO 4.8 / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=6345   EXPLOSIVE 2.7 TO 4.8 / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  APPLY bom=3948   EXPLOSIVE 4.9 AND UP / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=3948   EXPLOSIVE 4.9 AND UP / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+── F1c
+  APPLY bom=3179   CHILLER MEDIUM / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=3179   CHILLER MEDIUM / SRD / PU  .unit_price_override
+          null
+       -> 3090.0
+  APPLY bom=3319   CHILLER LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=3319   CHILLER LARGE / SRD / PU  .unit_price_override
+          null
+       -> 3090.0
+  APPLY bom=3699   CHILLER 2.3 METER / SRD / PU  .formula_expression
+          '(1.22*2.44*{SRD PU})'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)'
+── F2
+  APPLY bom=5835   ICECREAM BODY SMALL / BODY OPTIONS / ALU EXTRUTION FLOOR  .body_option_default
+          True
+       -> False
+  APPLY bom=5713   ICECREAM BODY MEDIUM / BODY OPTIONS / ALU EXTRUTION FLOOR  .body_option_default
+          True
+       -> False
+── F3
+  APPLY bom=5364   ICECREAM BODY LARGE / ROOF / EPS  .formula_expression
+          '(6.7+{Waste})*(width+{Waste})'
+       -> '(length+{Waste})*(width+{Waste})'
+  APPLY bom=5375   ICECREAM BODY LARGE / FLOOR / 76*50*2 R.T. TUBE  .formula_expression
+          '(6.7+{Waste})/1.05*3'
+       -> '(length+{Waste})/1.05*3'
+  APPLY bom=5377   ICECREAM BODY LARGE / FLOOR / 100*50 LVL Beam  .formula_expression
+          '((6.7+{Waste})/0.416-6.75/1.05)*3'
+       -> '((length+{Waste})/0.416-(length+{Waste})/1.05)*3'
+  APPLY bom=5378   ICECREAM BODY LARGE / FLOOR / 2*300 INT LAMINATION  .formula_expression
+          '((6.7+{Waste})+0.4)*((width+{Waste})+0.7)*2'
+       -> '((length+{Waste})+0.4)*((width+{Waste})+0.7)*2'
+  APPLY bom=5379   ICECREAM BODY LARGE / FLOOR / ANTI-SKID FINAL COAT  .formula_expression
+          '((6.7+{Waste})+0.4)*((width+{Waste})+0.7)*2/2'
+       -> '((length+{Waste})+0.4)*((width+{Waste})+0.7)*2/2'
+  APPLY bom=5380   ICECREAM BODY LARGE / FLOOR / ALU EXTRUTION FLOOR  .formula_expression
+          '13*(6.7+{Waste})'
+       -> '13*(length+{Waste})'
+  APPLY bom=5381   ICECREAM BODY LARGE / FLOOR / RICE GRAIN ALU FLOOR  .formula_expression
+          '1/7.3*(6.7+{Waste})'
+       -> '1/7.3*(length+{Waste})'
+  APPLY bom=5382   ICECREAM BODY LARGE / FLOOR / 1ST ROW KICK PLATE  .formula_expression
+          '((6.7+{Waste})*2+(width+{Waste}))'
+       -> '((length+{Waste})*2+(width+{Waste}))'
+  APPLY bom=5383   ICECREAM BODY LARGE / FLOOR / 2ND ROW KICK PLATE  .formula_expression
+          '((6.7+{Waste})*2+(width+{Waste}))'
+       -> '((length+{Waste})*2+(width+{Waste}))'
+  APPLY bom=5384   ICECREAM BODY LARGE / ALUMINIUM / 28782 BIG HORIZONTALE CAP  .formula_expression
+          '((6.7+{Waste})*4+height+height)'
+       -> '((length+{Waste})*4+height+height)'
+  APPLY bom=5386   ICECREAM BODY LARGE / ALUMINIUM / 0661-0631 LONG RIVETS  .formula_expression
+          '(((6.7+{Waste})*4+height+height)*20+(width+{Waste})*2*20+16)'
+       -> '(((length+{Waste})*4+height+height)*20+(width+{Waste})*2*20+16)'
+  APPLY bom=5387   ICECREAM BODY LARGE / ALUMINIUM / SILPLUS - X WHITE  .formula_expression
+          '6.7*2'
+       -> 'length*2'
+  APPLY bom=5389   ICECREAM BODY LARGE / SUB FRAME + LIGHT BOX ASSY / 5MM 300 WA PLATE  .formula_expression
+          '(6.7+{Waste})*2'
+       -> '(length+{Waste})*2'
+  APPLY bom=5422   ICECREAM BODY LARGE / REFLEXITE TAPE / 50MM REFLEXITE TAPE  .formula_expression
+          '((width+{Waste})+(6.7+{Waste})*2)'
+       -> '((width+{Waste})+(length+{Waste})*2)'
+── F4
+  APPLY bom=3216   CHILLER MEDIUM / DRD DOOR FITTINGS / 2317 DOOR RUBBER  .formula_expression
+          '((width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3) * 0'
+       -> '(width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3'
+
+36 to apply, 0 already applied.
+APPLIED 36 changes on 27 lines (9 bom_override_history rows). Journal: /tmp/icb-audit-pc/out-apply-20260928T111656Z/pricing_corrections_journal_prod_20260928T111658Z.json
+Undo: python tools/audit_pricing_corrections.py --target prod --revert /tmp/icb-audit-pc/out-apply-20260928T111656Z/pricing_corrections_journal_prod_20260928T111658Z.json
+== second dry-run (must find nothing to apply)
+database icb_platform (--target prod); manifest manifest.yaml sha256 f7d0232fe9aa9d05…, 36 entries
+── F1
+  done  bom=3576   FREEZER 2.3 METER / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=3576   FREEZER 2.3 METER / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  done  bom=2415   FREEZER MEDIUM / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=2415   FREEZER MEDIUM / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  done  bom=2560   FREEZER LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=2560   FREEZER LARGE / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  done  bom=5306   ICECREAM BODY LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=5306   ICECREAM BODY LARGE / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  done  bom=5184   EXPLOSIVE UP TO 2.7 / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=5184   EXPLOSIVE UP TO 2.7 / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  done  bom=6345   EXPLOSIVE 2.7 TO 4.8 / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=6345   EXPLOSIVE 2.7 TO 4.8 / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+  done  bom=3948   EXPLOSIVE 4.9 AND UP / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=3948   EXPLOSIVE 4.9 AND UP / SRD / PU  .unit_price_override
+          null
+       -> 4100.0
+── F1c
+  done  bom=3179   CHILLER MEDIUM / SRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=3179   CHILLER MEDIUM / SRD / PU  .unit_price_override
+          null
+       -> 3090.0
+  done  bom=3319   CHILLER LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=3319   CHILLER LARGE / SRD / PU  .unit_price_override
+          null
+       -> 3090.0
+  done  bom=3699   CHILLER 2.3 METER / SRD / PU  .formula_expression
+          '(1.22*2.44*{SRD PU})'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)'
+── F2
+  done  bom=5835   ICECREAM BODY SMALL / BODY OPTIONS / ALU EXTRUTION FLOOR  .body_option_default
+          True
+       -> False
+  done  bom=5713   ICECREAM BODY MEDIUM / BODY OPTIONS / ALU EXTRUTION FLOOR  .body_option_default
+          True
+       -> False
+── F3
+  done  bom=5364   ICECREAM BODY LARGE / ROOF / EPS  .formula_expression
+          '(6.7+{Waste})*(width+{Waste})'
+       -> '(length+{Waste})*(width+{Waste})'
+  done  bom=5375   ICECREAM BODY LARGE / FLOOR / 76*50*2 R.T. TUBE  .formula_expression
+          '(6.7+{Waste})/1.05*3'
+       -> '(length+{Waste})/1.05*3'
+  done  bom=5377   ICECREAM BODY LARGE / FLOOR / 100*50 LVL Beam  .formula_expression
+          '((6.7+{Waste})/0.416-6.75/1.05)*3'
+       -> '((length+{Waste})/0.416-(length+{Waste})/1.05)*3'
+  done  bom=5378   ICECREAM BODY LARGE / FLOOR / 2*300 INT LAMINATION  .formula_expression
+          '((6.7+{Waste})+0.4)*((width+{Waste})+0.7)*2'
+       -> '((length+{Waste})+0.4)*((width+{Waste})+0.7)*2'
+  done  bom=5379   ICECREAM BODY LARGE / FLOOR / ANTI-SKID FINAL COAT  .formula_expression
+          '((6.7+{Waste})+0.4)*((width+{Waste})+0.7)*2/2'
+       -> '((length+{Waste})+0.4)*((width+{Waste})+0.7)*2/2'
+  done  bom=5380   ICECREAM BODY LARGE / FLOOR / ALU EXTRUTION FLOOR  .formula_expression
+          '13*(6.7+{Waste})'
+       -> '13*(length+{Waste})'
+  done  bom=5381   ICECREAM BODY LARGE / FLOOR / RICE GRAIN ALU FLOOR  .formula_expression
+          '1/7.3*(6.7+{Waste})'
+       -> '1/7.3*(length+{Waste})'
+  done  bom=5382   ICECREAM BODY LARGE / FLOOR / 1ST ROW KICK PLATE  .formula_expression
+          '((6.7+{Waste})*2+(width+{Waste}))'
+       -> '((length+{Waste})*2+(width+{Waste}))'
+  done  bom=5383   ICECREAM BODY LARGE / FLOOR / 2ND ROW KICK PLATE  .formula_expression
+          '((6.7+{Waste})*2+(width+{Waste}))'
+       -> '((length+{Waste})*2+(width+{Waste}))'
+  done  bom=5384   ICECREAM BODY LARGE / ALUMINIUM / 28782 BIG HORIZONTALE CAP  .formula_expression
+          '((6.7+{Waste})*4+height+height)'
+       -> '((length+{Waste})*4+height+height)'
+  done  bom=5386   ICECREAM BODY LARGE / ALUMINIUM / 0661-0631 LONG RIVETS  .formula_expression
+          '(((6.7+{Waste})*4+height+height)*20+(width+{Waste})*2*20+16)'
+       -> '(((length+{Waste})*4+height+height)*20+(width+{Waste})*2*20+16)'
+  done  bom=5387   ICECREAM BODY LARGE / ALUMINIUM / SILPLUS - X WHITE  .formula_expression
+          '6.7*2'
+       -> 'length*2'
+  done  bom=5389   ICECREAM BODY LARGE / SUB FRAME + LIGHT BOX ASSY / 5MM 300 WA PLATE  .formula_expression
+          '(6.7+{Waste})*2'
+       -> '(length+{Waste})*2'
+  done  bom=5422   ICECREAM BODY LARGE / REFLEXITE TAPE / 50MM REFLEXITE TAPE  .formula_expression
+          '((width+{Waste})+(6.7+{Waste})*2)'
+       -> '((width+{Waste})+(length+{Waste})*2)'
+── F4
+  done  bom=3216   CHILLER MEDIUM / DRD DOOR FITTINGS / 2317 DOOR RUBBER  .formula_expression
+          '((width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3) * 0'
+       -> '(width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3'
+
+0 to apply, 36 already applied.
+nothing to apply.
+== journal kept at /var/backups/icb-pricing-corrections-2026-09/pricing_corrections_journal_prod_20260928T111658Z.json
+
+######## DONE (apply) — tell the CA: /tmp/icb-audit-pc/out-apply-20260928T111656Z

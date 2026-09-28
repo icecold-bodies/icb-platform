@@ -1,0 +1,356 @@
+# v1.58 — costing-audit pricing corrections (BA dispatch 2, Sept 2026 prod findings F1-F4).
+# Applied by backend/tools/audit_pricing_corrections.py — dry-run by default, ONE transaction,
+# journaled, --revert byte-exact. Every `current:` is a GUARD: the exact value on prod when the
+# committed CI snapshot was exported (2026-09-28T05:29:09+00:00, all.json sha256 7e07c4c2...14b7);
+# any line found anywhere else aborts the whole apply.
+# bom ids are shared by dev and prod; material ids are NOT (never key a change on one).
+# F5 (the triage table) is NOT here — it waits for the BA's ratification.
+changes:
+  # ── F1 · single-rear-door PU = Burt's row term for term: door w x door h x {SRD PU} x rate / 2.98,
+  #    section x2 (freezers, icecream 4.9 UP, explosive: 32D R4 100 as the line's own price)
+  - finding: F1
+    body_id: 19
+    body: 'FREEZER 2.3 METER'
+    section: 'SRD'
+    bom_id: 3576
+    line: 'PU'
+    field: formula_expression
+    current: '1.22*2.44*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1
+    body_id: 19
+    body: 'FREEZER 2.3 METER'
+    section: 'SRD'
+    bom_id: 3576
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 4100.0
+  - finding: F1
+    body_id: 20
+    body: 'FREEZER MEDIUM'
+    section: 'SRD'
+    bom_id: 2415
+    line: 'PU'
+    field: formula_expression
+    current: '2.44*1.22*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1
+    body_id: 20
+    body: 'FREEZER MEDIUM'
+    section: 'SRD'
+    bom_id: 2415
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 4100.0
+  - finding: F1
+    body_id: 21
+    body: 'FREEZER LARGE'
+    section: 'SRD'
+    bom_id: 2560
+    line: 'PU'
+    field: formula_expression
+    current: '1.22*2.44*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1
+    body_id: 21
+    body: 'FREEZER LARGE'
+    section: 'SRD'
+    bom_id: 2560
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 4100.0
+  - finding: F1
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'SRD'
+    bom_id: 5306
+    line: 'PU'
+    field: formula_expression
+    current: '1.22*2.44*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'SRD'
+    bom_id: 5306
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 4100.0
+  - finding: F1
+    body_id: 34
+    body: 'EXPLOSIVE UP TO 2.7'
+    section: 'SRD'
+    bom_id: 5184
+    line: 'PU'
+    field: formula_expression
+    current: '1.22*2.44*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1
+    body_id: 34
+    body: 'EXPLOSIVE UP TO 2.7'
+    section: 'SRD'
+    bom_id: 5184
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 4100.0
+  - finding: F1
+    body_id: 37
+    body: 'EXPLOSIVE 2.7 TO 4.8'
+    section: 'SRD'
+    bom_id: 6345
+    line: 'PU'
+    field: formula_expression
+    current: '2.44*1.22*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1
+    body_id: 37
+    body: 'EXPLOSIVE 2.7 TO 4.8'
+    section: 'SRD'
+    bom_id: 6345
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 4100.0
+  - finding: F1
+    body_id: 24
+    body: 'EXPLOSIVE 4.9 AND UP'
+    section: 'SRD'
+    bom_id: 3948
+    line: 'PU'
+    field: formula_expression
+    current: '1.22*2.44*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1
+    body_id: 24
+    body: 'EXPLOSIVE 4.9 AND UP'
+    section: 'SRD'
+    bom_id: 3948
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 4100.0
+  # ── F1 · chillers: Burt's shape at the rate the body's own front/DRD PU lines use today (R3 090,
+  #    own price). The chiller PU RATE is HELD for Burt; only the shape moves here.
+  #    CHILLER 2.3's sheet row has no x2 (H = G*F*I); MEDIUM and LARGE have it.
+  - finding: F1c
+    body_id: 26
+    body: 'CHILLER MEDIUM'
+    section: 'SRD'
+    bom_id: 3179
+    line: 'PU'
+    field: formula_expression
+    current: '2.44*1.22*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1c
+    body_id: 26
+    body: 'CHILLER MEDIUM'
+    section: 'SRD'
+    bom_id: 3179
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 3090.0
+  - finding: F1c
+    body_id: 27
+    body: 'CHILLER LARGE'
+    section: 'SRD'
+    bom_id: 3319
+    line: 'PU'
+    field: formula_expression
+    current: '1.22*2.44*2'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  - finding: F1c
+    body_id: 27
+    body: 'CHILLER LARGE'
+    section: 'SRD'
+    bom_id: 3319
+    line: 'PU'
+    field: unit_price_override
+    current: null
+    new: 3090.0
+  - finding: F1c
+    body_id: 25
+    body: 'CHILLER 2.3 METER'
+    section: 'SRD'
+    bom_id: 3699
+    line: 'PU'
+    field: formula_expression
+    current: '(1.22*2.44*{SRD PU})'
+    new: '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)'
+    note: 'hand-fixed 26 Sep to (1.22*2.44*{SRD PU}) @ R3 090 — within 0.11 % of Burt; now term for term'
+  # ── F2 · ALU EXTRUTION FLOOR master defaults OFF (Michael's ruling)
+  - finding: F2
+    body_id: 16
+    body: 'ICECREAM BODY SMALL'
+    section: 'BODY OPTIONS'
+    bom_id: 5835
+    line: 'ALU EXTRUTION FLOOR'
+    field: body_option_default
+    current: true
+    new: false
+  - finding: F2
+    body_id: 17
+    body: 'ICECREAM BODY MEDIUM'
+    section: 'BODY OPTIONS'
+    bom_id: 5713
+    line: 'ALU EXTRUTION FLOOR'
+    field: body_option_default
+    current: true
+    new: false
+  # ── F3 · ICECREAM 4.9 UP: the literal body length 6.7 becomes `length` (6.75 = 6.7 + Waste).
+  #    equal_at: the new formula must equal the old one at exactly 6.7 m.
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'ROOF'
+    bom_id: 5364
+    line: 'EPS'
+    field: formula_expression
+    current: '(6.7+{Waste})*(width+{Waste})'
+    new: '(length+{Waste})*(width+{Waste})'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'FLOOR'
+    bom_id: 5375
+    line: '76*50*2 R.T. TUBE'
+    field: formula_expression
+    current: '(6.7+{Waste})/1.05*3'
+    new: '(length+{Waste})/1.05*3'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'FLOOR'
+    bom_id: 5377
+    line: '100*50 LVL Beam'
+    field: formula_expression
+    current: '((6.7+{Waste})/0.416-6.75/1.05)*3'
+    new: '((length+{Waste})/0.416-(length+{Waste})/1.05)*3'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'FLOOR'
+    bom_id: 5378
+    line: '2*300 INT LAMINATION'
+    field: formula_expression
+    current: '((6.7+{Waste})+0.4)*((width+{Waste})+0.7)*2'
+    new: '((length+{Waste})+0.4)*((width+{Waste})+0.7)*2'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'FLOOR'
+    bom_id: 5379
+    line: 'ANTI-SKID FINAL COAT'
+    field: formula_expression
+    current: '((6.7+{Waste})+0.4)*((width+{Waste})+0.7)*2/2'
+    new: '((length+{Waste})+0.4)*((width+{Waste})+0.7)*2/2'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'FLOOR'
+    bom_id: 5380
+    line: 'ALU EXTRUTION FLOOR'
+    field: formula_expression
+    current: '13*(6.7+{Waste})'
+    new: '13*(length+{Waste})'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'FLOOR'
+    bom_id: 5381
+    line: 'RICE GRAIN ALU FLOOR'
+    field: formula_expression
+    current: '1/7.3*(6.7+{Waste})'
+    new: '1/7.3*(length+{Waste})'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'FLOOR'
+    bom_id: 5382
+    line: '1ST ROW KICK PLATE'
+    field: formula_expression
+    current: '((6.7+{Waste})*2+(width+{Waste}))'
+    new: '((length+{Waste})*2+(width+{Waste}))'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'FLOOR'
+    bom_id: 5383
+    line: '2ND ROW KICK PLATE'
+    field: formula_expression
+    current: '((6.7+{Waste})*2+(width+{Waste}))'
+    new: '((length+{Waste})*2+(width+{Waste}))'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'ALUMINIUM'
+    bom_id: 5384
+    line: '28782 BIG HORIZONTALE CAP'
+    field: formula_expression
+    current: '((6.7+{Waste})*4+height+height)'
+    new: '((length+{Waste})*4+height+height)'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'ALUMINIUM'
+    bom_id: 5386
+    line: '0661-0631 LONG RIVETS'
+    field: formula_expression
+    current: '(((6.7+{Waste})*4+height+height)*20+(width+{Waste})*2*20+16)'
+    new: '(((length+{Waste})*4+height+height)*20+(width+{Waste})*2*20+16)'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'ALUMINIUM'
+    bom_id: 5387
+    line: 'SILPLUS - X WHITE'
+    field: formula_expression
+    current: '6.7*2'
+    new: 'length*2'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'SUB FRAME + LIGHT BOX ASSY'
+    bom_id: 5389
+    line: '5MM 300 WA PLATE'
+    field: formula_expression
+    current: '(6.7+{Waste})*2'
+    new: '(length+{Waste})*2'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  - finding: F3
+    body_id: 18
+    body: 'ICECREAM BODY LARGE'
+    section: 'REFLEXITE TAPE'
+    bom_id: 5422
+    line: '50MM REFLEXITE TAPE'
+    field: formula_expression
+    current: '((width+{Waste})+(6.7+{Waste})*2)'
+    new: '((width+{Waste})+(length+{Waste})*2)'
+    equal_at: {length: 6.7, width: 2.6, height: 2.56}
+  # ── F4 · CHILLER MEDIUM double-door 2317 DOOR RUBBER: drop the trailing x0 — the 2316 line's formula
+  - finding: F4
+    body_id: 26
+    body: 'CHILLER MEDIUM'
+    section: 'DRD DOOR FITTINGS'
+    bom_id: 3216
+    line: '2317 DOOR RUBBER'
+    field: formula_expression
+    current: '((width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3) * 0'
+    new: '(width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3'

@@ -1,0 +1,23 @@
+== prod: db=icb_platform alembic=0048 code=6b77d52 staged=9228cef51b885b865749471d59052e57033b1f95  2026-09-28T13:33:35+02:00
+== audit re-run — five packs, --env prod
+   smoke exit=0  - Cells: UNVERIFIABLE 9, ACCEPTED 33, PASS 156, SKIP 36
+   chillers exit=0  - Cells: ACCEPTED 76, PASS 981, SKIP 196
+   freezers exit=0  - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+   icecream exit=0  - Cells: UNVERIFIABLE 40, ACCEPTED 75, PASS 401, SKIP 96
+   explosive exit=0  - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+== read-only checks (one READ ONLY transaction, rolled back)
+prod_checks.sql: finished — READ ONLY transaction rolled back, nothing written.
+   00_env.csv: 1 row(s)
+   C1_price_history_srd_pu.csv: 2 row(s)
+   C2_changes_7sep.csv: 8 row(s)
+   E3_all_lines_on_material.csv: 26 row(s)
+   E3_inheriting_lines.csv: 15 row(s)
+   E3_srd_pu_material.csv: 1 row(s)
+   F2_alu_draft_nodes.csv: 2 row(s)
+   F2_draft_count.csv: 2 row(s)
+   F5_3_changes_22sep.csv: 6 row(s)
+   F5_3_explosive_pu_history.csv: 10 row(s)
+   P1_48_floor_lines.csv: 16 row(s)
+   P2_48_floor_draft_nodes.csv: 15 row(s)
+
+######## DONE — tell the CA: /tmp/icb-audit-rerun/out-20260928-133335

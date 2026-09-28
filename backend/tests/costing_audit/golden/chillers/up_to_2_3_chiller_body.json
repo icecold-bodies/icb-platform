@@ -5872,6 +5872,918 @@
   },
   {
    "scenario": {
+    "id": "UP_TO_2.3_CHILLER_BODY~L1.8~W1.8~H1.8~srd_pu",
+    "pack": "chillers",
+    "sheet": "UP TO 2.3 CHILLER BODY",
+    "trailer_id": 25,
+    "variant": "srd_pu",
+    "length": 1.8,
+    "width": 1.8,
+    "height": 1.8,
+    "door": "srd",
+    "foam": "32D",
+    "panels": {
+     "FRONT": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "DRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SRD": {
+      "insulation": "pu",
+      "thickness": 0.06
+     },
+     "SIDES": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "ROOF": {
+      "insulation": "eps",
+      "thickness": 0.076
+     },
+     "FLOOR": {
+      "insulation": "eps",
+      "thickness": 0.076
+     }
+    },
+    "flags": {},
+    "gate_mode": "as_sheet",
+    "section_map": {}
+   },
+   "grand_total": 29680.7019842186,
+   "findings": [],
+   "sections": {
+    "FRONT": {
+     "total": 2096.716046,
+     "raw_total": 2096.71604552848,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I26": 1,
+      "I27": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 399.3879384,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 6.856,
+       "price": 36.3204751062538,
+       "total": 249.013177328476,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 2407.621007,
+     "raw_total": 2407.62100687919,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I38": 0,
+      "I39": 1,
+      "I44": 0,
+      "I45": 1
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 185.200912751678,
+       "total": 551.306077079195,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      },
+      {
+       "desc": "130*62MM TAPPING BLOCKS",
+       "qty": 408.0,
+       "price": null,
+       "total": 408.0,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 5501.00542,
+     "raw_total": 5501.00542,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I66": 0,
+      "I67": 1
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.856,
+       "price": 149.08,
+       "total": 1022.09248,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 5.126,
+       "price": 132.13,
+       "total": 677.29838,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.856,
+       "price": 24.72,
+       "total": 169.48032,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.856,
+       "price": 60.18,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 3.6,
+       "price": 203.25,
+       "total": 731.7,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 3.6,
+       "price": 149.08,
+       "total": 536.688,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 91.6,
+       "price": 0.515,
+       "total": 47.174,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 0.0,
+     "raw_total": 2264.3149298,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I73": 0,
+      "I74": 0,
+      "I79": 0,
+      "I80": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      },
+      {
+       "desc": "130*62MM TAPPING BLOCKS",
+       "qty": 816.0,
+       "price": null,
+       "total": 816.0,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 4771.04434,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I97": 0,
+      "I98": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 4.0,
+       "price": 146.73,
+       "total": 586.92,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 8.554,
+       "price": 149.08,
+       "total": 1275.23032,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 1.698,
+       "price": 132.13,
+       "total": 224.35674,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 8.554,
+       "price": 24.72,
+       "total": 211.45488,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 8.554,
+       "price": 60.18,
+       "total": 514.77972,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 4658.121307,
+     "raw_total": 2329.06065368731,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 1,
+      "I105": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 3.1413,
+       "price": 213.11,
+       "total": 669.442443,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 3.1413,
+       "price": 28.5833333333333,
+       "total": 89.788825,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 3.1413,
+       "price": 135.96,
+       "total": 427.091148,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 3.1413,
+       "price": 28.5833333333333,
+       "total": 89.788825,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 3.1413,
+       "price": 222.76,
+       "total": 699.755988,
+       "stale": false
+      },
+      {
+       "desc": "58 MM PICTURE FRAME",
+       "qty": 7.096,
+       "price": 36.3204751062538,
+       "total": 257.730091353977,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.3396,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 2632.711587,
+     "raw_total": 2632.71158696114,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I117": 1,
+      "I118": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 3.4225,
+       "price": 213.11,
+       "total": 729.368975,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 3.4225,
+       "price": 28.5833333333333,
+       "total": 97.8264583333333,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 3.4225,
+       "price": 156.56,
+       "total": 535.8266,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 3.4225,
+       "price": 28.5833333333333,
+       "total": 97.8264583333333,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 3.4225,
+       "price": 222.76,
+       "total": 762.3961,
+       "stale": false
+      },
+      {
+       "desc": "94MM PICTURE FRAME",
+       "qty": 7.4,
+       "price": 42.4329272920461,
+       "total": 314.003661961141,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.185,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 5011.562192,
+     "raw_total": 5011.56219195834,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I130": 1,
+      "I131": 0
+     },
+     "lines": [
+      {
+       "desc": "EXT GRP SKIN 2*300",
+       "qty": 3.4225,
+       "price": 213.11,
+       "total": 729.368975,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 3.4225,
+       "price": 28.5833333333333,
+       "total": 97.8264583333333,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 3.4225,
+       "price": 156.56,
+       "total": 535.8266,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 3.4225,
+       "price": 28.5833333333333,
+       "total": 97.8264583333333,
+       "stale": false
+      },
+      {
+       "desc": "9MM PF PLYWOOD",
+       "qty": 3.4225,
+       "price": 112.751677852349,
+       "total": 385.892617449664,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 R.T. TUBE",
+       "qty": 3.0,
+       "price": 102.23,
+       "total": 920.07,
+       "stale": false
+      },
+      {
+       "desc": "100*50 LVL Beam",
+       "qty": 5.19662921348315,
+       "price": 146.594982078853,
+       "total": 1523.59953284201,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 9.87,
+       "price": 50.154,
+       "total": 495.01998,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 4.935,
+       "price": 45.822,
+       "total": 226.13157,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 3540.816,
+     "raw_total": 3540.816,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 BIG HORIZONTALE CAP",
+       "qty": 11.0,
+       "price": 203.25,
+       "total": 2235.75,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 3.7,
+       "price": 149.08,
+       "total": 551.596,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 310.0,
+       "price": 0.515,
+       "total": 159.65,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 3.6,
+       "price": 116.15,
+       "total": 418.14,
+       "stale": false
+      },
+      {
+       "desc": "SMALL ALU CORNERS",
+       "qty": 4.0,
+       "price": 43.92,
+       "total": 175.68,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 3082.148426,
+     "raw_total": 3082.14842551678,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "100*50*3MM ANGLE",
+       "qty": 0.5661,
+       "price": 1015.62,
+       "total": 574.942482,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 0.612,
+       "price": 1015.62,
+       "total": 621.55944,
+       "stale": false
+      },
+      {
+       "desc": "MOUNTING CLEATS",
+       "qty": 6.0,
+       "price": 102.294896,
+       "total": 613.769376,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.527,
+       "price": 384.41610738255,
+       "total": 202.587288590604,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3 BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 285.464,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHT",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHT",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO. PLATE LIGHT",
+       "qty": 2.0,
+       "price": 50.0,
+       "total": 100.0,
+       "stale": false
+      },
+      {
+       "desc": "1MM GALV PLATE",
+       "qty": 0.488,
+       "price": 160.402684563758,
+       "total": 156.553020134228,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT PROTECTORS",
+       "qty": 0.0875,
+       "price": 384.41610738255,
+       "total": 67.2728187919463,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 0.0,
+     "raw_total": 2447.54552,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I182": 0,
+      "I183": 0
+     },
+     "lines": [
+      {
+       "desc": "2MM 3CR12 REAR FRAME",
+       "qty": 0.3762,
+       "price": 965.76,
+       "total": 726.637824,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.549,
+       "price": 965.76,
+       "total": 530.20224,
+       "stale": false
+      },
+      {
+       "desc": "2MM 3CR12 FLOOR PLATE",
+       "qty": 0.7056,
+       "price": 965.76,
+       "total": 681.440256,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 6.0,
+       "price": 2.5,
+       "total": 15.0,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 6.0,
+       "price": 0.2124,
+       "total": 1.2744,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.3352,
+       "total": 2.0112,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  },
+  {
+   "scenario": {
     "id": "UP_TO_2.3_CHILLER_BODY~L2.3~W1.8~H1.8~as_sheet",
     "pack": "chillers",
     "sheet": "UP TO 2.3 CHILLER BODY",
@@ -11346,6 +12258,918 @@
   },
   {
    "scenario": {
+    "id": "UP_TO_2.3_CHILLER_BODY~L2.3~W1.8~H1.8~srd_pu",
+    "pack": "chillers",
+    "sheet": "UP TO 2.3 CHILLER BODY",
+    "trailer_id": 25,
+    "variant": "srd_pu",
+    "length": 2.3,
+    "width": 1.8,
+    "height": 1.8,
+    "door": "srd",
+    "foam": "32D",
+    "panels": {
+     "FRONT": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "DRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SRD": {
+      "insulation": "pu",
+      "thickness": 0.06
+     },
+     "SIDES": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "ROOF": {
+      "insulation": "eps",
+      "thickness": 0.076
+     },
+     "FLOOR": {
+      "insulation": "eps",
+      "thickness": 0.076
+     }
+    },
+    "flags": {},
+    "gate_mode": "as_sheet",
+    "section_map": {}
+   },
+   "grand_total": 33245.9346045947,
+   "findings": [],
+   "sections": {
+    "FRONT": {
+     "total": 2096.716046,
+     "raw_total": 2096.71604552848,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I26": 1,
+      "I27": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 399.3879384,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 6.856,
+       "price": 36.3204751062538,
+       "total": 249.013177328476,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 2407.621007,
+     "raw_total": 2407.62100687919,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I38": 0,
+      "I39": 1,
+      "I44": 0,
+      "I45": 1
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 185.200912751678,
+       "total": 551.306077079195,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      },
+      {
+       "desc": "130*62MM TAPPING BLOCKS",
+       "qty": 408.0,
+       "price": null,
+       "total": 408.0,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 5501.00542,
+     "raw_total": 5501.00542,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I66": 0,
+      "I67": 1
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.856,
+       "price": 149.08,
+       "total": 1022.09248,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 5.126,
+       "price": 132.13,
+       "total": 677.29838,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.856,
+       "price": 24.72,
+       "total": 169.48032,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.856,
+       "price": 60.18,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 3.6,
+       "price": 203.25,
+       "total": 731.7,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 3.6,
+       "price": 149.08,
+       "total": 536.688,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 91.6,
+       "price": 0.515,
+       "total": 47.174,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 0.0,
+     "raw_total": 2264.3149298,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I73": 0,
+      "I74": 0,
+      "I79": 0,
+      "I80": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      },
+      {
+       "desc": "130*62MM TAPPING BLOCKS",
+       "qty": 816.0,
+       "price": null,
+       "total": 816.0,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 4771.04434,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I97": 0,
+      "I98": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 4.0,
+       "price": 146.73,
+       "total": 586.92,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 8.554,
+       "price": 149.08,
+       "total": 1275.23032,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 1.698,
+       "price": 132.13,
+       "total": 224.35674,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 8.554,
+       "price": 24.72,
+       "total": 211.45488,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 8.554,
+       "price": 60.18,
+       "total": 514.77972,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 5798.798598,
+     "raw_total": 2899.39929879356,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 1,
+      "I105": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 3.9903,
+       "price": 213.11,
+       "total": 850.372833,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 3.9903,
+       "price": 28.5833333333333,
+       "total": 114.056075,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 3.9903,
+       "price": 135.96,
+       "total": 542.521188,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 3.9903,
+       "price": 28.5833333333333,
+       "total": 114.056075,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 3.9903,
+       "price": 222.76,
+       "total": 888.879228,
+       "stale": false
+      },
+      {
+       "desc": "58 MM PICTURE FRAME",
+       "qty": 8.096,
+       "price": 36.3204751062538,
+       "total": 294.050566460231,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.3396,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 3276.021431,
+     "raw_total": 3276.02143091985,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I117": 1,
+      "I118": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 4.3475,
+       "price": 213.11,
+       "total": 926.495725,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.3475,
+       "price": 28.5833333333333,
+       "total": 124.266041666667,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 4.3475,
+       "price": 156.56,
+       "total": 680.6446,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.3475,
+       "price": 28.5833333333333,
+       "total": 124.266041666667,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 4.3475,
+       "price": 222.76,
+       "total": 968.4491,
+       "stale": false
+      },
+      {
+       "desc": "94MM PICTURE FRAME",
+       "qty": 8.4,
+       "price": 42.4329272920461,
+       "total": 356.436589253188,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.185,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 6094.167818,
+     "raw_total": 6094.1678181633,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I130": 1,
+      "I131": 0
+     },
+     "lines": [
+      {
+       "desc": "EXT GRP SKIN 2*300",
+       "qty": 4.3475,
+       "price": 213.11,
+       "total": 926.495725,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.3475,
+       "price": 28.5833333333333,
+       "total": 124.266041666667,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 4.3475,
+       "price": 156.56,
+       "total": 680.6446,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.3475,
+       "price": 28.5833333333333,
+       "total": 124.266041666667,
+       "stale": false
+      },
+      {
+       "desc": "9MM PF PLYWOOD",
+       "qty": 4.3475,
+       "price": 112.751677852349,
+       "total": 490.187919463087,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 R.T. TUBE",
+       "qty": 3.0,
+       "price": 102.23,
+       "total": 920.07,
+       "stale": false
+      },
+      {
+       "desc": "100*50 LVL Beam",
+       "qty": 6.60112359550562,
+       "price": 146.594982078853,
+       "total": 1935.38319036688,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 12.22,
+       "price": 50.154,
+       "total": 612.88188,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 6.11,
+       "price": 45.822,
+       "total": 279.97242,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 4084.066,
+     "raw_total": 4084.066,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 BIG HORIZONTALE CAP",
+       "qty": 13.0,
+       "price": 203.25,
+       "total": 2642.25,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 3.7,
+       "price": 149.08,
+       "total": 551.596,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 350.0,
+       "price": 0.515,
+       "total": 180.25,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 4.6,
+       "price": 116.15,
+       "total": 534.29,
+       "stale": false
+      },
+      {
+       "desc": "SMALL ALU CORNERS",
+       "qty": 4.0,
+       "price": 43.92,
+       "total": 175.68,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 3237.538286,
+     "raw_total": 3237.53828551678,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "100*50*3MM ANGLE",
+       "qty": 0.7191,
+       "price": 1015.62,
+       "total": 730.332342,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 0.612,
+       "price": 1015.62,
+       "total": 621.55944,
+       "stale": false
+      },
+      {
+       "desc": "MOUNTING CLEATS",
+       "qty": 6.0,
+       "price": 102.294896,
+       "total": 613.769376,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.527,
+       "price": 384.41610738255,
+       "total": 202.587288590604,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3 BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 285.464,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHT",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHT",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO. PLATE LIGHT",
+       "qty": 2.0,
+       "price": 50.0,
+       "total": 100.0,
+       "stale": false
+      },
+      {
+       "desc": "1MM GALV PLATE",
+       "qty": 0.488,
+       "price": 160.402684563758,
+       "total": 156.553020134228,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT PROTECTORS",
+       "qty": 0.0875,
+       "price": 384.41610738255,
+       "total": 67.2728187919463,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 0.0,
+     "raw_total": 2447.54552,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I182": 0,
+      "I183": 0
+     },
+     "lines": [
+      {
+       "desc": "2MM 3CR12 REAR FRAME",
+       "qty": 0.3762,
+       "price": 965.76,
+       "total": 726.637824,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.549,
+       "price": 965.76,
+       "total": 530.20224,
+       "stale": false
+      },
+      {
+       "desc": "2MM 3CR12 FLOOR PLATE",
+       "qty": 0.7056,
+       "price": 965.76,
+       "total": 681.440256,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 6.0,
+       "price": 2.5,
+       "total": 15.0,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 6.0,
+       "price": 0.2124,
+       "total": 1.2744,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.3352,
+       "total": 2.0112,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  },
+  {
+   "scenario": {
     "id": "UP_TO_2.3_CHILLER_BODY~L2.7~W1.8~H1.8~as_sheet",
     "pack": "chillers",
     "sheet": "UP TO 2.3 CHILLER BODY",
@@ -16730,6 +18554,918 @@
      "reason": null,
      "gates": {
       "I182": 1,
+      "I183": 0
+     },
+     "lines": [
+      {
+       "desc": "2MM 3CR12 REAR FRAME",
+       "qty": 0.3762,
+       "price": 965.76,
+       "total": 726.637824,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.549,
+       "price": 965.76,
+       "total": 530.20224,
+       "stale": false
+      },
+      {
+       "desc": "2MM 3CR12 FLOOR PLATE",
+       "qty": 0.7056,
+       "price": 965.76,
+       "total": 681.440256,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 6.0,
+       "price": 2.5,
+       "total": 15.0,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 6.0,
+       "price": 0.2124,
+       "total": 1.2744,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.3352,
+       "total": 2.0112,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  },
+  {
+   "scenario": {
+    "id": "UP_TO_2.3_CHILLER_BODY~L2.7~W1.8~H1.8~srd_pu",
+    "pack": "chillers",
+    "sheet": "UP TO 2.3 CHILLER BODY",
+    "trailer_id": 25,
+    "variant": "srd_pu",
+    "length": 2.7,
+    "width": 1.8,
+    "height": 1.8,
+    "door": "srd",
+    "foam": "32D",
+    "panels": {
+     "FRONT": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "DRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SRD": {
+      "insulation": "pu",
+      "thickness": 0.06
+     },
+     "SIDES": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "ROOF": {
+      "insulation": "eps",
+      "thickness": 0.076
+     },
+     "FLOOR": {
+      "insulation": "eps",
+      "thickness": 0.076
+     }
+    },
+    "flags": {},
+    "gate_mode": "as_sheet",
+    "section_map": {}
+   },
+   "grand_total": 36098.1207008957,
+   "findings": [],
+   "sections": {
+    "FRONT": {
+     "total": 2096.716046,
+     "raw_total": 2096.71604552848,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I26": 1,
+      "I27": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 399.3879384,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 6.856,
+       "price": 36.3204751062538,
+       "total": 249.013177328476,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 2407.621007,
+     "raw_total": 2407.62100687919,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I38": 0,
+      "I39": 1,
+      "I44": 0,
+      "I45": 1
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 185.200912751678,
+       "total": 551.306077079195,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      },
+      {
+       "desc": "130*62MM TAPPING BLOCKS",
+       "qty": 408.0,
+       "price": null,
+       "total": 408.0,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 5501.00542,
+     "raw_total": 5501.00542,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I66": 0,
+      "I67": 1
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.856,
+       "price": 149.08,
+       "total": 1022.09248,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 5.126,
+       "price": 132.13,
+       "total": 677.29838,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.856,
+       "price": 24.72,
+       "total": 169.48032,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.856,
+       "price": 60.18,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 3.6,
+       "price": 203.25,
+       "total": 731.7,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 3.6,
+       "price": 149.08,
+       "total": 536.688,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 91.6,
+       "price": 0.515,
+       "total": 47.174,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 0.0,
+     "raw_total": 2264.3149298,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I73": 0,
+      "I74": 0,
+      "I79": 0,
+      "I80": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 2.93754,
+       "price": 213.11,
+       "total": 626.0191494,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 2.93754,
+       "price": 135.96,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 2.93754,
+       "price": 28.5833333333333,
+       "total": 83.964685,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 2.93754,
+       "price": 222.76,
+       "total": 654.3664104,
+       "stale": false
+      },
+      {
+       "desc": "130*62MM TAPPING BLOCKS",
+       "qty": 816.0,
+       "price": null,
+       "total": 816.0,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 4771.04434,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I97": 0,
+      "I98": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 4.0,
+       "price": 146.73,
+       "total": 586.92,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 8.554,
+       "price": 149.08,
+       "total": 1275.23032,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 1.698,
+       "price": 132.13,
+       "total": 224.35674,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 8.554,
+       "price": 24.72,
+       "total": 211.45488,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 8.554,
+       "price": 60.18,
+       "total": 514.77972,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 6711.34043,
+     "raw_total": 3355.67021487857,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 1,
+      "I105": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 4.6695,
+       "price": 213.11,
+       "total": 995.117145,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.6695,
+       "price": 28.5833333333333,
+       "total": 133.469875,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 4.6695,
+       "price": 135.96,
+       "total": 634.86522,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.6695,
+       "price": 28.5833333333333,
+       "total": 133.469875,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 4.6695,
+       "price": 222.76,
+       "total": 1040.17782,
+       "stale": false
+      },
+      {
+       "desc": "58 MM PICTURE FRAME",
+       "qty": 8.896,
+       "price": 36.3204751062538,
+       "total": 323.106946545234,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.3396,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 3790.669306,
+     "raw_total": 3790.66930608682,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I117": 1,
+      "I118": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 5.0875,
+       "price": 213.11,
+       "total": 1084.197125,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 5.0875,
+       "price": 28.5833333333333,
+       "total": 145.417708333333,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 5.0875,
+       "price": 156.56,
+       "total": 796.499,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 5.0875,
+       "price": 28.5833333333333,
+       "total": 145.417708333333,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 5.0875,
+       "price": 222.76,
+       "total": 1133.2915,
+       "stale": false
+      },
+      {
+       "desc": "94MM PICTURE FRAME",
+       "qty": 9.2,
+       "price": 42.4329272920461,
+       "total": 390.382931086825,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.185,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 6960.252319,
+     "raw_total": 6960.25231912727,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I130": 1,
+      "I131": 0
+     },
+     "lines": [
+      {
+       "desc": "EXT GRP SKIN 2*300",
+       "qty": 5.0875,
+       "price": 213.11,
+       "total": 1084.197125,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 5.0875,
+       "price": 28.5833333333333,
+       "total": 145.417708333333,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 5.0875,
+       "price": 156.56,
+       "total": 796.499,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 5.0875,
+       "price": 28.5833333333333,
+       "total": 145.417708333333,
+       "stale": false
+      },
+      {
+       "desc": "9MM PF PLYWOOD",
+       "qty": 5.0875,
+       "price": 112.751677852349,
+       "total": 573.624161073826,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 R.T. TUBE",
+       "qty": 3.0,
+       "price": 102.23,
+       "total": 920.07,
+       "stale": false
+      },
+      {
+       "desc": "100*50 LVL Beam",
+       "qty": 7.7247191011236,
+       "price": 146.594982078853,
+       "total": 2264.81011638677,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 14.1,
+       "price": 50.154,
+       "total": 707.1714,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 7.05,
+       "price": 45.822,
+       "total": 323.0451,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 4518.666,
+     "raw_total": 4518.666,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 BIG HORIZONTALE CAP",
+       "qty": 14.6,
+       "price": 203.25,
+       "total": 2967.45,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 3.7,
+       "price": 149.08,
+       "total": 551.596,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 382.0,
+       "price": 0.515,
+       "total": 196.73,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 5.4,
+       "price": 116.15,
+       "total": 627.21,
+       "stale": false
+      },
+      {
+       "desc": "SMALL ALU CORNERS",
+       "qty": 4.0,
+       "price": 43.92,
+       "total": 175.68,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 3361.850174,
+     "raw_total": 3361.85017351678,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "100*50*3MM ANGLE",
+       "qty": 0.8415,
+       "price": 1015.62,
+       "total": 854.64423,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 0.612,
+       "price": 1015.62,
+       "total": 621.55944,
+       "stale": false
+      },
+      {
+       "desc": "MOUNTING CLEATS",
+       "qty": 6.0,
+       "price": 102.294896,
+       "total": 613.769376,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.527,
+       "price": 384.41610738255,
+       "total": 202.587288590604,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3 BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 285.464,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHT",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHT",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO. PLATE LIGHT",
+       "qty": 2.0,
+       "price": 50.0,
+       "total": 100.0,
+       "stale": false
+      },
+      {
+       "desc": "1MM GALV PLATE",
+       "qty": 0.488,
+       "price": 160.402684563758,
+       "total": 156.553020134228,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT PROTECTORS",
+       "qty": 0.0875,
+       "price": 384.41610738255,
+       "total": 67.2728187919463,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 0.0,
+     "raw_total": 2447.54552,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I182": 0,
       "I183": 0
      },
      "lines": [

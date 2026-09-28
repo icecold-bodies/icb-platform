@@ -1,7 +1,7 @@
 database     icb_platform
 alembic      0048
 prod_code    ?
-snapshot     all.json  7e07c4c237492a9f17a4bf89ca79771807a9506f7a5765db5ed1cbd92e9514b7  3166194 bytes
+snapshot     all.json  52e583b4ec359e4ba785c69b70a4f722526b4aa9d5cdc84c294b0bf4eaf8925a  3166801 bytes
 chillers_rc  0
 other_red    none
-finished     2026-09-28T07:29:10+02:00
+finished     2026-09-28T13:46:15+02:00

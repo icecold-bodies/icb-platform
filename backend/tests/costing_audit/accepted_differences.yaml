@@ -75,7 +75,7 @@
 
 - body: "*"
   section: "REAR FRAME + FLOOR PLATE"
-  variant: srd
+  variant: [srd, srd_pu]
   cause: "EXTRA_IN_MES"
   kind: known_defect
   reason: "[RULING] Burt gates REAR FRAME + FLOOR PLATE on the DRD flags, so a single-rear-door body carries R0 there; MES always includes the section (R2.4k-R5.5k). Which is right needs Burt/Michael."
@@ -194,7 +194,7 @@
 
 - body: "*"
   section: SRD
-  variant: srd
+  variant: [srd, srd_pu]
   cause: ["PLYWOOD", "GLUE LINE"]
   kind: known_defect
   reason: "[RULING] Burt's SRD sections carry 4MM PF PLYWOOD and one GLUE LINE at R0 (the total cells are hard-coded 0) where MES charges them: +R480 to +R590 per single rear door. Does a single rear door get the inner plywood skin?"

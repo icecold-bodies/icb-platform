@@ -50,7 +50,9 @@ with engine.connect() as c:
 PY
 ) || stop "cannot read alembic_version"
 [ "$ALEMBIC" = "$EXPECT_ALEMBIC" ] || stop "alembic_version is '$ALEMBIC', expected $EXPECT_ALEMBIC — surface to the BA"
-HEAD=$(git -C /opt/icb-platform rev-parse --short=7 HEAD 2>/dev/null || echo '?')
+# Under `sudo` git compares SUDO_UID (the operator) with the repo owner (icb) and refuses the repo as
+# "dubious ownership" — the 28 Sep runs printed code=?. Trust this one path, read-only (v1.58).
+HEAD=$(git -c safe.directory=/opt/icb-platform -C /opt/icb-platform rev-parse --short=7 HEAD 2>/dev/null || echo '?')
 say "prod: db=$DBNAME alembic=$ALEMBIC code=$HEAD  $(date -Is)"
 
 $PY -c "import app.routers.calculator, yaml; from tools.costing_audit.cli import build_parser" \

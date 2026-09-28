@@ -164,9 +164,31 @@ for any of them.**
   `[TOOL]` entry, and it is a Phase 2 probe item (read the draft's unbound-flag defaults), not a pricing defect. (Dev's
   4.8 draft has no such nodes: prod and dev differ here.)
 
-## 7. Next
+## 7. The CI snapshot, regenerated from prod
 
-Snapshot regenerated from prod (the prod-baseline paste) → committed with the pruned prod list → PR #197 ready → CI
-green on the exact head → one line to Michael → WAIT for the merge word → squash-merge → announce the base SHA → remove
-`/tmp/icb-audit*` and `/tmp/icb-prod-baseline*` on the VM. Then the BA dispatches `fix/v1.58.1-audit-f5-batch`,
-with the MEAT HANGER lines (§4) proposed as its first rows.
+`sudo bash /tmp/icb-prod-baseline/prod_baseline.sh` (unchanged script; staged from `6a1fde8` with the new chiller pack,
+golden and the pruned list), 28 Sep 13:45 SAST: five packs exit 0 (the same counts as §2), `chillers_rc 0`, snapshot
+exported, all four no-people gates passed. `all.json` sha256 `52e583b4ec359e4ba785c69b70a4f722526b4aa9d5cdc84c294b0bf4eaf8925a`
+(3 166 801 bytes), byte-exact after transfer. It is committed as `backend/tests/costing_audit/mes_snapshot/all.json`
+with the reference reports and MANIFEST under `docs/audit/costing_audit/2026-09/prod/`. Its `prod_code ?` is the same
+`sudo` git label (prod code is `6b77d52`). `prod_baseline.sh` gets the same `safe.directory` fix for next time.
+
+**The snapshot against this morning's (07:29):** 45 differences are the manifest's 36 fields plus 9 `price_updated_at`
+stamps. **Two others were NOT this lane:** FREEZER MEDIUM's rear-door insulation masters swapped their thicknesses,
+**DRD PU (2535) 0.06 → 0 and SRD EPS (2536) 0 → 0.06**. Their defaults are unchanged (DRD PU stays the default). That
+is the calculator's known behaviour of rewriting a template's rear-door thickness when a user toggles the door type or
+insulation: someone quoted a FREEZER MEDIUM with an EPS single rear door on prod between 07:29 and 13:45. The manifest
+does not touch either row, and the journal's before-rows do not include them. **The audit is insensitive to it:** the
+mirror (07:29 values) equals the 13:33 run cell for cell, and the 13:33 run equals the 13:45 run (3 473 of 3 473), so
+the cells are identical under both values (each scenario sets its own panel thicknesses). The snapshot records prod as
+it stands. A FREEZER MEDIUM opened on prod now pre-fills SRD EPS 0.06 / DRD PU 0: a template-state question for
+Michael, not a pricing change.
+
+The one test that counted scenarios (`test_costing_audit_admin.py`: the admin page's "All" run, 240) now expects
+254 (chillers 84 → 98).
+
+## 8. Next
+
+PR #197 ready → CI green on the exact head → one line to Michael → WAIT for the merge word → squash-merge →
+announce the base SHA → move `/tmp/icb-audit*` and `/tmp/icb-prod-baseline*` off the VM. Then the BA dispatches
+`fix/v1.58.1-audit-f5-batch`, with the MEAT HANGER lines (§4) proposed as its first rows.

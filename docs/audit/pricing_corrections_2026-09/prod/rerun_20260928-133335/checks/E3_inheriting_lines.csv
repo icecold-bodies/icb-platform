@@ -1,0 +1,16 @@
+trailer_id,trailer,is_active,bom_id,bom_section,formula_expression,is_body_option,bom_conditions,formula_shape
+12,MEAT HANGER LARGE,t,5851,SRD,1.22*2.44*2,f,"[{""option"": ""SRD PU"", ""equals"": ""Y"", ""option_id"": 5981}]",sheet_or_area_shape
+17,ICECREAM BODY MEDIUM,t,5585,SRD,(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2,f,"[{""option"": ""SRD PU"", ""equals"": ""Y"", ""option_id"": 5706}]",burt_thickness_shape
+36,MEAT HANGER SMALL-MEDIUM,t,6159,SRD,1.22*2.44*2,f,"[{""option"": ""SRD PU"", ""equals"": ""Y"", ""option_id"": 6289}]",sheet_or_area_shape
+1,ADV VACUUM PANELS,f,12,SRD,height*1.22*0*2,f,,sheet_or_area_shape
+10,CHESTER SPEC MEAT BODY,f,1160,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+11,"SMALL MEAT BODY UP TO 5,2 [deleted-11]",f,1298,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+22,EXPLOSIVE UP TO 2.7 [deleted-22],f,4330,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+23,EXPLOSIVE 2.7 TO 4.8 OLD [deleted-23],f,4078,SRD,2.44*1.22*0*2,f,,sheet_or_area_shape
+28,EXPLOSIVE UP TO 2.7 [deleted-28],f,4452,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+29,EXPLOSIVE UP TO 2.7 [deleted-29],f,4574,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+30,EXPLOSIVE UP TO 2.7 [deleted-30],f,4696,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+31,EXPLOSIVE UP TO 2.7 [deleted-31],f,4818,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+32,EXPLOSIVE UP TO 2.7 [deleted-32],f,4940,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+33,EXPLOSIVE UP TO 2.7 [deleted-33],f,5062,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape
+35,"SMALL MEAT BODY UP TO 5,2 [deleted-35]",f,6005,SRD,1.22*2.44*0*2,f,,sheet_or_area_shape

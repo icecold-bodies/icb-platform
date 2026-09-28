@@ -13,7 +13,7 @@ prod snapshot (`mes_snapshot/all.json`, exported 28 Sep 07:29 SAST) and the 28 S
    `prod/IMPACT_2026-09-28.md`; it supersedes the 27 Sep first pass in §2). F4 4 quotes (one accepted, one saved on
    28 Sep), F3 2 quotes at 6.8 m, F1 on one of those two (N9983, +R179.85). F2 none. **No saved quote carries the R24.4k
    single-door PU.**
-2. **F1 onset: 7 Sep 2026 15:38 UTC.** During the ICECREAM 4.8 rear-door work the shared SRD `PU` material was set to
+2. **F1 onset: 7 Sep 2026 15:38 SAST** (13:38 UTC; first written as "UTC", see §3). During the ICECREAM 4.8 rear-door work the shared SRD `PU` material was set to
    R4 100 at the material level. Every body whose SRD PU formula counts 2 *sheets* (`1.22*2.44*2`) jumped to R24.4k.
    Before that the line had carried `*0` (R0) since the 29 Apr import; the `*0` was removed by hand between 8 May and
    31 Aug.
@@ -73,7 +73,12 @@ Not affected: N9946 (4.9 UP at exactly 6.7 m), A9992 (SRD PU already Burt's shap
 quotes from 12 Aug onward (door rubber priced), every icecream quote for F2 (ALU floor R0). No chiller single-door PU
 quote has been saved. Saved quotes are frozen; re-quoting is the BA's call with Burt.
 
-## 3. Onset — timeline (UTC)
+## 3. Onset — timeline (SAST)
+
+> Corrected 28 Sep: first written as "UTC". `price_history.changed_date` and `bom_override_history.changed_at` are
+> `timestamp without time zone`, and the app's UTC write is stored in the session time zone (Africa/Johannesburg).
+> Proved on the prod mirror: the 10:06:23 UTC apply is stored as 12:06:23. So every history time below is **SAST**
+> (15:38 SAST = 13:38 UTC, before that day's 16:42 SAST deploy).
 
 | when | what | source |
 |---|---|---|

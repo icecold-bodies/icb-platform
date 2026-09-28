@@ -1,0 +1,78 @@
+
+=== step 0  PROD AFTER
+  smoke      exit=0 - Cells: UNVERIFIABLE 9, ACCEPTED 33, PASS 156, SKIP 36
+  chillers   exit=1 - Cells: FLAG 3, PRESENCE 14, ACCEPTED 59, PASS 981, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=0 - Cells: UNVERIFIABLE 40, ACCEPTED 75, PASS 401, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+  WORST EXIT 1
+=== step 1  PROD AFTER
+  smoke      exit=0 - Cells: UNVERIFIABLE 9, ACCEPTED 33, PASS 156, SKIP 36
+  chillers   exit=1 - Cells: FLAG 3, ACCEPTED 73, PASS 981, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=0 - Cells: UNVERIFIABLE 40, ACCEPTED 75, PASS 401, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+  WORST EXIT 1
+=== step 2  PROD AFTER
+  smoke      exit=0 - Cells: UNVERIFIABLE 9, ACCEPTED 33, PASS 156, SKIP 36
+  chillers   exit=0 - Cells: ACCEPTED 76, PASS 981, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=0 - Cells: UNVERIFIABLE 40, ACCEPTED 75, PASS 401, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+  WORST EXIT 0
+=== step 3  PROD AFTER
+  smoke      exit=0 - Cells: UNVERIFIABLE 9, ACCEPTED 33, PASS 156, SKIP 36
+  chillers   exit=0 - Cells: ACCEPTED 76, PASS 981, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=0 - Cells: UNVERIFIABLE 40, ACCEPTED 75, PASS 401, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+  WORST EXIT 0
+=== step 3  BEFORE (mirror = prod reference)
+  smoke      exit=1 - Cells: FLAG 6, UNVERIFIABLE 9, ACCEPTED 33, PASS 150, SKIP 36
+  chillers   exit=1 - Cells: FLAG 26, ACCEPTED 65, PASS 966, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=0 - Cells: UNVERIFIABLE 40, ACCEPTED 131, PASS 345, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 158, PASS 382, SKIP 108
+  WORST EXIT 1
+=== step 4  PROD AFTER
+  smoke      exit=0 - Cells: UNVERIFIABLE 9, ACCEPTED 33, PASS 156, SKIP 36
+  chillers   exit=0 - Cells: ACCEPTED 76, PASS 981, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=0 - Cells: UNVERIFIABLE 40, ACCEPTED 75, PASS 401, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+  WORST EXIT 0
+=== step 4  BEFORE (mirror = prod reference)
+  smoke      exit=1 - Cells: FLAG 6, UNVERIFIABLE 9, ACCEPTED 33, PASS 150, SKIP 36
+  chillers   exit=1 - Cells: FLAG 26, ACCEPTED 65, PASS 966, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=1 - Cells: FLAG 46, UNVERIFIABLE 40, ACCEPTED 85, PASS 345, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 158, PASS 382, SKIP 108
+  WORST EXIT 1
+=== step 5  PROD AFTER
+  smoke      exit=0 - Cells: UNVERIFIABLE 9, ACCEPTED 33, PASS 156, SKIP 36
+  chillers   exit=0 - Cells: ACCEPTED 76, PASS 981, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=0 - Cells: UNVERIFIABLE 40, ACCEPTED 75, PASS 401, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+  WORST EXIT 0
+=== step 5  BEFORE (mirror = prod reference)
+  smoke      exit=1 - Cells: FLAG 6, UNVERIFIABLE 9, ACCEPTED 33, PASS 150, SKIP 36
+  chillers   exit=1 - Cells: FLAG 26, ACCEPTED 65, PASS 966, SKIP 196
+  freezers   exit=1 - Cells: FLAG 9, UNVERIFIABLE 27, ACCEPTED 64, PASS 482, SKIP 108
+  icecream   exit=1 - Cells: FLAG 49, UNVERIFIABLE 40, ACCEPTED 82, PASS 345, SKIP 96
+  explosive  exit=1 - Cells: FLAG 9, UNVERIFIABLE 36, ACCEPTED 149, PASS 382, SKIP 108
+  WORST EXIT 1
+=== step 6  PROD AFTER
+  smoke      exit=0 - Cells: UNVERIFIABLE 9, ACCEPTED 33, PASS 156, SKIP 36
+  chillers   exit=0 - Cells: ACCEPTED 76, PASS 981, SKIP 196
+  freezers   exit=0 - Cells: UNVERIFIABLE 27, ACCEPTED 73, PASS 482, SKIP 108
+  icecream   exit=0 - Cells: UNVERIFIABLE 40, ACCEPTED 75, PASS 401, SKIP 96
+  explosive  exit=0 - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+  WORST EXIT 0
+=== step 6  BEFORE (mirror = prod reference)
+  smoke      exit=1 - Cells: FLAG 12, UNVERIFIABLE 9, ACCEPTED 27, PASS 150, SKIP 36
+  chillers   exit=1 - Cells: FLAG 26, ACCEPTED 65, PASS 966, SKIP 196
+  freezers   exit=1 - Cells: FLAG 9, UNVERIFIABLE 27, ACCEPTED 64, PASS 482, SKIP 108
+  icecream   exit=1 - Cells: FLAG 74, UNVERIFIABLE 40, ACCEPTED 57, PASS 345, SKIP 96
+  explosive  exit=1 - Cells: FLAG 9, UNVERIFIABLE 36, ACCEPTED 149, PASS 382, SKIP 108
+  WORST EXIT 1

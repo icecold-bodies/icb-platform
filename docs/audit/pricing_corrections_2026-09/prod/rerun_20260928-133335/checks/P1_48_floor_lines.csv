@@ -1,0 +1,17 @@
+bom_id,bom_section,material,formula_expression,unit_price_override,material_price,bom_conditions,is_body_option,selection_mode,body_option_default
+5649,FLOOR,GLUE LINE,(length+{Waste})*(width+{Waste}),,28.5833,,f,always,f
+5650,FLOOR,EPS,(length+{Waste})*(width+{Waste}),,156.56,"[{""option"": ""FLOOR EPS"", ""equals"": ""Y"", ""option_id"": 5711}]",f,always,f
+5651,FLOOR,PU,(1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22),4100,557.5,"[{""option"": ""FLOOR PU"", ""equals"": ""Y"", ""option_id"": 5712}]",f,always,f
+5652,FLOOR,GLUE LINE,(length+{Waste})*(width+{Waste})*2,,28.5833,,f,always,f
+5653,FLOOR,12MM PF PLYWOOD,((length+{Waste})*(width+{Waste}))/2.98,,665,"[{""option"": ""12MM PF PLYWOOD"", ""equals"": ""Y""}]",f,always,f
+5654,FLOOR,76*50*2 R.T. TUBE,(length+{Waste})/1.05*3,,102.23,,f,always,f
+5655,FLOOR,100*50 LVL Beam,((length+{Waste})/0.416-(length+{Waste})/1.05)*3,,146.59498207885304,,f,always,f
+5656,FLOOR,2*300 INT LAMINATION,((length+{Waste})+0.4)*((width+{Waste})+0.7)*2,,50.153999999999996,,f,always,f
+5657,FLOOR,ANTI-SKID FINAL COAT,((length+{Waste})+0.4)*((width+{Waste})+0.7)*2/2,,45.821999999999996,,f,always,f
+5658,FLOOR,ALU EXTRUTION FLOOR,13*(length+{Waste}),,428.95,"[{""option"": ""ALU EXTRUTION FLOOR"", ""equals"": ""Y"", ""option_id"": 5713}]",f,always,f
+5659,FLOOR,RICE GRAIN ALU FLOOR,1/7.3*(length+{Waste}),,24356.25,"[{""option"": ""RICE GRAIN ALU FLOOR"", ""equals"": ""Y"", ""option_id"": 5714}]",f,always,f
+5660,FLOOR,1ST ROW KICK PLATE,((length+{Waste})*2+(width+{Waste})),,496.05,"[{""option"": ""1ST ROW ALU KICK PLATE"", ""equals"": ""Y"", ""option_id"": 5715}]",f,always,f
+5661,FLOOR,2ND ROW KICK PLATE,((length+{Waste})*2+(width+{Waste})),,406.6,"[{""option"": ""2ND ROW ALU KICK PLATE"", ""equals"": ""Y"", ""option_id"": 5716}]",f,always,f
+6329,FLOOR,Rhinotex 1150 BW,(length+{Waste})*(width+{Waste}),,213.11,,f,always,f
+11203,FLOOR,9MM BIRCH PLYWOOD,((length+{Waste})*(width+{Waste}))/2.98,,316.78,"[{""option"": ""9MM BIRCH PLYWOOD"", ""equals"": ""Y""}]",f,always,f
+11207,FLOOR,12MM FINN PLY FLOOR,((length+{Waste})*(width+{Waste}))/2.98,,798,"[{""option"": ""12MM FINN PLYWOOD"", ""equals"": ""Y""}]",f,always,f

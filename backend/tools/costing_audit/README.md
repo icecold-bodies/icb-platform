@@ -126,8 +126,11 @@ python -m tools.costing_audit snapshot --pack P [--pack Q ...]
   prod VM is re-evaluated on a laptop after the prod list changes.
 * **snapshot** exports the calc-path rows the packs' bodies need (trailers,
   BOM, materials, sections, recipes, formulas, global variables, the 4G
-  factor) from the dev database for CI; several `--pack`s make one
-  `mes_snapshot/all.json`.
+  factor) for CI; several `--pack`s make one `mes_snapshot/all.json`. From
+  v1.57.3 it is exported from **prod** (see "CI baseline = prod" below) and is
+  an allow-list: a table outside `ALLOWED_TABLES` or a personal-looking column
+  refuses the whole export, and `test_mes_snapshot_no_people.py` re-checks the
+  committed file (tables, columns, no email-shaped value anywhere).
 
 ### Accepted differences: per environment, tied to a mechanism
 
@@ -211,3 +214,27 @@ summary on the job page, fail on unaccepted FLAG. Nightly + manual → every
 pack. CI never needs Excel or LibreOffice. Because the MES side in CI is the
 committed snapshot, CI is an **engine-drift** gate; a local `run` against the
 live dev database is the **data-drift** check.
+
+### CI baseline = prod (v1.57.3)
+
+Dev is Michael's workbench: he brings its bodies in line with Burt's sheets by
+hand, one at a time, with the audit report as the test, so dev pricing moves
+daily. CI therefore judges **prod's** pricing — the numbers customers are
+quoted on:
+
+- `mes_snapshot/all.json` is exported from prod (`icb_platform`) by
+  `ops/prod-baseline/prod_baseline.sh` (the operator's paste on the VM,
+  read-only, writes only under `/tmp`): assert database + alembic → the five
+  packs `--env prod` (the reference run) → `snapshot` → the no-people gate →
+  sha256.
+- CI runs with `--env prod`, so snapshot and `accepted_differences.prod.yaml`
+  are a matched pair (`test_ci_pairs_the_prod_snapshot_with_the_prod_accepted_list`).
+  `accepted_differences.yaml` (dev) stays for local runs against dev.
+- The reference reports are committed under `docs/audit/costing_audit/<month>/prod/`.
+
+**Standing rule — any lane that changes prod pricing data closes by re-running
+`prod_baseline.sh` and committing the new `all.json` together with the pruned
+`accepted_differences.prod.yaml`** (entries the correction retired removed, in
+the same PR). Snapshot and list move together or not at all: a list pruned for
+a correction, over a snapshot taken before it, turns CI red — by design; the
+red is the reminder.

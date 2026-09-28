@@ -19,6 +19,7 @@ own global sections) comes along; users/customers/costings are refused.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import datetime, date, timezone
 from pathlib import Path
@@ -30,6 +31,30 @@ SETTING_KEYS = ("costings.pu_foam_4g_factor",)
 FORBIDDEN = {"users", "user_sessions", "customers", "customer_contacts", "customer_end_users",
              "calculations", "calculations_sales_rep_audit", "validated_references", "help_request_log",
              "price_history", "bom_override_history", "quote_counter"}
+# v1.57.3 — the snapshot is exported from PROD and committed as CI's baseline, so
+# the export is an ALLOW-list, not only the FK-walk refusal above: a table outside
+# it, or a personal-looking column in one, refuses the whole export (nothing is
+# written). tests/costing_audit/test_mes_snapshot_no_people.py re-checks the file.
+ALLOWED_TABLES = {
+    "admin_settings", "bill_of_materials", "body_option_groups", "body_option_subgroups",
+    "bom_sections", "floor_plate_items", "floor_plates", "formulas", "global_variables",
+    "material_categories", "materials", "mounting_cleat_items", "mounting_cleats",
+    "report_templates", "sap_item_codes", "skin_formula_ingredients", "skin_formula_items",
+    "skin_formulas", "taping_block_items", "taping_blocks", "trailer_groups", "trailer_types",
+}
+PERSONAL_COLUMN = re.compile(
+    r"e_?mail|phone|telephone|mobile|whatsapp|fax|username|password|first_name|last_name|"
+    r"full_name|contact_name|customer|end_user|address|id_number|vat_number", re.I)
+
+
+def check_pricing_only(tables: dict[str, list[dict]]) -> None:
+    """Raise unless every table is allow-listed and no column looks personal."""
+    extra = sorted(set(tables) - ALLOWED_TABLES)
+    if extra:
+        raise RuntimeError(f"snapshot would carry non-pricing table(s) {extra} — refusing to export")
+    cols = sorted({f"{t}.{c}" for t, rows in tables.items() for r in rows for c in r if PERSONAL_COLUMN.search(c)})
+    if cols:
+        raise RuntimeError(f"snapshot would carry personal-looking column(s) {cols} — refusing to export")
 
 
 def _ensure_backend_on_path() -> None:
@@ -113,6 +138,7 @@ def export_snapshot(trailer_ids: list[int], out_path: Path, *, log=print) -> dic
     doc = {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
            "trailer_ids": sorted(trailer_ids),
            "tables": {name: [{k: _jsonable(v) for k, v in r.items()} for r in rows[name].values()] for name in order}}
+    check_pricing_only(doc["tables"])
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(doc, indent=0, default=str), encoding="utf-8")

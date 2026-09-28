@@ -83,7 +83,7 @@ quote has been saved. Saved quotes are frozen; re-quoting is the BA's call with 
 | 26–27 Sep | CHILLER 2.3 SRD PU + SRD fittings fixed by hand; SRD hinge / silicone / capping materials repriced | audits 26–28 Sep |
 | 27 Sep 07:43 | Burt's September workbook on this PC saved again (see §1.4) | file mtime + sha |
 
-## 4. The corrections (manifest.yaml — 32 entries on 27 lines)
+## 4. The corrections (manifest.yaml — 36 entries on 27 lines)
 
 bom ids are shared by dev and prod; **material ids are not**. Guards = prod on 28 Sep 07:29.
 

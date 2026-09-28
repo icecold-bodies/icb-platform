@@ -5,16 +5,12 @@
 #
 # Prod's BOM data is NOT dev's: prod matches Burt where dev does not (tapping blocks, the
 # 1MM GALV PLATE, 3MM 3CR12 plate price, LVL beam rule, ICECREAM 4.9 UP sides) and carries
-# defects dev does not (the SRD PU line at the raw R4 100 rate on every body).
-
-- body: "*"
-  section: SRD
-  variant: srd
-  cause: ["BOTH PU", "DIFF PU"]
-  kind: known_defect
-  reason: "[MES] PROD: the single-rear-door PU line is priced at the raw 32D rate — 1.22*2.44*2 sheets x R4 100 = R24.4k — where Burt has R245/sheet (R1.5k): +R23k on every SRD quote, on every body (chillers, freezers, icecream, explosive). Largest live-quote error found."
-  owner: BA
-  review_by: 2026-10-31
+# defects dev does not.
+#
+# v1.58 (pricing corrections, prod applied <DATE>): F1 single-rear-door PU (R24.4k), F3 ICECREAM
+# 4.9 UP length 6.7, F4 CHILLER MEDIUM door rubber x0 entries REMOVED — every later run enforces
+# them. F2 narrowed to the ICECREAM 4.8 plywood draft choice. The held single-door rulings
+# (rear frame, SRD plywood/glue) also cover the chillers' new `srd_pu` scenarios.
 
 - body: ["UP TO 2.3 CHILLER BODY", "UP TO 5.5 CHILLER AND 2.3 WIDE", " 4.9 & UP CHILLER AND 2.5 WIDE "]
   section: ["FRONT", "SIDES", "ROOF", "FLOOR", "DRD"]
@@ -52,39 +48,21 @@
   owner: BA
   review_by: 2026-10-31
 
-- body: "UP TO 5.5 CHILLER AND 2.3 WIDE"
-  section: "DRD DOOR FITTINGS"
-  variant: "*"
-  cause: "DOOR RUBBER"
-  kind: known_defect
-  reason: "[MES] PROD CHILLER MEDIUM DRD DOOR FITTINGS: 2317 DOOR RUBBER quantity formula ends in *0 (ZERO_FORMULA): -R672 per double door."
-  owner: BA
-  review_by: 2026-10-31
-
 - body: "*"
   section: "REAR FRAME + FLOOR PLATE"
-  variant: srd
+  variant: [srd, srd_pu]
   cause: "EXTRA_IN_MES"
   kind: known_defect
   reason: "[RULING] Burt gates REAR FRAME + FLOOR PLATE on the DRD flags, so a single-rear-door body carries R0 there; MES always includes the section (R2.4k-R5.5k). Which is right needs Burt/Michael."
   owner: BA
   review_by: 2026-10-31
 
-- body: ["icecream up to 3,2", "icecream up to 4.8"]
+- body: "icecream up to 4.8"
   section: FLOOR
   variant: "*"
-  cause: ["ALU EXTRUTION FLOOR", "12MM PF PLYWOOD"]
+  cause: "12MM PF PLYWOOD"
   kind: known_defect
-  reason: "[MES] master ALU EXTRUTION FLOOR defaults ON for ICECREAM UP TO 3,2 and UP TO 4.8 and adds R13k-R27k (13 x length m at R428.95); Burt's sheets have no such line or flag. On PROD ICECREAM UP TO 4.8 the FLOOR also lacks Burt's 12MM PF PLYWOOD line (-R2.5k) — consistent with the ALU floor option replacing the plywood floor; to confirm in prod's Body Templates."
-  owner: BA
-  review_by: 2026-10-31
-
-- body: " icecream 4.9 up"
-  section: ["ROOF", "FLOOR", "ALUMINIUM", "SUB FRAME + LIGHT BOX ASSY", "REFLEXITE TAPE"]
-  variant: "*"
-  cause: ["Rhinotex", "GLUE LINE", "LVL Beam", "R.T. TUBE", "INT LAMINATION", "ANTI-SKID", "HORIZONTALE CAP", "LONG RIVETS", "SILPLUS", "300 WA PLATE", "REFLEXITE TAPE"]
-  kind: known_defect
-  reason: "[MES] ICECREAM 4.9 UP has the length 6.7 HARD-CODED in its ROOF, FLOOR, ALUMINIUM, SUB FRAME + LIGHT BOX ASSY and REFLEXITE TAPE formulas on prod too (SIDES is correct on prod): priced at 6.7 m whatever length is entered."
+  reason: "[TOOL] ICECREAM UP TO 4.8's 12MM PF PLYWOOD floor line (bom 5653) prices only when its draft choice '12MM PF PLYWOOD' is ticked (beside 9MM BIRCH 11203 and 12MM FINN 11207); the audit probe cannot tick a draft choice, so the FLOOR reads it missing (-R1.9k to -R2.5k). A probe limit, not a template defect (Michael, 28 Sep) — still to confirm which choice the calculator starts with. The ALU EXTRUTION FLOOR default was turned OFF in v1.58."
   owner: BA
   review_by: 2026-10-31
 
@@ -164,7 +142,7 @@
 
 - body: "*"
   section: SRD
-  variant: srd
+  variant: [srd, srd_pu]
   cause: ["PLYWOOD", "GLUE LINE"]
   kind: known_defect
   reason: "[RULING] Burt's SRD sections carry 4MM PF PLYWOOD and one GLUE LINE at R0 (the total cells are hard-coded 0) where MES charges them: +R480 to +R590 per single rear door. Does a single rear door get the inner plywood skin?"

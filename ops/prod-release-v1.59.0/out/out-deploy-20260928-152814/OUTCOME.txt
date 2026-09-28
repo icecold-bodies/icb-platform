@@ -1,0 +1,13 @@
+deployed      6b77d52 -> de74796 (de74796bd22070e59876572a49c8b39b804c75b9)
+alembic       0048 -> 0049
+backup        /var/backups/postgres/icb_platform_pre-v1.59.0_20260928-152814.dump  1461181 bytes  sha256 b4f901f2ee295d8bf3e8e0fc5eda260b11329860bc23d29e0b7e29abf3025bd7
+pyyaml        6.0.2
+restart       Fri 2026-09-25 06:17:50 SAST -> Mon 2026-09-28 15:28:30 SAST (pid 116800 -> 149619)
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+calculator.js ?v=182 d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90 (local = lan = the git blob; unchanged)
+spa           assets/index-Be8qL-PA.js 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (local = lan = disk; unchanged, no rebuild)
+openapi       local = lan, the 6 new paths present
+page          unauthenticated /admin/costing-audit -> 307, /api/admin/costing-audit/runs -> 401
+permission    admin.costing_audit seeded, granted to admin
+finished      2026-09-28T15:28:59+02:00

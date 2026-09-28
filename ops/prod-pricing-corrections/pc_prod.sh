@@ -52,8 +52,12 @@ URL="${DATABASE_URL/postgresql+psycopg:/postgresql:}"
 DBNAME=$(psql "$URL" -XAtc "select current_database()") || stop "cannot reach the database"
 [ "$DBNAME" = "$EXPECT_DB" ] || stop "database is '$DBNAME', expected $EXPECT_DB"
 ALEMBIC=$(psql "$URL" -XAtc "select string_agg(version_num, ',') from alembic_version") || stop "cannot read alembic_version"
-HEAD=$(git -C /opt/icb-platform rev-parse --short=7 HEAD 2>/dev/null || echo '?')
-say "prod: db=$DBNAME alembic=$ALEMBIC code=$HEAD mode=$MODE  $(date -Is)"
+# Under `sudo` git compares SUDO_UID (the operator) with the repo owner (icb) and refuses the
+# repo as "dubious ownership" — the first runs printed code=?. Trust this one path, read-only.
+HEAD=$(git -c safe.directory=/opt/icb-platform -C /opt/icb-platform rev-parse --short=7 HEAD 2>/dev/null || echo '?')
+# The commit the tool + manifest were staged from (written by mkstage.sh, covered by SHA256SUMS).
+STAGED=$(cat "$STAGE/STAGED_FROM" 2>/dev/null || echo '?')
+say "prod: db=$DBNAME alembic=$ALEMBIC code=$HEAD staged=$STAGED mode=$MODE  $(date -Is)"
 
 export PYTHONPATH=/opt/icb-platform/backend:/tmp/icb-audit-deps
 TOOL="$PY $STAGE/backend/tools/audit_pricing_corrections.py --target prod"
@@ -91,6 +95,14 @@ if [ "$MODE" = apply ]; then
   [ -n "$J" ] || stop "applied but no journal found in $OUT — tell the CA NOW"
   mkdir -p "$KEEP" && cp "$J" "$OUT/pre_apply_bom.sql.gz" "$KEEP/" && chmod 700 "$KEEP" \
     || stop "journal not copied to $KEEP (it is still in $OUT) — tell the CA"
+  # Provenance beside the journal (the journal itself stays exactly what the tool wrote).
+  { echo "journal      $(basename "$J")"
+    echo "staged_from  $STAGED"
+    echo "prod_code    $HEAD"
+    echo "alembic      $ALEMBIC"
+    ( cd "$STAGE" && sha256sum backend/tools/audit_pricing_corrections.py docs/audit/pricing_corrections_2026-09/manifest.yaml )
+    echo "run_folder   $OUT"
+  } > "$KEEP/$(basename "$J" .json).provenance.txt" || stop "provenance note not written — tell the CA"
   say "second dry-run (must find nothing to apply)"
   $TOOL > "$OUT/after.txt" 2>&1
   cat "$OUT/after.txt"

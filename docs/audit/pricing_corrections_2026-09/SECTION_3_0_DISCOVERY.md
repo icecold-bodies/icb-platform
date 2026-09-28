@@ -9,10 +9,10 @@ prod snapshot (`mes_snapshot/all.json`, exported 28 Sep 07:29 SAST) and the 28 S
 
 ## 1. Synthesis
 
-1. **Saved quotes: the damage is small — 8 quotes** (§2, 27 Sep run). F1 4 quotes (−R150 to +R180 cost), F3 2 quotes
-   (+R866 cost / +R1 653 selling each, under-quoted), F4 3 quotes (+R486 to +R703, one accepted), F2 none. **No saved
-   quote carries the R24.4k single-door PU.** The list is refreshed (customer-free query, `impact/impact_refresh.sql`)
-   just before the prod apply, so the BA's list is current when Burt is told.
+1. **Saved quotes: the damage is small — 6 quotes, +R3 235.63 cost / +R6 221.27 selling** (28 Sep refresh,
+   `prod/IMPACT_2026-09-28.md`; it supersedes the 27 Sep first pass in §2). F4 4 quotes (one accepted, one saved on
+   28 Sep), F3 2 quotes at 6.8 m, F1 on one of those two (N9983, +R179.85). F2 none. **No saved quote carries the R24.4k
+   single-door PU.**
 2. **F1 onset: 7 Sep 2026 15:38 UTC.** During the ICECREAM 4.8 rear-door work the shared SRD `PU` material was set to
    R4 100 at the material level. Every body whose SRD PU formula counts 2 *sheets* (`1.22*2.44*2`) jumped to R24.4k.
    Before that the line had carried `*0` (R0) since the 29 Apr import; the `*0` was removed by hand between 8 May and
@@ -47,7 +47,12 @@ prod snapshot (`mes_snapshot/all.json`, exported 28 Sep 07:29 SAST) and the 28 S
 9. **Precondition met:** CHILLER 2.3's DRD fittings are back to hinges 4 / door set 2 (the 27 Sep STOP item) and its
    SRD DOOR FITTINGS PASS in the 28 Sep reference run.
 
-## 2. Impact on saved prod quotes (27 Sep run; refreshed before the apply)
+## 2. Impact on saved prod quotes (27 Sep run — SUPERSEDED)
+
+> **Superseded by `prod/IMPACT_2026-09-28.md`** (the refreshed, customer-free run of 28 Sep 12:31): **6 quotes,
+> +R3 235.63 cost / +R6 221.27 selling**, measured against what THIS manifest changes. The table below is the 27 Sep
+> first pass. It also counted six ICECREAM 4.9 UP lines prod fixed by hand on 26–27 Sep (hence F3 +R865.86 here vs
+> +R309.97 there) and the ICECREAM 4.8 SRD quotes, whose line is not in the manifest. Kept for the history.
 
 "Corrected" = the corrected BOM applied to the saved quote. Selling Δ = cost Δ × (1 + margin) ÷ ratio, per quote.
 `+` = the quote was **under** the corrected price. F1 is compared with Burt's September sheet.

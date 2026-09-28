@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}Costing audit{% endblock %}
+{% block breadcrumb %}<strong>Admin</strong> / Costing audit{% endblock %}
+
+{% block content %}
+{# v1.59 — Admin -> Costing audit. Every rule below is scoped under .ca-page: an unscoped
+   element selector here would restyle the whole MES shell (the v1.46 theme-leak lesson).
+   The report itself renders in an iframe for the same reason — its v1.57.2 stylesheet
+   styles body/table/header directly. #}
+<style>
+  .ca-page { display:flex; flex-direction:column; gap:16px; }
+  /* .btn / .ca-report set display, which would otherwise beat the [hidden] attribute */
+  .ca-page [hidden] { display:none !important; }
+  .ca-page .ca-env { display:flex; flex-wrap:wrap; gap:6px 24px; font-size:13px; }
+  .ca-page .ca-env dt { color:var(--text-dim); font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+  .ca-page .ca-env dd { margin:2px 0 0; color:var(--text); }
+  .ca-page .ca-env-banner { border-radius:var(--radius); padding:8px 12px; font-size:13px; margin-bottom:12px;
+                            border:1px solid var(--border); }
+  .ca-page .ca-env-banner.prod { border-color:var(--red); color:var(--red); font-weight:600; }
+  .ca-page .ca-env-banner.dev  { color:var(--text-dim); }
+  .ca-page .ca-err { border:1px solid var(--red); color:var(--red); border-radius:var(--radius); padding:8px 12px; font-size:13px; }
+  .ca-page .ca-runbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+  .ca-page .ca-runbar select { width:auto; min-width:170px; }
+  .ca-page .ca-msg { font-size:13px; }
+  .ca-page .ca-msg.bad { color:var(--red); }
+  .ca-page .ca-progress { margin-top:12px; }
+  .ca-page .ca-bar { height:8px; border-radius:4px; background:var(--bg-input); border:1px solid var(--border); overflow:hidden; max-width:520px; }
+  .ca-page .ca-bar > i { display:block; height:100%; width:0; background:var(--blue); transition:width .3s; }
+  .ca-page .ca-progress-text { font-size:12px; color:var(--text-dim); margin-top:4px; }
+  .ca-page .ca-st { display:inline-block; min-width:64px; text-align:center; border-radius:3px; padding:1px 7px;
+                    font-weight:600; font-size:11.5px; border:1px solid currentColor; }
+  .ca-page .ca-st.running { color:var(--blue-hi); }
+  .ca-page .ca-st.passed  { color:var(--green); }
+  .ca-page .ca-st.flagged { color:var(--red); }
+  .ca-page .ca-st.failed  { color:var(--orange); }
+  .ca-page .ca-head { display:flex; flex-wrap:wrap; gap:4px 18px; font-size:12.5px; color:var(--text-dim); margin:4px 0 10px; }
+  .ca-page .ca-head b { color:var(--text); font-weight:600; }
+  .ca-page .ca-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .ca-page .ca-changes { font-size:13px; margin:0 0 12px; }
+  .ca-page .ca-changes ul { margin:6px 0 0; padding-left:18px; }
+  .ca-page .ca-changes li { margin:2px 0; }
+  .ca-page .ca-kind { font-family:var(--font-mono); font-size:11px; color:var(--text-dim); margin-right:4px; }
+  .ca-page .ca-pos { color:var(--red); } .ca-page .ca-neg { color:var(--blue-hi); }
+  .ca-page .ca-report { width:100%; height:calc(100vh - 140px); min-height:560px; border:1px solid var(--border);
+                        border-radius:var(--radius); background:#fff; display:block; }
+  .ca-page table.ca-hist { width:100%; border-collapse:collapse; font-size:12.5px; }
+  .ca-page table.ca-hist th, .ca-page table.ca-hist td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  .ca-page table.ca-hist th { color:var(--text-dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.4px; }
+  .ca-page table.ca-hist td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .ca-page table.ca-hist tr.sel td { background:var(--blue-dim); }
+  .ca-page .ca-muted { color:var(--text-dim); }
+  .ca-page .ca-scroll { overflow-x:auto; }
+</style>
+
+<div class="ca-page" data-testid="costing-audit-page">
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Costing audit — Excel ↔ MES</span></div>
+    <div class="card-body">
+      <div class="ca-env-banner {{ overview.environment }}" data-testid="ca-environment">
+        {{ overview.environment_label }}
+      </div>
+      {% if overview.tool_error %}
+      <div class="ca-err" data-testid="ca-tool-error">The audit tool cannot load on this server: {{ overview.tool_error }}</div>
+      {% endif %}
+      <dl class="ca-env">
+        <div><dt>Environment</dt><dd data-testid="ca-env-name">{{ 'Production' if overview.environment == 'prod' else 'Development' }} ({{ overview.db_name }})</dd></div>
+        <div><dt>Accepted list in use</dt><dd data-testid="ca-accepted-list">{{ overview.accepted_list or '?' }}{% if overview.accepted_entries is not none %} · {{ overview.accepted_entries }} entries{% endif %}</dd></div>
+        <div><dt>Golden workbook</dt><dd id="ca-golden">—</dd></div>
+        <div><dt>Tolerance</dt><dd id="ca-tolerance">—</dd></div>
+        <div><dt>Time limit</dt><dd>{{ overview.timeout_min }} minutes per run</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Run</span></div>
+    <div class="card-body">
+      <div class="ca-runbar">
+        <label for="ca-pack" class="ca-muted" style="font-size:12px">Pack</label>
+        <select id="ca-pack" data-testid="ca-pack">
+          {% for p in pack_choices %}
+          <option value="{{ p }}">{{ 'All (chillers, freezers, icecream, explosive)' if p == 'all' else p }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-primary" id="ca-run-btn" data-testid="ca-run" {% if overview.tool_error %}disabled{% endif %}>Run</button>
+        <span class="ca-msg" id="ca-run-msg" data-testid="ca-run-msg" role="status"></span>
+      </div>
+      <div class="ca-muted" style="font-size:12px;margin-top:8px">
+        Reads prices only — the audit runs on a read-only database connection and changes nothing.
+        One audit runs at a time.
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="ca-current" hidden data-testid="ca-current">
+    <div class="card-header">
+      <span class="card-title" id="ca-current-title">Run</span>
+      <div class="ca-actions">
+        <a class="btn btn-outline btn-sm" id="ca-dl-html" data-testid="ca-download-html" hidden>Download HTML</a>
+        <a class="btn btn-outline btn-sm" id="ca-dl-csv" data-testid="ca-download-csv" hidden>Download CSV</a>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="ca-head" id="ca-current-head" data-testid="ca-current-head"></div>
+      <div class="ca-progress" id="ca-progress" hidden data-testid="ca-progress">
+        <div class="ca-bar"><i id="ca-bar"></i></div>
+        <div class="ca-progress-text" id="ca-progress-text"></div>
+      </div>
+      <div class="ca-err" id="ca-error" hidden data-testid="ca-error"></div>
+      <div class="ca-changes" id="ca-changes" hidden data-testid="ca-changes"></div>
+      <iframe class="ca-report" id="ca-report" title="Costing audit report" hidden data-testid="ca-report"></iframe>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">History</span></div>
+    <div class="card-body ca-scroll">
+      <table class="ca-hist" data-testid="ca-history">
+        <thead><tr><th>When</th><th>Who</th><th>Pack</th><th>Environment</th><th>Status</th>
+          <th class="num">Pass</th><th class="num">Flag</th><th class="num">Accepted</th><th class="num">Expired</th><th class="num">Unverif.</th><th></th></tr></thead>
+        <tbody id="ca-history-body"><tr><td colspan="11" class="ca-muted">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script id="ca-overview" type="application/json">{{ overview | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  // Uses app.js's api() (CSRF header included) — no local api() that could shadow it.
+  const BASE = '/api/admin/costing-audit';
+  const OV = JSON.parse(document.getElementById('ca-overview').textContent);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const when = iso => iso ? new Date(iso).toLocaleString('en-ZA', {year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
+  const rand = v => v == null ? '—' : 'R' + Number(v).toLocaleString('en-ZA', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const n = v => v == null ? '' : v;
+  let currentId = null, pollTimer = null, shownReportFor = null;
+
+  // ── header: golden + tolerance for the selected pack ─────────────────
+  function showPackHeader() {
+    const p = (OV.packs || []).find(x => x.name === $('ca-pack').value) || {};
+    $('ca-golden').textContent = p.golden_fingerprint_short
+      ? `GRP sha256 ${p.golden_fingerprint_short} · generated ${when(p.golden_generated_at)} · ${p.scenarios} scenarios`
+      : (p.scenarios ? `mixed workbooks · ${p.scenarios} scenarios` : 'no golden found');
+    $('ca-tolerance').textContent = p.tolerance_pct != null ? `${p.tolerance_pct} %` : '—';
+  }
+  $('ca-pack').addEventListener('change', showPackHeader);
+  showPackHeader();
+
+  // ── run ──────────────────────────────────────────────────────────────
+  function setMsg(text, bad) { const m = $('ca-run-msg'); m.textContent = text || ''; m.classList.toggle('bad', !!bad); }
+
+  $('ca-run-btn').addEventListener('click', async () => {
+    setMsg('');
+    $('ca-run-btn').disabled = true;
+    try {
+      const r = await api('POST', BASE + '/runs', {pack: $('ca-pack').value});
+      await openRun(r.id);
+      loadHistory();
+    } catch (e) {
+      setMsg(e.message, true);
+      $('ca-run-btn').disabled = false;
+      loadHistory();
+    }
+  });
+
+  // ── one run ──────────────────────────────────────────────────────────
+  function headHtml(r) {
+    const c = r.counts || {};
+    const parts = [
+      `<span><b>${esc(r.pack)}</b> pack</span>`,
+      `<span>ran by <b>${esc(r.started_by)}</b> at <b>${esc(when(r.started_at))}</b></span>`,
+      `<span>environment <b>${r.environment === 'prod' ? 'Production' : 'Development'}</b> (${esc(r.db_name)})</span>`,
+      `<span>accepted list <b>${esc(r.accepted_list)}</b></span>`,
+      `<span>golden <b>${esc((r.golden_fingerprint || '?').slice(0, 12))}</b> · ${esc(when(r.golden_generated_at))}</span>`,
+      `<span>tolerance <b>${esc(r.tolerance_pct)} %</b></span>`,
+    ];
+    if (r.status !== 'running' && c.pass != null)
+      parts.push(`<span>cells: pass <b>${c.pass}</b> · flag <b>${c.flag}</b> · accepted <b>${c.accepted}</b> · expired <b>${c.expired}</b> · unverifiable <b>${c.unverifiable}</b></span>`);
+    if (r.elapsed_s != null) parts.push(`<span>${r.status === 'running' ? 'running for' : 'took'} <b>${Math.round(r.elapsed_s)} s</b></span>`);
+    return parts.join('');
+  }
+
+  function changeLine(c) {
+    const where = `${esc(c.sheet)} · L ${esc(c.length)} W ${esc(c.width)} H ${esc(c.height)} · ${esc(c.variant)} · <b>${esc(c.section)}</b>`;
+    const d = (a, b) => `Δ ${rand(a)} → ${rand(b)}`;
+    if (c.kind === 'status') return `<span class="ca-kind">STATUS</span>${where}: ${esc(c.old_status)} → <b>${esc(c.new_status)}</b> (${d(c.old_delta, c.new_delta)})`;
+    if (c.kind === 'moved')  return `<span class="ca-kind">MOVED</span>${where}: still ${esc(c.new_status)}, ${d(c.old_delta, c.new_delta)}`;
+    if (c.kind === 'new')    return `<span class="ca-kind">NEW</span>${where}: ${esc(c.new_status)} (Δ ${rand(c.new_delta)})`;
+    return `<span class="ca-kind">GONE</span>${where}: was ${esc(c.old_status)}`;
+  }
+
+  async function showChanges(r) {
+    const box = $('ca-changes');
+    let ch;
+    try { ch = await api('GET', `${BASE}/runs/${r.id}/changes`); }
+    catch (e) { box.hidden = false; box.textContent = 'Could not load the change summary: ' + e.message; return; }
+    box.hidden = false;
+    if (!ch.previous) {
+      box.innerHTML = `<b>Changed since previous run:</b> <span class="ca-muted">first ${esc(r.pack)} run on ${r.environment === 'prod' ? 'production' : 'development'} — nothing to compare with yet.</span>`;
+      return;
+    }
+    const prev = `run #${ch.previous.id} (${esc(when(ch.previous.started_at))}, ${esc(ch.previous.started_by)})`;
+    if (!ch.changes.length) {
+      box.innerHTML = `<b data-testid="ca-no-change">No change since ${esc(when(ch.previous.started_at))}</b> <span class="ca-muted">— compared with ${prev}.</span>`;
+      return;
+    }
+    const k = ch.counts || {};
+    const tally = ['status', 'moved', 'new', 'vanished'].filter(x => k[x]).map(x => `${k[x]} ${x === 'vanished' ? 'gone' : x}`).join(' · ');
+    const SHOW = 40, items = ch.changes.map(c => `<li>${changeLine(c)}</li>`);
+    box.innerHTML = `<b>Changed since ${prev}:</b> ${esc(tally)}<ul data-testid="ca-change-list">${items.slice(0, SHOW).join('')}</ul>` +
+      (items.length > SHOW ? `<details><summary class="ca-muted">… and ${items.length - SHOW} more</summary><ul>${items.slice(SHOW).join('')}</ul></details>` : '');
+  }
+
+  async function openRun(id) {
+    currentId = id;
+    clearTimeout(pollTimer);
+    const url = new URL(location.href);
+    url.searchParams.set('run', id);
+    history.replaceState(null, '', url);
+    document.querySelectorAll('#ca-history-body tr').forEach(tr => tr.classList.toggle('sel', tr.dataset.id == id));
+    await refreshRun();
+  }
+
+  async function refreshRun() {
+    const id = currentId;
+    let r;
+    try { r = await api('GET', `${BASE}/runs/${id}`); }
+    catch (e) { setMsg(e.message, true); return; }
+    if (id !== currentId) return;
+    $('ca-current').hidden = false;
+    $('ca-current-title').innerHTML = `Run #${r.id} <span class="ca-st ${esc(r.status)}" data-testid="ca-status">${esc(r.status)}</span>`;
+    $('ca-current-head').innerHTML = headHtml(r);
+    const running = r.status === 'running';
+    $('ca-progress').hidden = !running;
+    if (running) {
+      const pct = r.progress_total ? Math.round(100 * r.progress_done / r.progress_total) : 0;
+      $('ca-bar').style.width = pct + '%';
+      $('ca-progress-text').textContent = `Costing scenario ${r.progress_done} of ${r.progress_total || '?'} · ${Math.round(r.elapsed_s || 0)} s`;
+      $('ca-run-btn').disabled = true;
+      pollTimer = setTimeout(refreshRun, 1000);
+      return;
+    }
+    $('ca-run-btn').disabled = !!OV.tool_error;
+    $('ca-error').hidden = r.status !== 'failed';
+    $('ca-error').textContent = r.status === 'failed' ? `The run failed: ${r.error || 'no reason recorded'}` : '';
+    const hasReport = r.status === 'passed' || r.status === 'flagged';
+    for (const [el, q] of [['ca-dl-html', 'format=html&download=1'], ['ca-dl-csv', 'format=csv']]) {
+      $(el).hidden = !hasReport;
+      $(el).href = hasReport ? `${BASE}/runs/${r.id}/report?${q}` : '#';
+    }
+    if (!hasReport) { $('ca-changes').hidden = true; $('ca-report').hidden = true; loadHistory(); return; }
+    if (shownReportFor !== r.id) {
+      shownReportFor = r.id;
+      $('ca-report').hidden = false;
+      $('ca-report').src = `${BASE}/runs/${r.id}/report?format=html`;
+      showChanges(r);
+      loadHistory();
+    }
+  }
+
+  // ── history ──────────────────────────────────────────────────────────
+  async function loadHistory() {
+    let data;
+    try { data = await api('GET', BASE + '/runs'); }
+    catch (e) { $('ca-history-body').innerHTML = `<tr><td colspan="11" class="ca-muted">${esc(e.message)}</td></tr>`; return null; }
+    const runs = data.runs || [];
+    $('ca-history-body').innerHTML = runs.length ? runs.map(r => {
+      const c = r.counts || {};
+      return `<tr data-id="${r.id}" data-testid="ca-history-row"${r.id === currentId ? ' class="sel"' : ''}>` +
+        `<td>${esc(when(r.started_at))}</td><td>${esc(r.started_by)}</td><td>${esc(r.pack)}</td>` +
+        `<td>${r.environment === 'prod' ? 'Production' : 'Development'}</td>` +
+        `<td><span class="ca-st ${esc(r.status)}">${esc(r.status)}</span></td>` +
+        `<td class="num">${n(c.pass)}</td><td class="num">${n(c.flag)}</td><td class="num">${n(c.accepted)}</td>` +
+        `<td class="num">${n(c.expired)}</td><td class="num">${n(c.unverifiable)}</td>` +
+        `<td><a href="?run=${r.id}" data-open="${r.id}" data-testid="ca-open-run">Open</a></td></tr>`;
+    }).join('') : '<tr><td colspan="11" class="ca-muted">No runs yet.</td></tr>';
+    const live = runs.find(r => r.status === 'running');
+    if (live && live.id !== currentId) setMsg(`An audit is running — started by ${live.started_by} at ${when(live.started_at)}.`);
+    return runs;
+  }
+  $('ca-history-body').addEventListener('click', e => {
+    const a = e.target.closest('a[data-open]');
+    if (!a) return;
+    e.preventDefault();
+    openRun(Number(a.dataset.open));
+  });
+
+  // ── boot: ?run=ID, else follow a run that is in progress ────────────
+  (async () => {
+    const runs = await loadHistory();
+    const want = Number(new URL(location.href).searchParams.get('run'));
+    if (want) { openRun(want); return; }
+    const live = (runs || []).find(r => r.status === 'running');
+    if (live) openRun(live.id);
+  })();
+})();
+</script>
+{% endblock %}

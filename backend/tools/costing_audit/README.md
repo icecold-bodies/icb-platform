@@ -160,7 +160,32 @@ PYTHONPATH=/opt/icb-platform/backend:/tmp/icb-audit-deps /opt/icb-platform/.venv
 ```
 
 Copy the reports back; `reaccept --env prod` re-evaluates them later without
-another prod run.
+another prod run. Once v1.59 is deployed, the admin page below replaces this.
+
+### Admin → Costing audit (v1.59)
+
+`/admin/costing-audit` (permission `admin.costing_audit`, seeded for admin)
+runs the same `run` path in the server, on the database the server is on — so
+on prod it audits prod. Pick a pack (or **All** = chillers, freezers, icecream,
+explosive; smoke is a subset of those) → **Run** → progress → the report in the
+page (this layout, in its own frame) with HTML / CSV downloads, the header
+(environment, accepted list, golden fingerprint + date, tolerance, who, when),
+**changed since the previous run** of the same pack in the same environment,
+and the history.
+
+- Environment from the database name: `icb_platform` → prod
+  (`accepted_differences.prod.yaml`), anything else → dev.
+- Read-only: the probe costs on its own connection opened with
+  `default_transaction_read_only=on`, in a transaction that is always rolled
+  back; only the run record (`costing_audit_runs`, migration 0049) is written.
+- One run at a time across all workers (a Postgres session advisory lock that
+  dies with its connection); a 5-minute hard limit; `POST` returns at once and
+  the run happens on a background thread.
+- The code is shared, not forked: `runner.py` (golden → probe → compare) and
+  the renderers `render_html_doc` / `render_csv_doc` (the page renders stored
+  JSON through them) are what the CLI uses. Nothing on the run path imports
+  openpyxl or LibreOffice (`golden.py` reads golden json; the oracle writes it).
+- Golden updates and accepted-list edits stay repo PRs (BA rulings).
 
 ## Burt issued a new sheet — three steps
 

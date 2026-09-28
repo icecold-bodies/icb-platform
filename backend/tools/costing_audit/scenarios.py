@@ -41,8 +41,12 @@ from pathlib import Path
 
 import yaml
 
+from typing import TYPE_CHECKING
+
 from .mapping import PANELS, DOOR_PANELS, SHEET_TO_TRAILER, norm_name
-from .sheet_map import SheetMap
+
+if TYPE_CHECKING:        # annotations only — sheet_map imports openpyxl, the run path must not
+    from .sheet_map import SheetMap
 
 NAMED_VARIANTS = ("as_sheet", "all_eps", "all_pu", "srd", "drd", "foam_4g")
 # as_sheet: Burt's own gate rows decide (every sheet has an EPS-gated and a

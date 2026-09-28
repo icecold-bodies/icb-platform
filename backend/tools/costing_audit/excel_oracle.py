@@ -437,16 +437,6 @@ def write_golden(pack: Pack, oracle: ExcelOracle, results: dict[str, GoldenScena
     return out_dir
 
 
-def read_golden(pack_name: str, golden_dir: Path | None = None) -> tuple[dict, dict[str, dict]]:
-    """(manifest, {scenario_id: golden scenario dict})"""
-    d = Path(golden_dir or GOLDEN_DIR) / pack_name
-    mp = d / "_manifest.json"
-    if not mp.is_file():
-        raise FileNotFoundError(f"no golden for pack {pack_name!r} in {d} — run `audit golden` locally first")
-    manifest = json.loads(mp.read_text(encoding="utf-8"))
-    out: dict[str, dict] = {}
-    for f in manifest["sheets"].values():
-        doc = json.loads((d / f).read_text(encoding="utf-8"))
-        for g in doc["scenarios"]:
-            out[g["scenario"]["id"]] = g
-    return manifest, out
+# Moved to golden.py (v1.59) so the run path needs no openpyxl; re-exported here
+# for any caller that still imports it from the oracle.
+from .golden import read_golden  # noqa: E402,F401

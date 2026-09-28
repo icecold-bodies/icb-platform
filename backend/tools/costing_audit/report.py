@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import html
+import io
 import json
 from pathlib import Path
 
@@ -25,17 +26,24 @@ def write_json(rep: RunReport, path: Path) -> None:
     Path(path).write_text(json.dumps(rep.to_dict(), indent=1, default=str), encoding="utf-8")
 
 
-def write_csv(rep: RunReport, path: Path) -> None:
-    cols = ["scenario_id", "sheet", "trailer_id", "trailer_name", "variant", "length", "width", "height",
+CSV_COLS = ["scenario_id", "sheet", "trailer_id", "trailer_name", "variant", "length", "width", "height",
             "section_excel", "section_mes", "excel_total", "mes_total", "variance_pct", "status", "reason",
             "likely_cause", "accepted_reason"]
+
+
+def render_csv_doc(d: dict) -> str:
+    """The CSV from a report dict (RunReport.to_dict(), or the JSON the admin page stores)."""
+    buf = io.StringIO(newline="")
+    w = csv.writer(buf)
+    w.writerow(CSV_COLS)
+    for c in d["cells"]:
+        w.writerow([c.get(k) for k in CSV_COLS[:-1]] + [(c.get("accepted") or {}).get("reason")])
+    return buf.getvalue()
+
+
+def write_csv(rep: RunReport, path: Path) -> None:
     with open(path, "w", newline="", encoding="utf-8") as fh:
-        w = csv.writer(fh)
-        w.writerow(cols)
-        for c in rep.cells:
-            w.writerow([c.scenario_id, c.sheet, c.trailer_id, c.trailer_name, c.variant, c.length, c.width, c.height,
-                        c.section_excel, c.section_mes, c.excel_total, c.mes_total, c.variance_pct, c.status,
-                        c.reason, c.likely_cause, (c.accepted or {}).get("reason")])
+        fh.write(render_csv_doc(rep.to_dict()))
 
 
 def _scenario_label(sid: str, c: Cell | None = None) -> str:
@@ -340,21 +348,24 @@ if (start){
 """
 
 
-def write_html(rep: RunReport, path: Path) -> None:
-    m = rep.golden_manifest or {}
+def render_html_doc(d: dict) -> str:
+    """The self-contained HTML report from a report dict (RunReport.to_dict(), or the
+    JSON the admin page stores — the page renders it on request, never stores HTML)."""
+    m = d.get("golden_manifest") or {}
     fp = (m.get("workbook") or {}).get("files") or {}
     counts = " ".join(f'<span class="st {k}">{k} {v}</span>' for k, v in
-                      sorted(rep.counts.items(), key=lambda kv: STATUS_RANK.get(kv[0], 99)))
-    warns = "".join(f'<div class="warn">{html.escape(w)}</div>' for w in rep.warnings)
-    verdict = "FAIL" if rep.exit_code else "PASS"
+                      sorted((d.get("counts") or {}).items(), key=lambda kv: STATUS_RANK.get(kv[0], 99)))
+    warns = "".join(f'<div class="warn">{html.escape(w)}</div>' for w in d.get("warnings") or [])
+    verdict = "FAIL" if d.get("exit_code") else "PASS"
+    pack = str(d.get("pack", "?"))
     # the report data rides in a <script>; a "</" inside any string must not close it
-    data = json.dumps(rep.to_dict(), default=str).replace("</", "<\\/")
-    doc = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Costing audit — {html.escape(rep.pack)} — {verdict}</title>
+    data = json.dumps(d, default=str).replace("</", "<\\/")
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Costing audit — {html.escape(pack)} — {verdict}</title>
 <style>{_CSS}</style></head><body>
-<header><h1>Costing audit · pack {html.escape(rep.pack)} · {verdict}</h1>
-<div class="meta"><span>run {html.escape(rep.generated_at)}</span><span>tolerance {rep.tolerance_pct} %</span>
-<span>MES: {html.escape(rep.mes_source)}</span><span>golden {html.escape(str(m.get('generated_at', '?')))}</span>
+<header><h1>Costing audit · pack {html.escape(pack)} · {verdict}</h1>
+<div class="meta"><span>run {html.escape(str(d.get('generated_at', '?')))}</span><span>tolerance {d.get('tolerance_pct')} %</span>
+<span>MES: {html.escape(str(d.get('mes_source', '?')))}</span><span>golden {html.escape(str(m.get('generated_at', '?')))}</span>
 <span>workbook month {html.escape(str(m.get('workbook_month', '?')))}</span>
 <span>GRP sha256 {html.escape((fp.get('GRP Costings 2018.xlsx') or '?')[:12])}</span>
 <span>PRICE {html.escape((fp.get('PRICE 2017 MARCH.xlsx') or '?')[:12])}</span>
@@ -369,7 +380,10 @@ def write_html(rep: RunReport, path: Path) -> None:
 </section></div>
 <script>window.__AUDIT__ = {data};</script>
 <script>{_JS}</script></body></html>"""
-    Path(path).write_text(doc, encoding="utf-8")
+
+
+def write_html(rep: RunReport, path: Path) -> None:
+    Path(path).write_text(render_html_doc(rep.to_dict()), encoding="utf-8")
 
 
 def write_all(rep: RunReport, out_dir: Path, stem: str | None = None) -> dict[str, Path]:

@@ -107,7 +107,7 @@
       </div>
       {% set is_admin = user and user.role == 'admin' %}
       {% set show_g2 = is_admin %}
-      {% set show_g3 = is_admin or user_can(user, 'menu.customers') or user_can(user, 'menu.import') or user_can(user, 'menu.users') or user_can(user, 'menu.themes') or user_can(user, 'menu.quote_numbering') %}
+      {% set show_g3 = is_admin or user_can(user, 'menu.customers') or user_can(user, 'menu.import') or user_can(user, 'menu.users') or user_can(user, 'menu.themes') or user_can(user, 'menu.quote_numbering') or user_can(user, 'admin.costing_audit') %}
 
       {# ── BODIES ── #}
       {% if is_admin or user_can(user, 'menu.body_templates') %}
@@ -281,6 +281,11 @@
         {% if user_can(user, 'menu.quote_numbering') %}
         <a href="/admin/quote-numbering" class="nav-item {% if '/admin/quote-numbering' in request.url.path %}active{% endif %}">
           <span class="nav-icon">#</span> Quote Numbering
+        </a>
+        {% endif %}
+        {% if user_can(user, 'admin.costing_audit') %}
+        <a href="/admin/costing-audit" data-testid="nav-costing-audit" class="nav-item {% if '/admin/costing-audit' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">✓</span> Costing audit
         </a>
         {% endif %}
         {% if user and (user.username or '')|lower == 'admin' %}

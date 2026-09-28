@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, text as _sa_text, Column, Integer, String, Float, DateTime, Boolean, Text, ForeignKey, Index, UniqueConstraint, event
+from sqlalchemy import create_engine, text as _sa_text, Column, Integer, String, Float, DateTime, Boolean, Text, LargeBinary, ForeignKey, Index, UniqueConstraint, event
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
@@ -588,6 +588,40 @@ class CalculationSalesRepAudit(Base):
     actor_username = Column(String(100), nullable=True)
     created_at     = Column(DateTime(timezone=True), nullable=False,
                             default=lambda: datetime.now(timezone.utc))
+
+
+class CostingAuditRun(Base):
+    """One run of the Excel <-> MES costing audit from Admin -> Costing audit (v1.59,
+    migration 0049). Written ONLY by services/costing_audit_runs, in its own short
+    sessions — the audit itself reads pricing data on a read-only connection.
+
+    status: 'running' -> 'passed' (no unaccepted difference) | 'flagged' | 'failed'
+    report_json_gz: gzip of the report JSON; HTML/CSV are rendered from it on request.
+    started_by is the username snapshot beside the id FK (house audit idiom)."""
+    __tablename__ = "costing_audit_runs"
+    id                  = Column(Integer, primary_key=True)
+    started_at          = Column(DateTime(timezone=True), nullable=False,
+                                 default=lambda: datetime.now(timezone.utc))
+    finished_at         = Column(DateTime(timezone=True), nullable=True)
+    started_by_user_id  = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    started_by          = Column(String(100), nullable=False)
+    pack                = Column(String(32), nullable=False)
+    environment         = Column(String(8), nullable=False)
+    db_name             = Column(String(100), nullable=False)
+    accepted_list       = Column(String(100), nullable=False)
+    golden_fingerprint  = Column(String(64), nullable=True)
+    golden_generated_at = Column(DateTime(timezone=True), nullable=True)
+    tolerance_pct       = Column(Float, nullable=False)
+    status              = Column(String(12), nullable=False)
+    progress_done       = Column(Integer, nullable=False, default=0)
+    progress_total      = Column(Integer, nullable=False, default=0)
+    count_pass          = Column(Integer, nullable=True)
+    count_flag          = Column(Integer, nullable=True)
+    count_accepted      = Column(Integer, nullable=True)
+    count_expired       = Column(Integer, nullable=True)
+    count_unverifiable  = Column(Integer, nullable=True)
+    report_json_gz      = Column(LargeBinary, nullable=True)
+    error               = Column(Text, nullable=True)
 
 
 class ChassisConstant(Base):
@@ -1381,6 +1415,12 @@ PERMISSION_CATALOGUE = [
     # endpoint calls user_can directly): resetting the shared Production Flow floor is a
     # deliberate, journaled admin action (floor_events 'floor_reset'), never a /plan gesture.
     ("admin.floor-reset",           "Admin: Reset the Production Flow floor",         "admin", set()),
+    # v1.59 (BA ruling 2, 27 Sep) — Admin -> Costing audit: run the Excel <-> MES costing
+    # audit on this server's database and read its reports. Seeded {admin} (like
+    # menu.quote_numbering) and grantable to anyone later without code. Enforced
+    # server-side on the page AND every /api/admin/costing-audit endpoint
+    # (routers/costing_audit.py), not only by hiding the menu entry.
+    ("admin.costing_audit",         "Admin: Costing audit (run the Excel <-> MES audit, read its reports)", "admin", {"admin"}),
 ]
 
 

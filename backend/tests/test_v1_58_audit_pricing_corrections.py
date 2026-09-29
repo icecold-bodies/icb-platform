@@ -346,3 +346,49 @@ def test_the_committed_snapshot_is_wholly_before_or_wholly_after_the_corrections
         assert have in (c.current, c.new), f"{c.key}: snapshot has {have!r}"
         (at_current if have == c.current else at_new).append(c.key)
     assert not (at_current and at_new), f"half-applied: {len(at_new)} at new, {len(at_current)} at guard"
+
+
+# ── v1.58.1 Manifest A (the SRD rear-frame rules) ────────────────────────────
+
+MANIFEST_A = _BACKEND.parent / "docs" / "audit" / "srd_rear_frame_2026-09" / "manifest_a.yaml"
+
+
+def test_manifest_a_is_the_prod_scope_and_one_rule_per_body():
+    changes, _sha = PC.load_manifest(MANIFEST_A)
+    assert len(changes) == 120 and len({c.body_id for c in changes}) == 14      # prod discovery 29 Sep
+    assert {c.field for c in changes} == {"bom_conditions"} and {c.current for c in changes} == {None}
+    assert {c.section for c in changes} == {"REAR FRAME & FLOOR PLATE"}
+    per_body = {}
+    for c in changes:
+        per_body.setdefault(c.body_id, set()).add(c.new)
+    assert all(len(v) == 1 for v in per_body.values()), "one rule per body"
+    for bid, (rule,) in per_body.items():
+        conds = json.loads(rule)
+        assert all(x["equals"] == "N" for x in conds)                           # "not selected" only
+        names = sorted(x["option"] for x in conds)
+        assert names == (["SRD"] if bid == 27 else ["SRD EPS", "SRD PU"]), (bid, names)
+
+
+def test_manifest_a_names_real_lines_and_the_snapshot_is_wholly_before_or_after():
+    """The 12 audited bodies are in the committed prod snapshot: every entry there names its real line
+    (prod name first in `body:`), and the snapshot carries either NO rule on all of them (before the
+    prod apply) or exactly the manifest's rule on all of them (after the close-step regeneration)."""
+    snap = json.loads(SNAPSHOT.read_text(encoding="utf-8"))["tables"]
+    bom = {r["id"]: r for r in snap["bill_of_materials"]}
+    tt = {r["id"]: r["name"] for r in snap["trailer_types"]}
+    mat = {r["id"]: r["name"] for r in snap["materials"]}
+    changes, _sha = PC.load_manifest(MANIFEST_A)
+    in_snap = [c for c in changes if c.bom_id in bom]
+    assert len(in_snap) == 102                                                  # the 12 audited bodies
+    before, after = [], []
+    for c in in_snap:
+        r = bom[c.bom_id]
+        assert (r["trailer_type_id"], tt[r["trailer_type_id"]], r["bom_section"], mat[r["material_id"]]) \
+            == (c.body_id, c.bodies[0], c.section, c.line), c.key
+        if PC._same(c.field, r["bom_conditions"], c.current):
+            before.append(c.key)
+        elif PC._same(c.field, r["bom_conditions"], c.new):
+            after.append(c.key)
+        else:
+            pytest.fail(f"{c.key}: snapshot carries {r['bom_conditions']!r}")
+    assert not (before and after), f"half-applied: {len(after)} at the rule, {len(before)} without"

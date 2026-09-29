@@ -32,7 +32,7 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import _DEFAULT_BASE, admin_session, shot  # noqa: E402
+from _common import _DEFAULT_BASE, admin_session, clear_calculator_ratio, shot  # noqa: E402
 
 T = 20_000
 JOURNEY = "repair_categories"
@@ -64,6 +64,11 @@ def _purge(db) -> None:
     db.execute(text(
         "DELETE FROM icb_costings.bill_of_materials b USING icb_costings.trailer_types t "
         "WHERE b.trailer_type_id = t.id AND t.name LIKE 'J150P3%'"))
+    # A run that fails mid-way can leave the calculator's configurator draft for
+    # the marker body behind; its FK then aborts this purge and every later run.
+    db.execute(text(
+        "DELETE FROM icb_costings.configurator_drafts d USING icb_costings.trailer_types t "
+        "WHERE d.trailer_type_id = t.id AND t.name LIKE 'J150P3%'"))
     db.execute(text("DELETE FROM icb_costings.trailer_types WHERE name LIKE 'J150P3%'"))
     db.execute(text("DELETE FROM icb_costings.customers WHERE name LIKE 'J150P3%'"))
     db.execute(text("DELETE FROM icb_costings.bom_sections WHERE name LIKE 'J150P3%'"))
@@ -210,7 +215,7 @@ def test_pull_a_category_save_a_template_and_reuse_it(page: Page, p3_body) -> No
     expect(page.locator("#f-repair-hei")).to_have_value("2.3")
 
     # Deterministic money: no ratio, no margin.
-    page.select_option("#f-ratio", "")
+    clear_calculator_ratio(page)
     page.fill("#f-margin", "0")
 
     # ── "+ From body category" → SIDES → preview.
@@ -349,7 +354,7 @@ def test_pull_a_category_save_a_template_and_reuse_it(page: Page, p3_body) -> No
     expect(page.locator("#modal-line-pick")).to_have_class(re.compile(r"\bhidden\b"), timeout=T)
     expect(page.locator("#repair-lines-body tr")).to_have_count(3, timeout=T)
     expect(page.locator("#repair-lines-body")).to_contain_text("275")
-    page.select_option("#f-ratio", "")
+    clear_calculator_ratio(page)
     page.fill("#f-margin", "0")
     # Each line at its template default qty × today's price: the panel at 100,
     # the glue (qty 1 — the stock picker's default) at the moved 275, labour at

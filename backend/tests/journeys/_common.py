@@ -227,6 +227,26 @@ def admin_session(page: "Page", base: str = _DEFAULT_BASE) -> "Page":
     return page
 
 
+def clear_calculator_ratio(page: "Page", timeout: int = 20_000) -> None:
+    """Set the calculator's ratio to "— None —" and make it STAY there.
+
+    v1.59.1: the calculator's init is async (five API loads, then the last
+    session) and ENDS with ``defaultNewRatio()``, which puts 55 % on an EMPTY
+    ratio select. ``#trailer-select`` is visible long before that, so a journey
+    that clears the ratio straight after the page loads can be overtaken: init
+    finishes, sees the empty select and puts 55 % back — the total then comes out
+    at 1/0.55 of the expected figure (Windows CI, 28 Sep: 3136.36 vs 1725.00).
+
+    A fresh calculator always leaves init with a NON-empty ratio (the last
+    session's, or the 55 % default), so wait for that first — then clear it.
+    """
+    from playwright.sync_api import expect
+    ratio = page.locator("#f-ratio")
+    expect(ratio).not_to_have_value("", timeout=timeout)
+    page.select_option("#f-ratio", "")
+    expect(ratio).to_have_value("")
+
+
 # ── Per-role journeys (WO v4.29 §3.6) ────────────────────────────────────────
 # The journey server boots with MES_DEMO_AUTOLOGIN_USER=admin, but the autologin endpoint accepts an
 # optional `username` (demo-mode only, origin-guarded) so a single server boot can mint any role per

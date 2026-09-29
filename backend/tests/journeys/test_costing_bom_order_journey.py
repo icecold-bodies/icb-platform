@@ -24,7 +24,7 @@ import os
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import _DEFAULT_BASE, admin_session, shot  # noqa: E402
+from _common import _DEFAULT_BASE, admin_session, clear_calculator_ratio, shot  # noqa: E402
 
 T = 20_000
 JOURNEY = "costing_bom_order"
@@ -87,7 +87,7 @@ def test_the_costing_page_lists_the_bom_in_the_calculator_order(page: Page, body
     page.goto("/mes/calculator?stay=1")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     page.select_option("#trailer-select", str(body["tt"]))
-    page.select_option("#f-ratio", "")
+    clear_calculator_ratio(page)
     lines = page.locator("#bom-area tr.calc-grp-row[data-bom-id]")
     expect(lines).to_have_count(4, timeout=T)
     expect(page.locator("#approve-btn")).to_be_enabled(timeout=T)

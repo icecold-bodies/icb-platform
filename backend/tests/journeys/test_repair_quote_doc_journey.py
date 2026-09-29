@@ -27,7 +27,7 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import _DEFAULT_BASE, admin_session, shot  # noqa: E402
+from _common import _DEFAULT_BASE, admin_session, clear_calculator_ratio, shot  # noqa: E402
 
 T = 20_000
 JOURNEY = "repair_quote_doc"
@@ -121,7 +121,7 @@ def test_the_quote_reads_as_typed_and_the_board_shows_its_r_number(
     expect(page.locator("#repair-add-source")).to_be_visible(timeout=T)
 
     # Deterministic money: no ratio, no margin.
-    page.select_option("#f-ratio", "")
+    clear_calculator_ratio(page)
     page.fill("#f-margin", "0")
 
     # ── the case of what is typed ────────────────────────────────────────────

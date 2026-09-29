@@ -32,7 +32,7 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import _DEFAULT_BASE, admin_session, role_session, shot  # noqa: E402
+from _common import _DEFAULT_BASE, admin_session, clear_calculator_ratio, role_session, shot  # noqa: E402
 
 T = 20_000
 JOURNEY = "capture_for_user"
@@ -163,7 +163,7 @@ def _start_repair(page: Page, customer_id: int) -> None:
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     page.select_option("#trailer-select", "repair")
     expect(page.locator("#repair-add-source")).to_be_visible(timeout=T)
-    page.select_option("#f-ratio", "")
+    clear_calculator_ratio(page)
     page.fill("#f-margin", "0")
     _add_free_hand(page, "Panel labour", "2", "300")
     expect(page.locator("#repair-lines-body tr")).to_have_count(1, timeout=T)

@@ -6294,6 +6294,21 @@ function _markSavedOnce() {
 }
 
 // Per-section "show hidden lines" toggle state, keyed by trailer id. Tracks
+// v1.59.1 (Michael, 28 Sep) — "NOT SELECTED" section header. A NON-optional
+// section with at least one line, where EVERY line was switched off by a
+// failed rule condition (excluded_by === 'condition' — never by the user, never
+// because an optional section is off), shows NOT SELECTED in place of R0.00.
+// Decided by mechanism, not by section name: any section whose rules all
+// switch off gets it. Display only — the section total stays a numeric 0 in
+// every payload, snapshot and export.
+const NOT_SELECTED_TIP = 'Nothing in this section is costed with the options chosen. Click the eye to see the lines.';
+const NOT_SELECTED_LABEL_HTML = `<span class="calc-hdr-not-selected" title="${NOT_SELECTED_TIP}" style="float:right;font-family:var(--font-mono);font-size:10px;color:var(--text-dim);font-weight:600;letter-spacing:1px">NOT SELECTED</span>`;
+function sectionNotSelected(its) {
+  if (!Array.isArray(its) || !its.length) return false;
+  return its.every(x => x && !x.section_is_optional && x.excluded && x.excluded_by === 'condition');
+}
+if (typeof window !== 'undefined') window.sectionNotSelected = sectionNotSelected;
+
 // which sections currently show their soft-excluded (condition-failed) rows.
 function _calcHiddenKey(tid) { return `bom_show_hidden_${tid}`; }
 function _loadShowHidden(tid) {
@@ -6494,7 +6509,10 @@ function renderBOMWithCosts(items, bomRef) {
       return s + (it.line_cost || 0) / mult;
     }, 0);
     const catTotal    = _catTotal;
-    const subtotalTxt = hasFullCostAccess ? fmt(catTotal) : '••••';
+    // v1.59.1 — a section whose rules have switched every line off reads
+    // NOT SELECTED instead of R0.00 (display only: catTotal stays a number).
+    const _notSelected = sectionNotSelected(its);
+    const subtotalTxt = _notSelected ? '' : (hasFullCostAccess ? fmt(catTotal) : '••••');
 
     // Formula-presence dots: count items in this section linked to each formula type
     const fc = { skin: 0, tape: 0, floor: 0, cleat: 0 };
@@ -6584,7 +6602,7 @@ function renderBOMWithCosts(items, bomRef) {
       <td colspan="4" style="padding:6px 8px;background:var(--bg-panel)">
         ${_optToggle}<span class="grp-chevron" style="font-size:10px;margin-right:5px;color:var(--text-dim)">${collapsed ? '▶' : '▼'}</span>
         <span class="calc-hdr-name" style="font-family:var(--font-mono);font-size:10px;color:${_hdrColor};letter-spacing:1px;text-transform:uppercase">${escHtml(cat)}</span><span style="font-family:var(--font-sans);font-size:10px;color:rgba(230,237,243,.55);margin-left:8px;letter-spacing:.2px;text-transform:none">— click on item for detail</span>${_bulkBtn}${_fhBtn}${formulaDots}${formulaErrorBadge}${eyeBtn}
-        <span class="calc-hdr-sub" style="float:right;font-family:var(--font-mono);font-size:11px;color:${_hdrColor};font-weight:600;${collapsed ? '' : 'display:none'}">${subtotalTxt}</span>
+        <span class="calc-hdr-sub" style="float:right;font-family:var(--font-mono);font-size:11px;color:${_hdrColor};font-weight:600;${collapsed ? '' : 'display:none'}">${subtotalTxt}</span>${_notSelected ? NOT_SELECTED_LABEL_HTML : ''}
       </td></tr>`;
 
     its.forEach(it => {

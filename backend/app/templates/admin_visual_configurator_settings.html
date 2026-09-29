@@ -677,6 +677,28 @@
     gap: 8px;
     align-items: center;
   }
+  /* v1.59.1 — a saved condition from outside this branch: shown, kept, read-only. */
+  .vs-rule-row.vs-rule-row-kept {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+  }
+  .vs-rule-kept-text {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .vs-rule-kept-note {
+    display: block;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .vs-rule-kept-confirm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .vs-btn.vs-btn-danger { border-color: var(--red); color: var(--red); }
   .vs-rule-when {
     color: var(--text-dim);
     font-size: 11px;
@@ -1525,6 +1547,11 @@ function ItemRuleEditor({ editor, onSave, onClose, saving }) {
   const options = editor?.options || [];
   const initialRule = editor?.rule || { conditions: [], mode: 'include' };
   const optionValues = useMemo(() => new Set(options.map(option => option.value)), [options]);
+  // v1.59.1 — a saved condition whose flag is not on offer in this branch (e.g.
+  // SRD PU on a REAR FRAME line) is KEPT exactly as stored: it rides in the same
+  // list, in its stored position, rendered read-only, and is only ever removed
+  // by a deliberate click. The editor never substitutes a flag for it.
+  const isKept = (condition) => !optionValues.has(condition.option);
   const missingSavedOptions = useMemo(
     () => (initialRule.conditions || []).filter(condition => !optionValues.has(condition.option)),
     [initialRule.conditions, optionValues],
@@ -1537,23 +1564,15 @@ function ItemRuleEditor({ editor, onSave, onClose, saving }) {
         : 'always_include';
 
   const [mode, setMode] = useState(initialMode);
-  const [conditions, setConditions] = useState(() => {
-    const available = (initialRule.conditions || []).filter(condition => optionValues.has(condition.option));
-    return available.length ? available : [...(initialRule.conditions || [])];
-  });
+  // Every saved condition, in stored order — in-branch AND kept ones.
+  const [conditions, setConditions] = useState(() => [...(initialRule.conditions || [])]);
+  const [confirmRemove, setConfirmRemove] = useState(null);   // index awaiting the ✕ confirm
 
-  useEffect(() => {
-    if (mode !== 'include_when' && mode !== 'exclude_when') return;
-    if (!options.length) return;
-    setConditions(current => {
-      const filtered = current.filter(condition => optionValues.has(condition.option));
-      if (filtered.length) return filtered;
-      return [{ option: options[0].value, equals: current[0]?.equals || 'Y' }];
-    });
-  }, [mode, optionValues, options]);
-
+  // A starter condition only ever goes into an EMPTY rule (a fresh "Only
+  // include when..." pick). A rule that already has conditions never gets one.
   const pickMode = (nextMode) => {
     setMode(nextMode);
+    setConfirmRemove(null);
     if (nextMode === 'always_include' || nextMode === 'always_exclude') {
       setConditions([]);
     } else if (!conditions.length && options.length) {
@@ -1562,7 +1581,8 @@ function ItemRuleEditor({ editor, onSave, onClose, saving }) {
   };
 
   const showsRules = mode === 'include_when' || mode === 'exclude_when';
-  const submitDisabled = !item || (showsRules && (!options.length || !conditions.length));
+  const keptCount = conditions.filter(isKept).length;
+  const submitDisabled = !item || (showsRules && !conditions.length);
 
   const submit = async () => {
     let nextMode = 'include';
@@ -1622,21 +1642,40 @@ function ItemRuleEditor({ editor, onSave, onClose, saving }) {
           </div>
 
           {showsRules ? (
-            options.length ? (
+            options.length || keptCount ? (
               <div className="vs-rule-scope-list">
                 {missingSavedOptions.length ? (
                   <div className="vs-notice" style={{marginBottom:0}}>
-                    Saved rule references not found in this explorer branch were removed from the picker. Please remap them to current flags or conditions.
+                    Saved rule references not found in this explorer branch were kept. They still apply and are listed read-only below.
                   </div>
                 ) : null}
-                {conditions.map((condition, index) => (
+                {conditions.map((condition, index) => isKept(condition) ? (
+                  <div key={index} className="vs-rule-row vs-rule-row-kept" data-kept-option={condition.option}>
+                    <span className="vs-rule-when">{index === 0 ? 'when' : 'and'}</span>
+                    <span className="vs-rule-kept-text">
+                      <strong>{condition.option}</strong> is {condition.equals === 'N' ? 'not selected' : 'selected'} — kept (outside this branch)
+                      <span className="vs-rule-kept-note">This condition uses a flag from another part of the tree. It still applies; edit it with the tool or ask the administrator.</span>
+                    </span>
+                    {confirmRemove === index ? (
+                      <span className="vs-rule-kept-confirm">
+                        Remove it?
+                        <button className="vs-btn vs-btn-danger" onClick={() => { setConditions(conditions.filter((_, i) => i !== index)); setConfirmRemove(null); }}>Remove</button>
+                        <button className="vs-btn" onClick={() => setConfirmRemove(null)}>Keep</button>
+                      </span>
+                    ) : (
+                      <button className="vs-icon-btn vs-rule-kept-remove" title="Remove this condition (asks first)" onClick={() => setConfirmRemove(index)}>✕</button>
+                    )}
+                  </div>
+                ) : (
                   <div key={index} className="vs-rule-row">
                     <span className="vs-rule-when">{index === 0 ? 'when' : 'and'}</span>
                     <select
                       value={condition.option}
                       onChange={(event) => {
                         const next = [...conditions];
-                        next[index] = { ...condition, option: event.target.value };
+                        // A different flag is a different condition: drop the old
+                        // flag's option_id so the server re-anchors the new one.
+                        next[index] = { option: event.target.value, equals: condition.equals };
                         setConditions(next);
                       }}
                     >
@@ -1658,17 +1697,19 @@ function ItemRuleEditor({ editor, onSave, onClose, saving }) {
                       <option value="Y">selected</option>
                       <option value="N">not selected</option>
                     </select>
-                    <button className="vs-icon-btn" onClick={() => setConditions(conditions.filter((_, i) => i !== index))}>X</button>
+                    <button className="vs-icon-btn" onClick={() => { setConfirmRemove(null); setConditions(conditions.filter((_, i) => i !== index)); }}>X</button>
                   </div>
                 ))}
-                <div className="vs-rule-actions" style={{justifyContent:'flex-start'}}>
-                  <button
-                    className="vs-btn"
-                    onClick={() => setConditions([...conditions, { option: options[0].value, equals: 'Y' }])}
-                  >
-                    Add condition
-                  </button>
-                </div>
+                {options.length ? (
+                  <div className="vs-rule-actions" style={{justifyContent:'flex-start'}}>
+                    <button
+                      className="vs-btn"
+                      onClick={() => setConditions([...conditions, { option: options[0].value, equals: 'Y' }])}
+                    >
+                      Add condition
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div className="vs-notice" style={{marginBottom:0}}>
@@ -2448,7 +2489,13 @@ function App() {
       item,
       categoryNodeId: categoryNodeId || null,
       options,
-      rule: itemRuleState(draft, item.id, item),
+      // v1.59.1 — open the rule the DATABASE holds (the categories endpoint's
+      // live copy). The draft's itemRules is only written by this editor, so a
+      // rule written by a tool or another screen would otherwise open stale and
+      // be overwritten on Save.
+      rule: Array.isArray(item?.conditions)
+        ? { conditions: item.conditions, mode: item.conditionMode || 'include' }
+        : itemRuleState(draft, item.id, item),
     });
   }
 

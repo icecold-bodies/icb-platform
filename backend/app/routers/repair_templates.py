@@ -166,6 +166,7 @@ async def repair_category_preview(request: Request, db: Session = Depends(get_db
         # included, so nothing arrives pre-excluded.
         it["excluded"] = False
         it["excluded_reason"] = None
+        it["excluded_by"] = None
         picked.append(it)
 
     mat_by_bom = {row.id: row.material_id for row in bom_rows}

@@ -378,6 +378,7 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
             if row.is_body_option:
                 continue
             _excluded_reason = "Excluded by user" if row.id in user_excluded_set else None
+            _excluded_by = "user" if _excluded_reason is not None else None
             cat = row.bom_section or (mat.category.name if mat.category else "Uncategorised")
             if excluded_categories and cat in excluded_categories:
                 continue
@@ -410,6 +411,7 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
                 sid = row.bom_section_id
                 if sid is None or int(sid) not in optional_sections_enabled_set:
                     _excluded_reason = "Optional section not enabled"
+                    _excluded_by = "optional_section"
             bom_items.append({
                 "bom_id":             row.id,
                 "material_name":      mat.name,
@@ -433,6 +435,7 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
                 "mounting_cleat_name": row.mounting_cleat.name if row.mounting_cleat else None,
                 "excluded":            _excluded_reason is not None,
                 "excluded_reason":     _excluded_reason,
+                "excluded_by":         _excluded_by,
             })
             continue
 
@@ -469,10 +472,16 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
             #    it to the BOM as a struck-through line so the user can see
             #    what *would* render if they toggled the relevant flag.
             _excluded_reason = None
+            _excluded_by = None
             if not _eval_bom_conditions(row.bom_conditions, selected_opt_names):
                 _excluded_reason = _describe_failed_condition(row.bom_conditions, selected_opt_names)
+                # v1.59.1 — WHY a line is out, as a machine field (the reason
+                # text is for people). A failed condition wins over a user or
+                # optional-section exclusion, exactly as the reason text does.
+                _excluded_by = "condition"
         else:
             _excluded_reason = None
+            _excluded_by = None
 
         # Section-level DRD/SRD pre-filter (runs BEFORE per-line gates) —
         # mirrors the same fix in calculator.js getBomWithSelectedOptions.
@@ -557,10 +566,12 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
         # cost engine zeroes its line_cost.
         if row.id in user_excluded_set and _excluded_reason is None:
             _excluded_reason = "Excluded by user"
+            _excluded_by = "user"
         if is_opt and _excluded_reason is None:
             sid = row.bom_section_id
             if sid is None or int(sid) not in optional_sections_enabled_set:
                 _excluded_reason = "Optional section not enabled"
+                _excluded_by = "optional_section"
         bom_items.append({
             "bom_id":             row.id,
             "material_name":      mat.name,
@@ -587,6 +598,7 @@ def _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_categ
             # calculate_bom skips its cost math (qty / line_cost forced to 0).
             "excluded":            _excluded_reason is not None,
             "excluded_reason":     _excluded_reason,
+            "excluded_by":         _excluded_by,
         })
     return bom_items
 

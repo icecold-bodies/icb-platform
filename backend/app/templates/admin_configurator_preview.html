@@ -2705,8 +2705,13 @@ function ConditionEditor({ item, options, onSave, onClose }) {
                 <div key={idx} className="cfg-cond-row">
                   <span className="when">{idx === 0 ? 'when' : 'and'}</span>
                   <select value={c.option} onChange={(e) => {
-                    const next = [...conds]; next[idx] = {...c, option: e.target.value}; setConds(next);
+                    // v1.59.1 — a new flag is a new condition: drop the old flag's
+                    // option_id so the server re-anchors it by name.
+                    const next = [...conds]; next[idx] = {option: e.target.value, equals: c.equals}; setConds(next);
                   }}>
+                    {/* v1.59.1 — a saved flag this body does not offer is shown as
+                        itself, never as the first option, and saves back unchanged. */}
+                    {!options.includes(c.option) && <option value={c.option}>{c.option} (kept)</option>}
                     {options.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                   <span className="when">is</span>

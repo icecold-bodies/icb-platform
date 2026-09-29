@@ -222,6 +222,96 @@ def test_the_manifest_refuses_noops_duplicates_and_unknown_fields(tmp_path):
         PC.load_manifest(_manifest(tmp_path, [_entry(ids, "srd", "material_id", 1, 2)]))
 
 
+# ── v1.58.1: bom_conditions (the SRD rear-frame rule) ────────────────────────
+
+RULE = [{"option": "SRD EPS", "equals": "N", "option_id": 9001},
+        {"option": "SRD PU", "equals": "N", "option_id": 9002}]
+RULE_TEXT = '[{"option": "SRD EPS", "equals": "N", "option_id": 9001}, ' \
+            '{"option": "SRD PU", "equals": "N", "option_id": 9002}]'
+
+
+def _rule_entries(ids):
+    return [_entry(ids, "srd", "bom_conditions", None, RULE),
+            _entry(ids, "floor", "bom_conditions", None, RULE)]
+
+
+def _set_conditions(ids, which, text):
+    from app.database import engine
+    with engine.begin() as c:
+        c.execute(sa.text("UPDATE bill_of_materials SET bom_conditions=:v WHERE id=:i"),
+                  {"v": text, "i": ids[which]})
+
+
+def test_conditions_apply_stores_the_endpoint_text_and_a_second_apply_is_a_noop(body, tmp_path, capsys):
+    m = _manifest(tmp_path, _rule_entries(body))
+    assert _run("--manifest", str(m), "--apply", "--out-dir", str(tmp_path)) == 0
+    after = _rows(body)
+    # byte-for-byte what PATCH /api/configurator/items/{id}/conditions writes (json.dumps)
+    assert [r["bom_conditions"] for r in after["rows"]] == [RULE_TEXT, RULE_TEXT]
+    assert after["history"] == 0                                  # not a price: no trail row
+    assert [r["price_updated_at"] for r in after["rows"]][1] is None
+    capsys.readouterr()
+    assert _run("--manifest", str(m), "--apply", "--out-dir", str(tmp_path)) == 0
+    assert "0 to apply, 2 already applied" in capsys.readouterr().out
+    assert _rows(body) == after
+    assert len(_journals(tmp_path)) == 1
+
+
+def test_conditions_revert_is_byte_exact(body, tmp_path):
+    before = _rows(body)
+    m = _manifest(tmp_path, _rule_entries(body))
+    assert _run("--manifest", str(m), "--apply", "--out-dir", str(tmp_path)) == 0
+    assert _rows(body) != before
+    [j] = _journals(tmp_path)
+    assert _run("--revert", str(j), "--out-dir", str(tmp_path)) == 0
+    assert _rows(body) == before                                  # NULL again, every other column untouched
+
+
+def test_conditions_guard_compares_canonical_json(body, tmp_path, capsys):
+    # the same rule stored with other key order + spacing counts as ALREADY APPLIED, not a mismatch
+    _set_conditions(body, "srd", '[{"equals":"N","option_id":9001,"option":"SRD EPS"},'
+                                 '{"option_id":9002,"option":"SRD PU","equals":"N"}]')
+    m = _manifest(tmp_path, _rule_entries(body))
+    assert _run("--manifest", str(m), "--out-dir", str(tmp_path)) == 0
+    assert "1 to apply, 1 already applied" in capsys.readouterr().out
+
+
+def test_a_conditions_guard_mismatch_aborts_the_whole_apply(body, tmp_path, capsys):
+    # someone saved a DIFFERENT rule on one line (the editor's replace-on-save: FRONT EPS = N)
+    _set_conditions(body, "floor", '[{"option": "FRONT EPS", "equals": "N"}]')
+    before = _rows(body)
+    m = _manifest(tmp_path, _rule_entries(body))
+    assert _run("--manifest", str(m), "--apply", "--out-dir", str(tmp_path)) == 2
+    out = capsys.readouterr().out
+    assert "GUARD" in out and "FRONT EPS" in out and "Nothing written" in out
+    assert _rows(body) == before                                  # the srd line was NOT written either
+    assert _journals(tmp_path) == []
+
+
+def test_body_may_list_the_dev_and_prod_names(body, tmp_path, capsys):
+    e = _rule_entries(body)
+    for x in e:
+        x["body"] = ["ICECREAM BODY LARGE", BODY]                 # prod name, dev name
+    assert _run("--manifest", str(_manifest(tmp_path, e)), "--out-dir", str(tmp_path)) == 0
+    for x in e:
+        x["body"] = ["ICECREAM BODY LARGE", "ICECREAM 4.9 UP"]    # neither is this body
+    before = _rows(body)
+    assert _run("--manifest", str(_manifest(tmp_path, e)), "--apply", "--out-dir", str(tmp_path)) == 2
+    assert "identity mismatch" in capsys.readouterr().out
+    assert _rows(body) == before
+
+
+def test_the_manifest_refuses_a_malformed_rule(tmp_path):
+    ids = {"tid": 1, "srd": 2, "floor": 3}
+    for bad in ([{"option": "SRD PU", "equals": "X"}], [{"equals": "N"}], {"mode": "include"}, "not json"):
+        with pytest.raises(SystemExit):
+            PC.load_manifest(_manifest(tmp_path, [_entry(ids, "srd", "bom_conditions", None, bad)]))
+    # a rule that equals its guard canonically is a no-op entry
+    with pytest.raises(SystemExit):
+        PC.load_manifest(_manifest(tmp_path, [_entry(ids, "srd", "bom_conditions",
+                                                     json.dumps(RULE, indent=1), RULE)]))
+
+
 # ── the committed manifest ───────────────────────────────────────────────────
 
 def _committed():

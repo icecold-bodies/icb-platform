@@ -1,0 +1,28 @@
+== prod: db=icb_platform alembic=0048 code=6b77d52 mode=verify target=de74796 2026-09-28T15:26:59+02:00
+== code + schema
+   FAIL HEAD = '6b77d52bfb11428ae5a72390a60ce1f4afaefbab' (want de74796bd22070e59876572a49c8b39b804c75b9)
+   FAIL ALEMBIC = '0048' (want 0049)
+   FAIL TABLE = '0' (want 1)
+   FAIL INDEXES = '0' (want 2)
+   FAIL PERMISSION = '0' (want 1)
+   FAIL ADMIN_GRANT = '0' (want 1)
+== service
+   PASS ACTIVE = active
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS HEALTH = 200
+   FAIL PYYAML = 'missing' (want 6.0.2)
+   FAIL TOOL_IMPORT = 'ModuleNotFoundError: No module named 'tools.costing_audit'' (want ok)
+== the page is live and gated (unauthenticated probes)
+   FAIL OPENAPI_LOCAL_MISSING = '/admin/costing-audit /api/admin/costing-audit/overview /api/admin/costing-audit/runs /api/admin/costing-audit/runs/{run_id} /api/admin/costing-audit/runs/{run_id}/changes /api/admin/costing-audit/runs/{run_id}/report' (want )
+   FAIL OPENAPI_LAN_MISSING = '/admin/costing-audit /api/admin/costing-audit/overview /api/admin/costing-audit/runs /api/admin/costing-audit/runs/{run_id} /api/admin/costing-audit/runs/{run_id}/changes /api/admin/costing-audit/runs/{run_id}/report' (want )
+   PASS OPENAPI_DOORS_EQUAL = yes
+   FAIL PAGE_UNAUTH = '404' (want ~^(301|302|303|307|401|403)$)
+   FAIL API_UNAUTH = '404' (want ~^(401|403)$)
+== served bytes (static + SPA untouched by this range)
+   PASS CALC_LOCAL = d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90
+   PASS CALC_LAN = d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+
+######## VERIFY: 12 check(s) failed — tell the CA: /tmp/icb-release-v1.59.0/out-verify-20260928-152659

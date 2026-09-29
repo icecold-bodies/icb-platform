@@ -1,0 +1,36 @@
+== prod: db=icb_platform alembic=0048 code=6b77d52 mode=preflight target=de74796 2026-09-28T15:26:46+02:00
+== anchors
+   PASS ALEMBIC = 0048
+   PASS HEAD = 6b77d52bfb11428ae5a72390a60ce1f4afaefbab
+   PASS TRACKED_CLEAN = 0
+== served bytes (expected from the target tree: calculator.js is the same blob at 6b77d52bfb11428ae5a72390a60ce1f4afaefbab and de74796bd22070e59876572a49c8b39b804c75b9)
+   PASS CALC_LOCAL = d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90
+   PASS CALC_LAN = d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90
+   PASS SPA_DISK_NAME = assets/index-Be8qL-PA.js
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   SPA bundle assets/index-Be8qL-PA.js sha256 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (frontend/ unchanged in the range: the deploy must leave it as is)
+   PASS HEALTH = 200
+== PyYAML (v1.59 needs it in prod's venv)
+   venv python: Python 3.12.3   venv owner: icb
+   import yaml -> missing
+   pip --dry-run PyYAML==6.0.2:
+      Collecting PyYAML==6.0.2
+        Downloading PyYAML-6.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+      Would install PyYAML-6.0.2
+   pip --dry-run -r the target requirements.txt (report only; the deploy installs PyYAML alone):
+      Would install PyYAML-6.0.2
+== backup location
+   PASS BACKUP_DIR = writable
+   free space: /dev/mapper/ubuntu--vg-ubuntu--lv   98G  9.7G   84G  11% /
+   latest backups:
+      total 35988
+      -rw------- 1 root     postgres 1149243 Sep 28 02:30 icb_platform_20260928-0230.dump.gz
+      -rw------- 1 root     postgres 1148907 Sep 27 02:30 icb_platform_20260927-0230.dump.gz
+      -rw------- 1 root     postgres 1148644 Sep 26 02:30 icb_platform_20260926-0230.dump.gz
+== deploy tooling on prod
+   PASS DEPLOY_SCRIPT = present
+   PASS ICB_SUDO = nopasswd
+   deploy record: completed 6b77d52bfb11428ae5a72390a60ce1f4afaefbab (owner icb)
+
+######## PREFLIGHT PASSED — tell the CA: /tmp/icb-release-v1.59.0/out-preflight-20260928-152646

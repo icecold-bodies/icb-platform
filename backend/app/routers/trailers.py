@@ -188,9 +188,13 @@ async def duplicate_trailer(tt_id: int, request: Request, db: Session = Depends(
 
 @router.get("/api/trailers/{tt_id}/bom")
 async def get_bom(tt_id: int, db: Session = Depends(get_db)):
+    # v1.59.1 — ORDER BY (sort_order, id) so the stable sort below breaks
+    # sort_order ties by id, not by heap order (an edited row otherwise jumps
+    # within its tied group — the repair-category preview flake's mechanism).
     bom_rows = (db.query(BillOfMaterial)
                 .filter_by(trailer_type_id=tt_id)
-                .options(*_bom_load_options()).all())
+                .options(*_bom_load_options())
+                .order_by(BillOfMaterial.sort_order, BillOfMaterial.id).all())
     section_order = get_section_snapshot().order
     def _sec_key(r):
         name = r.bom_section or (r.material.category.name if r.material and r.material.category else "")

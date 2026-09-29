@@ -29,7 +29,7 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import _DEFAULT_BASE, admin_session, shot  # noqa: E402
+from _common import _DEFAULT_BASE, admin_session, clear_calculator_ratio, shot  # noqa: E402
 
 T = 20_000
 JOURNEY = "free_hand_repairs"
@@ -229,7 +229,7 @@ def test_free_hand_optional_extra_raises_the_total(page: Page, laneC_body) -> No
     # Pin the ratio to None. #grand-total is the SELLING price, so with a ratio
     # selected the headline moves by qty × price ÷ ratio; the R900 the WO asks us
     # to prove is the materials movement, which is what "no ratio" shows.
-    page.select_option("#f-ratio", "")
+    clear_calculator_ratio(page)
 
     # Opt the OPTIONAL section in first — an optional section is OFF until ticked,
     # and this lane deliberately did not change that flag logic.
@@ -328,7 +328,7 @@ def test_repairs_surface_creates_a_schedulable_repair(page: Page, laneC_body) ->
     expect(page.locator("#repair-doc-number")).to_contain_text(
         "issued when the repair is saved")
 
-    page.select_option("#f-ratio", "")          # deterministic start; set below
+    clear_calculator_ratio(page)          # deterministic start; set below
     page.fill("#f-repair-type", "Side panel replacement")
     page.fill("#f-repair-scope", "Strip damaged panel, fit new panel, laminate joints.")
 
@@ -498,7 +498,7 @@ def test_normal_body_costing_is_unaffected(page: Page, laneC_body) -> None:
     # Same section-cache race as (a): until the server sees the section as
     # optional its rows are INCLUDED, and the plain-body total would read 1120.
     _wait_for_optional_section(page, laneC_body["tt"], laneC_body["opt_sec"])
-    page.select_option("#f-ratio", "")   # headline == materials, so the number is checkable
+    clear_calculator_ratio(page)   # headline == materials, so the number is checkable
     _settle(page)                        # the ratio change re-costs on the 700 ms debounce
 
     # No free-hand rows, no repair chrome — and the body inputs are all present.
@@ -543,7 +543,7 @@ def test_a_free_hand_line_costs_on_its_own_without_selecting_the_section(
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     _select_body(page, laneC_body["tt"])
     _wait_for_optional_section(page, laneC_body["tt"], laneC_body["opt_sec"])
-    page.select_option("#f-ratio", "")
+    clear_calculator_ratio(page)
     _settle(page)
 
     # Section OFF — its real rows (2 x R60 = R120) are not in the total.
@@ -586,7 +586,7 @@ def test_deselect_all_leaves_the_section_selectable(page: Page, laneC_body) -> N
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     _select_body(page, laneC_body["tt"])
     _wait_for_optional_section(page, laneC_body["tt"], laneC_body["opt_sec"])
-    page.select_option("#f-ratio", "")
+    clear_calculator_ratio(page)
     _settle(page)
     baseline = _grand_total(page)
 

@@ -111,6 +111,14 @@ def _hdr(page: Page, section: str):
     return page.locator(f"tr.calc-grp-hdr[data-cat-name='{section}']").first
 
 
+def _toggle(hdr) -> None:
+    """Collapse/expand via the chevron at the row's left edge. A bare row click
+    lands on the row CENTRE, which (depending on viewport width and font
+    metrics) can be the eye toggle -- that switched the eye on and failed
+    ubuntu CI on the first push."""
+    hdr.locator(".grp-chevron").click()
+
+
 def test_all_ruled_out_section_reads_not_selected(page: Page, live_server: str, staged) -> None:
     admin_session(page, base=live_server)
     page.goto("/calculator")
@@ -145,7 +153,8 @@ def test_all_ruled_out_section_reads_not_selected(page: Page, live_server: str, 
 
     # 2. The eye still shows the hidden lines, struck through. Expand first
     # (collapsed sections hide every row), then switch the eye on.
-    ruled.click()
+    _toggle(ruled)
+    expect(ruled).not_to_have_class(re.compile(r"collapsed"))
     expect(page.locator(f"tr.calc-grp-row[data-bom-id='{staged['ruled_a']}']")).to_have_count(0)
     eye = ruled.locator("span[title='Show 2 excluded lines']")
     expect(eye).to_be_visible()
@@ -169,6 +178,6 @@ def test_all_ruled_out_section_reads_not_selected(page: Page, live_server: str, 
     ruled = _hdr(page, RULED)
     expect(ruled.locator(".calc-hdr-not-selected")).to_have_count(0, timeout=T)
     if "collapsed" not in (ruled.get_attribute("class") or ""):
-        ruled.click()
+        _toggle(ruled)
     expect(ruled.locator(".calc-hdr-sub")).to_contain_text(re.compile(r"150[.,]00"))
     shot(page, "03-switched-on-shows-subtotal", journey=JOURNEY)

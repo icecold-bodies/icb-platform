@@ -1,0 +1,422 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  6b77d52b  feat(costings): the costing shows the parameters the body was pr
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  de74796bd22070e59876572a49c8b39b804c75b9 already present - no fetch needed
+[32m  ok[0m  de74796bd22070e59876572a49c8b39b804c75b9 = de74796b
+
+[1m== 2. plan[0m
+  6b77d52b -> de74796b   (9 commit(s), 180 file(s))
+    de74796 release(v1.59.0): prod runbook + release kit for the costing audit admin page; VERSION -> v1.59.0 (#198)
+    48231f4 data(audit): pricing corrections F1-F4 from the Sept costing audit, applied on prod (v1.58) (#197)
+    b10a7cf ops(audit): prod becomes the CI costing-audit baseline (v1.57.3) (#196)
+    a5238b8 feat(audit): Admin -> Costing audit page — run the audit on demand in the server (v1.59) (#195)
+    ab4e990 docs(releases): BA feedback for the costing audit session (v1.57 / v1.57.1 / v1.57.2) + Phase 2 request (#194)
+    b4d2dc8 feat(audit): report layout + an accepted entry must explain the whole difference (v1.57.2) (#193)
+    712f31b feat(audit): explosive pack, cause-guarded accepted lists per environment, offline re-evaluation, first prod run (v1.57.1) (#192)
+    a6821d5 feat(audit): Excel ↔ MES costing parity packs — oracle, probe, comparator, CI gate (v1.57) (#191)
+    59ea9bb docs(releases): BA feedback for the September price update + icecream insulation session (v1.52 / v1.52.1 / v1.52.2)
+
+  DB migration     YES - 0049_costing_audit_runs.py 
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 37 Python file(s) changed
+[33m  !![0m  dependency manifests changed (1) - check whether pip/npm install is needed BEFORE continuing
+
+  rollback anchor 6b77d52b saved to /tmp/icb-rollback-20260928-152820.txt
+
+[1m== 3. database backup (a migration is about to run)[0m
+Sep 28 15:28:20 icb-mes-prod runuser[149567]: pam_unix(runuser:session): session closed for user postgres
+Sep 28 15:28:21 icb-mes-prod icb-pg-backup[149564]: Backup complete: /var/backups/postgres/icb_platform_20260928-1528.dump.gz (1158199 bytes)
+Sep 28 15:28:21 icb-mes-prod systemd[1]: icb-pg-backup.service: Deactivated successfully.
+Sep 28 15:28:21 icb-mes-prod systemd[1]: Finished icb-pg-backup.service - ICB MES Postgres nightly backup.
+[32m  ok[0m  schema before: 0048 (head)
+
+[1m== 4. fast-forward the code[0m
+Updating 6b77d52..de74796
+Fast-forward
+ .gitattributes                                     |      3 +
+ .github/workflows/costing-audit.yml                |    108 +
+ .gitignore                                         |      3 +
+ backend/VERSION                                    |      2 +-
+ .../alembic/versions/0049_costing_audit_runs.py    |    133 +
+ backend/app/database.py                            |     42 +-
+ backend/app/main.py                                |      2 +
+ backend/app/routers/costing_audit.py               |    110 +
+ backend/app/services/costing_audit_runs.py         |    486 +
+ backend/app/templates/admin_costing_audit.html     |    304 +
+ backend/app/templates/base.html                    |      7 +-
+ backend/requirements.txt                           |      1 +
+ backend/tests/costing_audit/.gitignore             |      8 +
+ .../costing_audit/accepted_differences.prod.yaml   |    168 +
+ .../tests/costing_audit/accepted_differences.yaml  |    229 +
+ .../chillers/4_9_up_chiller_and_2_5_wide.json      |  61111 +++++++++
+ .../costing_audit/golden/chillers/_manifest.json   |     44 +
+ .../golden/chillers/up_to_2_3_chiller_body.json    |  19558 +++
+ .../chillers/up_to_5_5_chiller_and_2_3_wide.json   |  23343 ++++
+ .../costing_audit/golden/explosive/_manifest.json  |     24 +
+ .../golden/explosive/explosive_2_7_to_4_8.json     |  18247 +++
+ .../golden/explosive/explosive_4_9_and_up.json     |  18283 +++
+ .../golden/explosive/explosive_up_to_2_7.json      |  17045 +++
+ .../golden/freezers/4_9_up_freezer_body_2.json     |  20996 +++
+ .../costing_audit/golden/freezers/_manifest.json   |     24 +
+ .../golden/freezers/up_to_2_3_mtr_freezer.json     |  11428 ++
+ .../golden/freezers/up_to_4_8_mt_freezer_2.json    |  27506 ++++
+ .../costing_audit/golden/icecream/_manifest.json   |     24 +
+ .../golden/icecream/icecream_4_9_up.json           |  19908 +++
+ .../golden/icecream/icecream_up_to_3_2.json        |  11428 ++
+ .../golden/icecream/icecream_up_to_4_8.json        |  19782 +++
+ .../costing_audit/golden/smoke/_manifest.json      |     24 +
+ .../golden/smoke/icecream_up_to_4_8.json           |   6870 +
+ .../golden/smoke/up_to_4_8_mt_freezer_2.json       |   7220 +
+ .../smoke/up_to_5_5_chiller_and_2_3_wide.json      |   6987 +
+ backend/tests/costing_audit/mes_snapshot/all.json  | 126298 ++++++++++++++++++
+ backend/tests/costing_audit/packs/chillers.yaml    |     33 +
+ backend/tests/costing_audit/packs/explosive.yaml   |     17 +
+ backend/tests/costing_audit/packs/freezers.yaml    |     15 +
+ backend/tests/costing_audit/packs/icecream.yaml    |     15 +
+ backend/tests/costing_audit/packs/smoke.yaml       |     16 +
+ .../sheet_maps/4_9_up_chiller_and_2_5_wide.yaml    |      8 +
+ backend/tests/costing_audit/synthetic.py           |    115 +
+ .../tests/costing_audit/test_admin_run_support.py  |    161 +
+ backend/tests/costing_audit/test_compare.py        |    208 +
+ .../costing_audit/test_explained_acceptance.py     |     83 +
+ backend/tests/costing_audit/test_mes_snapshot.py   |     47 +
+ .../costing_audit/test_mes_snapshot_no_people.py   |     89 +
+ backend/tests/costing_audit/test_oracle_edits.py   |    135 +
+ .../tests/costing_audit/test_packs_and_rules.py    |     88 +
+ .../tests/costing_audit/test_reaccept_and_cause.py |     76 +
+ backend/tests/costing_audit/test_report_layout.py  |     58 +
+ backend/tests/costing_audit/test_sheet_map.py      |     81 +
+ .../journeys/test_costing_audit_admin_journey.py   |    148 +
+ backend/tests/test_costing_audit_admin.py          |    579 +
+ backend/tests/test_production_thresholds_api.py    |      2 +-
+ .../tests/test_v1_58_audit_pricing_corrections.py  |    258 +
+ backend/tools/audit_pricing_corrections.py         |    434 +
+ backend/tools/costing_audit/README.md              |    240 +
+ backend/tools/costing_audit/__init__.py            |     29 +
+ backend/tools/costing_audit/__main__.py            |      6 +
+ backend/tools/costing_audit/accepted.py            |    131 +
+ backend/tools/costing_audit/changes.py             |     70 +
+ backend/tools/costing_audit/cli.py                 |    249 +
+ backend/tools/costing_audit/compare.py             |    469 +
+ backend/tools/costing_audit/excel_oracle.py        |    442 +
+ backend/tools/costing_audit/golden.py              |     27 +
+ backend/tools/costing_audit/mapping.py             |     80 +
+ backend/tools/costing_audit/mes_probe.py           |    278 +
+ backend/tools/costing_audit/mes_snapshot.py        |    341 +
+ backend/tools/costing_audit/report.py              |    399 +
+ backend/tools/costing_audit/runner.py              |    101 +
+ backend/tools/costing_audit/scenarios.py           |    269 +
+ backend/tools/costing_audit/sheet_map.py           |    414 +
+ backend/tools/costing_audit/soffice.py             |     94 +
+ docs/audit/costing_audit/2026-09/README.md         |    180 +
+ .../2026-09/costing_audit_chillers.csv             |   1075 +
+ .../2026-09/costing_audit_chillers.html            |     65 +
+ .../2026-09/costing_audit_chillers.md              |     47 +
+ .../2026-09/costing_audit_explosive.csv            |    685 +
+ .../2026-09/costing_audit_explosive.html           |     65 +
+ .../2026-09/costing_audit_explosive.md             |     53 +
+ .../2026-09/costing_audit_freezers.csv             |    691 +
+ .../2026-09/costing_audit_freezers.html            |     65 +
+ .../2026-09/costing_audit_freezers.md              |     46 +
+ .../2026-09/costing_audit_icecream.csv             |    613 +
+ .../2026-09/costing_audit_icecream.html            |     65 +
+ .../2026-09/costing_audit_icecream.md              |     64 +
+ .../costing_audit/2026-09/costing_audit_smoke.csv  |    235 +
+ .../costing_audit/2026-09/costing_audit_smoke.html |     65 +
+ .../costing_audit/2026-09/costing_audit_smoke.md   |     37 +
+ .../2026-09/discover_tick_through.txt              |    107 +
+ docs/audit/costing_audit/2026-09/prod/MANIFEST.txt |      7 +
+ .../2026-09/prod/prod_costing_audit_chillers.csv   |   1254 +
+ .../2026-09/prod/prod_costing_audit_chillers.html  |    249 +
+ .../2026-09/prod/prod_costing_audit_chillers.md    |     35 +
+ .../2026-09/prod/prod_costing_audit_explosive.csv  |    685 +
+ .../2026-09/prod/prod_costing_audit_explosive.html |    249 +
+ .../2026-09/prod/prod_costing_audit_explosive.md   |     53 +
+ .../2026-09/prod/prod_costing_audit_freezers.csv   |    691 +
+ .../2026-09/prod/prod_costing_audit_freezers.html  |    249 +
+ .../2026-09/prod/prod_costing_audit_freezers.md    |     40 +
+ .../2026-09/prod/prod_costing_audit_icecream.csv   |    613 +
+ .../2026-09/prod/prod_costing_audit_icecream.html  |    249 +
+ .../2026-09/prod/prod_costing_audit_icecream.md    |     53 +
+ .../2026-09/prod/prod_costing_audit_smoke.csv      |    235 +
+ .../2026-09/prod/prod_costing_audit_smoke.html     |    249 +
+ .../2026-09/prod/prod_costing_audit_smoke.md       |     33 +
+ .../SECTION_3_0_DISCOVERY.md                       |    151 +
+ .../golden_addition/merge_chiller_srd_pu.py        |    106 +
+ .../impact/impact_refresh.sql                      |    124 +
+ .../pricing_corrections_2026-09/manifest.yaml      |    356 +
+ .../mirror/MIRROR_PROOF.md                         |     88 +
+ .../mirror/mirror_before_chillers.csv              |   1254 +
+ .../mirror/mirror_before_chillers.md               |     64 +
+ .../mirror/mirror_before_explosive.csv             |    685 +
+ .../mirror/mirror_before_explosive.md              |     54 +
+ .../mirror/mirror_before_freezers.csv              |    691 +
+ .../mirror/mirror_before_freezers.md               |     40 +
+ .../mirror/mirror_before_icecream.csv              |    613 +
+ .../mirror/mirror_before_icecream.md               |     58 +
+ .../mirror/mirror_before_smoke.csv                 |    235 +
+ .../mirror/mirror_before_smoke.md                  |     34 +
+ .../mirror/mirror_final_chillers.csv               |   1254 +
+ .../mirror/mirror_final_chillers.md                |     35 +
+ .../mirror/mirror_final_explosive.csv              |    685 +
+ .../mirror/mirror_final_explosive.md               |     53 +
+ .../mirror/mirror_final_freezers.csv               |    691 +
+ .../mirror/mirror_final_freezers.md                |     40 +
+ .../mirror/mirror_final_icecream.csv               |    613 +
+ .../mirror/mirror_final_icecream.md                |     53 +
+ .../mirror/mirror_final_smoke.csv                  |    235 +
+ .../mirror/mirror_final_smoke.md                   |     33 +
+ ...orrections_journal_mirror_20260928T100623Z.json |   1355 +
+ .../prod/C_impact_2026-09-28.csv                   |     18 +
+ .../prod/IMPACT_2026-09-28.md                      |     53 +
+ .../pricing_corrections_2026-09/prod/OUTCOME.md    |    194 +
+ .../prod/RETURN_2b_2026-09-28.md                   |    370 +
+ .../prod/apply_20260928T111656Z_run.txt            |    360 +
+ .../prod/dryrun_20260928T105046Z_run.txt           |    121 +
+ ..._corrections_journal_prod_20260928T111658Z.json |   1355 +
+ .../prod/rerun_20260928-133335/checks/00_env.csv   |      2 +
+ .../checks/C1_price_history_srd_pu.csv             |      3 +
+ .../checks/C2_changes_7sep.csv                     |      9 +
+ .../checks/E3_all_lines_on_material.csv            |     27 +
+ .../checks/E3_inheriting_lines.csv                 |     16 +
+ .../checks/E3_srd_pu_material.csv                  |      2 +
+ .../checks/F2_alu_draft_nodes.csv                  |      3 +
+ .../checks/F2_draft_count.csv                      |      3 +
+ .../checks/F5_3_changes_22sep.csv                  |      7 +
+ .../checks/F5_3_explosive_pu_history.csv           |     11 +
+ .../checks/P1_48_floor_lines.csv                   |     17 +
+ .../checks/P2_48_floor_draft_nodes.csv             |     16 +
+ .../rerun_20260928-133335/prune_reaccept_steps.txt |     78 +
+ .../reports/prod_after_chillers.csv                |   1254 +
+ .../reports/prod_after_chillers.md                 |     35 +
+ .../reports/prod_after_explosive.csv               |    685 +
+ .../reports/prod_after_explosive.md                |     53 +
+ .../reports/prod_after_freezers.csv                |    691 +
+ .../reports/prod_after_freezers.md                 |     40 +
+ .../reports/prod_after_icecream.csv                |    613 +
+ .../reports/prod_after_icecream.md                 |     53 +
+ .../reports/prod_after_smoke.csv                   |    235 +
+ .../reports/prod_after_smoke.md                    |     33 +
+ .../prod/rerun_20260928-133335/run.txt             |     23 +
+ ...-07_SeptemberPrices_IcecreamInsulation_v1.52.md |    244 +
+ .../BA_FEEDBACK_2026-09-27_CostingAudit_v1.57.md   |    222 +
+ .../prod-deploy-v1.59.0-costing-audit-admin.md     |    177 +
+ .../journeys/costing_audit_admin/01-page.png       |    Bin 0 -> 73117 bytes
+ .../costing_audit_admin/02-first-run-report.png    |    Bin 0 -> 222482 bytes
+ .../costing_audit_admin/03-no-change-since.png     |    Bin 0 -> 227755 bytes
+ .../costing_audit_admin/04-history-open-first.png  |    Bin 0 -> 227030 bytes
+ .../05-non-admin-no-menu-entry.png                 |    Bin 0 -> 63633 bytes
+ ops/prod-baseline/prod_baseline.sh                 |    111 +
+ ops/prod-pricing-corrections/mkstage.sh            |     31 +
+ ops/prod-pricing-corrections/pc_prod.sh            |    124 +
+ ops/prod-pricing-corrections/prod_checks.sql       |    115 +
+ ops/prod-pricing-corrections/prod_rerun.sh         |     70 +
+ ops/prod-release-v1.59.0/mkstage.sh                |     67 +
+ ops/prod-release-v1.59.0/release.sh                |    290 +
+ 180 files changed, 450590 insertions(+), 4 deletions(-)
+ create mode 100644 .github/workflows/costing-audit.yml
+ create mode 100644 backend/alembic/versions/0049_costing_audit_runs.py
+ create mode 100644 backend/app/routers/costing_audit.py
+ create mode 100644 backend/app/services/costing_audit_runs.py
+ create mode 100644 backend/app/templates/admin_costing_audit.html
+ create mode 100644 backend/tests/costing_audit/.gitignore
+ create mode 100644 backend/tests/costing_audit/accepted_differences.prod.yaml
+ create mode 100644 backend/tests/costing_audit/accepted_differences.yaml
+ create mode 100644 backend/tests/costing_audit/golden/chillers/4_9_up_chiller_and_2_5_wide.json
+ create mode 100644 backend/tests/costing_audit/golden/chillers/_manifest.json
+ create mode 100644 backend/tests/costing_audit/golden/chillers/up_to_2_3_chiller_body.json
+ create mode 100644 backend/tests/costing_audit/golden/chillers/up_to_5_5_chiller_and_2_3_wide.json
+ create mode 100644 backend/tests/costing_audit/golden/explosive/_manifest.json
+ create mode 100644 backend/tests/costing_audit/golden/explosive/explosive_2_7_to_4_8.json
+ create mode 100644 backend/tests/costing_audit/golden/explosive/explosive_4_9_and_up.json
+ create mode 100644 backend/tests/costing_audit/golden/explosive/explosive_up_to_2_7.json
+ create mode 100644 backend/tests/costing_audit/golden/freezers/4_9_up_freezer_body_2.json
+ create mode 100644 backend/tests/costing_audit/golden/freezers/_manifest.json
+ create mode 100644 backend/tests/costing_audit/golden/freezers/up_to_2_3_mtr_freezer.json
+ create mode 100644 backend/tests/costing_audit/golden/freezers/up_to_4_8_mt_freezer_2.json
+ create mode 100644 backend/tests/costing_audit/golden/icecream/_manifest.json
+ create mode 100644 backend/tests/costing_audit/golden/icecream/icecream_4_9_up.json
+ create mode 100644 backend/tests/costing_audit/golden/icecream/icecream_up_to_3_2.json
+ create mode 100644 backend/tests/costing_audit/golden/icecream/icecream_up_to_4_8.json
+ create mode 100644 backend/tests/costing_audit/golden/smoke/_manifest.json
+ create mode 100644 backend/tests/costing_audit/golden/smoke/icecream_up_to_4_8.json
+ create mode 100644 backend/tests/costing_audit/golden/smoke/up_to_4_8_mt_freezer_2.json
+ create mode 100644 backend/tests/costing_audit/golden/smoke/up_to_5_5_chiller_and_2_3_wide.json
+ create mode 100644 backend/tests/costing_audit/mes_snapshot/all.json
+ create mode 100644 backend/tests/costing_audit/packs/chillers.yaml
+ create mode 100644 backend/tests/costing_audit/packs/explosive.yaml
+ create mode 100644 backend/tests/costing_audit/packs/freezers.yaml
+ create mode 100644 backend/tests/costing_audit/packs/icecream.yaml
+ create mode 100644 backend/tests/costing_audit/packs/smoke.yaml
+ create mode 100644 backend/tests/costing_audit/sheet_maps/4_9_up_chiller_and_2_5_wide.yaml
+ create mode 100644 backend/tests/costing_audit/synthetic.py
+ create mode 100644 backend/tests/costing_audit/test_admin_run_support.py
+ create mode 100644 backend/tests/costing_audit/test_compare.py
+ create mode 100644 backend/tests/costing_audit/test_explained_acceptance.py
+ create mode 100644 backend/tests/costing_audit/test_mes_snapshot.py
+ create mode 100644 backend/tests/costing_audit/test_mes_snapshot_no_people.py
+ create mode 100644 backend/tests/costing_audit/test_oracle_edits.py
+ create mode 100644 backend/tests/costing_audit/test_packs_and_rules.py
+ create mode 100644 backend/tests/costing_audit/test_reaccept_and_cause.py
+ create mode 100644 backend/tests/costing_audit/test_report_layout.py
+ create mode 100644 backend/tests/costing_audit/test_sheet_map.py
+ create mode 100644 backend/tests/journeys/test_costing_audit_admin_journey.py
+ create mode 100644 backend/tests/test_costing_audit_admin.py
+ create mode 100644 backend/tests/test_v1_58_audit_pricing_corrections.py
+ create mode 100644 backend/tools/audit_pricing_corrections.py
+ create mode 100644 backend/tools/costing_audit/README.md
+ create mode 100644 backend/tools/costing_audit/__init__.py
+ create mode 100644 backend/tools/costing_audit/__main__.py
+ create mode 100644 backend/tools/costing_audit/accepted.py
+ create mode 100644 backend/tools/costing_audit/changes.py
+ create mode 100644 backend/tools/costing_audit/cli.py
+ create mode 100644 backend/tools/costing_audit/compare.py
+ create mode 100644 backend/tools/costing_audit/excel_oracle.py
+ create mode 100644 backend/tools/costing_audit/golden.py
+ create mode 100644 backend/tools/costing_audit/mapping.py
+ create mode 100644 backend/tools/costing_audit/mes_probe.py
+ create mode 100644 backend/tools/costing_audit/mes_snapshot.py
+ create mode 100644 backend/tools/costing_audit/report.py
+ create mode 100644 backend/tools/costing_audit/runner.py
+ create mode 100644 backend/tools/costing_audit/scenarios.py
+ create mode 100644 backend/tools/costing_audit/sheet_map.py
+ create mode 100644 backend/tools/costing_audit/soffice.py
+ create mode 100644 docs/audit/costing_audit/2026-09/README.md
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_chillers.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_chillers.html
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_chillers.md
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_explosive.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_explosive.html
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_explosive.md
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_freezers.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_freezers.html
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_freezers.md
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_icecream.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_icecream.html
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_icecream.md
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_smoke.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_smoke.html
+ create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_smoke.md
+ create mode 100644 docs/audit/costing_audit/2026-09/discover_tick_through.txt
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/MANIFEST.txt
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_chillers.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_chillers.html
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_chillers.md
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_explosive.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_explosive.html
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_explosive.md
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_freezers.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_freezers.html
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_freezers.md
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_icecream.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_icecream.html
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_icecream.md
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_smoke.csv
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_smoke.html
+ create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_smoke.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/SECTION_3_0_DISCOVERY.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/golden_addition/merge_chiller_srd_pu.py
+ create mode 100644 docs/audit/pricing_corrections_2026-09/impact/impact_refresh.sql
+ create mode 100644 docs/audit/pricing_corrections_2026-09/manifest.yaml
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/MIRROR_PROOF.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_chillers.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_chillers.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_explosive.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_explosive.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_freezers.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_freezers.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_icecream.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_icecream.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_smoke.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_smoke.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_chillers.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_chillers.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_explosive.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_explosive.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_freezers.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_freezers.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_icecream.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_icecream.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_smoke.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_smoke.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/pricing_corrections_journal_mirror_20260928T100623Z.json
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/C_impact_2026-09-28.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/IMPACT_2026-09-28.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/OUTCOME.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/RETURN_2b_2026-09-28.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/apply_20260928T111656Z_run.txt
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/dryrun_20260928T105046Z_run.txt
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/pricing_corrections_journal_prod_20260928T111658Z.json
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/00_env.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/C1_price_history_srd_pu.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/C2_changes_7sep.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/E3_all_lines_on_material.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/E3_inheriting_lines.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/E3_srd_pu_material.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/F2_alu_draft_nodes.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/F2_draft_count.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/F5_3_changes_22sep.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/F5_3_explosive_pu_history.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/P1_48_floor_lines.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/P2_48_floor_draft_nodes.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/prune_reaccept_steps.txt
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_chillers.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_chillers.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_explosive.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_explosive.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_freezers.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_freezers.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_icecream.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_icecream.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_smoke.csv
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_smoke.md
+ create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/run.txt
+ create mode 100644 docs/releases/BA_FEEDBACK_2026-09-07_SeptemberPrices_IcecreamInsulation_v1.52.md
+ create mode 100644 docs/releases/BA_FEEDBACK_2026-09-27_CostingAudit_v1.57.md
+ create mode 100644 docs/runbooks/prod-deploy-v1.59.0-costing-audit-admin.md
+ create mode 100644 docs/screenshots/journeys/costing_audit_admin/01-page.png
+ create mode 100644 docs/screenshots/journeys/costing_audit_admin/02-first-run-report.png
+ create mode 100644 docs/screenshots/journeys/costing_audit_admin/03-no-change-since.png
+ create mode 100644 docs/screenshots/journeys/costing_audit_admin/04-history-open-first.png
+ create mode 100644 docs/screenshots/journeys/costing_audit_admin/05-non-admin-no-menu-entry.png
+ create mode 100644 ops/prod-baseline/prod_baseline.sh
+ create mode 100644 ops/prod-pricing-corrections/mkstage.sh
+ create mode 100644 ops/prod-pricing-corrections/pc_prod.sh
+ create mode 100644 ops/prod-pricing-corrections/prod_checks.sql
+ create mode 100644 ops/prod-pricing-corrections/prod_rerun.sh
+ create mode 100644 ops/prod-release-v1.59.0/mkstage.sh
+ create mode 100644 ops/prod-release-v1.59.0/release.sh
+[32m  ok[0m  at de74796b (verified by SHA, not by git describe)
+
+[1m== 5. alembic upgrade head[0m
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 0048 -> 0049, Costing audit runs (Migration 0049).
+[32m  ok[0m  schema after: 0049 (head)
+
+[1m== 6. SPA build - skipped (frontend/ untouched in this range)[0m
+
+[1m== 7. restart icb-backend[0m
+  active since (before): Fri 2026-09-25 06:17:50 SAST
+  active since (after):  Mon 2026-09-28 15:28:30 SAST
+[32m  ok[0m  restarted
+
+[1m== 8. verify[0m
+  workers started      4 (expected 4)
+  BOOTSTRAP FAILED     0 (expected 0)
+  https://127.0.0.1/health -> 200
+[32m  ok[0m  healthy
+
+[32m[1mDEPLOYED[0m  6b77d52b -> de74796b  (de74796bd22070e59876572a49c8b39b804c75b9)
+
+Rollback (code-only - additive migrations are left in place deliberately):
+    /opt/icb-platform/deploy/prod/icb-rollback.sh 6b77d52b
+
+  or, without the script:
+    sudo -u icb git -C /opt/icb-platform reset --hard 6b77d52b
+    sudo systemctl restart icb-backend
+

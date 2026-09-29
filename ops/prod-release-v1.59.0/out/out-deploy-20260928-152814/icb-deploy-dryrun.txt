@@ -1,0 +1,28 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  6b77d52b  feat(costings): the costing shows the parameters the body was pr
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  de74796bd22070e59876572a49c8b39b804c75b9 already present - no fetch needed
+[32m  ok[0m  de74796bd22070e59876572a49c8b39b804c75b9 = de74796b
+
+[1m== 2. plan[0m
+  6b77d52b -> de74796b   (9 commit(s), 180 file(s))
+    de74796 release(v1.59.0): prod runbook + release kit for the costing audit admin page; VERSION -> v1.59.0 (#198)
+    48231f4 data(audit): pricing corrections F1-F4 from the Sept costing audit, applied on prod (v1.58) (#197)
+    b10a7cf ops(audit): prod becomes the CI costing-audit baseline (v1.57.3) (#196)
+    a5238b8 feat(audit): Admin -> Costing audit page — run the audit on demand in the server (v1.59) (#195)
+    ab4e990 docs(releases): BA feedback for the costing audit session (v1.57 / v1.57.1 / v1.57.2) + Phase 2 request (#194)
+    b4d2dc8 feat(audit): report layout + an accepted entry must explain the whole difference (v1.57.2) (#193)
+    712f31b feat(audit): explosive pack, cause-guarded accepted lists per environment, offline re-evaluation, first prod run (v1.57.1) (#192)
+    a6821d5 feat(audit): Excel ↔ MES costing parity packs — oracle, probe, comparator, CI gate (v1.57) (#191)
+    59ea9bb docs(releases): BA feedback for the September price update + icecream insulation session (v1.52 / v1.52.1 / v1.52.2)
+
+  DB migration     YES - 0049_costing_audit_runs.py 
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 37 Python file(s) changed
+[33m  !![0m  dependency manifests changed (1) - check whether pip/npm install is needed BEFORE continuing
+
+[32m  ok[0m  dry run - nothing changed.

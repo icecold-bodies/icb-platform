@@ -172,6 +172,55 @@ re-stages its copy and PyYAML.)
 - A `BOOTSTRAP FAILED` is the known worker race; one more restart normally heals it.
 - If the page itself is broken, roll back the code.
 
-## OUTCOME
+## OUTCOME — deployed 28 Sep 2026 15:28:30 SAST, all asserts green; prod is v1.59.0
 
-*(appended after the run)*
+The release PR #198 was merged by Michael as **`de74796`** (tree identical to the CI-green head `d1c53b8`) = the
+target. The kit was staged from it (`release.sh` sha256 `3651be61…`, byte-identical to the final simulation's).
+Full records: `ops/prod-release-v1.59.0/out/` (preflight, verify, deploy: `run.txt`, the `icb-deploy.sh` dry-run and
+run output, `OUTCOME.txt`).
+
+| | |
+|---|---|
+| HEAD | `6b77d52` → **`de74796`** (`release(v1.59.0) … (#198)`) |
+| Tag | **`v1.59.0`**, annotated, tag object `4e307a10b61667ed882e0297b40930a64b6d18f2`: **local = remote** (`git ls-remote`), peeled = `de74796` |
+| Alembic | **0048 → 0049** (`costing_audit_runs` + 2 indexes) |
+| Backup (the rollback for 0049) | `/var/backups/postgres/icb_platform_pre-v1.59.0_20260928-152814.dump`, 1 461 181 bytes, sha256 `b4f901f2ee295d8bf3e8e0fc5eda260b11329860bc23d29e0b7e29abf3025bd7`, 100 table-data entries incl. `alembic_version`. `icb-deploy.sh` also ran the nightly backup service. |
+| PyYAML | **was missing** from prod's venv (preflight); installed **6.0.2** as `icb`, `--no-deps`, before the code moved. `pip --dry-run -r requirements.txt` showed PyYAML as the only package it would install. |
+| Range guard | 180 files (C-sorted sha256 `8572274f…`), exactly one migration, `frontend/` untouched → **no SPA rebuild** |
+| Restart | ActiveEnterTimestamp Fri 25 Sep 06:17:50 → **Mon 28 Sep 15:28:30** SAST, MainPID 116800 → 149619; completion recorded (`completed de74796`) |
+| Workers | **4** "Application startup complete", **0** BOOTSTRAP FAILED, **0** tracebacks since the restart; health 200 |
+| Permission | `admin.costing_audit` seeded, granted to `admin` |
+| Signed-out probes | `/admin/costing-audit` → **307** (to login) on LAN and Cloudflare; `/api/admin/costing-audit/runs` → **401** |
+
+**Three doors, byte-identical.** Cloudflare was probed only after the disk matched:
+
+| served | 127.0.0.1 | LAN `192.168.0.251` | Cloudflare `mes.icecoldgrp.online` |
+|---|---|---|---|
+| `/openapi.json` (6 new audit paths) | = LAN (script) | `fe1258bda4874d63…`, 354 193 B | identical, `cf-cache-status: DYNAMIC` |
+| `calculator.js?v=182` (unchanged; = the git blob) | `d174a732bec054d8…` | identical | identical, `REVALIDATED` |
+| SPA `assets/index-Be8qL-PA.js` (unchanged; = disk) | `2a4f277f7127fe7d…` | identical | identical, `MISS` |
+
+No Cloudflare purge was needed.
+
+**Before the window.** Preflight PASSED, 15:26. `verify` failed on 12 checks, exactly the not-yet-deployed ones:
+- HEAD, ALEMBIC, TABLE, INDEXES, PERMISSION, ADMIN_GRANT;
+- PYYAML;
+- both OPENAPI checks, PAGE_UNAUTH and API_UNAUTH (404 before);
+- **plus TOOL_IMPORT** ("No module named `tools.costing_audit`"). That is correct: the tool arrives with this range (#191). The simulation's stub had answered "ok", so the runbook's list above omitted it.
+
+Everything else passed. After the deploy, all 21 post-checks and the traceback assert passed.
+
+**Acceptance: Michael's click-through on the prod domain, all four PASSED.**
+- The header reads Production · `accepted_differences.prod.yaml`.
+- **smoke:** completed; pass 156 · flag 0 · accepted 33 · unverifiable 9; report, history row and HTML/CSV downloads work.
+- **chillers:** **0 unaccepted**, pass 981 · accepted 76 · unverifiable 0. This equals the committed prod reference run (28 Sep 13:45), cell count for cell count: the page and the CLI agree.
+- **smoke again:** "No change since" the first run.
+
+**Notes.**
+- **Version shown in the app:** the footer reads `v1.50.0` until the next restart after prod's repo has the `v1.59.0` tag. The deploy's fetch ran before the tag existed, and `_app_version()` reads `git describe` once at startup. `backend/VERSION` now says `v1.59.0` (it said `v1.40.0`).
+- **The service had last restarted on Fri 25 Sep 06:17:50,** not at the 16 Sep deploy: there was an unrecorded restart in between. The code was unchanged (HEAD was `6b77d52` in preflight).
+- **CI flake on the way:** `test_repair_categories_journey` row order failed once each on #197 (windows) and #198 (ubuntu) and passed on re-run. The cause is no `ORDER BY` in `repair_templates._category_rows`; the fix is a separate task.
+- **Housekeeping:**
+  - `/tmp/icb-release-v1.59.0` on the VM can go once this OUTCOME is merged.
+  - The v1.58 lane had already removed `/tmp/icb-audit*` (28 Sep) before this dispatch said to keep them. The next VM audit paste re-stages its copy; PyYAML is now in the venv.
+  - The local WSL simulation folders (`/root/relsim-*`) are CA scratch.

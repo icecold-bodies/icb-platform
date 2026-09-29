@@ -1,0 +1,530 @@
+== prod: db=icb_platform alembic=0048 code=6b77d52 mode=deploy target=de74796 2026-09-28T15:28:15+02:00
+== 1. anchors
+   ok   fresh: code 6b77d52, alembic 0048
+   ok   rollback anchor 6b77d52 -> /tmp/icb-release-v1.59.0/out-deploy-20260928-152814/rollback-anchor.txt
+== 2. served-bytes baseline (must be unchanged by the deploy)
+   ok   calculator.js?v=182 d174a732bec054d8  ·  SPA assets/index-Be8qL-PA.js 2a4f277f7127fe7d
+== 3. PyYAML 6.0.2 in prod's venv
+   import yaml -> missing; installing PyYAML==6.0.2 (no deps) as the venv owner
+Using cached PyYAML-6.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (767 kB)
+Installing collected packages: PyYAML
+Successfully installed PyYAML-6.0.2
+   ok   installed (6.0.2)
+== 4. backup (the rollback for 0049)
+   ok   /var/backups/postgres/icb_platform_pre-v1.59.0_20260928-152814.dump  1461181 bytes  sha256 b4f901f2ee295d8bf3e8e0fc5eda260b11329860bc23d29e0b7e29abf3025bd7  (100 table-data entries)
+== 5. fetch + range guard
+   remote: Enumerating objects: 427, done.        
+   remote: Counting objects:   0% (1/427)        remote: Counting objects:   1% (5/427)        remote: Counting objects:   2% (9/427)        remote: Counting objects:   3% (13/427)        remote: Counting objects:   4% (18/427)        remote: Counting objects:   5% (22/427)        remote: Counting objects:   6% (26/427)        remote: Counting objects:   7% (30/427)        remote: Counting objects:   8% (35/427)        remote: Counting objects:   9% (39/427)        remote: Counting objects:  10% (43/427)        remote: Counting objects:  11% (47/427)        remote: Counting objects:  12% (52/427)        remote: Counting objects:  13% (56/427)        remote: Counting objects:  14% (60/427)        remote: Counting objects:  15% (65/427)        remote: Counting objects:  16% (69/427)        remote: Counting objects:  17% (73/427)        remote: Counting objects:  18% (77/427)        remote: Counting objects:  19% (82/427)        remote: Counting objects:  20% (86/427)        remote: Counting objects:  21% (90/427)        remote: Counting objects:  22% (94/427)        remote: Counting objects:  23% (99/427)        remote: Counting objects:  24% (103/427)        remote: Counting objects:  25% (107/427)        remote: Counting objects:  26% (112/427)        remote: Counting objects:  27% (116/427)        remote: Counting objects:  28% (120/427)        remote: Counting objects:  29% (124/427)        remote: Counting objects:  30% (129/427)        remote: Counting objects:  31% (133/427)        remote: Counting objects:  32% (137/427)        remote: Counting objects:  33% (141/427)        remote: Counting objects:  34% (146/427)        remote: Counting objects:  35% (150/427)        remote: Counting objects:  36% (154/427)        remote: Counting objects:  37% (158/427)        remote: Counting objects:  38% (163/427)        remote: Counting objects:  39% (167/427)        remote: Counting objects:  40% (171/427)        remote: Counting objects:  41% (176/427)        remote: Counting objects:  42% (180/427)        remote: Counting objects:  43% (184/427)        remote: Counting objects:  44% (188/427)        remote: Counting objects:  45% (193/427)        remote: Counting objects:  46% (197/427)        remote: Counting objects:  47% (201/427)        remote: Counting objects:  48% (205/427)        remote: Counting objects:  49% (210/427)        remote: Counting objects:  50% (214/427)        remote: Counting objects:  51% (218/427)        remote: Counting objects:  52% (223/427)        remote: Counting objects:  53% (227/427)        remote: Counting objects:  54% (231/427)        remote: Counting objects:  55% (235/427)        remote: Counting objects:  56% (240/427)        remote: Counting objects:  57% (244/427)        remote: Counting objects:  58% (248/427)        remote: Counting objects:  59% (252/427)        remote: Counting objects:  60% (257/427)        remote: Counting objects:  61% (261/427)        remote: Counting objects:  62% (265/427)        remote: Counting objects:  63% (270/427)        remote: Counting objects:  64% (274/427)        remote: Counting objects:  65% (278/427)        remote: Counting objects:  66% (282/427)        remote: Counting objects:  67% (287/427)        remote: Counting objects:  68% (291/427)        remote: Counting objects:  69% (295/427)        remote: Counting objects:  70% (299/427)        remote: Counting objects:  71% (304/427)        remote: Counting objects:  72% (308/427)        remote: Counting objects:  73% (312/427)        remote: Counting objects:  74% (316/427)        remote: Counting objects:  75% (321/427)        remote: Counting objects:  76% (325/427)        remote: Counting objects:  77% (329/427)        remote: Counting objects:  78% (334/427)        remote: Counting objects:  79% (338/427)        remote: Counting objects:  80% (342/427)        remote: Counting objects:  81% (346/427)        remote: Counting objects:  82% (351/427)        remote: Counting objects:  83% (355/427)        remote: Counting objects:  84% (359/427)        remote: Counting objects:  85% (363/427)        remote: Counting objects:  86% (368/427)        remote: Counting objects:  87% (372/427)        remote: Counting objects:  88% (376/427)        remote: Counting objects:  89% (381/427)        remote: Counting objects:  90% (385/427)        remote: Counting objects:  91% (389/427)        remote: Counting objects:  92% (393/427)        remote: Counting objects:  93% (398/427)        remote: Counting objects:  94% (402/427)        remote: Counting objects:  95% (406/427)        remote: Counting objects:  96% (410/427)        remote: Counting objects:  97% (415/427)        remote: Counting objects:  98% (419/427)        remote: Counting objects:  99% (423/427)        remote: Counting objects: 100% (427/427)        remote: Counting objects: 100% (427/427), done.        
+   remote: Compressing objects:   0% (1/230)        remote: Compressing objects:   1% (3/230)        remote: Compressing objects:   2% (5/230)        remote: Compressing objects:   3% (7/230)        remote: Compressing objects:   4% (10/230)        remote: Compressing objects:   5% (12/230)        remote: Compressing objects:   6% (14/230)        remote: Compressing objects:   7% (17/230)        remote: Compressing objects:   8% (19/230)        remote: Compressing objects:   9% (21/230)        remote: Compressing objects:  10% (23/230)        remote: Compressing objects:  11% (26/230)        remote: Compressing objects:  12% (28/230)        remote: Compressing objects:  13% (30/230)        remote: Compressing objects:  14% (33/230)        remote: Compressing objects:  15% (35/230)        remote: Compressing objects:  16% (37/230)        remote: Compressing objects:  17% (40/230)        remote: Compressing objects:  18% (42/230)        remote: Compressing objects:  19% (44/230)        remote: Compressing objects:  20% (46/230)        remote: Compressing objects:  21% (49/230)        remote: Compressing objects:  22% (51/230)        remote: Compressing objects:  23% (53/230)        remote: Compressing objects:  24% (56/230)        remote: Compressing objects:  25% (58/230)        remote: Compressing objects:  26% (60/230)        remote: Compressing objects:  27% (63/230)        remote: Compressing objects:  28% (65/230)        remote: Compressing objects:  29% (67/230)        remote: Compressing objects:  30% (69/230)        remote: Compressing objects:  31% (72/230)        remote: Compressing objects:  32% (74/230)        remote: Compressing objects:  33% (76/230)        remote: Compressing objects:  34% (79/230)        remote: Compressing objects:  35% (81/230)        remote: Compressing objects:  36% (83/230)        remote: Compressing objects:  37% (86/230)        remote: Compressing objects:  38% (88/230)        remote: Compressing objects:  39% (90/230)        remote: Compressing objects:  40% (92/230)        remote: Compressing objects:  41% (95/230)        remote: Compressing objects:  42% (97/230)        remote: Compressing objects:  43% (99/230)        remote: Compressing objects:  44% (102/230)        remote: Compressing objects:  45% (104/230)        remote: Compressing objects:  46% (106/230)        remote: Compressing objects:  47% (109/230)        remote: Compressing objects:  48% (111/230)        remote: Compressing objects:  49% (113/230)        remote: Compressing objects:  50% (115/230)        remote: Compressing objects:  51% (118/230)        remote: Compressing objects:  52% (120/230)        remote: Compressing objects:  53% (122/230)        remote: Compressing objects:  54% (125/230)        remote: Compressing objects:  55% (127/230)        remote: Compressing objects:  56% (129/230)        remote: Compressing objects:  57% (132/230)        remote: Compressing objects:  58% (134/230)        remote: Compressing objects:  59% (136/230)        remote: Compressing objects:  60% (138/230)        remote: Compressing objects:  61% (141/230)        remote: Compressing objects:  62% (143/230)        remote: Compressing objects:  63% (145/230)        remote: Compressing objects:  64% (148/230)        remote: Compressing objects:  65% (150/230)        remote: Compressing objects:  66% (152/230)        remote: Compressing objects:  67% (155/230)        remote: Compressing objects:  68% (157/230)        remote: Compressing objects:  69% (159/230)        remote: Compressing objects:  70% (161/230)        remote: Compressing objects:  71% (164/230)        remote: Compressing objects:  72% (166/230)        remote: Compressing objects:  73% (168/230)        remote: Compressing objects:  74% (171/230)        remote: Compressing objects:  75% (173/230)        remote: Compressing objects:  76% (175/230)        remote: Compressing objects:  77% (178/230)        remote: Compressing objects:  78% (180/230)        remote: Compressing objects:  79% (182/230)        remote: Compressing objects:  80% (184/230)        remote: Compressing objects:  81% (187/230)        remote: Compressing objects:  82% (189/230)        remote: Compressing objects:  83% (191/230)        remote: Compressing objects:  84% (194/230)        remote: Compressing objects:  85% (196/230)        remote: Compressing objects:  86% (198/230)        remote: Compressing objects:  87% (201/230)        remote: Compressing objects:  88% (203/230)        remote: Compressing objects:  89% (205/230)        remote: Compressing objects:  90% (207/230)        remote: Compressing objects:  91% (210/230)        remote: Compressing objects:  92% (212/230)        remote: Compressing objects:  93% (214/230)        remote: Compressing objects:  94% (217/230)        remote: Compressing objects:  95% (219/230)        remote: Compressing objects:  96% (221/230)        remote: Compressing objects:  97% (224/230)        remote: Compressing objects:  98% (226/230)        remote: Compressing objects:  99% (228/230)        remote: Compressing objects: 100% (230/230)        remote: Compressing objects: 100% (230/230), done.        
+   Receiving objects:   0% (1/427)Receiving objects:   1% (5/427)Receiving objects:   2% (9/427)Receiving objects:   3% (13/427)Receiving objects:   4% (18/427)Receiving objects:   5% (22/427)Receiving objects:   6% (26/427)Receiving objects:   7% (30/427)Receiving objects:   8% (35/427)Receiving objects:   9% (39/427)Receiving objects:  10% (43/427)Receiving objects:  11% (47/427)Receiving objects:  12% (52/427)Receiving objects:  13% (56/427)Receiving objects:  14% (60/427)Receiving objects:  15% (65/427)Receiving objects:  16% (69/427)Receiving objects:  17% (73/427)Receiving objects:  18% (77/427)Receiving objects:  19% (82/427)Receiving objects:  20% (86/427)Receiving objects:  21% (90/427)Receiving objects:  22% (94/427)Receiving objects:  23% (99/427)Receiving objects:  24% (103/427)Receiving objects:  25% (107/427)Receiving objects:  26% (112/427)Receiving objects:  27% (116/427)Receiving objects:  28% (120/427)Receiving objects:  29% (124/427)Receiving objects:  30% (129/427)Receiving objects:  31% (133/427)Receiving objects:  32% (137/427)Receiving objects:  33% (141/427)Receiving objects:  34% (146/427)Receiving objects:  35% (150/427)Receiving objects:  36% (154/427)Receiving objects:  37% (158/427)Receiving objects:  38% (163/427)Receiving objects:  39% (167/427)Receiving objects:  40% (171/427)Receiving objects:  41% (176/427)Receiving objects:  42% (180/427)Receiving objects:  43% (184/427)Receiving objects:  44% (188/427)Receiving objects:  45% (193/427)Receiving objects:  46% (197/427)Receiving objects:  47% (201/427)Receiving objects:  48% (205/427)Receiving objects:  49% (210/427)Receiving objects:  50% (214/427)Receiving objects:  51% (218/427)Receiving objects:  52% (223/427)Receiving objects:  53% (227/427)Receiving objects:  54% (231/427)Receiving objects:  55% (235/427)Receiving objects:  56% (240/427)Receiving objects:  57% (244/427)Receiving objects:  58% (248/427)Receiving objects:  59% (252/427)Receiving objects:  60% (257/427)Receiving objects:  61% (261/427)Receiving objects:  62% (265/427)Receiving objects:  63% (270/427)Receiving objects:  64% (274/427)Receiving objects:  65% (278/427)Receiving objects:  66% (282/427)Receiving objects:  67% (287/427)Receiving objects:  68% (291/427)Receiving objects:  69% (295/427)Receiving objects:  70% (299/427)Receiving objects:  71% (304/427)Receiving objects:  72% (308/427)Receiving objects:  73% (312/427)Receiving objects:  74% (316/427)Receiving objects:  75% (321/427)Receiving objects:  76% (325/427)Receiving objects:  77% (329/427)Receiving objects:  78% (334/427)Receiving objects:  79% (338/427)Receiving objects:  80% (342/427)Receiving objects:  81% (346/427)Receiving objects:  82% (351/427)Receiving objects:  83% (355/427)Receiving objects:  84% (359/427)Receiving objects:  85% (363/427)Receiving objects:  86% (368/427)Receiving objects:  87% (372/427)Receiving objects:  88% (376/427)Receiving objects:  89% (381/427)Receiving objects:  90% (385/427)Receiving objects:  91% (389/427)Receiving objects:  92% (393/427)Receiving objects:  93% (398/427)Receiving objects:  94% (402/427)Receiving objects:  95% (406/427)remote: Total 427 (delta 253), reused 332 (delta 176), pack-reused 0 (from 0)        
+   Receiving objects:  96% (410/427)Receiving objects:  97% (415/427)Receiving objects:  98% (419/427)Receiving objects:  99% (423/427)Receiving objects: 100% (427/427)Receiving objects: 100% (427/427), 1.58 MiB | 14.49 MiB/s, done.
+   Resolving deltas:   0% (0/253)Resolving deltas:   1% (3/253)Resolving deltas:   2% (6/253)Resolving deltas:   3% (8/253)Resolving deltas:   4% (11/253)Resolving deltas:   5% (13/253)Resolving deltas:   6% (16/253)Resolving deltas:   7% (18/253)Resolving deltas:   8% (21/253)Resolving deltas:   9% (23/253)Resolving deltas:  10% (26/253)Resolving deltas:  11% (28/253)Resolving deltas:  12% (31/253)Resolving deltas:  13% (33/253)Resolving deltas:  14% (36/253)Resolving deltas:  15% (38/253)Resolving deltas:  16% (41/253)Resolving deltas:  17% (44/253)Resolving deltas:  18% (46/253)Resolving deltas:  19% (49/253)Resolving deltas:  20% (51/253)Resolving deltas:  21% (54/253)Resolving deltas:  22% (56/253)Resolving deltas:  23% (59/253)Resolving deltas:  24% (61/253)Resolving deltas:  25% (64/253)Resolving deltas:  26% (66/253)Resolving deltas:  27% (69/253)Resolving deltas:  28% (71/253)Resolving deltas:  29% (74/253)Resolving deltas:  30% (77/253)Resolving deltas:  31% (79/253)Resolving deltas:  32% (81/253)Resolving deltas:  33% (84/253)Resolving deltas:  34% (87/253)Resolving deltas:  35% (89/253)Resolving deltas:  36% (92/253)Resolving deltas:  37% (94/253)Resolving deltas:  38% (97/253)Resolving deltas:  39% (99/253)Resolving deltas:  40% (102/253)Resolving deltas:  41% (104/253)Resolving deltas:  42% (107/253)Resolving deltas:  43% (109/253)Resolving deltas:  44% (112/253)Resolving deltas:  45% (114/253)Resolving deltas:  46% (117/253)Resolving deltas:  47% (119/253)Resolving deltas:  48% (122/253)Resolving deltas:  49% (124/253)Resolving deltas:  50% (127/253)Resolving deltas:  51% (130/253)Resolving deltas:  52% (132/253)Resolving deltas:  53% (136/253)Resolving deltas:  54% (137/253)Resolving deltas:  55% (140/253)Resolving deltas:  56% (142/253)Resolving deltas:  57% (146/253)Resolving deltas:  58% (147/253)Resolving deltas:  59% (150/253)Resolving deltas:  60% (152/253)Resolving deltas:  61% (155/253)Resolving deltas:  62% (157/253)Resolving deltas:  63% (160/253)Resolving deltas:  64% (162/253)Resolving deltas:  65% (165/253)Resolving deltas:  66% (167/253)Resolving deltas:  67% (170/253)Resolving deltas:  68% (173/253)Resolving deltas:  69% (175/253)Resolving deltas:  70% (178/253)Resolving deltas:  71% (180/253)Resolving deltas:  72% (183/253)Resolving deltas:  73% (185/253)Resolving deltas:  74% (188/253)Resolving deltas:  75% (190/253)Resolving deltas:  76% (193/253)Resolving deltas:  77% (195/253)Resolving deltas:  78% (198/253)Resolving deltas:  79% (200/253)Resolving deltas:  80% (203/253)Resolving deltas:  81% (205/253)Resolving deltas:  82% (208/253)Resolving deltas:  83% (210/253)Resolving deltas:  84% (213/253)Resolving deltas:  85% (216/253)Resolving deltas:  86% (218/253)Resolving deltas:  87% (221/253)Resolving deltas:  88% (223/253)Resolving deltas:  89% (226/253)Resolving deltas:  90% (228/253)Resolving deltas:  91% (231/253)Resolving deltas:  92% (233/253)Resolving deltas:  93% (236/253)Resolving deltas:  94% (238/253)Resolving deltas:  95% (241/253)Resolving deltas:  96% (243/253)Resolving deltas:  97% (246/253)Resolving deltas:  98% (248/253)Resolving deltas:  99% (251/253)Resolving deltas: 100% (253/253)Resolving deltas: 100% (253/253), completed with 18 local objects.
+   From https://github.com/icecold-bodies/icb-platform
+      6b77d52..de74796  backport/v1.39-base    -> origin/backport/v1.39-base
+    * [new branch]      docs/v1.57-ba-feedback -> origin/docs/v1.57-ba-feedback
+    * [new branch]      feat/v1.57-costing-audit -> origin/feat/v1.57-costing-audit
+    * [new branch]      feat/v1.57.1-explosive-pack -> origin/feat/v1.57.1-explosive-pack
+    * [new branch]      feat/v1.57.2-report-layout -> origin/feat/v1.57.2-report-layout
+    * [new branch]      feat/v1.59-costing-audit-admin -> origin/feat/v1.59-costing-audit-admin
+    * [new branch]      ops/v1.57.3-prod-baseline -> origin/ops/v1.57.3-prod-baseline
+    * [new branch]      release/v1.59.0        -> origin/release/v1.59.0
+    ! [rejected]        v1.47.1                -> v1.47.1  (would clobber existing tag)
+   ok   180 files (C-sorted sha256 8572274f6b287aa1), one migration (0049_costing_audit_runs.py), frontend untouched: no SPA rebuild
+== 6. the repo's deploy script — dry run
+   | 
+   | == 0. preflight
+   |   repo      /opt/icb-platform (branch HEAD)
+   |   deployed  6b77d52b  feat(costings): the costing shows the parameters the body was pr
+   |   ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+   | 
+   | == 1. fetch
+   |   ok  de74796bd22070e59876572a49c8b39b804c75b9 already present - no fetch needed
+   |   ok  de74796bd22070e59876572a49c8b39b804c75b9 = de74796b
+   | 
+   | == 2. plan
+   |   6b77d52b -> de74796b   (9 commit(s), 180 file(s))
+   |     de74796 release(v1.59.0): prod runbook + release kit for the costing audit admin page; VERSION -> v1.59.0 (#198)
+   |     48231f4 data(audit): pricing corrections F1-F4 from the Sept costing audit, applied on prod (v1.58) (#197)
+   |     b10a7cf ops(audit): prod becomes the CI costing-audit baseline (v1.57.3) (#196)
+   |     a5238b8 feat(audit): Admin -> Costing audit page — run the audit on demand in the server (v1.59) (#195)
+   |     ab4e990 docs(releases): BA feedback for the costing audit session (v1.57 / v1.57.1 / v1.57.2) + Phase 2 request (#194)
+   |     b4d2dc8 feat(audit): report layout + an accepted entry must explain the whole difference (v1.57.2) (#193)
+   |     712f31b feat(audit): explosive pack, cause-guarded accepted lists per environment, offline re-evaluation, first prod run (v1.57.1) (#192)
+   |     a6821d5 feat(audit): Excel ↔ MES costing parity packs — oracle, probe, comparator, CI gate (v1.57) (#191)
+   |     59ea9bb docs(releases): BA feedback for the September price update + icecream insulation session (v1.52 / v1.52.1 / v1.52.2)
+   | 
+   |   DB migration     YES - 0049_costing_audit_runs.py 
+   |   SPA rebuild      no  (frontend/ untouched)
+   |   Service restart  YES - 37 Python file(s) changed
+   |   !!  dependency manifests changed (1) - check whether pip/npm install is needed BEFORE continuing
+   | 
+   |   ok  dry run - nothing changed.
+   ok   plan: migrate 0049, no SPA rebuild, restart
+== 7. deploy (fast-forward, alembic upgrade head, restart, health)
+   | 
+   | == 0. preflight
+   |   repo      /opt/icb-platform (branch HEAD)
+   |   deployed  6b77d52b  feat(costings): the costing shows the parameters the body was pr
+   |   ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+   | 
+   | == 1. fetch
+   |   ok  de74796bd22070e59876572a49c8b39b804c75b9 already present - no fetch needed
+   |   ok  de74796bd22070e59876572a49c8b39b804c75b9 = de74796b
+   | 
+   | == 2. plan
+   |   6b77d52b -> de74796b   (9 commit(s), 180 file(s))
+   |     de74796 release(v1.59.0): prod runbook + release kit for the costing audit admin page; VERSION -> v1.59.0 (#198)
+   |     48231f4 data(audit): pricing corrections F1-F4 from the Sept costing audit, applied on prod (v1.58) (#197)
+   |     b10a7cf ops(audit): prod becomes the CI costing-audit baseline (v1.57.3) (#196)
+   |     a5238b8 feat(audit): Admin -> Costing audit page — run the audit on demand in the server (v1.59) (#195)
+   |     ab4e990 docs(releases): BA feedback for the costing audit session (v1.57 / v1.57.1 / v1.57.2) + Phase 2 request (#194)
+   |     b4d2dc8 feat(audit): report layout + an accepted entry must explain the whole difference (v1.57.2) (#193)
+   |     712f31b feat(audit): explosive pack, cause-guarded accepted lists per environment, offline re-evaluation, first prod run (v1.57.1) (#192)
+   |     a6821d5 feat(audit): Excel ↔ MES costing parity packs — oracle, probe, comparator, CI gate (v1.57) (#191)
+   |     59ea9bb docs(releases): BA feedback for the September price update + icecream insulation session (v1.52 / v1.52.1 / v1.52.2)
+   | 
+   |   DB migration     YES - 0049_costing_audit_runs.py 
+   |   SPA rebuild      no  (frontend/ untouched)
+   |   Service restart  YES - 37 Python file(s) changed
+   |   !!  dependency manifests changed (1) - check whether pip/npm install is needed BEFORE continuing
+   | 
+   |   rollback anchor 6b77d52b saved to /tmp/icb-rollback-20260928-152820.txt
+   | 
+   | == 3. database backup (a migration is about to run)
+   | Sep 28 15:28:20 icb-mes-prod runuser[149567]: pam_unix(runuser:session): session closed for user postgres
+   | Sep 28 15:28:21 icb-mes-prod icb-pg-backup[149564]: Backup complete: /var/backups/postgres/icb_platform_20260928-1528.dump.gz (1158199 bytes)
+   | Sep 28 15:28:21 icb-mes-prod systemd[1]: icb-pg-backup.service: Deactivated successfully.
+   | Sep 28 15:28:21 icb-mes-prod systemd[1]: Finished icb-pg-backup.service - ICB MES Postgres nightly backup.
+   |   ok  schema before: 0048 (head)
+   | 
+   | == 4. fast-forward the code
+   | Updating 6b77d52..de74796
+   | Fast-forward
+   |  .gitattributes                                     |      3 +
+   |  .github/workflows/costing-audit.yml                |    108 +
+   |  .gitignore                                         |      3 +
+   |  backend/VERSION                                    |      2 +-
+   |  .../alembic/versions/0049_costing_audit_runs.py    |    133 +
+   |  backend/app/database.py                            |     42 +-
+   |  backend/app/main.py                                |      2 +
+   |  backend/app/routers/costing_audit.py               |    110 +
+   |  backend/app/services/costing_audit_runs.py         |    486 +
+   |  backend/app/templates/admin_costing_audit.html     |    304 +
+   |  backend/app/templates/base.html                    |      7 +-
+   |  backend/requirements.txt                           |      1 +
+   |  backend/tests/costing_audit/.gitignore             |      8 +
+   |  .../costing_audit/accepted_differences.prod.yaml   |    168 +
+   |  .../tests/costing_audit/accepted_differences.yaml  |    229 +
+   |  .../chillers/4_9_up_chiller_and_2_5_wide.json      |  61111 +++++++++
+   |  .../costing_audit/golden/chillers/_manifest.json   |     44 +
+   |  .../golden/chillers/up_to_2_3_chiller_body.json    |  19558 +++
+   |  .../chillers/up_to_5_5_chiller_and_2_3_wide.json   |  23343 ++++
+   |  .../costing_audit/golden/explosive/_manifest.json  |     24 +
+   |  .../golden/explosive/explosive_2_7_to_4_8.json     |  18247 +++
+   |  .../golden/explosive/explosive_4_9_and_up.json     |  18283 +++
+   |  .../golden/explosive/explosive_up_to_2_7.json      |  17045 +++
+   |  .../golden/freezers/4_9_up_freezer_body_2.json     |  20996 +++
+   |  .../costing_audit/golden/freezers/_manifest.json   |     24 +
+   |  .../golden/freezers/up_to_2_3_mtr_freezer.json     |  11428 ++
+   |  .../golden/freezers/up_to_4_8_mt_freezer_2.json    |  27506 ++++
+   |  .../costing_audit/golden/icecream/_manifest.json   |     24 +
+   |  .../golden/icecream/icecream_4_9_up.json           |  19908 +++
+   |  .../golden/icecream/icecream_up_to_3_2.json        |  11428 ++
+   |  .../golden/icecream/icecream_up_to_4_8.json        |  19782 +++
+   |  .../costing_audit/golden/smoke/_manifest.json      |     24 +
+   |  .../golden/smoke/icecream_up_to_4_8.json           |   6870 +
+   |  .../golden/smoke/up_to_4_8_mt_freezer_2.json       |   7220 +
+   |  .../smoke/up_to_5_5_chiller_and_2_3_wide.json      |   6987 +
+   |  backend/tests/costing_audit/mes_snapshot/all.json  | 126298 ++++++++++++++++++
+   |  backend/tests/costing_audit/packs/chillers.yaml    |     33 +
+   |  backend/tests/costing_audit/packs/explosive.yaml   |     17 +
+   |  backend/tests/costing_audit/packs/freezers.yaml    |     15 +
+   |  backend/tests/costing_audit/packs/icecream.yaml    |     15 +
+   |  backend/tests/costing_audit/packs/smoke.yaml       |     16 +
+   |  .../sheet_maps/4_9_up_chiller_and_2_5_wide.yaml    |      8 +
+   |  backend/tests/costing_audit/synthetic.py           |    115 +
+   |  .../tests/costing_audit/test_admin_run_support.py  |    161 +
+   |  backend/tests/costing_audit/test_compare.py        |    208 +
+   |  .../costing_audit/test_explained_acceptance.py     |     83 +
+   |  backend/tests/costing_audit/test_mes_snapshot.py   |     47 +
+   |  .../costing_audit/test_mes_snapshot_no_people.py   |     89 +
+   |  backend/tests/costing_audit/test_oracle_edits.py   |    135 +
+   |  .../tests/costing_audit/test_packs_and_rules.py    |     88 +
+   |  .../tests/costing_audit/test_reaccept_and_cause.py |     76 +
+   |  backend/tests/costing_audit/test_report_layout.py  |     58 +
+   |  backend/tests/costing_audit/test_sheet_map.py      |     81 +
+   |  .../journeys/test_costing_audit_admin_journey.py   |    148 +
+   |  backend/tests/test_costing_audit_admin.py          |    579 +
+   |  backend/tests/test_production_thresholds_api.py    |      2 +-
+   |  .../tests/test_v1_58_audit_pricing_corrections.py  |    258 +
+   |  backend/tools/audit_pricing_corrections.py         |    434 +
+   |  backend/tools/costing_audit/README.md              |    240 +
+   |  backend/tools/costing_audit/__init__.py            |     29 +
+   |  backend/tools/costing_audit/__main__.py            |      6 +
+   |  backend/tools/costing_audit/accepted.py            |    131 +
+   |  backend/tools/costing_audit/changes.py             |     70 +
+   |  backend/tools/costing_audit/cli.py                 |    249 +
+   |  backend/tools/costing_audit/compare.py             |    469 +
+   |  backend/tools/costing_audit/excel_oracle.py        |    442 +
+   |  backend/tools/costing_audit/golden.py              |     27 +
+   |  backend/tools/costing_audit/mapping.py             |     80 +
+   |  backend/tools/costing_audit/mes_probe.py           |    278 +
+   |  backend/tools/costing_audit/mes_snapshot.py        |    341 +
+   |  backend/tools/costing_audit/report.py              |    399 +
+   |  backend/tools/costing_audit/runner.py              |    101 +
+   |  backend/tools/costing_audit/scenarios.py           |    269 +
+   |  backend/tools/costing_audit/sheet_map.py           |    414 +
+   |  backend/tools/costing_audit/soffice.py             |     94 +
+   |  docs/audit/costing_audit/2026-09/README.md         |    180 +
+   |  .../2026-09/costing_audit_chillers.csv             |   1075 +
+   |  .../2026-09/costing_audit_chillers.html            |     65 +
+   |  .../2026-09/costing_audit_chillers.md              |     47 +
+   |  .../2026-09/costing_audit_explosive.csv            |    685 +
+   |  .../2026-09/costing_audit_explosive.html           |     65 +
+   |  .../2026-09/costing_audit_explosive.md             |     53 +
+   |  .../2026-09/costing_audit_freezers.csv             |    691 +
+   |  .../2026-09/costing_audit_freezers.html            |     65 +
+   |  .../2026-09/costing_audit_freezers.md              |     46 +
+   |  .../2026-09/costing_audit_icecream.csv             |    613 +
+   |  .../2026-09/costing_audit_icecream.html            |     65 +
+   |  .../2026-09/costing_audit_icecream.md              |     64 +
+   |  .../costing_audit/2026-09/costing_audit_smoke.csv  |    235 +
+   |  .../costing_audit/2026-09/costing_audit_smoke.html |     65 +
+   |  .../costing_audit/2026-09/costing_audit_smoke.md   |     37 +
+   |  .../2026-09/discover_tick_through.txt              |    107 +
+   |  docs/audit/costing_audit/2026-09/prod/MANIFEST.txt |      7 +
+   |  .../2026-09/prod/prod_costing_audit_chillers.csv   |   1254 +
+   |  .../2026-09/prod/prod_costing_audit_chillers.html  |    249 +
+   |  .../2026-09/prod/prod_costing_audit_chillers.md    |     35 +
+   |  .../2026-09/prod/prod_costing_audit_explosive.csv  |    685 +
+   |  .../2026-09/prod/prod_costing_audit_explosive.html |    249 +
+   |  .../2026-09/prod/prod_costing_audit_explosive.md   |     53 +
+   |  .../2026-09/prod/prod_costing_audit_freezers.csv   |    691 +
+   |  .../2026-09/prod/prod_costing_audit_freezers.html  |    249 +
+   |  .../2026-09/prod/prod_costing_audit_freezers.md    |     40 +
+   |  .../2026-09/prod/prod_costing_audit_icecream.csv   |    613 +
+   |  .../2026-09/prod/prod_costing_audit_icecream.html  |    249 +
+   |  .../2026-09/prod/prod_costing_audit_icecream.md    |     53 +
+   |  .../2026-09/prod/prod_costing_audit_smoke.csv      |    235 +
+   |  .../2026-09/prod/prod_costing_audit_smoke.html     |    249 +
+   |  .../2026-09/prod/prod_costing_audit_smoke.md       |     33 +
+   |  .../SECTION_3_0_DISCOVERY.md                       |    151 +
+   |  .../golden_addition/merge_chiller_srd_pu.py        |    106 +
+   |  .../impact/impact_refresh.sql                      |    124 +
+   |  .../pricing_corrections_2026-09/manifest.yaml      |    356 +
+   |  .../mirror/MIRROR_PROOF.md                         |     88 +
+   |  .../mirror/mirror_before_chillers.csv              |   1254 +
+   |  .../mirror/mirror_before_chillers.md               |     64 +
+   |  .../mirror/mirror_before_explosive.csv             |    685 +
+   |  .../mirror/mirror_before_explosive.md              |     54 +
+   |  .../mirror/mirror_before_freezers.csv              |    691 +
+   |  .../mirror/mirror_before_freezers.md               |     40 +
+   |  .../mirror/mirror_before_icecream.csv              |    613 +
+   |  .../mirror/mirror_before_icecream.md               |     58 +
+   |  .../mirror/mirror_before_smoke.csv                 |    235 +
+   |  .../mirror/mirror_before_smoke.md                  |     34 +
+   |  .../mirror/mirror_final_chillers.csv               |   1254 +
+   |  .../mirror/mirror_final_chillers.md                |     35 +
+   |  .../mirror/mirror_final_explosive.csv              |    685 +
+   |  .../mirror/mirror_final_explosive.md               |     53 +
+   |  .../mirror/mirror_final_freezers.csv               |    691 +
+   |  .../mirror/mirror_final_freezers.md                |     40 +
+   |  .../mirror/mirror_final_icecream.csv               |    613 +
+   |  .../mirror/mirror_final_icecream.md                |     53 +
+   |  .../mirror/mirror_final_smoke.csv                  |    235 +
+   |  .../mirror/mirror_final_smoke.md                   |     33 +
+   |  ...orrections_journal_mirror_20260928T100623Z.json |   1355 +
+   |  .../prod/C_impact_2026-09-28.csv                   |     18 +
+   |  .../prod/IMPACT_2026-09-28.md                      |     53 +
+   |  .../pricing_corrections_2026-09/prod/OUTCOME.md    |    194 +
+   |  .../prod/RETURN_2b_2026-09-28.md                   |    370 +
+   |  .../prod/apply_20260928T111656Z_run.txt            |    360 +
+   |  .../prod/dryrun_20260928T105046Z_run.txt           |    121 +
+   |  ..._corrections_journal_prod_20260928T111658Z.json |   1355 +
+   |  .../prod/rerun_20260928-133335/checks/00_env.csv   |      2 +
+   |  .../checks/C1_price_history_srd_pu.csv             |      3 +
+   |  .../checks/C2_changes_7sep.csv                     |      9 +
+   |  .../checks/E3_all_lines_on_material.csv            |     27 +
+   |  .../checks/E3_inheriting_lines.csv                 |     16 +
+   |  .../checks/E3_srd_pu_material.csv                  |      2 +
+   |  .../checks/F2_alu_draft_nodes.csv                  |      3 +
+   |  .../checks/F2_draft_count.csv                      |      3 +
+   |  .../checks/F5_3_changes_22sep.csv                  |      7 +
+   |  .../checks/F5_3_explosive_pu_history.csv           |     11 +
+   |  .../checks/P1_48_floor_lines.csv                   |     17 +
+   |  .../checks/P2_48_floor_draft_nodes.csv             |     16 +
+   |  .../rerun_20260928-133335/prune_reaccept_steps.txt |     78 +
+   |  .../reports/prod_after_chillers.csv                |   1254 +
+   |  .../reports/prod_after_chillers.md                 |     35 +
+   |  .../reports/prod_after_explosive.csv               |    685 +
+   |  .../reports/prod_after_explosive.md                |     53 +
+   |  .../reports/prod_after_freezers.csv                |    691 +
+   |  .../reports/prod_after_freezers.md                 |     40 +
+   |  .../reports/prod_after_icecream.csv                |    613 +
+   |  .../reports/prod_after_icecream.md                 |     53 +
+   |  .../reports/prod_after_smoke.csv                   |    235 +
+   |  .../reports/prod_after_smoke.md                    |     33 +
+   |  .../prod/rerun_20260928-133335/run.txt             |     23 +
+   |  ...-07_SeptemberPrices_IcecreamInsulation_v1.52.md |    244 +
+   |  .../BA_FEEDBACK_2026-09-27_CostingAudit_v1.57.md   |    222 +
+   |  .../prod-deploy-v1.59.0-costing-audit-admin.md     |    177 +
+   |  .../journeys/costing_audit_admin/01-page.png       |    Bin 0 -> 73117 bytes
+   |  .../costing_audit_admin/02-first-run-report.png    |    Bin 0 -> 222482 bytes
+   |  .../costing_audit_admin/03-no-change-since.png     |    Bin 0 -> 227755 bytes
+   |  .../costing_audit_admin/04-history-open-first.png  |    Bin 0 -> 227030 bytes
+   |  .../05-non-admin-no-menu-entry.png                 |    Bin 0 -> 63633 bytes
+   |  ops/prod-baseline/prod_baseline.sh                 |    111 +
+   |  ops/prod-pricing-corrections/mkstage.sh            |     31 +
+   |  ops/prod-pricing-corrections/pc_prod.sh            |    124 +
+   |  ops/prod-pricing-corrections/prod_checks.sql       |    115 +
+   |  ops/prod-pricing-corrections/prod_rerun.sh         |     70 +
+   |  ops/prod-release-v1.59.0/mkstage.sh                |     67 +
+   |  ops/prod-release-v1.59.0/release.sh                |    290 +
+   |  180 files changed, 450590 insertions(+), 4 deletions(-)
+   |  create mode 100644 .github/workflows/costing-audit.yml
+   |  create mode 100644 backend/alembic/versions/0049_costing_audit_runs.py
+   |  create mode 100644 backend/app/routers/costing_audit.py
+   |  create mode 100644 backend/app/services/costing_audit_runs.py
+   |  create mode 100644 backend/app/templates/admin_costing_audit.html
+   |  create mode 100644 backend/tests/costing_audit/.gitignore
+   |  create mode 100644 backend/tests/costing_audit/accepted_differences.prod.yaml
+   |  create mode 100644 backend/tests/costing_audit/accepted_differences.yaml
+   |  create mode 100644 backend/tests/costing_audit/golden/chillers/4_9_up_chiller_and_2_5_wide.json
+   |  create mode 100644 backend/tests/costing_audit/golden/chillers/_manifest.json
+   |  create mode 100644 backend/tests/costing_audit/golden/chillers/up_to_2_3_chiller_body.json
+   |  create mode 100644 backend/tests/costing_audit/golden/chillers/up_to_5_5_chiller_and_2_3_wide.json
+   |  create mode 100644 backend/tests/costing_audit/golden/explosive/_manifest.json
+   |  create mode 100644 backend/tests/costing_audit/golden/explosive/explosive_2_7_to_4_8.json
+   |  create mode 100644 backend/tests/costing_audit/golden/explosive/explosive_4_9_and_up.json
+   |  create mode 100644 backend/tests/costing_audit/golden/explosive/explosive_up_to_2_7.json
+   |  create mode 100644 backend/tests/costing_audit/golden/freezers/4_9_up_freezer_body_2.json
+   |  create mode 100644 backend/tests/costing_audit/golden/freezers/_manifest.json
+   |  create mode 100644 backend/tests/costing_audit/golden/freezers/up_to_2_3_mtr_freezer.json
+   |  create mode 100644 backend/tests/costing_audit/golden/freezers/up_to_4_8_mt_freezer_2.json
+   |  create mode 100644 backend/tests/costing_audit/golden/icecream/_manifest.json
+   |  create mode 100644 backend/tests/costing_audit/golden/icecream/icecream_4_9_up.json
+   |  create mode 100644 backend/tests/costing_audit/golden/icecream/icecream_up_to_3_2.json
+   |  create mode 100644 backend/tests/costing_audit/golden/icecream/icecream_up_to_4_8.json
+   |  create mode 100644 backend/tests/costing_audit/golden/smoke/_manifest.json
+   |  create mode 100644 backend/tests/costing_audit/golden/smoke/icecream_up_to_4_8.json
+   |  create mode 100644 backend/tests/costing_audit/golden/smoke/up_to_4_8_mt_freezer_2.json
+   |  create mode 100644 backend/tests/costing_audit/golden/smoke/up_to_5_5_chiller_and_2_3_wide.json
+   |  create mode 100644 backend/tests/costing_audit/mes_snapshot/all.json
+   |  create mode 100644 backend/tests/costing_audit/packs/chillers.yaml
+   |  create mode 100644 backend/tests/costing_audit/packs/explosive.yaml
+   |  create mode 100644 backend/tests/costing_audit/packs/freezers.yaml
+   |  create mode 100644 backend/tests/costing_audit/packs/icecream.yaml
+   |  create mode 100644 backend/tests/costing_audit/packs/smoke.yaml
+   |  create mode 100644 backend/tests/costing_audit/sheet_maps/4_9_up_chiller_and_2_5_wide.yaml
+   |  create mode 100644 backend/tests/costing_audit/synthetic.py
+   |  create mode 100644 backend/tests/costing_audit/test_admin_run_support.py
+   |  create mode 100644 backend/tests/costing_audit/test_compare.py
+   |  create mode 100644 backend/tests/costing_audit/test_explained_acceptance.py
+   |  create mode 100644 backend/tests/costing_audit/test_mes_snapshot.py
+   |  create mode 100644 backend/tests/costing_audit/test_mes_snapshot_no_people.py
+   |  create mode 100644 backend/tests/costing_audit/test_oracle_edits.py
+   |  create mode 100644 backend/tests/costing_audit/test_packs_and_rules.py
+   |  create mode 100644 backend/tests/costing_audit/test_reaccept_and_cause.py
+   |  create mode 100644 backend/tests/costing_audit/test_report_layout.py
+   |  create mode 100644 backend/tests/costing_audit/test_sheet_map.py
+   |  create mode 100644 backend/tests/journeys/test_costing_audit_admin_journey.py
+   |  create mode 100644 backend/tests/test_costing_audit_admin.py
+   |  create mode 100644 backend/tests/test_v1_58_audit_pricing_corrections.py
+   |  create mode 100644 backend/tools/audit_pricing_corrections.py
+   |  create mode 100644 backend/tools/costing_audit/README.md
+   |  create mode 100644 backend/tools/costing_audit/__init__.py
+   |  create mode 100644 backend/tools/costing_audit/__main__.py
+   |  create mode 100644 backend/tools/costing_audit/accepted.py
+   |  create mode 100644 backend/tools/costing_audit/changes.py
+   |  create mode 100644 backend/tools/costing_audit/cli.py
+   |  create mode 100644 backend/tools/costing_audit/compare.py
+   |  create mode 100644 backend/tools/costing_audit/excel_oracle.py
+   |  create mode 100644 backend/tools/costing_audit/golden.py
+   |  create mode 100644 backend/tools/costing_audit/mapping.py
+   |  create mode 100644 backend/tools/costing_audit/mes_probe.py
+   |  create mode 100644 backend/tools/costing_audit/mes_snapshot.py
+   |  create mode 100644 backend/tools/costing_audit/report.py
+   |  create mode 100644 backend/tools/costing_audit/runner.py
+   |  create mode 100644 backend/tools/costing_audit/scenarios.py
+   |  create mode 100644 backend/tools/costing_audit/sheet_map.py
+   |  create mode 100644 backend/tools/costing_audit/soffice.py
+   |  create mode 100644 docs/audit/costing_audit/2026-09/README.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_chillers.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_chillers.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_chillers.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_explosive.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_explosive.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_explosive.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_freezers.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_freezers.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_freezers.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_icecream.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_icecream.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_icecream.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_smoke.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_smoke.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/costing_audit_smoke.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/discover_tick_through.txt
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/MANIFEST.txt
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_chillers.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_chillers.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_chillers.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_explosive.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_explosive.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_explosive.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_freezers.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_freezers.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_freezers.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_icecream.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_icecream.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_icecream.md
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_smoke.csv
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_smoke.html
+   |  create mode 100644 docs/audit/costing_audit/2026-09/prod/prod_costing_audit_smoke.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/SECTION_3_0_DISCOVERY.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/golden_addition/merge_chiller_srd_pu.py
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/impact/impact_refresh.sql
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/manifest.yaml
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/MIRROR_PROOF.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_chillers.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_chillers.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_explosive.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_explosive.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_freezers.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_freezers.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_icecream.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_icecream.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_smoke.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_before_smoke.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_chillers.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_chillers.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_explosive.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_explosive.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_freezers.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_freezers.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_icecream.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_icecream.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_smoke.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/mirror_final_smoke.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/mirror/pricing_corrections_journal_mirror_20260928T100623Z.json
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/C_impact_2026-09-28.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/IMPACT_2026-09-28.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/OUTCOME.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/RETURN_2b_2026-09-28.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/apply_20260928T111656Z_run.txt
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/dryrun_20260928T105046Z_run.txt
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/pricing_corrections_journal_prod_20260928T111658Z.json
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/00_env.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/C1_price_history_srd_pu.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/C2_changes_7sep.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/E3_all_lines_on_material.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/E3_inheriting_lines.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/E3_srd_pu_material.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/F2_alu_draft_nodes.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/F2_draft_count.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/F5_3_changes_22sep.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/F5_3_explosive_pu_history.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/P1_48_floor_lines.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/checks/P2_48_floor_draft_nodes.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/prune_reaccept_steps.txt
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_chillers.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_chillers.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_explosive.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_explosive.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_freezers.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_freezers.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_icecream.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_icecream.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_smoke.csv
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/reports/prod_after_smoke.md
+   |  create mode 100644 docs/audit/pricing_corrections_2026-09/prod/rerun_20260928-133335/run.txt
+   |  create mode 100644 docs/releases/BA_FEEDBACK_2026-09-07_SeptemberPrices_IcecreamInsulation_v1.52.md
+   |  create mode 100644 docs/releases/BA_FEEDBACK_2026-09-27_CostingAudit_v1.57.md
+   |  create mode 100644 docs/runbooks/prod-deploy-v1.59.0-costing-audit-admin.md
+   |  create mode 100644 docs/screenshots/journeys/costing_audit_admin/01-page.png
+   |  create mode 100644 docs/screenshots/journeys/costing_audit_admin/02-first-run-report.png
+   |  create mode 100644 docs/screenshots/journeys/costing_audit_admin/03-no-change-since.png
+   |  create mode 100644 docs/screenshots/journeys/costing_audit_admin/04-history-open-first.png
+   |  create mode 100644 docs/screenshots/journeys/costing_audit_admin/05-non-admin-no-menu-entry.png
+   |  create mode 100644 ops/prod-baseline/prod_baseline.sh
+   |  create mode 100644 ops/prod-pricing-corrections/mkstage.sh
+   |  create mode 100644 ops/prod-pricing-corrections/pc_prod.sh
+   |  create mode 100644 ops/prod-pricing-corrections/prod_checks.sql
+   |  create mode 100644 ops/prod-pricing-corrections/prod_rerun.sh
+   |  create mode 100644 ops/prod-release-v1.59.0/mkstage.sh
+   |  create mode 100644 ops/prod-release-v1.59.0/release.sh
+   |   ok  at de74796b (verified by SHA, not by git describe)
+   | 
+   | == 5. alembic upgrade head
+   | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+   | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+   | INFO  [alembic.runtime.migration] Running upgrade 0048 -> 0049, Costing audit runs (Migration 0049).
+   |   ok  schema after: 0049 (head)
+   | 
+   | == 6. SPA build - skipped (frontend/ untouched in this range)
+   | 
+   | == 7. restart icb-backend
+   |   active since (before): Fri 2026-09-25 06:17:50 SAST
+   |   active since (after):  Mon 2026-09-28 15:28:30 SAST
+   |   ok  restarted
+   | 
+   | == 8. verify
+   |   workers started      4 (expected 4)
+   |   BOOTSTRAP FAILED     0 (expected 0)
+   |   https://127.0.0.1/health -> 200
+   |   ok  healthy
+   | 
+   | DEPLOYED  6b77d52b -> de74796b  (de74796bd22070e59876572a49c8b39b804c75b9)
+   | 
+   | Rollback (code-only - additive migrations are left in place deliberately):
+   |     /opt/icb-platform/deploy/prod/icb-rollback.sh 6b77d52b
+   | 
+   |   or, without the script:
+   |     sudo -u icb git -C /opt/icb-platform reset --hard 6b77d52b
+   |     sudo systemctl restart icb-backend
+   | 
+   ok   restart: Fri 2026-09-25 06:17:50 SAST -> Mon 2026-09-28 15:28:30 SAST (pid 116800 -> 149619)
+   ok   deploy record: completed de74796
+== 8. post-deploy asserts (waiting 20 s for all workers to log startup)
+== code + schema
+   PASS HEAD = de74796bd22070e59876572a49c8b39b804c75b9
+   PASS ALEMBIC = 0049
+   PASS TABLE = 1
+   PASS INDEXES = 2
+   PASS PERMISSION = 1
+   PASS ADMIN_GRANT = 1
+== service
+   PASS ACTIVE = active
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   PASS TOOL_IMPORT = ok
+== the page is live and gated (unauthenticated probes)
+   PASS OPENAPI_LOCAL_MISSING = 
+   PASS OPENAPI_LAN_MISSING = 
+   PASS OPENAPI_DOORS_EQUAL = yes
+   PASS PAGE_UNAUTH = 307
+   PASS API_UNAUTH = 401
+== served bytes (static + SPA untouched by this range)
+   PASS CALC_LOCAL = d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90
+   PASS CALC_LAN = d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   ok   0 tracebacks since the restart
+
+deployed      6b77d52 -> de74796 (de74796bd22070e59876572a49c8b39b804c75b9)
+alembic       0048 -> 0049
+backup        /var/backups/postgres/icb_platform_pre-v1.59.0_20260928-152814.dump  1461181 bytes  sha256 b4f901f2ee295d8bf3e8e0fc5eda260b11329860bc23d29e0b7e29abf3025bd7
+pyyaml        6.0.2
+restart       Fri 2026-09-25 06:17:50 SAST -> Mon 2026-09-28 15:28:30 SAST (pid 116800 -> 149619)
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+calculator.js ?v=182 d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90 (local = lan = the git blob; unchanged)
+spa           assets/index-Be8qL-PA.js 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (local = lan = disk; unchanged, no rebuild)
+openapi       local = lan, the 6 new paths present
+page          unauthenticated /admin/costing-audit -> 307, /api/admin/costing-audit/runs -> 401
+permission    admin.costing_audit seeded, granted to admin
+finished      2026-09-28T15:28:59+02:00
+
+######## DEPLOYED — tell the CA: /tmp/icb-release-v1.59.0/out-deploy-20260928-152814  (Cloudflare is probed by the CA from outside, now that the disk matches)

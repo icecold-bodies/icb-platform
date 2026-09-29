@@ -1097,6 +1097,18 @@ async def admin_visual_configurator_settings(request: Request, db: Session = Dep
     })
 
 
+def _cond_for_client(c: dict) -> dict:
+    """One saved bom_conditions entry as the configurator reads it.
+
+    v1.59.1 — option_id rides through when stored, so the rule editor can send
+    a condition back exactly as it was saved (an unchanged Save is a no-op).
+    """
+    out = {"option": str(c.get("option", "")), "equals": str(c.get("equals", "Y")).upper()}
+    if c.get("option_id") is not None:
+        out["option_id"] = c["option_id"]
+    return out
+
+
 @router.get("/api/admin/settings/body-types/{trailer_id}/categories")
 async def admin_visual_configurator_categories(
     trailer_id: int, request: Request, db: Session = Depends(get_db),
@@ -1152,7 +1164,7 @@ async def admin_visual_configurator_categories(
                 parsed = json.loads(raw)
                 if isinstance(parsed, list):
                     conds = [
-                        {"option": str(c.get("option", "")), "equals": str(c.get("equals", "Y")).upper()}
+                        _cond_for_client(c)
                         for c in parsed
                         if isinstance(c, dict) and c.get("option")
                     ]
@@ -1163,7 +1175,7 @@ async def admin_visual_configurator_categories(
                     elif raw_mode == "exclude":
                         cond_mode = "exclude"
                     conds = [
-                        {"option": str(c.get("option", "")), "equals": str(c.get("equals", "Y")).upper()}
+                        _cond_for_client(c)
                         for c in (parsed.get("all") or [])
                         if isinstance(c, dict) and c.get("option")
                     ]
@@ -1336,7 +1348,7 @@ def _build_configurator_tree(db: Session, trailer: TrailerType) -> dict:
                 else:
                     items = []
                 conds = [
-                    {"option": str(c.get("option", "")), "equals": str(c.get("equals", "Y")).upper()}
+                    _cond_for_client(c)
                     for c in items
                     if isinstance(c, dict) and c.get("option")
                 ]

@@ -142,9 +142,16 @@ def test_rule_editor_keeps_out_of_branch_condition(page: Page, live_server: str,
     body_select.select_option(str(staged["body"]))
     expect(page.locator(".vs-catalog-card", has_text=f"{MARK} REAR FRAME")).to_be_visible(timeout=30_000)
 
-    # 1. Out-of-branch only: shown as kept, nothing injected, Save is a no-op.
+    # 1. Out-of-branch only: an unchanged Save is a no-op. The DB is checked
+    # FIRST so a regression fails naming the flag it substituted.
     _open_rule(page)
     modal = page.locator(".vs-rule-modal")
+    _save(page)
+    after = _stored(staged["rail"])
+    assert after == staged["rule"], f"Save rewrote the rule: {after}"
+
+    # ... and the editor shows the condition as kept, with nothing injected.
+    _open_rule(page)
     kept = modal.locator(".vs-rule-row-kept")
     expect(kept).to_have_count(1)
     expect(kept).to_contain_text(f"{MARK} SRD PU is not selected — kept (outside this branch)")
@@ -153,9 +160,8 @@ def test_rule_editor_keeps_out_of_branch_condition(page: Page, live_server: str,
     # No picker row was injected (the old editor put FRONT EPS here).
     expect(modal.locator(".vs-rule-row select")).to_have_count(0)
     shot(page, "01-kept-condition-shown", journey=JOURNEY)
-    _save(page)
-    after = _stored(staged["rail"])
-    assert after == staged["rule"], f"Save rewrote the rule: {after}"
+    modal.get_by_role("button", name="Cancel").click()
+    expect(modal).to_be_hidden(timeout=T)
 
     # 2. Add an in-branch condition: both kept, stored order preserved.
     _open_rule(page)

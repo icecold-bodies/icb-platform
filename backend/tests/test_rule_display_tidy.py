@@ -21,8 +21,10 @@ House pattern: live test DB, marker rows 'J1592RD*', purge on both sides.
 """
 import asyncio
 import json
+import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -55,10 +57,16 @@ def _node(script: str):
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not on PATH")
-    # encoding pinned: node writes UTF-8, and the badge text carries "·" / "—" — a
-    # Windows runner would otherwise decode stdout as cp1252.
-    res = subprocess.run([node, "-e", script], capture_output=True, text=True,
-                         encoding="utf-8", timeout=60)
+    # The script goes through a FILE, not `node -e`: the parity data is large and a
+    # Windows command line caps at 32K characters. Encoding pinned both ways: the
+    # badge text carries "·" / "—", which a Windows runner would read as cp1252.
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as fh:
+        fh.write(script)
+    try:
+        res = subprocess.run([node, fh.name], capture_output=True, text=True,
+                             encoding="utf-8", timeout=60)
+    finally:
+        os.unlink(fh.name)
     assert res.returncode == 0, res.stderr
     return json.loads(res.stdout)
 

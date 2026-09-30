@@ -206,6 +206,11 @@ def calculate_bom(bom_items: list, dims: dict, body_variables: dict | None = Non
             "excluded": excluded,
             "excluded_reason": excluded_reason,
         }
+        # v1.59.1 — why an excluded line is out ("condition" | "user" |
+        # "optional_section"). Attached only on excluded lines, so an included
+        # line's payload (and every saved snapshot of it) stays byte-identical.
+        if excluded and bom.get("excluded_by"):
+            item["excluded_by"] = bom["excluded_by"]
         # Free-hand markers are attached only on free-hand lines, so a normal
         # costing's items payload stays byte-identical to before (a big freezer
         # body already serialises ~200 KB of items).

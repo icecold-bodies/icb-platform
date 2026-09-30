@@ -154,4 +154,5 @@ def test_the_bundle_tag_moved_with_the_javascript():
     html = CALC_HTML.read_text(encoding="utf-8")
     tags = [l for l in html.splitlines() if "calculator.js?v=" in l]
     assert len(tags) == 1, f"expected exactly one calculator.js tag, found {len(tags)}"
-    assert "calculator.js?v=182" in tags[0], tags[0]
+    # v1.59.1 (NOT SELECTED header) moved it 182 -> 183.
+    assert "calculator.js?v=183" in tags[0], tags[0]

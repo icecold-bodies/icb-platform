@@ -66,13 +66,21 @@ def _category_rows(db: Session, trailer_type_id: int):
     global section order — minus body-option master rows (pure toggles, never
     costed lines) and minus sections parked in the Unassigned tray
     (archived_at), which a body costing would never render either.
+
+    The rows come back in the Body Templates order (sort_order, then id) —
+    the preview lists a category's lines in THIS order, so it must not be
+    left to Postgres (v1.59.1: without it the order followed the heap and a
+    purge-and-reinsert shuffled the preview). id, not material name, breaks
+    sort_order ties: on dev 3,634 of 8,430 lines share a sort_order in their
+    section, and id keeps 85 % of lines where users saw them, name only 43 %.
     """
     tt = db.query(TrailerType).filter_by(id=trailer_type_id).first()
     if not tt:
         raise HTTPException(status_code=404, detail="Body type not found")
     bom_rows = (db.query(BillOfMaterial)
                 .filter_by(trailer_type_id=trailer_type_id)
-                .options(*_bom_load_options()).all())
+                .options(*_bom_load_options())
+                .order_by(BillOfMaterial.sort_order, BillOfMaterial.id).all())
     snap = get_section_snapshot()
     counts: dict[str, int] = {}
     section_ids: dict[str, set] = {}
@@ -166,6 +174,7 @@ async def repair_category_preview(request: Request, db: Session = Depends(get_db
         # included, so nothing arrives pre-excluded.
         it["excluded"] = False
         it["excluded_reason"] = None
+        it["excluded_by"] = None
         picked.append(it)
 
     mat_by_bom = {row.id: row.material_id for row in bom_rows}

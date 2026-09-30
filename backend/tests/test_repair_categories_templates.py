@@ -256,6 +256,60 @@ def test_preview_quantities_match_body_costing(client, seeded, admin_headers):
     assert prev[f"{TT_NAME} SIDE PANEL"]["material_id"] == seeded["m_side"]
 
 
+def test_preview_lines_follow_body_template_order(client, seeded, admin_headers):
+    """v1.59.1 — the preview lists a category's lines in the Body Templates
+    order (sort_order, then id), never in whatever order Postgres returns. The
+    rows go in with sort_order running AGAINST insertion order, so the heap
+    order (the pre-fix behaviour) is exactly the wrong answer; two rows share
+    a sort_order, so the id tie-break is pinned too."""
+    from app.database import SessionLocal, BillOfMaterial, BOMSection, Material
+    from app.services import invalidate_sections
+    sec_name = "V150 ORDER PROBE"
+    with SessionLocal() as db:
+        sec = BOMSection(name=sec_name, sort_order=24, is_optional=False)
+        mats = [Material(name=f"{TT_NAME} ORDER {tag}", unit_of_measure="each",
+                         price_per_unit=1.0, is_active=True) for tag in "CBAD"]
+        db.add_all([sec, *mats])
+        db.flush()
+        # A and D tie on sort_order 1. Draw their ids first and insert D (the
+        # HIGHER id) before A, so heap order is D, A while id order is A, D.
+        from sqlalchemy import text as _text
+        lo, hi = sorted(db.execute(_text(
+            "SELECT nextval(pg_get_serial_sequence('icb_costings.bill_of_materials', 'id')) "
+            "FROM generate_series(1, 2)")).scalars())
+        by_tag = dict(zip("CBAD", mats))
+        for tag, so, rid in (("C", 3, None), ("B", 2, None), ("D", 1, hi), ("A", 1, lo)):
+            db.add(BillOfMaterial(id=rid, trailer_type_id=seeded["tt"],
+                                  material_id=by_tag[tag].id,
+                                  formula_expression="1", waste_percentage=0,
+                                  bom_section=sec_name, bom_section_id=sec.id,
+                                  sort_order=so))
+            db.flush()                     # one INSERT at a time, in this order
+        db.commit()
+        sec_id, mat_ids = sec.id, [m.id for m in mats]
+    invalidate_sections()
+    try:
+        r = _preview(client, admin_headers, seeded, [sec_name])
+        assert r.status_code == 200, r.text
+        got = [ln["description"].rsplit(" ", 1)[-1] for ln in r.json()["lines"]]
+        assert got == ["A", "D", "B", "C"]
+        # The Body Templates / calculator BOM list breaks the same tie the same way.
+        r = client.get(f"/api/trailers/{seeded['tt']}/bom", headers=admin_headers)
+        assert r.status_code == 200, r.text
+        got = [b["material_name"].rsplit(" ", 1)[-1] for b in r.json()
+               if b["bom_section"] == sec_name]
+        assert got == ["A", "D", "B", "C"]
+    finally:
+        with SessionLocal() as db:
+            db.query(BillOfMaterial).filter(BillOfMaterial.bom_section_id == sec_id).delete(
+                synchronize_session=False)
+            db.query(BOMSection).filter_by(id=sec_id).delete()
+            db.query(Material).filter(Material.id.in_(mat_ids)).delete(
+                synchronize_session=False)
+            db.commit()
+        invalidate_sections()
+
+
 def test_preview_multiple_categories(client, seeded, admin_headers):
     r = _preview(client, admin_headers, seeded, [SEC_SIDES, SEC_FLOOR])
     assert r.status_code == 200

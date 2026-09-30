@@ -264,13 +264,16 @@ def to_bom_items(lines: list[dict], *, default_category: str,
     items: list[dict] = []
     for ln in lines:
         excluded_reason = None
+        excluded_by = None
         if ln["excluded"]:
             excluded_reason = "Excluded by user"
+            excluded_by = "user"
         else:
             sid = ln.get("bom_section_id")
             if (sid is not None and section_optional_by_id.get(sid)
                     and sid not in optional_section_ids):
                 excluded_reason = "Optional section not included"
+                excluded_by = "optional_section"
 
         items.append({
             # No bom_id: a free-hand line has no BOM row and must never look
@@ -302,6 +305,7 @@ def to_bom_items(lines: list[dict], *, default_category: str,
             "notes":               ln.get("notes"),
             "excluded":            excluded_reason is not None,
             "excluded_reason":     excluded_reason,
+            "excluded_by":         excluded_by,
         })
     return items
 

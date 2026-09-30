@@ -30,8 +30,13 @@ Why the version matters:
 
 ## Prod sequencing
 
-**Prod gets Manifest A only after v1.59.1 is accepted there**, and only on the BA's word. Manifest B follows A. Each
-gets its own dry-run and journal.
+**Prod gets Manifest A only after v1.59.1 is accepted there**, and only on the BA's word (RT1: after the v1.59.2 code
+release is accepted, in the same window).
+
+**Manifest B stopped.** RT1 Q-A was answered YES on 30 Sep: the 29 Sep R4 095 re-pricing was deliberate. So the default
+B (`manifest_b_default.yaml`, own R4 100) is not staged. Only a B the BA rules in is committed as `manifest_b.yaml`, and
+it follows A. The proposal is `manifest_b_formula_only.yaml`: the two MEAT HANGER lines to Burt's F1 shape, no price
+set. Each manifest gets its own dry-run and journal.
 
 ## Scope (prod, discovery 29 Sep) — 14 bodies, 120 lines
 

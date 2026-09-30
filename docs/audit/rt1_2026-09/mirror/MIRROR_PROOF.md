@@ -44,6 +44,11 @@ door that is not fitted", `compare.py:8`). So the difference entry #5 accepted i
 
 ## 3. Manifest B (built from the 1b snapshot: guards = prod as it is now)
 
+> **Q-A answered YES (Michael, 30 Sep):** the 29 Sep R4 095 re-pricing was deliberate (Burt's 21 Sep 32D price).
+> Per the dispatch, the default B below **stops**. It is kept as the record `manifest_b_default.yaml`, and the data kit
+> never stages it. The formula-only variant is proposed to the BA (RT1_RETURN_1a). Only a B the BA rules in is
+> committed as `manifest_b.yaml`, the one file the data kit stages.
+
 The five single-rear-door PU lines on prod today, priced through the engine at thickness 0.06
 (`verify_b_before.txt`):
 
@@ -55,7 +60,8 @@ The five single-rear-door PU lines on prod today, priced through the engine at t
 | 2415 | FREEZER MEDIUM | F1 × R4 095 = R1 461.23 | same |
 | 3576 | FREEZER 2.3 METER | F1 × R4 095 = R1 461.23 | same |
 
-**`manifest_b.yaml` (the dispatch default, Q-A = NO), 7 entries on 5 lines:**
+**`manifest_b_default.yaml` (the dispatch default for Q-A = NO — stopped; proved as `manifest_b.yaml`, sha
+`28b15def…`), 7 entries on 5 lines:**
 - **The fix:** 5851 / 6159 get the F1 formula and all five get an own R4 100.
 - **Apply:** dry-run 7 to apply, 0 mismatches → apply (5 `bom_override_history` rows) → a second dry-run finds nothing.
 - **Engine = Burt to the cent** on every line: R1 463.01 at 0.06, R1 950.68 at 0.08. A double-door quote never
@@ -86,5 +92,7 @@ The five single-rear-door PU lines on prod today, priced through the engine at t
 
 ## 5. State left behind
 
-The mirror is left at **A + B (default)** applied — prod's state after the window under the dispatch default. Journals:
-`journals/` (the apply/revert records of every step above). Reports: `reports/` (md; the JSON stay local).
+The mirror is left at **A only** (the default B was reverted after Q-A = YES): prod's state after the window, unless
+the BA rules the formula-only B in. In that state 5585 / 2415 / 3576 price R1 461.23 at T = 0.06 (Burt's formula at
+R4 095); the two MEAT HANGERs still price R24 379.99 on a single-rear-door PU quote. Journals: `journals/` (the
+apply / revert records of every step above). Reports: `reports/` (md; the JSON stay local).

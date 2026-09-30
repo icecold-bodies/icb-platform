@@ -14,7 +14,7 @@ Target: **`https://192.168.0.251/mes-app/`** and **`https://mes.icecoldgrp.onlin
 | Templates + static | `calculator.html` (`calculator.js?v=182` → **`?v=184`**), `calculator.js`, `admin_configurator_preview.html`, `admin_visual_configurator_settings.html`: they reload from disk |
 | Dependencies | **none** (`requirements` unchanged, asserted). PyYAML 6.0.2 is already in the venv since v1.59.0 (asserted, nothing installed) |
 | Env / `.env` | none |
-| Data, after the code is accepted | **Manifest A**: 120 REAR FRAME & FLOOR PLATE inclusion rules on 14 bodies. **Manifest B**: the MEAT HANGER single-door PU lines + own R4 100 prices (built from prod as it is now). Each is its own paste with its own dry-run and journal, **in the order code → A → B** |
+| Data, after the code is accepted | **Manifest A**: 120 REAR FRAME & FLOOR PLATE inclusion rules on 14 bodies, its own paste with its own dry-run and journal, **after the code**. **Manifest B: STOPPED.** Q-A was answered YES (Michael, 30 Sep): the 29 Sep R4 095 re-pricing was deliberate, and "a new PU price is a separate job". Only a B the BA rules in goes, as its own paste after A. Proposed: the formula-only variant, the MEAT HANGER lines to Burt's F1 shape with no price set |
 
 ## Why
 
@@ -30,7 +30,8 @@ This window ends with prod carrying every tested change, verified, and the audit
   a rule-excluded calculator line reads e.g. `not used with SRD PU`.
 - **Repair category line order** (#201): `ORDER BY sort_order, id` (a journey flake, and a real order).
 - **Data:** a single rear door (SRD) quote no longer costs REAR FRAME & FLOOR PLATE (Michael's ruling, 28 Sep,
-  closes accepted entry #5), and the MEAT HANGER single-door PU line stops pricing ≈ R24.4k.
+  closes accepted entry #5). The MEAT HANGER single-door PU line (≈ R24.4k) is fixed only if the BA rules the
+  formula-only Manifest B in; the default B stopped when Q-A came back YES.
 
 ## The kits (committed with this runbook, staged byte-exact)
 
@@ -136,7 +137,7 @@ Everything is logged under `/tmp/icb-release-v1.59.2/out-<mode>-<ts>/` and `/tmp
 | FREEZER MEDIUM → **single door** | REAR FRAME & FLOOR PLATE reads **NOT SELECTED**; the eye shows its lines struck through, each reading **not used with SRD PU** |
 | … → **double door** | REAR FRAME priced as before |
 | … → **back to the door it opened with** | (the door toggle rewrites the Body Template's rear-door thickness — a known defect, queued; ending on the original door puts it back) |
-| MEAT HANGER LARGE → **single door** | the SRD PU line ≈ **R1 463**, not ≈ R24 380 (after Manifest B); then back to its original door |
+| MEAT HANGER LARGE → **single door** | only if a Manifest B was ruled in: the SRD PU line ≈ **R1 461** (formula-only, at R4 095), not ≈ R24 380; then back to its original door. Without B the line still reads ≈ R24 380 — the known gap, not a window failure |
 | Trailer Designer → a REAR FRAME card (any of the 14 bodies) | its rule chips read the database rule, marked **kept** |
 
 ## Expected audit movement (proved on the prod mirror — `docs/audit/rt1_2026-09/mirror/MIRROR_PROOF.md`)
@@ -157,8 +158,8 @@ refuse the data if it did.
 
 - **2f (after A, then B):** the **57 SRD REAR FRAME & FLOOR PLATE cells go ACCEPTED → SKIP** (entry #5's R2 447–R10 502
   extra is gone; both sides are R0 — SKIP is the audit's status for "both zero", not PASS). Every other cell stays
-  identical to the cent (3 416). With the default Manifest B, the 12 SRD cells that price 2415 / 3576 / 5585 move
-  **+R1.78** each, status unchanged; the formula-only B moves nothing. Expected counts after A + B:
+  identical to the cent (3 416). The formula-only B, if ruled in, moves no cell. (The stopped default B would have
+  moved 12 SRD cells +R1.78, status unchanged.) Expected counts after A (the same with the formula-only B):
 
   | pack | UNVERIFIABLE | ACCEPTED | PASS | SKIP |
   |---|---:|---:|---:|---:|
@@ -168,9 +169,13 @@ refuse the data if it did.
   | icecream | 40 | 55 | 413 | 104 |
   | explosive | 36 | 146 | 385 | 117 |
 
-- **Manifest B's plan size** is the one RT1_RULING_1 picks: **7** (`manifest_b.yaml`, the dispatch default), **2**
-  (`manifest_b_formula_only.yaml`, if the 29 Sep R4 095 is Burt's new price), or none (B stops). The staged
-  `expected.env` pins it; any other plan is a `STOP [PLAN]`.
+- **Manifest B's plan size** follows the BA's ruling:
+  - **none** (the default after Q-A = YES): no `manifest_b.yaml` is committed, `B_TODO=0`, and any B step is a
+    `STOP [PLAN]`;
+  - **2**, if the BA rules the formula-only variant in: it is committed as `manifest_b.yaml`.
+
+  The staged `expected.env` pins it; any other plan is a `STOP [PLAN]`. The stopped default B (7 entries) is kept as
+  the record `manifest_b_default.yaml`, which the kit never stages.
 
 **For the OUTCOME, the rule reasons (BA-confirmed):** 13 bodies get `SRD EPS = N AND SRD PU = N`; **CHILLER LARGE
 gets `SRD = N` (7233)** because on that body the door is a DOOR TYPE master and its SRD insulation radio stays ticked on

@@ -90,4 +90,13 @@ def main(ts):
 
 
 if __name__ == "__main__":
-    sys.exit(main([float(x) for x in sys.argv[1:]] or [0.06, 0.08]))
+    # --c17=<price>: Burt's PU!C17 to compare with (default 4100, the September list). The formula-only
+    # variant leaves every line on the material's price (R4 095 since 29 Sep = Burt's 21 Sep list): --c17=4095.
+    args = []
+    for a in sys.argv[1:]:
+        if a.startswith("--c17="):
+            C17 = float(a.split("=", 1)[1])
+        else:
+            args.append(float(a))
+    print(f"Burt's PU!C17 = {C17:g}")
+    sys.exit(main(args or [0.06, 0.08]))

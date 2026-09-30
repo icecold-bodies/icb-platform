@@ -29,7 +29,11 @@ def load(d: Path) -> dict:
             raise SystemExit(f"{d}: expected exactly one *{p}.json, found {[f.name for f in files]}")
         doc = json.loads(files[0].read_text(encoding="utf-8"))
         for c in doc["cells"]:
-            k = (p, c["scenario_id"], c.get("section_excel"), c.get("section_mes"))
+            # keyed by the EXCEL section (the golden side never moves); the MES section only when Excel has none.
+            # A section whose every line is excluded drops out of MES's totals, so its cell's section_mes goes
+            # from the name to None (status SKIP when Burt is R0): the same cell, not a new one.
+            se = c.get("section_excel")
+            k = (p, c["scenario_id"], se, None if se is not None else c.get("section_mes"))
             if k in cells:
                 raise SystemExit(f"{files[0].name}: duplicate cell key {k}")
             cells[k] = c
@@ -42,7 +46,7 @@ def cents(v):
 
 def same(a: dict, b: dict) -> list[str]:
     diff = []
-    for f in ("status",):
+    for f in ("status", "section_mes"):
         if a.get(f) != b.get(f):
             diff.append(f"{f} {a.get(f)} -> {b.get(f)}")
     for f in ("excel_total", "mes_total"):

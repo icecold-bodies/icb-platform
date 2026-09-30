@@ -108,8 +108,8 @@ sudo prompt; do not pipe it.)
 | 2b | CA | the third door, from outside, **only now** (a CF probe before the disk matched would cache old bytes under the new URL) | `mes.icecoldgrp.online`: `calculator.js?v=184` and `/openapi.json` byte-identical to the LAN door |
 | 2c | Michael | **All** again | **"No change since" 2a.** Any changed cell = STOP: report it, change nothing |
 | 2d | Michael | `sudo bash /tmp/icb-rt1-data/rt1_data.sh dryrun A` → `… apply A` | dry-run **120 to apply, 0 already applied**, 0 mismatches → applied, journal kept → second dry-run finds nothing |
-| 2e | Michael | `… dryrun B` → `… apply B` | dry-run **`B_TODO` to apply** (the reviewed plan, in `expected.env`) → applied → second dry-run finds nothing |
-| 2f | Michael | **All** | the SRD REAR FRAME cells PASS; nothing else moved except B's lines' cells (see *Expected audit movement*) |
+| 2e | Michael | `… dryrun B` → `… apply B` (only if RT1_RULING_1 keeps a Manifest B) | dry-run **`B_TODO` to apply** (the ruled plan, pinned in `expected.env`) → applied → second dry-run finds nothing |
+| 2f | Michael | **All** | the 57 SRD REAR FRAME cells went **ACCEPTED → SKIP** (both sides R0); nothing else moved except B's 12 cells (+R1.78, default B only) — the counts in *Expected audit movement* |
 | 2g | Michael | the click-through (below) | all seen, and **every body ends on the door it opened with** |
 
 `release.sh deploy`, step by step:
@@ -139,14 +139,44 @@ Everything is logged under `/tmp/icb-release-v1.59.2/out-<mode>-<ts>/` and `/tmp
 | MEAT HANGER LARGE → **single door** | the SRD PU line ≈ **R1 463**, not ≈ R24 380 (after Manifest B); then back to its original door |
 | Trailer Designer → a REAR FRAME card (any of the 14 bodies) | its rule chips read the database rule, marked **kept** |
 
-## Expected audit movement
+## Expected audit movement (proved on the prod mirror — `docs/audit/rt1_2026-09/mirror/MIRROR_PROOF.md`)
 
-*(From the prod mirror proof — `docs/audit/rt1_2026-09/mirror/` — filled in by RT1_RETURN_1.)*
+Holds only if prod's pricing does not move between the 1b snapshot (30 Sep 16:28) and the window; the tool's guards
+refuse the data if it did.
 
-- **2c (code only):** no change. The engine changes in the range are additive (`excluded_by`, `option_id`,
-  `bom_conditions` on a GET) and the mirror priced every cell identically under `de74796`'s reference and `v1.59.2`.
-- **2f (A + B):** the SRD REAR FRAME & FLOOR PLATE cells that entry #5 accepted become PASS; every non-SRD cell is
-  unchanged to the cent; B's lines move only on the cells that price them.
+- **2a / 2c (before and after the code): identical** — the mirror priced 3 473 of 3 473 cells identically under
+  v1.59.2 and under prod's own v1.59.0 reference. Expected counts:
+
+  | pack | UNVERIFIABLE | ACCEPTED | PASS | SKIP |
+  |---|---:|---:|---:|---:|
+  | smoke | 9 | 18 | 171 | 36 |
+  | chillers | 0 | 45 | 1 012 | 196 |
+  | freezers | 27 | 33 | 522 | 108 |
+  | icecream | 40 | 63 | 413 | 96 |
+  | explosive | 36 | 155 | 385 | 108 |
+
+- **2f (after A, then B):** the **57 SRD REAR FRAME & FLOOR PLATE cells go ACCEPTED → SKIP** (entry #5's R2 447–R10 502
+  extra is gone; both sides are R0 — SKIP is the audit's status for "both zero", not PASS). Every other cell stays
+  identical to the cent (3 416). With the default Manifest B, the 12 SRD cells that price 2415 / 3576 / 5585 move
+  **+R1.78** each, status unchanged; the formula-only B moves nothing. Expected counts after A + B:
+
+  | pack | UNVERIFIABLE | ACCEPTED | PASS | SKIP |
+  |---|---:|---:|---:|---:|
+  | smoke | 9 | 15 | 171 | 39 |
+  | chillers | 0 | 17 | 1 012 | 224 |
+  | freezers | 27 | 24 | 522 | 117 |
+  | icecream | 40 | 55 | 413 | 104 |
+  | explosive | 36 | 146 | 385 | 117 |
+
+- **Manifest B's plan size** is the one RT1_RULING_1 picks: **7** (`manifest_b.yaml`, the dispatch default), **2**
+  (`manifest_b_formula_only.yaml`, if the 29 Sep R4 095 is Burt's new price), or none (B stops). The staged
+  `expected.env` pins it; any other plan is a `STOP [PLAN]`.
+
+**For the OUTCOME, the rule reasons (BA-confirmed):** 13 bodies get `SRD EPS = N AND SRD PU = N`; **CHILLER LARGE
+gets `SRD = N` (7233)** because on that body the door is a DOOR TYPE master and its SRD insulation radio stays ticked on
+double-door quotes, so the pair would zero REAR FRAME on DRD. **ICECREAM BODY MEDIUM** gets Manifest A too: its
+client-side folder exclusion already gives R0 on single-door quotes; the rule makes the server agree. Its section
+vanishes instead of showing NOT SELECTED — a later cosmetic Trailer Designer tidy for Michael.
 
 ## Rollback (decided before the run; the code and the data rollbacks are independent)
 

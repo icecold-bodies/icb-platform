@@ -1,0 +1,52 @@
+== prod: db=icb_platform alembic=0049 code=de74796 mode=reference staged=42ca296  2026-09-30T16:28:34+02:00
+== 1. the five packs, --env prod
+   smoke exit=0  - Cells: UNVERIFIABLE 9, ACCEPTED 18, PASS 171, SKIP 36
+   chillers exit=0  - Cells: ACCEPTED 45, PASS 1012, SKIP 196
+   freezers exit=0  - Cells: UNVERIFIABLE 27, ACCEPTED 33, PASS 522, SKIP 108
+   icecream exit=0  - Cells: UNVERIFIABLE 40, ACCEPTED 63, PASS 413, SKIP 96
+   explosive exit=0  - Cells: UNVERIFIABLE 36, ACCEPTED 155, PASS 385, SKIP 108
+== 2. snapshot export
+[snapshot] all.json: admin_settings 1, bill_of_materials 3259, body_option_groups 9, body_option_subgroups 14, bom_sections 44, floor_plates 7, global_variables 1, material_categories 18, mounting_cleats 7, report_templates 2, sap_item_codes 29, skin_formulas 3, taping_blocks 2, trailer_groups 2, trailer_types 12, floor_plate_items 22, materials 423, mounting_cleat_items 30, skin_formula_ingredients 9, taping_block_items 10, skin_formula_items 12
+[snapshot] meat_hangers.json: admin_settings 1, bill_of_materials 586, body_option_groups 9, body_option_subgroups 11, bom_sections 44, floor_plates 7, global_variables 1, material_categories 17, mounting_cleats 6, report_templates 1, sap_item_codes 27, skin_formulas 2, taping_blocks 2, trailer_groups 1, trailer_types 3, floor_plate_items 22, materials 284, mounting_cleat_items 26, skin_formula_ingredients 5, taping_block_items 10, skin_formula_items 7
+== 3. no-people gate
+   all.json: gate ok: test_the_gates_catch_a_known_hit
+   all.json: gate ok: test_snapshot_tables_are_pricing_definitions_only
+   all.json: gate ok: test_snapshot_has_no_personal_columns
+   all.json: gate ok: test_snapshot_has_no_email_addresses
+   meat_hangers.json: gate ok: test_the_gates_catch_a_known_hit
+   meat_hangers.json: gate ok: test_snapshot_tables_are_pricing_definitions_only
+   meat_hangers.json: gate ok: test_snapshot_has_no_personal_columns
+   meat_hangers.json: gate ok: test_snapshot_has_no_email_addresses
+== 4. rear-door thickness report
+then = committed snapshot all.json generated 2026-09-28T11:46:14+00:00
+read_only session: on
+
+body | draft saved | opens with | template door | DRD EPS / DRD PU / SRD EPS / SRD PU (then -> now) | verdict
+ 25 CHILLER 2.3 METER          | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 3795:0.0 / 3796:0.0->0.06 / 3797:0.06->0.0 / 3798:0.0 | OK
+ 27 CHILLER LARGE              | 2026-07-20 13:26 | DRD [DOOR TYPE radio (selectionValue 1)] | SRD | 3433:0.0 / 3434:0.0 / 3435:0.06 / 3436:0.0 | !! WRONG DOOR — thickness on SRD, the calculator opens with DRD  (DOOR TYPE masters ['7232:DRD*', '7233:SRD'])
+ 26 CHILLER MEDIUM             | 2026-07-20 18:01 | DRD [door folder (folderValue 1)] | DRD | 3294:0.06->0.0 / 3295:0.0->0.06 / 3296:0.0 / 3297:0.0 | OK
+ 37 EXPLOSIVE 2.7 TO 4.8       | 2026-08-05 08:22 | DRD [door folder (folderValue 1)] | DRD | 6452:0.0 / 6453:0.041 / 6454:0.0 / 6455:0.0 | OK
+ 24 EXPLOSIVE 4.9 AND UP       | 2026-07-20 13:26 | DRD [door folder (no folder marked: the first in draft order)] | DRD | 4055:0.0 / 4056:0.042 / 4057:0.0 / 4058:0.0 | OK
+ 34 EXPLOSIVE UP TO 2.7        | 2026-08-05 08:21 | DRD [door folder (folderValue 1)] | DRD | 5283:0.0 / 5284:0.06 / 5285:0.0 / 5286:0.0 | OK
+ 19 FREEZER 2.3 METER          | 2026-09-29 12:37 | DRD [door folder (folderValue 1)] | DRD | 3675:0.0 / 3676:0.06 / 3677:0.0 / 3678:0.0 | OK
+ 21 FREEZER LARGE              | 2026-09-29 14:00 | DRD [door folder (folderValue 1)] | DRD | 2682:0.0 / 2683:0.06 / 2684:0.0 / 2685:0.0 | OK
+ 20 FREEZER MEDIUM             | 2026-09-29 12:39 | DRD [door folder (no folder marked: the first in draft order)] | DRD | 2534:0.0 / 2535:0.0->0.06 / 2536:0.06->0.0 / 2537:0.0 | OK
+ 18 ICECREAM BODY LARGE        | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | SRD | 5425:0.0 / 5426:0.12->0.0 / 5427:0.0 / 5428:0.0->0.12 | !! WRONG DOOR — thickness on SRD, the calculator opens with DRD
+ 17 ICECREAM BODY MEDIUM       | 2026-09-29 12:33 | DRD [door folder (folderValue 1)] | DRD | 5703:0.06->0.0 / 5704:0.0->0.12 / 5705:0.0 / 5706:0.0 | OK
+ 16 ICECREAM BODY SMALL        | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5825:0.0 / 5826:0.1 / 5827:0.0 / 5828:0.0 | OK
+ 12 MEAT HANGER LARGE          | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5978:0.0 / 5979:0.062 / 5980:0.0 / 5981:0.0 | OK
+ 36 MEAT HANGER SMALL-MEDIUM   | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 6286:0.06 / 6287:0.0 / 6288:0.0 / 6289:0.0 | OK
+
+SUMMARY: 12 OK; 27 CHILLER LARGE: !! WRONG DOOR — thickness on SRD, the calculator opens with DRD; 18 ICECREAM BODY LARGE: !! WRONG DOOR — thickness on SRD, the calculator opens with DRD
+
+database     icb_platform
+alembic      0049
+prod_code    de74796bd22070e59876572a49c8b39b804c75b9
+mode         reference
+staged_from  42ca296d4a4b30044285912e0701369e13afd149
+packs_red     none
+all.json     439379699698af918e33a2801ff4d92ce7638af6d1cdaf06d932effab606f623  3170543 bytes
+meat_hangers 276befca6133872fc873eb25d745b3e166250feef7185fbbee41163fdbd776d0  670485 bytes
+finished     2026-09-30T16:28:58+02:00
+
+######## DONE — tell the CA: /tmp/icb-rt1-snapshot/out-20260930-162834

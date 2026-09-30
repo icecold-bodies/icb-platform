@@ -23,8 +23,10 @@ last_rev() {
 EXPECT_ALEMBIC=$(last_rev "$EXPECT_HEAD")
 D=docs/audit/srd_rear_frame_2026-09
 FILES="backend/tools/audit_pricing_corrections.py
-$D/manifest_a.yaml
-$D/manifest_b.yaml"
+$D/manifest_a.yaml"
+# Manifest B is the one RT1_RULING_1 kept (it is committed as manifest_b.yaml); absent = B stops, A goes alone
+HAS_B=0; git cat-file -e "$SHA:$D/manifest_b.yaml" 2>/dev/null && { HAS_B=1; FILES="$FILES
+$D/manifest_b.yaml"; }
 
 S="$OUTDIR/icb-rt1-data"
 [ -e "$S" ] && { echo "exists: $S"; exit 1; }
@@ -34,11 +36,15 @@ for f in $FILES; do
 done
 git cat-file blob "$SHA:ops/prod-rt1/rt1_data.sh" > "$S/rt1_data.sh" || exit 1
 count() { grep -c '^- finding:' "$S/stage/$D/manifest_$1.yaml"; }
-A_TODO=$(count a); B_TODO=$(count b)
+A_TODO=$(count a)
 A_SHA=$(sha256sum "$S/stage/$D/manifest_a.yaml" | cut -d' ' -f1)
-B_SHA=$(sha256sum "$S/stage/$D/manifest_b.yaml" | cut -d' ' -f1)
+if [ "$HAS_B" = 1 ]; then
+  B_TODO=$(count b); B_SHA=$(sha256sum "$S/stage/$D/manifest_b.yaml" | cut -d' ' -f1)
+  [ "$B_TODO" -gt 0 ] || { echo "STOP: manifest B has no entries"; exit 1; }
+else
+  B_TODO=0; B_SHA=none; echo "note: no manifest_b.yaml at ${SHA:0:7} — Manifest B is not part of this release; A goes alone"
+fi
 [ "$A_TODO" = 120 ] || { echo "STOP: manifest A has $A_TODO entries, the reviewed plan is 120"; exit 1; }
-[ "$B_TODO" -gt 0 ] || { echo "STOP: manifest B has no entries"; exit 1; }
 cat > "$S/expected.env" <<EOF
 # written by mkstage_data.sh on $(date -Is)
 EXPECT_HEAD=$EXPECT_HEAD

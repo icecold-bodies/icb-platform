@@ -78,6 +78,7 @@ todo_of() { eval "echo \${${1}_TODO}"; }
 
 if [ "$MODE" = dryrun ] || [ "$MODE" = apply ]; then
   X=$ARG; N=$(todo_of "$X")
+  [ "$X" = B ] && [ "$B_TODO" = 0 ] && stop PLAN "Manifest B is not part of this release (RT1_RULING_1): nothing staged for B"
   [ "$(sha256sum "$(manifest "$X")" | cut -d' ' -f1)" = "$(eval "echo \${${X}_SHA}")" ] || stop KIT "manifest $X is not the reviewed bytes"
   if [ "$X" = B ] && [ "$MODE" = apply ]; then
     say "order: Manifest A must already be on prod"
@@ -141,11 +142,13 @@ JR=$ARG
 [ -f "$JR" ] || stop USAGE "no such journal: $JR (see $KEEP)"
 SHA_J=$($PY -c 'import json,sys; print(json.load(open(sys.argv[1]))["manifest_sha256"])' "$JR" 2>/dev/null) || stop USAGE "not a tool journal: $JR"
 if [ "$SHA_J" = "$A_SHA" ]; then
-  say "order: B must be reverted before A"
-  dry B "$OUT/order_B.txt"
-  [ "$(plan_line "$OUT/order_B.txt")" = "$B_TODO to apply, 0 already applied." ] \
-    || { cat "$OUT/order_B.txt"; stop ORDER "Manifest B is still (partly) on prod — revert B first"; }
-elif [ "$SHA_J" != "$B_SHA" ]; then
+  if [ "$B_TODO" != 0 ]; then
+    say "order: B must be reverted before A"
+    dry B "$OUT/order_B.txt"
+    [ "$(plan_line "$OUT/order_B.txt")" = "$B_TODO to apply, 0 already applied." ] \
+      || { cat "$OUT/order_B.txt"; stop ORDER "Manifest B is still (partly) on prod — revert B first"; }
+  fi
+elif [ "$B_TODO" = 0 ] || [ "$SHA_J" != "$B_SHA" ]; then
   stop USAGE "the journal's manifest sha ${SHA_J:0:12} is neither A's nor B's"
 fi
 tool --revert "$JR" --out-dir "$OUT" > "$OUT/revert.txt" 2>&1; rc=$?

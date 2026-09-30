@@ -68,7 +68,7 @@ expect() { # $1 label, $2 regex the banner must match, rest = rt1_data.sh args
   else echo "FAIL  $label  :: $got  (wanted /$want/)"; FAILS=$((FAILS+1)); sed 's/^/        | /' "$SIM/last.log" | tail -n 25; fi
 }
 K=/var/backups/icb-rt1-2026-09
-jr() { ls "$SIM/varbackups/icb-rt1-2026-09/"journal_"$1"_*.json 2>/dev/null | head -n1 | sed "s#$SIM/varbackups#/var/backups#"; }
+jr() { ls -t "$SIM/varbackups/icb-rt1-2026-09/"journal_"$1"_*.json 2>/dev/null | head -n1 | sed "s#$SIM/varbackups#/var/backups#"; }
 
 echo; echo "== the sequence"
 expect "dryrun A (fresh)"             'DONE \(dryrun A: 120 to apply'   dryrun A
@@ -92,4 +92,17 @@ expect "tampered manifest"            'STOP \[KIT\]'                     dryrun 
 tar -xf "$SIM/stageout/icb-rt1-data.tar" -C "$SIM/tmp" --overwrite   # restage the untampered kit
 git -C "$SIM/opt/icb-platform" -c user.email=x@x -c user.name=x commit -q --allow-empty -m "hand edit"
 expect "prod code moved"              'STOP \[CODE\]'                    dryrun A
+
+echo; echo "== phase 2: RT1_RULING_1 stops Manifest B (no manifest_b.yaml committed) — A goes alone"
+cd "$SIM/work" && git rm -q $D/manifest_b.yaml && git -c user.email=sim@x -c user.name=sim commit -qm "sim: B stops"
+git push -q origin backport/v1.39-base && TARGET2=$(git rev-parse HEAD)
+git -c user.email=sim@x -c user.name=sim tag -f -a v1.59.2 -m sim2 "$TARGET2" > /dev/null && git push -q -f origin v1.59.2
+mkdir -p "$SIM/stageout2" && bash ops/prod-rt1/mkstage_data.sh "$SIM/stageout2" "$TARGET2" | grep -E '^note:|^staged' || true
+mv "$SIM/tmp/icb-rt1-data" "$SIM/tmp/icb-rt1-data.phase1" && tar -xf "$SIM/stageout2/icb-rt1-data.tar" -C "$SIM/tmp"
+git -C "$SIM/opt/icb-platform" fetch -q origin && git -C "$SIM/opt/icb-platform" -c advice.detachedHead=false checkout -q "$TARGET2"
+echo 0 > "$SIMSTATE/applied_a"; echo 0 > "$SIMSTATE/applied_b"
+expect "no B: dryrun B is refused"    'STOP \[PLAN\]: Manifest B is not part' dryrun B
+expect "no B: apply B is refused"     'STOP \[PLAN\]: Manifest B is not part' apply B
+expect "no B: apply A"                'DONE \(apply A\)'                 apply A
+expect "no B: revert A (no B check)"  'DONE \(revert\)'                  revert "$(jr A)"
 echo; echo "== $PASSES passed, $FAILS failed · SIM=$SIM"

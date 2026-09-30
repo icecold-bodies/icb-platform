@@ -1,0 +1,5 @@
+before C:\Users\micge\AppData\Local\Temp\claude\C--Users-micge-Documents-icb-platform\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\scratchpad\mirror\afterA: 3473 cells · after C:\Users\micge\AppData\Local\Temp\claude\C--Users-micge-Documents-icb-platform\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\scratchpad\mirror\afterBformula: 3473 cells · common 3473
+identical 3473 · moved in scope (none allowed) 0 of 0 in scope · UNEXPECTED 0 · only before 0 · only after 0
+cells outside the allowed scope: 3473, identical to the cent: 3473
+
+RESULT: OK

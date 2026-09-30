@@ -120,6 +120,9 @@ post_checks() { # $1 = journal --since for this service start, $2 = epoch the co
   check RESTART_AFTER_CODE "$(restart_after_code "${2:-}")" yes
   check WORKERS "$(workers_since "$1")" "$WORKERS"
   check BOOTSTRAP_FAILED "$(bootfail_since "$1")" 0
+  local tb; tb=$(tb_since "$1")
+  [ "$tb" = 0 ] || { journalctl -u "$SERVICE" --since "$1" --no-pager 2>/dev/null | grep -B2 -A8 Traceback | tail -n 40 || true; }
+  check TRACEBACKS "$tb" 0
   check HEALTH "$(code_url "$LOCAL/health")" 200
   check PYYAML "$(yaml_version)" "$PYYAML_VERSION"
   check TOOL_IMPORT "$(cd "$REPO/backend" && "$PY" -c 'from tools.costing_audit.cli import build_parser; import tools.audit_pricing_corrections; print("ok")' 2>&1 | tail -n1)" ok
@@ -276,8 +279,7 @@ ok "deploy record: completed ${TARGET:0:7}"
 say "8. post-deploy asserts (waiting 20 s for all workers to log startup)"
 sleep 20
 post_checks "@$T0" "$T0"
-TB=$(tb_since "@$T0"); [ "$TB" = 0 ] || { journalctl -u "$SERVICE" --since "@$T0" --no-pager | grep -B2 -A8 Traceback | tail -n 40 || true; stop TRACEBACKS "$TB traceback(s) since the restart"; }
-ok "0 tracebacks since the restart"
+TB=$(tb_since "@$T0")
 [ "$B_SPA_NAME" = "$(spa_bundle)" ] || stop BYTES_AFTER "the SPA bundle name changed"
 
 cat > "$OUT/OUTCOME.txt" <<EOF

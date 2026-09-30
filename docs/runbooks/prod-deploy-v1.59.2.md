@@ -219,12 +219,13 @@ restart in the same second as the fast-forward could read as a half-deploy); a 5
 previous start's workers; tracebacks checked only inside `deploy`.
 
 **Data kit** (`/root/relsim3-*`: the real `rt1_data.sh` over a stand-in for the correction tool that keeps its output
-contract; a stand-in Manifest B of 7 entries) — **14 of 14**: dry-run A = 120 to apply; **apply B before A → STOP [ORDER]**;
+contract; a stand-in Manifest B of 7 entries) — **18 of 18**: dry-run A = 120 to apply; **apply B before A → STOP [ORDER]**;
 apply A → journal + pre-apply backup + provenance kept in `/var/backups/icb-rt1-2026-09/`, second dry-run clean; apply A
 again → already applied; dry-run / apply B; **revert A while B is on → STOP [ORDER]**; revert B; revert A; revert A again →
 **STOP [REVERT]**; a guard mismatch → **STOP [GUARD]**; a plan of the wrong size → **STOP [PLAN]**; a tampered manifest →
-**STOP [KIT]**; prod's code moved → **STOP [CODE]**. The real tool's behaviour (guards, one transaction, byte-exact
-revert) is proven on the prod mirror.
+**STOP [KIT]**; prod's code moved → **STOP [CODE]**; and a release **without** Manifest B (if RT1_RULING_1 stops it):
+`mkstage_data.sh` stages A alone, `dryrun B` / `apply B` → **STOP [PLAN]**, apply A and its revert run without B's order
+check. The real tool's behaviour (guards, one transaction, byte-exact revert) is proven on the prod mirror.
 
 ## After the window (RT1 Stage 3)
 

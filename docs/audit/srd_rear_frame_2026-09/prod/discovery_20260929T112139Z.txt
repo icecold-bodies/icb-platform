@@ -1,0 +1,174 @@
+== prod: db=icb_platform code=de74796 2026-09-29T13:21:39+02:00
+read_only session: on
+
+=== A. SCOPE SWEEP (active bodies with a REAR FRAME% line)
+  25 | CHILLER 2.3 METER            | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 3795:DRD EPS[DRD] 3796:DRD PU[DRD] 3797:SRD EPS[SRD] 3798:SRD PU[SRD]
+       rear-frame bom ids: 3783,3784,3785,3786,3787,3788,3789,3790,3791
+  27 | CHILLER LARGE                | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU', 'SRD'] | IN
+       door masters: 3433:DRD EPS[DRD] 3434:DRD PU[DRD] 3435:SRD EPS[SRD] 3436:SRD PU[SRD] 7232:DRD[DOOR TYPE] 7233:SRD[DOOR TYPE]
+       rear-frame bom ids: 3420,3421,3422,3423,3424,3425,3426,3427,3428
+  26 | CHILLER MEDIUM               | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 3294:DRD EPS[DRD] 3295:DRD PU[DRD] 3296:SRD EPS[SRD] 3297:SRD PU[SRD]
+       rear-frame bom ids: 3281,3282,3283,3284,3285,3286,3287,3288,3289
+  37 | EXPLOSIVE 2.7 TO 4.8         | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=6 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 6452:DRD EPS[DRD] 6453:DRD PU[DRD] 6454:SRD EPS[SRD] 6455:SRD PU[SRD]
+       rear-frame bom ids: 6442,6443,6444,6445,6446,6447
+  24 | EXPLOSIVE 4.9 AND UP         | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=6 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 4055:DRD EPS[DRD] 4056:DRD PU[DRD] 4057:SRD EPS[SRD] 4058:SRD PU[SRD]
+       rear-frame bom ids: 4045,4046,4047,4048,4049,4050
+  34 | EXPLOSIVE UP TO 2.7          | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 5283:DRD EPS[DRD] 5284:DRD PU[DRD] 5285:SRD EPS[SRD] 5286:SRD PU[SRD]
+       rear-frame bom ids: 5271,5272,5273,5274,5275,5276,5277,5278,5279
+  19 | FREEZER 2.3 METER            | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 3675:DRD EPS[DRD] 3676:DRD PU[DRD] 3677:SRD EPS[SRD] 3678:SRD PU[SRD]
+       rear-frame bom ids: 3663,3664,3665,3666,3667,3668,3669,3670,3671
+  21 | FREEZER LARGE                | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 2682:DRD EPS[DRD] 2683:DRD PU[DRD] 2684:SRD EPS[SRD] 2685:SRD PU[SRD]
+       rear-frame bom ids: 2669,2670,2671,2672,2673,2674,2675,2676,2677
+  20 | FREEZER MEDIUM               | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 2534:DRD EPS[DRD] 2535:DRD PU[DRD] 2536:SRD EPS[SRD] 2537:SRD PU[SRD]
+       rear-frame bom ids: 2521,2522,2523,2524,2525,2526,2527,2528,2529
+  18 | ICECREAM BODY LARGE          | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 5425:DRD EPS[DRD] 5426:DRD PU[DRD] 5427:SRD EPS[SRD] 5428:SRD PU[SRD]
+       rear-frame bom ids: 5412,5413,5414,5415,5416,5417,5418,5419,5420
+  17 | ICECREAM BODY MEDIUM         | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 5703:DRD EPS[DRD] 5704:DRD PU[DRD] 5705:SRD EPS[SRD] 5706:SRD PU[SRD]
+       rear-frame bom ids: 5690,5691,5692,5693,5694,5695,5696,5697,5698
+  16 | ICECREAM BODY SMALL          | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 5825:DRD EPS[DRD] 5826:DRD PU[DRD] 5827:SRD EPS[SRD] 5828:SRD PU[SRD]
+       rear-frame bom ids: 5813,5814,5815,5816,5817,5818,5819,5820,5821
+  41 | Manni RIGIDS CB              | v2=Y | sec 85 REAR FRAME + FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=- | OUT (no SRD master)
+       door masters: -
+       rear-frame bom ids: 11192,11193,11194,11195,11196,11197,11198,11199,11200
+  12 | MEAT HANGER LARGE            | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 5978:DRD EPS[DRD] 5979:DRD PU[DRD] 5980:SRD EPS[SRD] 5981:SRD PU[SRD]
+       rear-frame bom ids: 5961,5962,5963,5964,5965,5966,5967,5968,5969
+  36 | MEAT HANGER SMALL-MEDIUM     | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | IN
+       door masters: 6286:DRD EPS[DRD] 6287:DRD PU[DRD] 6288:SRD EPS[SRD] 6289:SRD PU[SRD]
+       rear-frame bom ids: 6269,6270,6271,6272,6273,6274,6275,6276,6277
+  15 | RHINORANGE TRAILER           | v2=Y | sec 21 REAR FRAME & FLOOR PLATE | lines=9 with_cond=0 modes=always | SRD masters=['SRD EPS', 'SRD PU'] | OUT (BA 6a §4: SRD not offered in its draft)
+       door masters: 1885:DRD EPS[DRD] 1886:DRD PU[DRD] 1887:SRD EPS[SRD] 1888:SRD PU[SRD]
+       rear-frame bom ids: 1872,1873,1874,1875,1876,1877,1878,1879,1880
+REAR FRAME% sections (all bodies incl. inactive): [(21, 'REAR FRAME & FLOOR PLATE', 325), (85, 'REAR FRAME + FLOOR PLATE', 9)]
+
+LANE SCOPE: 14 bodies, 120 REAR FRAME lines
+     25 CHILLER 2.3 METER            9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]
+     27 CHILLER LARGE                9 lines  rule=[{"option": "SRD", "equals": "N", "option_id": 7233}]
+     26 CHILLER MEDIUM               9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]
+     37 EXPLOSIVE 2.7 TO 4.8         6 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 6454}, {"option": "SRD PU", "equals": "N", "option_id": 6455}]
+     24 EXPLOSIVE 4.9 AND UP         6 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 4057}, {"option": "SRD PU", "equals": "N", "option_id": 4058}]
+     34 EXPLOSIVE UP TO 2.7          9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]
+     19 FREEZER 2.3 METER            9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]
+     21 FREEZER LARGE                9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]
+     20 FREEZER MEDIUM               9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]
+     18 ICECREAM BODY LARGE          9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]
+     17 ICECREAM BODY MEDIUM         9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]
+     16 ICECREAM BODY SMALL          9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]
+     12 MEAT HANGER LARGE            9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]
+     36 MEAT HANGER SMALL-MEDIUM     9 lines  rule=[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]
+ACTIVE CLASSIC BODIES THAT OFFER SRD (-> BA separate item): none
+
+=== B. PICKER SCOPE (Trailer Designer rule editor)
+-- B1. REAR FRAME category, in-scope bodies
+  25 | CHILLER 2.3 METER            | draft 2026-07-20 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FLOOR EPS', 'FLOOR PU', 'FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  27 | CHILLER LARGE                | draft 2026-07-20 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT', 'SRD': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  26 | CHILLER MEDIUM               | draft 2026-07-20 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  37 | EXPLOSIVE 2.7 TO 4.8         | draft 2026-08-05 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  24 | EXPLOSIVE 4.9 AND UP         | draft 2026-07-20 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  34 | EXPLOSIVE UP TO 2.7          | draft 2026-08-05 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  19 | FREEZER 2.3 METER            | draft 2026-09-29 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES PU']
+  21 | FREEZER LARGE                | draft 2026-09-29 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES PU']
+  20 | FREEZER MEDIUM               | draft 2026-09-29 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES PU']
+  18 | ICECREAM BODY LARGE          | draft 2026-07-20 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  17 | ICECREAM BODY MEDIUM         | draft 2026-09-29 | {'SRD EPS': 'IN SCOPE', 'SRD PU': 'IN SCOPE'} | offered: ['DRD EPS', 'DRD PU', 'FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU', 'SRD EPS', 'SRD PU']
+  16 | ICECREAM BODY SMALL          | draft 2026-07-20 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  12 | MEAT HANGER LARGE            | draft 2026-07-20 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+  36 | MEAT HANGER SMALL-MEDIUM     | draft 2026-07-20 | {'SRD EPS': 'OUT', 'SRD PU': 'OUT'} | offered: ['FRONT EPS', 'FRONT PU', 'ROOF EPS', 'ROOF PU', 'SIDES EPS', 'SIDES PU']
+-- B2. SWEEP: every saved item rule on every drafted v2 body
+   rules with conditions: 215
+     all conditions in scope (safe): 215
+   rules without named conditions (always/always_exclude): 12
+
+=== D. PART B lines + MEAT HANGER SRD masters
+5585 | ICECREAM BODY MEDIUM | SRD | 292 | PU | 4095.0 | None | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2 | [{"option": "SRD PU", "equals": "Y", "option_id": 5706}] | H44
+5851 | MEAT HANGER LARGE | SRD | 292 | PU | 4095.0 | None | 1.22*2.44*2 | [{"option": "SRD PU", "equals": "Y", "option_id": 5981}] | H46
+6159 | MEAT HANGER SMALL-MEDIUM | SRD | 292 | PU | 4095.0 | None | 1.22*2.44*2 | [{"option": "SRD PU", "equals": "Y", "option_id": 6289}] | H46
+36 MEAT HANGER SMALL-MEDIUM v2=True: [(6288, 'SRD EPS', 'SRD', 0.0, False), (6289, 'SRD PU', 'SRD', 0.0, False)]
+12 MEAT HANGER LARGE v2=True: [(5980, 'SRD EPS', 'SRD', 0.0, False), (5981, 'SRD PU', 'SRD', 0.0, False)]
+ACTIVE lines on 5585's material with no own price (id, trailer, active): [(2415, 20, True), (3576, 19, True), (5585, 17, True), (5851, 12, True), (6159, 36, True)]
+
+=== C. SAVED QUOTES re-priced by the engine: REAR FRAME with / without the rule
+engine session read only: on
+SELF-TEST on 12 MEAT HANGER LARGE: SRD off RF 5792.63 -> 5792.63 (excluded 0); SRD on RF 5792.63 -> 0.0 (excluded 9/9)  => PASS
+quote | body | saved | door | RF saved | RF no-rule | RF rule | excl | verdict
+A9929/07/2026 | CHILLER MEDIUM | 2026-07-05 | DRD | 2787.92 | 2787.92 | 2787.92 | 0 | OK (unchanged)
+A9932/07/2026 | CHILLER LARGE | 2026-07-06 | DRD | 5518.57 | 5518.57 | 5518.57 | 0 | OK (unchanged)
+S9933/07/2026 | CHILLER 2.3 METER | 2026-07-06 | DRD | 2366.82 | 2366.82 | 2366.82 | 0 | OK (unchanged)
+S9934/07/2026 | CHILLER 2.3 METER | 2026-07-06 | DRD | 2366.82 | 2366.82 | 2366.82 | 0 | OK (unchanged)
+N9935/07/2026 | CHILLER LARGE | 2026-07-14 | DRD | 5518.57 | 5518.57 | 5518.57 | 0 | OK (unchanged)
+N9936/07/2026 | FREEZER LARGE | 2026-07-14 | DRD | 5453.0 | 5452.98 | 5452.98 | 0 | OK (unchanged)
+N9937/07/2026 | CHILLER MEDIUM | 2026-07-14 | DRD | 3185.29 | 3185.29 | 3185.29 | 0 | OK (unchanged)
+N9938/07/2026 | CHILLER 2.3 METER | 2026-07-14 | DRD | 2366.82 | 2366.82 | 2366.82 | 0 | OK (unchanged)
+N9939/07/2026 | FREEZER MEDIUM | 2026-07-14 | DRD | 4415.68 | 4415.66 | 4415.66 | 0 | OK (unchanged)
+N9940/07/2026 | FREEZER 2.3 METER | 2026-07-14 | DRD | 2458.39 | 2390.25 | 2390.25 | 0 | OK (unchanged)
+N9941/07/2026 | FREEZER LARGE | 2026-07-15 | DRD | 5371.39 | 5371.37 | 5371.37 | 0 | OK (unchanged)
+N9942/07/2026 | MEAT HANGER SMALL-MEDIUM | 2026-07-15 | DRD | 3526.49 | 3526.47 | 3526.47 | 0 | OK (unchanged)
+N9943/07/2026 | MEAT HANGER SMALL-MEDIUM | 2026-07-15 | DRD | 4038.82 | 4038.8 | 4038.8 | 0 | OK (unchanged)
+N9944/07/2026 | MEAT HANGER LARGE | 2026-07-15 | DRD | 5792.65 | 5792.63 | 5792.63 | 0 | OK (unchanged)
+N9945/07/2026 | ICECREAM BODY MEDIUM | 2026-07-15 | SRD | 0 | 0 | 0 | 0 | rule does not fire (no SRD master sent)
+N9946/07/2026 | ICECREAM BODY LARGE | 2026-07-15 | DRD | 5799.97 | 5799.95 | 5799.95 | 0 | OK (unchanged)
+N9947/07/2026 | ICECREAM BODY MEDIUM | 2026-07-15 | SRD | 0 | 0 | 0 | 0 | rule does not fire (no SRD master sent)
+N9948/07/2026 | EXPLOSIVE 2.7 TO 4.8 | 2026-07-15 | DRD | 3575.7 | 3575.68 | 3575.68 | 0 | OK (unchanged)
+N9949/07/2026 | EXPLOSIVE 4.9 AND UP | 2026-07-15 | DRD | 10501.62 | 10501.6 | 10501.6 | 0 | OK (unchanged)
+N9950/07/2026 | FREEZER MEDIUM | 2026-07-16 | DRD | 4675.27 | 4675.25 | 4675.25 | 0 | OK (unchanged)
+B9951/07/2026 | FREEZER LARGE | 2026-07-21 | DRD | 5453.0 | 5452.98 | 5452.98 | 0 | OK (unchanged)
+N9952/07/2026 | CHILLER MEDIUM | 2026-07-24 | DRD | 2963.18 | 2963.18 | 2963.18 | 0 | OK (unchanged)
+N9953/08/2026 | CHILLER 2.3 METER | 2026-08-07 | DRD | 2366.82 | 2366.82 | 2366.82 | 0 | OK (unchanged)
+N9956/08/2026 | CHILLER 2.3 METER | 2026-08-12 | DRD | 2447.56 | 2447.56 | 2447.56 | 0 | OK (unchanged)
+N9957/08/2026 | CHILLER 2.3 METER | 2026-08-12 | DRD | 2366.82 | 2366.82 | 2366.82 | 0 | OK (unchanged)
+N9958/08/2026 | CHILLER MEDIUM | 2026-08-12 | DRD | 3097.65 | 3097.65 | 3097.65 | 0 | OK (unchanged)
+N9959/08/2026 | CHILLER LARGE | 2026-08-12 | DRD | 5518.57 | 5518.57 | 5518.57 | 0 | OK (unchanged)
+N9960/08/2026 | FREEZER 2.3 METER | 2026-08-13 | DRD | 2458.39 | 2390.25 | 2390.25 | 0 | OK (unchanged)
+N9961/08/2026 | FREEZER 2.3 METER | 2026-08-13 | DRD | 2498.76 | 2430.62 | 2430.62 | 0 | OK (unchanged)
+N9962/08/2026 | FREEZER 2.3 METER | 2026-08-13 | DRD | 2498.76 | 2430.62 | 2430.62 | 0 | OK (unchanged)
+N9963/08/2026 | FREEZER MEDIUM | 2026-08-13 | DRD | 4415.68 | 4415.66 | 4415.66 | 0 | OK (unchanged)
+N9964/08/2026 | FREEZER MEDIUM | 2026-08-13 | DRD | 4504.0 | 4503.98 | 4503.98 | 0 | OK (unchanged)
+N9965/08/2026 | FREEZER LARGE | 2026-08-13 | DRD | 5453.0 | 5452.98 | 5452.98 | 0 | OK (unchanged)
+N9966/08/2026 | FREEZER MEDIUM | 2026-08-13 | DRD | 4545.48 | 4545.46 | 4545.46 | 0 | OK (unchanged)
+A9967/08/2026 | CHILLER MEDIUM | 2026-08-17 | DRD | 2963.18 | 2963.18 | 2963.18 | 0 | OK (unchanged)
+N9968/08/2026 | EXPLOSIVE 2.7 TO 4.8 | 2026-08-18 | DRD | 3226.58 | 3226.56 | 3226.56 | 0 | OK (unchanged)
+N9969/08/2026 | EXPLOSIVE 4.9 AND UP | 2026-08-18 | DRD | 10501.62 | 10501.6 | 10501.6 | 0 | OK (unchanged)
+N9970/08/2026 | EXPLOSIVE 2.7 TO 4.8 | 2026-08-18 | DRD | 3575.7 | 3575.68 | 3575.68 | 0 | OK (unchanged)
+N9975/08/2026 | ICECREAM BODY SMALL | 2026-08-25 | DRD | 2513.28 | 2463.74 | 2463.74 | 0 | OK (unchanged)
+N9978/08/2026 | FREEZER LARGE | 2026-08-28 | DRD | 5453.0 | 5452.98 | 5452.98 | 0 | OK (unchanged)
+N9979/08/2026 | FREEZER MEDIUM | 2026-08-28 | DRD | 4528.89 | 4528.87 | 4528.87 | 0 | OK (unchanged)
+N9980/08/2026 | ICECREAM BODY SMALL | 2026-08-31 | DRD | 2513.28 | 2463.74 | 2463.74 | 0 | OK (unchanged)
+N9981/08/2026 | ICECREAM BODY MEDIUM | 2026-08-31 | SRD | 0 | 0 | 0 | 0 | rule does not fire (no SRD master sent)
+N9982/08/2026 | ICECREAM BODY LARGE | 2026-08-31 | DRD | 5799.97 | 5799.95 | 5799.95 | 0 | OK (unchanged)
+N9983/08/2026 | ICECREAM BODY LARGE | 2026-08-31 | SRD | 5799.97 | 5799.95 | 0.0 | 9 | OK (SRD loses RF)
+N9984/09/2026 | FREEZER MEDIUM | 2026-09-01 | DRD | 4528.89 | 4528.87 | 4528.87 | 0 | OK (unchanged)
+A9986/09/2026 | CHILLER MEDIUM | 2026-09-07 | DRD | 3260.07 | 3260.07 | 3260.07 | 0 | OK (unchanged)
+A9987/09/2026 | FREEZER LARGE | 2026-09-07 | DRD | 5432.12 | 5432.12 | 5432.12 | 0 | OK (unchanged)
+A9988/09/2026 | MEAT HANGER SMALL-MEDIUM | 2026-09-07 | DRD | 3630.77 | 3630.77 | 3630.77 | 0 | OK (unchanged)
+O9995/09/2026 | FREEZER MEDIUM | 2026-09-15 | DRD | 4570.34 | 4570.34 | 4570.34 | 0 | OK (unchanged)
+A9996/09/2026 | FREEZER MEDIUM | 2026-09-15 | DRD | 4528.87 | 4528.87 | 4528.87 | 0 | OK (unchanged)
+A9997/09/2026 | FREEZER MEDIUM | 2026-09-15 | DRD | 4528.87 | 4528.87 | 4528.87 | 0 | OK (unchanged)
+A9998/09/2026 | FREEZER MEDIUM | 2026-09-15 | DRD | 4528.87 | 4528.87 | 4528.87 | 0 | OK (unchanged)
+A9999/09/2026 | FREEZER 2.3 METER | 2026-09-16 | DRD | 2458.37 | 2390.25 | 2390.25 | 0 | OK (unchanged)
+A10000/09/2026 | CHILLER MEDIUM | 2026-09-16 | DRD | 3161.86 | 3161.86 | 3161.86 | 0 | OK (unchanged)
+A10001/09/2026 | FREEZER MEDIUM | 2026-09-16 | DRD | 4617.19 | 4617.19 | 4617.19 | 0 | OK (unchanged)
+N10002/09/2026 | FREEZER MEDIUM | 2026-09-21 | DRD | 4528.87 | 4528.87 | 4528.87 | 0 | OK (unchanged)
+N10003/09/2026 | FREEZER 2.3 METER | 2026-09-21 | DRD | 2458.37 | 2390.25 | 2390.25 | 0 | OK (unchanged)
+N10004/09/2026 | CHILLER LARGE | 2026-09-21 | DRD | 5502.42 | 5502.42 | 5502.42 | 0 | OK (unchanged)
+N10005/09/2026 | CHILLER LARGE | 2026-09-21 | DRD | 5502.42 | 5502.42 | 5502.42 | 0 | OK (unchanged)
+N10006/09/2026 | MEAT HANGER SMALL-MEDIUM | 2026-09-25 | DRD | 4017.94 | 4017.94 | 4017.94 | 0 | OK (unchanged)
+N10007/09/2026 | MEAT HANGER SMALL-MEDIUM | 2026-09-25 | DRD | 4017.94 | 4017.94 | 4017.94 | 0 | OK (unchanged)
+N10008/09/2026 | CHILLER LARGE | 2026-09-25 | DRD | 5448.74 | 5448.74 | 5448.74 | 0 | OK (unchanged)
+N10009/09/2026 | FREEZER LARGE | 2026-09-25 | DRD | 5432.12 | 5432.12 | 5432.12 | 0 | OK (unchanged)
+N10010/09/2026 | ICECREAM BODY MEDIUM | 2026-09-25 | DRD | 3270.7 | 3270.7 | 3270.7 | 0 | OK (unchanged)
+N10011/09/2026 | MEAT HANGER LARGE | 2026-09-25 | DRD | 5928.22 | 5928.22 | 5928.22 | 0 | OK (unchanged)
+N10012/09/2026 | CHILLER LARGE | 2026-09-25 | DRD | 5462.05 | 5462.05 | 5462.05 | 0 | OK (unchanged)
+O10013/09/2026 | CHILLER MEDIUM | 2026-09-28 | DRD | 3116.91 | 3116.91 | 3116.91 | 0 | OK (unchanged)
+SUMMARY: {('DRD', 'OK (unchanged)'): 64, ('SRD', 'rule does not fire (no SRD master sent)'): 3, ('SRD', 'OK (SRD loses RF)'): 1}
+(expected: every DRD 'OK (unchanged)'; SRD 'OK (SRD loses RF)'; any '!!' = STOP)

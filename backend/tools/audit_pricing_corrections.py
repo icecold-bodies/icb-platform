@@ -44,6 +44,15 @@ A price (`unit_price_override`) change follows the September import: the line's
 price_updated_at is stamped with the batch time and a bom_override_history row
 is written for the admin trail. Formula and default changes touch nothing else.
 
+v1.58.1 — `bom_conditions` (an item's inclusion rule, the column the Trailer
+Designer's rule editor writes). The manifest gives the rule as a YAML list of
+{option, equals, option_id}; the tool stores exactly the text the configurator
+endpoint would (`json.dumps`, keys in the manifest's order). Guards and the
+revert check compare it as CANONICAL JSON (sorted keys, no whitespace), so key
+order or spacing never makes a false mismatch; --revert restores the stored text
+from the journal's before-row. `body:` may list several names for one body_id
+(dev and prod name some bodies differently); body_id stays exact.
+
 Optional per-entry check — `equal_at: {length: 6.7}` evaluates the current and
 the new formula through the MES formula engine at those dimensions (plus the
 database's global variables and any `vars:` given) and refuses the manifest
@@ -66,9 +75,12 @@ DEFAULT_MANIFEST = (Path(__file__).resolve().parents[2]
                     / "docs" / "audit" / "pricing_corrections_2026-09" / "manifest.yaml")
 
 TARGETS = {"mirror": "icb_prodmirror", "prod": "icb_platform", "dev": "icb", "test": None}
-FIELDS = {"formula_expression": str, "unit_price_override": float, "body_option_default": bool}
+FIELDS = {"formula_expression": str, "unit_price_override": float, "body_option_default": bool,
+          "bom_conditions": list}
 PRICE_FIELD = "unit_price_override"
-REVERT_COLUMNS = ("formula_expression", "unit_price_override", "body_option_default", "price_updated_at")
+CONDITIONS_FIELD = "bom_conditions"
+REVERT_COLUMNS = ("formula_expression", "unit_price_override", "body_option_default", "bom_conditions",
+                  "price_updated_at")
 EQUAL_TOL = 1e-9
 ENTRY_KEYS = {"finding", "body_id", "body", "section", "bom_id", "line", "field", "current", "new",
               "equal_at", "vars", "note"}
@@ -97,6 +109,10 @@ class Change:
     new: object
     equal_at: dict | None = None
     vars: dict | None = None
+    # every body name the identity guard accepts for body_id — a manifest may list the
+    # dev AND prod names of one body (dev still says ICECREAM 4.9 UP where prod says
+    # ICECREAM BODY LARGE); body_id itself stays exact
+    bodies: tuple = ()
 
     @property
     def key(self) -> str:
@@ -112,10 +128,46 @@ class Plan:
 
 # ── manifest ─────────────────────────────────────────────────────────────────
 
+def _conditions_text(v):
+    """A bom_conditions manifest value -> the exact text the configurator endpoint stores
+    (trailers.py PATCH /items/{id}/conditions: `json.dumps(cleaned)`, default separators, keys
+    in the order given — the manifest writes option, equals, option_id like the endpoint)."""
+    if isinstance(v, str):
+        try:
+            v = json.loads(v)
+        except ValueError:
+            raise ManifestError(f"bom_conditions: not JSON: {v!r}")
+    if isinstance(v, list):
+        for c in v:
+            if not (isinstance(c, dict) and isinstance(c.get("option"), str) and c.get("equals") in ("Y", "N")):
+                raise ManifestError(f"bom_conditions: each condition needs option + equals Y/N, got {c!r}")
+    elif not (isinstance(v, dict) and v.get("mode") in ("exclude", "always_exclude")):
+        raise ManifestError(f"bom_conditions: expected a list of conditions or an exclude/always_exclude "
+                            f"object, got {v!r}")
+    return json.dumps(v)
+
+
+def _canonical(field_name: str, v):
+    """The value a guard compares. bom_conditions compares as canonical JSON (sorted keys, no
+    whitespace), so key order or spacing in the stored text never causes a false mismatch."""
+    if field_name != CONDITIONS_FIELD or v is None:
+        return v
+    try:
+        return json.dumps(json.loads(v), sort_keys=True, separators=(",", ":"))
+    except (ValueError, TypeError):
+        return ("<unparseable>", v)          # never equal to a manifest value
+
+
+def _same(field_name: str, a, b) -> bool:
+    return _canonical(field_name, a) == _canonical(field_name, b)
+
+
 def _coerce(field_name: str, v):
     if v is None:
         return None
     kind = FIELDS[field_name]
+    if kind is list:
+        return _conditions_text(v)
     if kind is bool:
         if not isinstance(v, bool):
             raise ManifestError(f"{field_name}: expected true/false, got {v!r}")
@@ -152,7 +204,10 @@ def load_manifest(path: Path) -> tuple[list[Change], str]:
             raise ManifestError(f"{where}: field {e['field']!r} is not one this tool writes {sorted(FIELDS)}")
         cur = _coerce(e["field"], e["current"])
         new = _coerce(e["field"], e["new"])
-        if cur == new:
+        names = e["body"] if isinstance(e["body"], list) else [e["body"]]
+        if not names or not all(isinstance(n, str) and n for n in names):
+            raise ManifestError(f"{where}: body must be a name or a list of names")
+        if _same(e["field"], cur, new):
             raise ManifestError(f"{where}: current == new ({cur!r}) — a no-op entry is a manifest mistake")
         k = (int(e["bom_id"]), e["field"])
         if k in seen:
@@ -160,11 +215,19 @@ def load_manifest(path: Path) -> tuple[list[Change], str]:
         seen.add(k)
         if e.get("equal_at") is not None and e["field"] != "formula_expression":
             raise ManifestError(f"{where}: equal_at only applies to formula_expression")
-        out.append(Change(finding=str(e["finding"]), body_id=int(e["body_id"]), body=str(e["body"]),
+        out.append(Change(finding=str(e["finding"]), body_id=int(e["body_id"]), body=" | ".join(names),
                           section=str(e["section"]), bom_id=int(e["bom_id"]), line=str(e["line"]),
                           field=e["field"], current=cur, new=new,
-                          equal_at=e.get("equal_at"), vars=e.get("vars")))
+                          equal_at=e.get("equal_at"), vars=e.get("vars"), bodies=tuple(names)))
     return out, hashlib.sha256(raw_bytes).hexdigest()
+
+
+def manifest_note(path: Path) -> str:
+    """The manifest's own top-level `note:` (journaled), else the v1.58 batch note."""
+    import yaml
+    doc = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    note = doc.get("note") if isinstance(doc, dict) else None
+    return str(note) if note else BATCH_NOTE
 
 
 def check_equivalences(changes: list[Change], global_vars: dict) -> list[str]:
@@ -236,16 +299,18 @@ def build_plan(conn, changes: list[Change]) -> Plan:
         if r is None:
             problems.append(f"{c.key}: line not found")
             continue
-        ident = {"body_id": (r["trailer_type_id"], c.body_id), "body": (r["_trailer_name"], c.body),
-                 "section": (r["bom_section"], c.section), "line": (r["_material_name"], c.line)}
-        wrong = [f"{k} is {have!r}" for k, (have, want) in ident.items() if have != want]
+        ident = {"body_id": (r["trailer_type_id"] == c.body_id, r["trailer_type_id"]),
+                 "body": (r["_trailer_name"] in (c.bodies or (c.body,)), r["_trailer_name"]),
+                 "section": (r["bom_section"] == c.section, r["bom_section"]),
+                 "line": (r["_material_name"] == c.line, r["_material_name"])}
+        wrong = [f"{k} is {have!r}" for k, (ok, have) in ident.items() if not ok]
         if wrong:
             problems.append(f"{c.key}: identity mismatch — " + ", ".join(wrong))
             continue
         have = r[c.field]
-        if have == c.current:
+        if _same(c.field, have, c.current):
             plan.todo.append(c)
-        elif have == c.new:
+        elif _same(c.field, have, c.new):
             plan.done.append(c)
         else:
             problems.append(f"{c.key}: GUARD — found {have!r}, manifest expects {c.current!r} (new {c.new!r})")
@@ -255,12 +320,12 @@ def build_plan(conn, changes: list[Change]) -> Plan:
 
 
 def apply_plan(conn, plan: Plan, *, target: str, dbname: str, manifest_sha: str,
-               batch: datetime | None = None) -> dict:
+               batch: datetime | None = None, note: str = BATCH_NOTE) -> dict:
     """Write plan.todo on `conn` (the caller owns the transaction). Returns the journal."""
     import sqlalchemy as sa
     batch = batch or datetime.now(timezone.utc)
     touched = sorted({c.bom_id for c in plan.todo})
-    journal = {"tool": "audit_pricing_corrections", "note": BATCH_NOTE, "batch_at": batch.isoformat(),
+    journal = {"tool": "audit_pricing_corrections", "note": note, "batch_at": batch.isoformat(),
                "target": target, "database": dbname, "manifest_sha256": manifest_sha,
                "changes": [], "before_rows": {}, "override_history_ids": []}
     for bid in touched:
@@ -300,7 +365,7 @@ def revert_journal(conn, journal: dict) -> dict:
         r = rows.get(ch["bom_id"])
         if r is None:
             problems.append(f"bom {ch['bom_id']}: line not found")
-        elif r[ch["field"]] != ch["after"]:
+        elif not _same(ch["field"], r[ch["field"]], ch["after"]):
             problems.append(f"bom {ch['bom_id']} .{ch['field']}: found {r[ch['field']]!r}, "
                             f"journal applied {ch['after']!r} — moved since the apply")
     hist = journal.get("override_history_ids") or []
@@ -315,9 +380,9 @@ def revert_journal(conn, journal: dict) -> dict:
     for bid, before in journal["before_rows"].items():
         stamp = before["price_updated_at"]
         conn.execute(sa.text("UPDATE bill_of_materials SET formula_expression=:f, unit_price_override=:o, "
-                             "body_option_default=:d, price_updated_at=:p WHERE id=:i"),
+                             "body_option_default=:d, bom_conditions=:c, price_updated_at=:p WHERE id=:i"),
                      {"f": before["formula_expression"], "o": before["unit_price_override"],
-                      "d": before["body_option_default"],
+                      "d": before["body_option_default"], "c": before["bom_conditions"],
                       "p": datetime.fromisoformat(stamp) if stamp else None, "i": int(bid)})
     if hist:
         conn.execute(sa.text("DELETE FROM bom_override_history WHERE id = ANY(:ids)"), {"ids": hist})
@@ -414,7 +479,8 @@ def main(argv: list[str] | None = None) -> int:
         if not a.apply:
             print("(DRY RUN — nothing written. Re-run with --apply.)")
             return 0
-        journal = apply_plan(conn, plan, target=a.target, dbname=dbname, manifest_sha=sha)
+        journal = apply_plan(conn, plan, target=a.target, dbname=dbname, manifest_sha=sha,
+                             note=manifest_note(Path(a.manifest)))
         out_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.fromisoformat(journal["batch_at"]).strftime("%Y%m%dT%H%M%SZ")
         jpath = out_dir / f"pricing_corrections_journal_{a.target}_{ts}.json"

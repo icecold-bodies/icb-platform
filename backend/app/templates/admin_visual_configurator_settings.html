@@ -608,7 +608,9 @@
   }
   .vs-rule-summary {
     display: flex;
-    flex-wrap: nowrap;
+    /* v1.59.2 — wrap: a kept chip reads as a phrase, and two of them (SRD EPS +
+       SRD PU on every REAR FRAME line) were clipped on one line. */
+    flex-wrap: wrap;
     gap: 4px;
     align-items: center;
     flex: 1;
@@ -646,6 +648,19 @@
     border-color: color-mix(in srgb, var(--red) 36%, var(--border));
     background: color-mix(in srgb, var(--red) 10%, var(--bg-panel));
     color: var(--red);
+  }
+  /* v1.59.2 — a condition from outside the branch (kept, read-only, still
+     applied — as the rule editor shows it) and a draft copy that disagrees
+     with the database rule the chips show. */
+  .vs-rule-chip.kept,
+  .vs-cp-cond.kept {
+    border-style: dashed;
+  }
+  .vs-rule-chip.draft-differs,
+  .vs-cp-cond.draft-differs {
+    border-color: color-mix(in srgb, var(--orange) 45%, var(--border));
+    background: color-mix(in srgb, var(--orange) 12%, var(--bg-panel));
+    color: var(--orange);
   }
   .vs-rule-actions {
     margin-top: 6px;
@@ -1433,6 +1448,73 @@ function ruleSummary(rule) {
 function ruleChipText(rule, condition) {
   const prefix = (rule.mode || 'include') === 'exclude' ? 'exclude when' : 'when';
   return `${prefix} ${condition.option} = ${condition.equals}`;
+}
+
+// v1.59.2 (BA ruling 7a) — the rule a line is COSTED with is the database's
+// (bom_conditions, as the categories endpoint serves it on each item): the
+// engine prices from it and the editor opens it (v1.59.1), so every chip shows
+// it too. The draft's itemRules is a copy only the rule editor writes; where it
+// disagrees, the card says so ("draft differs") instead of showing it.
+function dbItemRule(item) {
+  return {
+    conditions: Array.isArray(item?.conditions) ? item.conditions : [],
+    mode: item?.conditionMode || 'include',
+  };
+}
+
+// One rule as a comparable key: its mode and (option, equals) pairs, order-free
+// (the engine ANDs them) and option_id-free (the engine matches by name).
+function ruleKey(rule) {
+  const mode = String(rule?.mode || 'include').toLowerCase();
+  if (mode === 'always_exclude') return 'always_exclude';
+  const pairs = (Array.isArray(rule?.conditions) ? rule.conditions : [])
+    .filter(c => c && c.option)
+    .map(c => `${c.option}\u0000${String(c.equals || 'Y').toUpperCase()}`)
+    .sort();
+  if (!pairs.length) return 'always_include';
+  return `${mode === 'exclude' ? 'exclude' : 'include'}\u0001${pairs.join('\u0001')}`;
+}
+
+// The draft's copy of a line's rule when it DISAGREES with the database's,
+// else null. Surfaced as a marker, never reconciled silently.
+function draftRuleDiffers(draft, item) {
+  const copy = draft?.itemRules?.[String(item?.id)];
+  if (!copy) return null;
+  return ruleKey(copy) === ruleKey(dbItemRule(item)) ? null : copy;
+}
+
+// A rule in one line of words, for a tooltip.
+function ruleText(rule) {
+  const mode = String(rule?.mode || 'include').toLowerCase();
+  if (mode === 'always_exclude') return 'always excluded';
+  const conds = (Array.isArray(rule?.conditions) ? rule.conditions : []).filter(c => c && c.option);
+  if (!conds.length) return 'always included';
+  const prefix = mode === 'exclude' ? 'exclude when' : 'when';
+  return `${prefix} ${conds.map(c => `${c.option} = ${String(c.equals || 'Y').toUpperCase()}`).join(' and ')}`;
+}
+
+function draftDiffersTip(copy) {
+  return `The configurator draft holds a different copy of this rule (${ruleText(copy)}). `
+    + 'The costing uses the rule shown here, from the database.';
+}
+
+// A condition whose flag this branch does not offer: kept, read-only, still
+// applied (v1.59.1). The chip is the card's own chip plus the editor's word
+// "kept" — the editor's full sentence does not fit a chip (it clipped) — and the
+// tooltip carries the rule editor's exact wording.
+function keptChipText(rule, condition) {
+  return `${ruleChipText(rule, condition)} · kept`;
+}
+function keptChipTip(condition) {
+  return `${condition.option} is ${condition.equals === 'N' ? 'not selected' : 'selected'} — kept (outside this branch). `
+    + 'This condition uses a flag from another part of the tree. It still applies; edit it with the tool or ask the administrator.';
+}
+
+// The flag names the rule editor offers for a placed category (null when the
+// category is not in the explorer, so nothing can be called out of branch).
+function scopedOptionValues(draft, categoryNodeId, bodyOptions) {
+  if (!categoryNodeId) return null;
+  return new Set(collectScopedRuleOptions(draft, categoryNodeId, bodyOptions).map(option => option.value));
 }
 
 function collectScopedRuleOptions(draft, categoryNodeId, bodyOptions) {
@@ -2837,17 +2919,29 @@ function App() {
             {selectable && <span className={`vs-cp-dot${active ? ' on' : ''}`} />}
           </div>
           {!isCollapsed && items.map(item => {
-            const rule = itemRuleState(draft, item.id, item);
+            // v1.59.2 — the DATABASE rule, as on the catalog card.
+            const rule = dbItemRule(item);
+            const differs = draftRuleDiffers(draft, item);
+            const inScope = scopedOptionValues(draft, nodeId, bodyOptions);
             const excluded = rule.mode === 'always_exclude';
             const conds = excluded ? [] : (rule.conditions || []);
             return (
-              <div key={item.id} className="vs-cp-item"
+              <div key={item.id} className="vs-cp-item" data-item-id={item.id}
                    style={{paddingLeft: pl + 14, opacity: excluded ? 0.35 : 1}}>
                 <span className="vs-cp-item-name">{item.name}</span>
                 {excluded && <span className="vs-cp-cond exclude">out</span>}
-                {conds.map((c, i) => (
-                  <span key={i} className="vs-cp-cond">{c.option}={c.equals}</span>
-                ))}
+                {conds.map((c, i) => {
+                  const kept = !!inScope && !inScope.has(c.option);
+                  return (
+                    <span key={i} className={`vs-cp-cond${kept ? ' kept' : ''}`}
+                          title={kept ? keptChipTip(c) : undefined}>
+                      {c.option}={c.equals}{kept ? ' · kept' : ''}
+                    </span>
+                  );
+                })}
+                {differs ? (
+                  <span className="vs-cp-cond draft-differs" title={draftDiffersTip(differs)}>draft differs</span>
+                ) : null}
               </div>
             );
           })}
@@ -3013,16 +3107,21 @@ function App() {
                           {(category.items || []).length ? (
                             category.items.map(item => (
                               (() => {
-                                const rule = itemRuleState(draft, item.id, item);
+                                // v1.59.2 — the DATABASE rule (what is costed); the
+                                // draft copy only raises a marker when it differs.
+                                const rule = dbItemRule(item);
+                                const differs = draftRuleDiffers(draft, item);
                                 const summary = ruleSummary(rule);
                                 const evaluation = evaluateRule(rule, activeRuleNames);
                                 const categoryNodeId = usedCategoryMap[category.key];
+                                const inScope = scopedOptionValues(draft, categoryNodeId, bodyOptions);
                                 const branchActive = !categoryNodeId || folderBranchActive(draft, categoryNodeId);
                                 const itemIncluded = evaluation.included && branchActive;
                                 return (
                               <div
                                 key={item.id}
                                 className="vs-catalog-item"
+                                data-item-id={item.id}
                                 style={itemIncluded ? null : { opacity: 0.55 }}
                               >
                                 <span className="vs-catalog-item-name">{item.name}</span>
@@ -3031,14 +3130,21 @@ function App() {
                                     <span className="vs-rule-chip exclude">always out</span>
                                   ) : null}
                                   {(summary.state === 'include' || summary.state === 'exclude') ? (
-                                    (rule.conditions || []).map((condition, index) => (
+                                    (rule.conditions || []).map((condition, index) => {
+                                      const kept = !!inScope && !inScope.has(condition.option);
+                                      return (
                                       <span
                                         key={`${item.id}-${index}`}
-                                        className={`vs-rule-chip ${rule.mode === 'exclude' ? 'exclude' : 'include'}`}
+                                        className={`vs-rule-chip ${rule.mode === 'exclude' ? 'exclude' : 'include'}${kept ? ' kept' : ''}`}
+                                        title={kept ? keptChipTip(condition) : undefined}
                                       >
-                                        {ruleChipText(rule, condition)}
+                                        {kept ? keptChipText(rule, condition) : ruleChipText(rule, condition)}
                                       </span>
-                                    ))
+                                      );
+                                    })
+                                  ) : null}
+                                  {differs ? (
+                                    <span className="vs-rule-chip draft-differs" title={draftDiffersTip(differs)}>draft differs</span>
                                   ) : null}
                                 </div>
                                 <div className="vs-catalog-item-side">

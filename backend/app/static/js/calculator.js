@@ -8,6 +8,7 @@ let lastRecordId = null;
 let justSavedHere = false;
 let lastResult = null;
 let lastCalcPayload = null;  // stored for approve
+let lastResultPayload = null;  // v1.59.2 — the request lastResult was computed from
 
 // ── AI Help action handlers (registered for the chat widget) ───────────────
 // The help widget calls window.helpActionHandlers[<type>] when the user clicks
@@ -5981,8 +5982,10 @@ async function runCalc() {
   document.getElementById('approve-btn').disabled = true;
   status.innerHTML = '<span class="spinner spinner-sm"></span> Calculating…';
   try {
-    const result = await api('POST', '/api/calculate', lastCalcPayload);
+    const _sent = lastCalcPayload;
+    const result = await api('POST', '/api/calculate', _sent);
     lastResult = result;
+    lastResultPayload = _sent;
     lastBodyVars   = result.body_variables           || {};
     lastFormulaLib = result.formula_library_resolved || {};
     lastGlobalVars = result.global_variables         || {};
@@ -6156,6 +6159,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     lastRecordId   = result.record_id;
     justSavedHere  = true;   // v1.49 rule 2 — arms the save-once gate + the line lock
     lastResult     = result;
+    lastResultPayload = _pendingApproveBase;
     lastBodyVars   = result.body_variables           || {};
     lastFormulaLib = result.formula_library_resolved || {};
     lastGlobalVars = result.global_variables         || {};
@@ -6309,6 +6313,90 @@ function sectionNotSelected(its) {
 }
 if (typeof window !== 'undefined') window.sectionNotSelected = sectionNotSelected;
 
+// v1.59.2 (BA ruling 7a) — plain English on a line a RULE switched off. The
+// struck-through badge read the engine's condition ("excluded · SRD PU = N")
+// under a NOT SELECTED header. It now says why in sales words, built BY
+// MECHANISM from the STORED rule (GET /bom's bom_conditions — what the engine
+// priced) and the option names the calc was sent with, evaluated exactly as
+// calculator.py's _eval_bom_conditions does:
+//   include, X = N, X is on   -> "not used with X"
+//   include, X = Y, X is off  -> "needs X"
+//   exclude, every condition matched -> "not used with X, Y" (a matched "= N" reads "needs X")
+//   always_exclude            -> "always left out"
+// The engine's words (excluded_reason) stay in the API as they are and ride the
+// tooltip for admins. Display only: nothing here reaches a payload, a saved
+// costing or a snapshot. User / optional-section exclusions are unchanged.
+const RULE_OUT_FALLBACK = 'not used with the options chosen';
+
+// A stored bom_conditions JSON string -> { mode, conditions }, or null (no
+// rule, or malformed). The same shapes calculator.py accepts.
+function parseStoredRule(raw) {
+  if (!raw) return null;
+  let p;
+  try { p = JSON.parse(raw); } catch (_) { return null; }
+  const isCond = c => c && typeof c === 'object' && !Array.isArray(c);
+  if (Array.isArray(p)) return { mode: 'include', conditions: p.filter(isCond) };
+  if (!isCond(p)) return null;
+  const mode = String(p.mode || 'include').toLowerCase();
+  if (mode === 'always_exclude') return { mode: 'always_exclude', conditions: [] };
+  return { mode: mode === 'exclude' ? 'exclude' : 'include',
+           conditions: (Array.isArray(p.all) ? p.all : []).filter(isCond) };
+}
+
+// The option names a calc counts as ON — the set _build_bom_items builds from
+// the same request: each selected body-option master's material name, plus
+// each flag_overrides alias sent as true.
+function calcOnOptionNames(payload, bom) {
+  const on = new Set();
+  const sel = (payload && payload.body_option_selections) || {};
+  (bom || []).forEach(r => {
+    if (r && r.is_body_option && sel[String(r.id)] && r.material_name) on.add(String(r.material_name));
+  });
+  const fo = (payload && payload.flag_overrides) || {};
+  Object.keys(fo).forEach(n => { if (n && fo[n]) on.add(n); });
+  return on;
+}
+
+// Why a stored rule switched a line off, in plain English — or null when the
+// rule, evaluated here, would NOT switch the line off (a stale rule or flag set:
+// the caller falls back rather than guess).
+function conditionBadgeText(rule, onNames) {
+  if (!rule) return null;
+  if (rule.mode === 'always_exclude') return 'always left out';
+  const conds = (rule.conditions || []).map(c => {
+    const opt = String(c.option || '');
+    return { opt, eq: String(c.equals || 'Y').toUpperCase(), on: onNames.has(opt) };
+  });
+  if (!conds.length) return null;                        // no conditions = always in
+  // A condition HOLDS unless it wants Y and the option is off, or N and it is on.
+  const holds = c => !((c.eq === 'Y' && !c.on) || (c.eq === 'N' && c.on));
+  let why;
+  if (rule.mode === 'exclude') {
+    if (!conds.every(holds)) return null;                // exclude fires only when all match
+    why = conds.filter(c => c.eq === 'Y' || c.eq === 'N');
+  } else {
+    why = conds.filter(c => !holds(c));
+  }
+  if (!why.length || why.some(c => !c.opt)) return null;
+  const notWith = [...new Set(why.filter(c => c.on).map(c => c.opt))];
+  const needs   = [...new Set(why.filter(c => !c.on).map(c => c.opt))];
+  const parts = [];
+  if (notWith.length) parts.push(`not used with ${notWith.join(', ')}`);
+  if (needs.length)   parts.push(`needs ${needs.join(', ')}`);
+  return parts.join(' · ');
+}
+
+// The badge on an excluded BOM line. A rule-excluded line reads plain English
+// with the engine's wording in the tooltip; every other exclusion is unchanged.
+function excludedBadgeHtml(it, bRef, onNames) {
+  const style = 'display:inline-block;margin-left:6px;font-size:9px;background:rgba(163,113,247,.18);color:#a371f7;border-radius:3px;padding:1px 5px;font-family:var(--font-sans);letter-spacing:.3px;text-decoration:none';
+  if (it.excluded_by === 'condition') {
+    const text = conditionBadgeText(parseStoredRule(bRef && bRef.bom_conditions), onNames) || RULE_OUT_FALLBACK;
+    return ` <span class="bom-rule-out" title="Rule: ${escHtml(it.excluded_reason)}" style="${style}">${escHtml(text)}</span>`;
+  }
+  return ` <span style="${style}">excluded · ${escHtml(it.excluded_reason)}</span>`;
+}
+
 // which sections currently show their soft-excluded (condition-failed) rows.
 function _calcHiddenKey(tid) { return `bom_show_hidden_${tid}`; }
 function _loadShowHidden(tid) {
@@ -6442,6 +6530,8 @@ function renderBOMWithCosts(items, bomRef) {
   const tidNum = tidVal ? +tidVal : 0;
   const showHiddenSet = _loadShowHidden(tidNum);
   const _zeroRule = zeroRuleInfo(typeof lastResult !== 'undefined' ? lastResult : null);
+  // v1.59.2 — the option names ON in the request these items were computed from.
+  const _onNames = calcOnOptionNames(lastResultPayload, bomData);
 
   const groups = {};
   const firstIdx = {};
@@ -6682,7 +6772,7 @@ function renderBOMWithCosts(items, bomRef) {
       // "when …" (same purple) so the user sees which lines are conditional
       // even before toggling a flag.
       const excludedBadge = it.excluded && it.excluded_reason
-        ? ` <span style="display:inline-block;margin-left:6px;font-size:9px;background:rgba(163,113,247,.18);color:#a371f7;border-radius:3px;padding:1px 5px;font-family:var(--font-sans);letter-spacing:.3px;text-decoration:none">excluded · ${escHtml(it.excluded_reason)}</span>`
+        ? excludedBadgeHtml(it, bRef, _onNames)
         : (it.condition_summary
             ? ` <span style="display:inline-block;margin-left:6px;font-size:9px;background:rgba(163,113,247,.18);color:#a371f7;border-radius:3px;padding:1px 5px;font-family:var(--font-sans);letter-spacing:.3px;text-decoration:none">when ${escHtml(it.condition_summary)}</span>`
             : '');

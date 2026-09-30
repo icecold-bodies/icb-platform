@@ -277,6 +277,11 @@ async def get_bom(tt_id: int, db: Session = Depends(get_db)):
             "floor_plate_name":          row.floor_plate.name if row.floor_plate else None,
             "mounting_cleat_id":         row.mounting_cleat_id,
             "mounting_cleat_name":       row.mounting_cleat.name if row.mounting_cleat else None,
+            # v1.59.2 — the STORED rule, exactly as the engine reads it, so the
+            # calculator can say in plain English why a rule switched a line off.
+            # Read-only here: no write path accepts it back (PUT /api/bom/{id}
+            # takes an allow-list; rules change only via the configurator PATCH).
+            "bom_conditions":            row.bom_conditions,
         })
     return result
 

@@ -209,6 +209,13 @@ def _stored(item_id: int) -> str | None:
 
 # ── A. Trailer Designer ─────────────────────────────────────────────────────────
 
+def _row(page: Page, scope, row_cls: str, name_cls: str, name: str):
+    """A catalog / preview row found by its item NAME (the base template has no
+    data-item-id, and the negative control must reach the chips to fail on them)."""
+    return scope.locator(row_cls).filter(
+        has=page.locator(name_cls, has_text=re.compile(rf"^{re.escape(name)}$")))
+
+
 def _card(page: Page, section: str):
     # Match the card TITLE exactly: an expanded REAR FRAME card's kept chips also
     # contain the text "JRD7 SRD", so a plain has_text would pick the wrong card.
@@ -231,7 +238,7 @@ def test_designer_chips_show_the_database_rule(page: Page, live_server: str, sta
     # The line whose DRAFT copy differs: the chips show the database rule, and a
     # marker names the draft's copy. Checked FIRST so a regression fails naming the
     # draft's chip ("when JRD7 FRONT EPS = N") rather than a missing marker.
-    plate = card.locator(f".vs-catalog-item[data-item-id='{staged['plate']}']")
+    plate = _row(page, card, ".vs-catalog-item", ".vs-catalog-item-name", f"{MARK} FLOOR PLATE")
     expect(plate.locator(".vs-rule-chip").first).to_be_visible(timeout=T)
     chips = plate.locator(".vs-rule-chip").all_inner_texts()
     assert f"when {MARK} FRONT EPS = N" not in chips, f"the chip shows the draft's copy: {chips}"
@@ -248,20 +255,21 @@ def test_designer_chips_show_the_database_rule(page: Page, live_server: str, sta
         rf"different copy of this rule \(when {MARK} FRONT EPS = N\).*from the database"))
 
     # The line with NO draft copy: the same database rule, no marker.
-    rail = card.locator(f".vs-catalog-item[data-item-id='{staged['rail']}']")
+    rail = _row(page, card, ".vs-catalog-item", ".vs-catalog-item-name", f"{MARK} FRAME RAIL")
     expect(rail.locator(".vs-rule-chip.kept")).to_have_count(2)
     expect(rail.locator(".vs-rule-chip.draft-differs")).to_have_count(0)
     shot(page, "01-designer-rear-frame-chips", journey=JOURNEY)
 
     # An IN-branch condition keeps its ordinary chip (SRD PU is offered in SRD's
     # branch). The catalog is an accordion: this collapses the REAR FRAME card.
-    hinge = _card(page, SRD_SEC).locator(f".vs-catalog-item[data-item-id='{staged['srd_hinge']}']")
+    hinge = _row(page, _card(page, SRD_SEC), ".vs-catalog-item", ".vs-catalog-item-name",
+                 f"{MARK} SRD HINGE")
     expect(hinge.locator(".vs-rule-chip")).to_have_text([f"when {MARK} SRD PU = Y"])
     expect(hinge.locator(".vs-rule-chip.kept")).to_have_count(0)
 
     # The config preview reads the same way.
     page.get_by_title("Toggle config structure preview").click()
-    pv = page.locator(f".vs-cp-item[data-item-id='{staged['plate']}']")
+    pv = _row(page, page, ".vs-cp-item", ".vs-cp-item-name", f"{MARK} FLOOR PLATE")
     expect(pv).to_be_visible(timeout=T)
     expect(pv.locator(".vs-cp-cond.kept")).to_have_text(
         [f"{MARK} SRD EPS=N · kept", f"{MARK} SRD PU=N · kept"])
@@ -322,8 +330,11 @@ def test_calculator_badges_read_plain_english(page: Page, live_server: str, stag
     assert liner["excluded_by"] == "condition"
     assert liner["excluded_reason"] == f"{MARK} DRD EPS = Y"     # the API is unchanged
     _show_lines(page, DRD_SEC, 1)
-    badge = page.locator(f"tr.bom-excluded-row[data-bom-id='{ids['drd_eps_liner']}'] .bom-rule-out")
-    expect(badge).to_have_text(f"needs {MARK} DRD EPS", timeout=T)
+    row = page.locator(f"tr.bom-excluded-row[data-bom-id='{ids['drd_eps_liner']}']")
+    # On the row's TEXT first, so a regression fails showing the engine's wording.
+    expect(row).to_contain_text(f"needs {MARK} DRD EPS", timeout=T)
+    badge = row.locator(".bom-rule-out")
+    expect(badge).to_have_text(f"needs {MARK} DRD EPS")
     expect(badge).to_have_attribute("title", f"Rule: {MARK} DRD EPS = Y")
     shot(page, "03-drd-quote-needs", journey=JOURNEY)
 
@@ -344,6 +355,7 @@ def test_calculator_badges_read_plain_english(page: Page, live_server: str, stag
         row = page.locator(f"tr.calc-grp-row.bom-excluded-row[data-bom-id='{ids[k]}']")
         expect(row).to_be_visible(timeout=T)
         expect(row).to_have_css("text-decoration-line", "line-through")
+        expect(row).to_contain_text(f"not used with {MARK} SRD PU")
         badge = row.locator(".bom-rule-out")
         expect(badge).to_have_text(f"not used with {MARK} SRD PU")
         expect(badge).to_have_attribute("title", f"Rule: {MARK} SRD PU = N")

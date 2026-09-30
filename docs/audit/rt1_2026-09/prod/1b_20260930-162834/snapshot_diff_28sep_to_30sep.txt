@@ -1,0 +1,108 @@
+old all.json generated 2026-09-28T11:46:14+00:00 · new all.json generated 2026-09-30T14:28:54+00:00
+
+## bill_of_materials: +3 added, -0 removed, ~89 changed
+   + 11209
+   + 11210
+   + 11211
+   ~ 11100 [FREEZER MEDIUM / SUB FRAME + LIGHT BOX ASSY / 1MM GALV PLATE]: material_id 253 -> 996
+   ~ 2405 [FREEZER MEDIUM / FRONT / EPS]: bom_conditions '[{"option": "FRONT EPS", "equals": "Y", "option_id": 2532}]' -> '{"mode": "always_exclude"}'
+   ~ 2406 [FREEZER MEDIUM / FRONT / PU]: formula_expression '2.44*1.22*2' -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'; unit_price_override 245.73583892617447 -> None
+   ~ 2414 [FREEZER MEDIUM / SRD / EPS]: bom_conditions '[{"option": "SRD EPS", "equals": "Y", "option_id": 2536}]' -> '{"mode": "always_exclude"}'
+   ~ 2415 [FREEZER MEDIUM / SRD / PU]: unit_price_override 4100.0 -> None
+   ~ 2420 [FREEZER MEDIUM / SRD / 130*62MM TAPPING BLOCKS 200MM]: formula_expression '6' -> '3'; taping_block_id None -> 1
+   ~ 2440 [FREEZER MEDIUM / DRD / EPS]: bom_conditions '[{"option": "DRD EPS", "equals": "Y", "option_id": 2534}]' -> '{"mode": "always_exclude"}'
+   ~ 2441 [FREEZER MEDIUM / DRD / PU]: formula_expression '((2.44*1.22))*2' -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'; unit_price_override 245.73583892617447 -> None
+   ~ 2462 [FREEZER MEDIUM / SIDES / EPS]: bom_conditions '[{"option": "SIDES EPS", "equals": "Y", "option_id": 2538}]' -> '{"mode": "always_exclude"}'
+   ~ 2463 [FREEZER MEDIUM / SIDES / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'; unit_price_override 245.73583892617447 -> None
+   ~ 2467 [FREEZER MEDIUM / SIDES / 58MM PICTURE FRAME]: floor_plate_id 6 -> 8
+   ~ 2473 [FREEZER MEDIUM / ROOF / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'; unit_price_override 311.26539597315434 -> None
+   ~ 2481 [FREEZER MEDIUM / FLOOR / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'; unit_price_override 311.26539597315434 -> None
+   ~ 2535 [FREEZER MEDIUM / BODY OPTIONS / DRD PU]: variable_value 0.0 -> 0.06
+   ~ 2536 [FREEZER MEDIUM / BODY OPTIONS / SRD EPS]: variable_value 0.06 -> 0.0
+   ~ 2550 [FREEZER LARGE / FRONT / EPS]: bom_conditions '[{"option": "FRONT EPS", "equals": "Y", "option_id": 2680}]' -> '{"mode": "always_exclude"}'
+   ~ 2551 [FREEZER LARGE / FRONT / PU]: formula_expression '(1.22*2.44)*2' -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'; unit_price_override 245.73583892617447 -> None
+   ~ 2559 [FREEZER LARGE / SRD / EPS]: bom_conditions '[{"option": "SRD EPS", "equals": "Y", "option_id": 2684}]' -> '{"mode": "always_exclude"}'
+   ~ 2565 [FREEZER LARGE / SRD / 130*62MM TAPPING BLOCKS 200MM]: formula_expression '6' -> '3'; taping_block_id None -> 1
+   ~ 2586 [FREEZER LARGE / DRD / EPS]: bom_conditions '[{"option": "DRD EPS", "equals": "Y", "option_id": 2682}]' -> '{"mode": "always_exclude"}'
+   ~ 2587 [FREEZER LARGE / DRD / PU]: formula_expression '1.22*2.44*2' -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'; unit_price_override 245.73583892617447 -> None
+   ~ 2607 [FREEZER LARGE / SIDES / Rhinotex 1150 BW]: formula_expression '(length+{Waste})*(width-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})' -> '(length+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 2608 [FREEZER LARGE / SIDES / GLUE LINE]: formula_expression '(length+{Waste})*(width-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})' -> '(length+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 2609 [FREEZER LARGE / SIDES / EPS]: bom_conditions '[{"option": "SIDES EPS", "equals": "Y", "option_id": 2686}]' -> '{"mode": "always_exclude"}'
+   ~ 2610 [FREEZER LARGE / SIDES / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'; unit_price_override 245.73583892617447 -> None
+   ~ 2611 [FREEZER LARGE / SIDES / GLUE LINE]: formula_expression '(length+{Waste})*(width-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})' -> '(length+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 2612 [FREEZER LARGE / SIDES / 4MM PF PLYWOOD]: formula_expression '(length+{Waste})*(width-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})' -> '(length+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 2613 [FREEZER LARGE / SIDES / GLUE LINE]: formula_expression '(length+{Waste})*(width-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})' -> '(length+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 2614 [FREEZER LARGE / SIDES / 58MM PICTURE FRAME]: floor_plate_id 6 -> 8; formula_expression '((length+{Waste})*2) + ((width-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}))' -> '(length+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 2615 [FREEZER LARGE / SIDES / Rhinotex 1150 Bioshield]: formula_expression '(length+{Waste})*(width-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})' -> '(length+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 2620 [FREEZER LARGE / ROOF / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'; unit_price_override 409.5597315436242 -> None
+   ~ 2624 [FREEZER LARGE / ROOF / 3MM MILD STEEL PLATE]: formula_expression '1' -> '(width+{Waste})*0.1'
+   ~ 2628 [FREEZER LARGE / FLOOR / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'; unit_price_override 409.5597315436242 -> None
+   ~ 2688 [FREEZER LARGE / BODY OPTIONS / ROOF EPS]: variable_value 0.1 -> 0.0
+   ~ 2689 [FREEZER LARGE / BODY OPTIONS / ROOF PU]: variable_value 0.0 -> 0.1
+   ~ 3170 [CHILLER MEDIUM / FRONT / PU]: formula_expression '(1.22*2.44*{FRONT PU})' -> '(1.22*2.44*{FRONT PU})*2'
+   ~ 3174 [CHILLER MEDIUM / FRONT / 58 MM PICTURE FRAME]: formula_expression '(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})*2' -> '(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 * ((height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})*2)'
+   ~ 3175 [CHILLER MEDIUM / FRONT / Rhinotex 1150 Bioshield]: formula_expression '(width-0.06-0.06+{Waste})*(height-0.076-0.076+{Waste})' -> '(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 3181 [CHILLER MEDIUM / SRD / 4MM PF PLYWOOD]: formula_expression '4.90154' -> '0'
+   ~ 3182 [CHILLER MEDIUM / SRD / GLUE LINE]: formula_expression '4.90154' -> '0'
+   ~ 3184 [CHILLER MEDIUM / SRD / 130*62MM TAPPING BLOCKS 200MM]: formula_expression '6' -> '3'
+   ~ 3205 [CHILLER MEDIUM / DRD / PU]: formula_expression '2.44*1.22*2' -> '(1.22*2.44*{DRD PU})*2'; unit_price_override 185.2 -> 3090.0
+   ~ 3227 [CHILLER MEDIUM / SIDES / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '((1.22 * 2.44  * {SIDES PU}) * (length+{Waste})/1.22)'; unit_price_override None -> 3090.0
+   ~ 3237 [CHILLER MEDIUM / ROOF / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22)'; unit_price_override None -> 3090.0
+   ~ 3245 [CHILLER MEDIUM / FLOOR / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22)'; unit_price_override None -> 3090.0
+   ~ 3294 [CHILLER MEDIUM / BODY OPTIONS / DRD EPS]: variable_value 0.06 -> 0.0
+   ~ 3295 [CHILLER MEDIUM / BODY OPTIONS / DRD PU]: variable_value 0.0 -> 0.06
+   ~ 3310 [CHILLER LARGE / FRONT / PU]: formula_expression '(1.22*2.44*{FRONT PU})*2' -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'
+   ~ 3355 [CHILLER LARGE / DRD DOOR FITTINGS / 28777 DOOR CAPPING]: formula_expression '(height-0.1-0.1+{Waste})' -> '(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 3366 [CHILLER LARGE / SIDES / EPS]: formula_expression '(length+{Waste})*(height-0.1-0.1+{Waste})' -> '(length+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 3377 [CHILLER LARGE / ROOF / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22)'; unit_price_override 308.67 -> 3090.0
+   ~ 3385 [CHILLER LARGE / FLOOR / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22)'; unit_price_override 308.67 -> 3090.0
+   ~ 3437 [CHILLER LARGE / BODY OPTIONS / SIDES EPS]: variable_value 0.0 -> 0.06
+   ~ 3438 [CHILLER LARGE / BODY OPTIONS / SIDES PU]: variable_value 0.06 -> 0.0
+   ~ 3439 [CHILLER LARGE / BODY OPTIONS / ROOF EPS]: variable_value 0.0 -> 0.1
+   ~ 3440 [CHILLER LARGE / BODY OPTIONS / ROOF PU]: variable_value 0.1 -> 0.0
+   ~ 3441 [CHILLER LARGE / BODY OPTIONS / FLOOR EPS]: variable_value 0.1 -> 0.0
+   ~ 3442 [CHILLER LARGE / BODY OPTIONS / FLOOR PU]: variable_value 0.0 -> 0.1
+   ~ 3568 [FREEZER 2.3 METER / FRONT / EPS]: bom_conditions '[{"option": "FRONT EPS", "equals": "Y", "option_id": 3673}]' -> '{"mode": "always_exclude"}'
+   ~ 3569 [FREEZER 2.3 METER / FRONT / PU]: formula_expression '1.22*2.44*2' -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'; unit_price_override 245.73583892617447 -> None
+   ~ 3575 [FREEZER 2.3 METER / SRD / EPS]: bom_conditions '[{"option": "SRD EPS", "equals": "Y", "option_id": 3677}]' -> '{"mode": "always_exclude"}'
+   ~ 3576 [FREEZER 2.3 METER / SRD / PU]: unit_price_override 4100.0 -> None
+   ~ 3579 [FREEZER 2.3 METER / SRD / 130*62MM TAPPING BLOCKS 200MM]: formula_expression '6' -> '3'; taping_block_id None -> 1
+   ~ 3583 [FREEZER 2.3 METER / SRD DOOR FITTINGS / 28777 DOOR CAPPING]: formula_expression '1' -> '0'
+   ~ 3599 [FREEZER 2.3 METER / DRD / EPS]: bom_conditions '[{"option": "DRD EPS", "equals": "Y", "option_id": 3675}]' -> '{"mode": "always_exclude"}'
+   ~ 3619 [FREEZER 2.3 METER / SIDES / EPS]: bom_conditions '[{"option": "SIDES EPS", "equals": "Y", "option_id": 3679}]' -> '{"mode": "always_exclude"}'
+   ~ 3620 [FREEZER 2.3 METER / SIDES / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'; unit_price_override 245.73583892617447 -> None
+   ~ 3628 [FREEZER 2.3 METER / ROOF / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+   ~ 3636 [FREEZER 2.3 METER / FLOOR / PU]: formula_expression '1.22*2.44*(length+{Waste})/1.22' -> '(1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+   ~ 3665 [FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE]: floor_plate_id 1 -> None
+   ~ 3694 [CHILLER 2.3 METER / FRONT / 58MM PICTURE FRAME]: floor_plate_id 6 -> 8
+   ~ 3695 [CHILLER 2.3 METER / FRONT / Rhinotex 1150 Bioshield]: formula_expression '(width-0.06-0.06+{Waste})*(height-0.076-0.076+{Waste})' -> '(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})'
+   ~ 3723 [CHILLER 2.3 METER / DRD / PU]: formula_expression '(1.22*2.44*{DRD PU})' -> '(1.22*2.44*{DRD PU})*2'
+   ~ 3793 [CHILLER 2.3 METER / BODY OPTIONS / FRONT EPS]: variable_value 0.06 -> 0.0
+   ~ 3794 [CHILLER 2.3 METER / BODY OPTIONS / FRONT PU]: variable_value 0.0 -> 0.06
+   ~ 3796 [CHILLER 2.3 METER / BODY OPTIONS / DRD PU]: variable_value 0.0 -> 0.06
+   ~ 3797 [CHILLER 2.3 METER / BODY OPTIONS / SRD EPS]: variable_value 0.06 -> 0.0
+   ~ 3799 [CHILLER 2.3 METER / BODY OPTIONS / SIDES EPS]: variable_value 0.06 -> 0.0
+   ~ 3800 [CHILLER 2.3 METER / BODY OPTIONS / SIDES PU]: variable_value 0.0 -> 0.06
+   ~ 3801 [CHILLER 2.3 METER / BODY OPTIONS / ROOF EPS]: variable_value 0.076 -> 0.0
+   ~ 3802 [CHILLER 2.3 METER / BODY OPTIONS / ROOF PU]: variable_value 0.0 -> 0.076
+   ~ 3803 [CHILLER 2.3 METER / BODY OPTIONS / FLOOR EPS]: variable_value 0.076 -> 0.0
+   ~ 3804 [CHILLER 2.3 METER / BODY OPTIONS / FLOOR PU]: variable_value 0.0 -> 0.076
+   ~ 5426 [ICECREAM BODY LARGE / BODY OPTIONS / DRD PU]: variable_value 0.12 -> 0.0
+   ~ 5428 [ICECREAM BODY LARGE / BODY OPTIONS / SRD PU]: variable_value 0.0 -> 0.12
+   ~ 5612 [ICECREAM BODY MEDIUM / DRD / PU]: formula_expression '((width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}))*2' -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'
+   ~ 5703 [ICECREAM BODY MEDIUM / BODY OPTIONS / DRD EPS]: variable_value 0.06 -> 0.0
+   ~ 5704 [ICECREAM BODY MEDIUM / BODY OPTIONS / DRD PU]: variable_value 0.0 -> 0.12
+   ~ 6304 [CHILLER MEDIUM / SRD / 130*62MM TAPPING BLOCKS 250MM]: formula_expression '6' -> '3'
+
+## materials: +3 added, -0 removed, ~6 changed
+   + 1000
+   + 1001
+   + 999
+   ~ 207 [PU]: last_updated '2026-09-25T11:42:54.622274' -> '2026-09-29T17:25:00.632287'; price_per_unit 334.5 -> 4095.0
+   ~ 209 [PU]: last_updated '2026-09-27T07:52:36.996626' -> '2026-09-29T08:52:06.048680'; price_per_unit 490.87 -> 4095.0
+   ~ 211 [PU]: last_updated '2026-09-25T11:46:53.134267' -> '2026-09-29T08:36:29.875465'; price_per_unit 345.65 -> 4095.0
+   ~ 213 [PU]: last_updated '2026-09-25T11:48:07.216461' -> '2026-09-29T08:15:40.911548'; price_per_unit 557.5 -> 4095.0
+   ~ 236 [PU]: last_updated '2026-09-25T11:48:37.336597' -> '2026-09-29T08:12:22.044181'; price_per_unit 557.5 -> 4095.0
+   ~ 292 [PU]: last_updated '2026-09-07T15:38:25.314316' -> '2026-09-29T08:25:29.858967'; price_per_unit 4100.0 -> 4095.0
+
+101 row-level differences

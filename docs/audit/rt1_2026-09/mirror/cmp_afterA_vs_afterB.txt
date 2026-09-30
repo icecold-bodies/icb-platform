@@ -1,0 +1,19 @@
+before C:\Users\micge\AppData\Local\Temp\claude\C--Users-micge-Documents-icb-platform\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\scratchpad\mirror\afterA: 3473 cells · after C:\Users\micge\AppData\Local\Temp\claude\C--Users-micge-Documents-icb-platform\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\scratchpad\mirror\afterB: 3473 cells · common 3473
+identical 3461 · moved in scope (b-lines) 12 of 21 in scope · UNEXPECTED 0 · only before 0 · only after 0
+cells outside the allowed scope: 3452, identical to the cent: 3452
+
+MOVED (allowed):
+  freezers  UP_TO_2,3_MTR_FREEZER~L1.8~W1.68~H1.39~srd   SRD                        mes_total 2951.62 -> 2953.4
+  freezers  UP_TO_2,3_MTR_FREEZER~L2.31~W1.68~H1.39~srd  SRD                        mes_total 2951.62 -> 2953.4
+  freezers  UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~srd      SRD                        mes_total 5437.75 -> 5439.54
+  freezers  UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~srd    SRD                        mes_total 5437.75 -> 5439.54
+  freezers  UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~srd    SRD                        mes_total 5437.75 -> 5439.54
+  freezers  UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~srd    SRD                        mes_total 5437.75 -> 5439.54
+  icecream  ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~srd       SRD                        mes_total 4883.75 -> 4885.53
+  icecream  ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~srd       SRD                        mes_total 4883.75 -> 4885.53
+  icecream  ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~srd       SRD                        mes_total 4883.75 -> 4885.53
+  smoke     ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~srd       SRD                        mes_total 4883.75 -> 4885.53
+  smoke     ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~srd       SRD                        mes_total 4883.75 -> 4885.53
+  smoke     ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~srd       SRD                        mes_total 4883.75 -> 4885.53
+
+RESULT: OK

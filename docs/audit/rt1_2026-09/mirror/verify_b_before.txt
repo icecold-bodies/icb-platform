@@ -1,0 +1,13 @@
+database: icb_prodmirror | read only: on
+ line body                       door     T      qty     unit        MES       Burt  verdict
+ 5851 MEAT HANGER LARGE          DRD      -                       absent          0  OK (not costed)
+ 5851 MEAT HANGER LARGE          SRD   0.06   5.9536  4095.00   24379.99    1463.01  !! DIFFERS
+ 6159 MEAT HANGER SMALL-MEDIUM   DRD      -                       absent          0  OK (not costed)
+ 6159 MEAT HANGER SMALL-MEDIUM   SRD   0.06   5.9536  4095.00   24379.99    1463.01  !! DIFFERS
+ 5585 ICECREAM BODY MEDIUM       DRD      -                       absent          0  OK (not costed)
+ 5585 ICECREAM BODY MEDIUM       SRD   0.06   0.3568  4095.00    1461.23    1463.01  !! DIFFERS
+ 2415 FREEZER MEDIUM             DRD      -                       absent          0  OK (not costed)
+ 2415 FREEZER MEDIUM             SRD   0.06   0.3568  4095.00    1461.23    1463.01  !! DIFFERS
+ 3576 FREEZER 2.3 METER          DRD      -                       absent          0  OK (not costed)
+ 3576 FREEZER 2.3 METER          SRD   0.06   0.3568  4095.00    1461.23    1463.01  !! DIFFERS
+!! SOMETHING DIFFERS

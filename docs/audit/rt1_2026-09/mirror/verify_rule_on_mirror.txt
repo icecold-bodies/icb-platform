@@ -1,0 +1,30 @@
+body                       door  RF total   excl  in result  reason
+CHILLER 2.3 METER          DRD    2447.56   0/9   yes        -  OK
+CHILLER 2.3 METER          SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+CHILLER LARGE              DRD    5518.57   0/9   yes        -  OK
+CHILLER LARGE              SRD       0.00   9/9   yes        SRD = N [excluded_by=condition]  OK
+CHILLER MEDIUM             DRD    3129.76   0/9   yes        -  OK
+CHILLER MEDIUM             SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+EXPLOSIVE 2.7 TO 4.8       DRD    3664.05   0/6   yes        -  OK
+EXPLOSIVE 2.7 TO 4.8       SRD       0.00   6/6   yes        SRD PU = N [excluded_by=condition]  OK
+EXPLOSIVE 4.9 AND UP       DRD   10501.60   0/6   yes        -  OK
+EXPLOSIVE 4.9 AND UP       SRD       0.00   6/6   yes        SRD PU = N [excluded_by=condition]  OK
+EXPLOSIVE UP TO 2.7        DRD    2454.15   0/9   yes        -  OK
+EXPLOSIVE UP TO 2.7        SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+FREEZER 2.3 METER          DRD    2390.25   0/9   yes        -  OK
+FREEZER 2.3 METER          SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+FREEZER LARGE              DRD    5452.98   0/9   yes        -  OK
+FREEZER LARGE              SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+FREEZER MEDIUM             DRD    4633.78   0/9   yes        -  OK
+FREEZER MEDIUM             SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+ICECREAM BODY LARGE        DRD    5799.95   0/9   yes        -  OK
+ICECREAM BODY LARGE        SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+ICECREAM BODY MEDIUM       DRD    3535.80   0/9   yes        -  OK
+ICECREAM BODY MEDIUM       SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+ICECREAM BODY SMALL        DRD    2834.12   0/9   yes        -  OK
+ICECREAM BODY SMALL        SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+MEAT HANGER LARGE          DRD    5792.63   0/9   yes        -  OK
+MEAT HANGER LARGE          SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+MEAT HANGER SMALL-MEDIUM   DRD    4038.80   0/9   yes        -  OK
+MEAT HANGER SMALL-MEDIUM   SRD       0.00   9/9   yes        SRD PU = N [excluded_by=condition]  OK
+ALL OK

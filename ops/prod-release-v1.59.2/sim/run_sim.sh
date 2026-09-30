@@ -27,7 +27,7 @@ $G fetch -q "$WIN/icb-platform" release/v1.59.2 || exit 1
 git merge -q --ff-only FETCH_HEAD || exit 1
 git push -q origin backport/v1.39-base && git fetch -q origin
 TARGET=$(git rev-parse HEAD); echo "$TARGET" > "$SIMSTATE/target"
-git -c user.email=sim@x -c user.name=sim tag -a v1.59.2 -m "sim v1.59.2" "$TARGET" && git push -q origin v1.59.2
+git -c user.email=sim@x -c user.name=sim tag -f -a v1.59.2 -m "sim v1.59.2" "$TARGET" > /dev/null && git push -q -f origin v1.59.2   # -f: the clone carries the real tag
 echo "   prev ${PREV:0:7}  target ${TARGET:0:7}  tag $(git rev-parse v1.59.2 | cut -c1-12)"
 
 echo "== stage the kit with the real mkstage.sh"

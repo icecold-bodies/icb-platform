@@ -21,7 +21,7 @@ D=docs/audit/srd_rear_frame_2026-09
 git add $D/manifest_b.yaml && git -c user.email=sim@x -c user.name=sim commit -qm "sim: stand-in manifest B"
 git push -q origin backport/v1.39-base && git fetch -q origin
 TARGET=$(git rev-parse HEAD)
-git -c user.email=sim@x -c user.name=sim tag -a v1.59.2 -m sim "$TARGET" && git push -q origin v1.59.2
+git -c user.email=sim@x -c user.name=sim tag -f -a v1.59.2 -m sim "$TARGET" > /dev/null && git push -q -f origin v1.59.2   # -f: the clone carries the real tag
 bash ops/prod-rt1/mkstage_data.sh "$SIM/stageout" "$TARGET" | head -n 3 || exit 1
 tar -xf "$SIM/stageout/icb-rt1-data.tar" -C "$SIM/tmp" || exit 1
 

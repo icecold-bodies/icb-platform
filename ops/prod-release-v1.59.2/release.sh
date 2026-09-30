@@ -85,18 +85,19 @@ workers_since() { journalctl -u "$SERVICE" --since "$1" --no-pager 2>/dev/null |
 bootfail_since() { journalctl -u "$SERVICE" --since "$1" --no-pager 2>/dev/null | grep -c 'BOOTSTRAP FAILED' || true; }
 tb_since() { journalctl -u "$SERVICE" --since "$1" --no-pager 2>/dev/null | grep -c 'Traceback' || true; }
 service_start_epoch() { # the current service start, as epoch seconds (monotonic math: no timezone parsing)
-  local mono up now; mono=$(systemctl show "$SERVICE" -p ActiveEnterTimestampMonotonic --value)
-  up=$(cut -d' ' -f1 /proc/uptime | cut -d. -f1); now=$(date +%s)
-  echo $(( now - up + mono / 1000000 ))
+  awk -v mono="$(systemctl show "$SERVICE" -p ActiveEnterTimestampMonotonic --value)" -v now="$(date +%s.%N)" \
+      '{ printf "%d\n", now - $1 + mono / 1000000 }' /proc/uptime
 }
 service_since() { echo "@$(( $(service_start_epoch) - 5 ))"; }   # journalctl --since for the current start
 head_moved_epoch() { # when HEAD last moved (the fast-forward), from icb's reflog
   gitr reflog show -1 --date=unix --format=%gd HEAD 2>/dev/null | sed -n 's/.*@{\([0-9]*\)}.*/\1/p'
 }
-restart_after_code() { # "yes" when the running service started AFTER the code last moved (no half-deploy)
+restart_after_code() { # "yes" when the running service started AFTER the code last moved (no half-deploy).
+  # 1 s tolerance for epoch rounding: the restart can follow the fast-forward within the second; a stale
+  # process predates the move by the whole window (and deploy mode also asserts the MainPID changed).
   local moved start; start=$(service_start_epoch); moved=${1:-$(head_moved_epoch)}
   [ -n "$moved" ] || { echo "unknown (no reflog)"; return 0; }
-  [ "$start" -ge "$moved" ] && echo yes || echo "no (service $start < code $moved)"
+  [ "$start" -ge $(( moved - 1 )) ] && echo yes || echo "no (service $start < code $moved)"
 }
 
 # ---- post-deploy checks, used by verify (report all) and deploy (stop at first) ----------------

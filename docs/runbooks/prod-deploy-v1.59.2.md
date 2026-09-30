@@ -95,7 +95,9 @@ sudo prompt; do not pipe it.)
   is the expected blob; icb's sudo is NOPASSWD.
 - `verify` before the deploy **must fail on exactly 6 checks** — `HEAD`, `TAG_LOCAL` (the tag arrives with the deploy's
   fetch), `DESCRIBE` (`v1.50.0` today), `TEMPLATE_V` (182), `CALC_LOCAL`, `CALC_LAN` (the old blob) — and pass the other
-  11. That proves each check can see what it is meant to see.
+  12. That proves each check can see what it is meant to see. (`TRACEBACKS` counts since the current service start,
+  28 Sep 15:28: if prod has logged an error since, it fails too and prints the excerpt. That is pre-existing, and worth
+  knowing before a deploy: report it, it does not block.)
 
 **3. The window.**
 
@@ -160,14 +162,39 @@ Everything is logged under `/tmp/icb-release-v1.59.2/out-<mode>-<ts>/` and `/tmp
 
 **After a STOP:**
 - Code, before step 7: nothing on prod has changed (a backup file may exist). From step 7 on, re-running `release.sh
-  deploy` resumes: at the target without a completion record, `icb-deploy.sh` re-runs its idempotent steps (restart).
+  deploy` resumes: at the target without a completion record, `icb-deploy.sh` re-runs its idempotent steps —
+  `alembic upgrade head` (a no-op at 0049), **`npm run build`** (`frontend/` is unchanged, so the same bundle; the kit
+  asserts the bundle name did not change) and the restart — and every assert runs again.
 - Data: a dry-run or apply STOP writes nothing (one transaction, guards before any write). An `AFTER` STOP means the
   apply committed but the second dry-run still found work: tell the CA before anything else.
 - A `BOOTSTRAP FAILED` is the known worker race; one more restart normally heals it.
 
-## Simulation (WSL, `/root/relsim2-*`; the real `icb-deploy.sh`)
+## Simulation (WSL, 30 Sep; the real `icb-deploy.sh`, the real `mkstage.sh` / `mkstage_data.sh`)
 
-*(Filled in by the CA before staging — see RT1_RETURN_1.)*
+**Code kit** (`/root/relsim2-*`: fake prod at `de74796` without the `v1.59.0` tag; sim origin = the release branch + a
+real annotated `v1.59.2`). The kit's `release.sh` is identical at every target the runs used (`f6df558` / `42852d6`).
+
+| scenario | result |
+|---|---|
+| happy | preflight PASS → `verify` fails on exactly the 6 (`HEAD`, `TAG_LOCAL`, `DESCRIBE` v1.50.0, `TEMPLATE_V` 182, `CALC_LOCAL`, `CALC_LAN`) and passes 12 → deploy **DEPLOYED** (the fetch brings `v1.59.0` + `v1.59.2`; `git describe` = v1.59.2; 4 workers; the service started after the code moved) → `verify` 0 failures → deploy again = **ALREADY DEPLOYED**. No root-owned `__pycache__` left in the repo |
+| tag not on origin | preflight fails `TAG_ON_ORIGIN` only → deploy **STOP [TAG]** after the fetch (nothing else moved) |
+| prod moved by hand | **STOP [ANCHORS]**; and `verify` then also fails `RESTART_AFTER_CODE` (the code moved after the service started — the half-deploy signature: a known hit for that check) |
+| a worker logs BOOTSTRAP FAILED | `icb-deploy.sh` fails → **STOP [DEPLOY]** naming the anchor and the backup; `verify` shows `BOOTSTRAP_FAILED = 1` |
+| a traceback after the restart | **STOP [TRACEBACKS]**, with the journal excerpt; a later `verify` / re-run stops on it too (it used to report green) |
+| the doors serve old calculator bytes after the restart | **STOP [CALC_LOCAL]** |
+| the restart fails after the fast-forward | **STOP [DEPLOY]** → re-run = **RESUME** → DEPLOYED → `verify` 0 failures → ALREADY DEPLOYED |
+
+The simulation found three kit defects before any prod use, all fixed: whole-second service-start arithmetic (a correct
+restart in the same second as the fast-forward could read as a half-deploy); a 5 s journal margin that counted the
+previous start's workers; tracebacks checked only inside `deploy`.
+
+**Data kit** (`/root/relsim3-*`: the real `rt1_data.sh` over a stand-in for the correction tool that keeps its output
+contract; a stand-in Manifest B of 7 entries) — **14 of 14**: dry-run A = 120 to apply; **apply B before A → STOP [ORDER]**;
+apply A → journal + pre-apply backup + provenance kept in `/var/backups/icb-rt1-2026-09/`, second dry-run clean; apply A
+again → already applied; dry-run / apply B; **revert A while B is on → STOP [ORDER]**; revert B; revert A; revert A again →
+**STOP [REVERT]**; a guard mismatch → **STOP [GUARD]**; a plan of the wrong size → **STOP [PLAN]**; a tampered manifest →
+**STOP [KIT]**; prod's code moved → **STOP [CODE]**. The real tool's behaviour (guards, one transaction, byte-exact
+revert) is proven on the prod mirror.
 
 ## After the window (RT1 Stage 3)
 

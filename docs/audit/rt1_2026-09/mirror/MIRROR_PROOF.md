@@ -140,9 +140,108 @@ ROOF / FLOOR PU 0.1), PU panels, DRD:**
   R2 992.79 against Burt's R2 086.04 at 32D / R2 843.03 at 4G). A 4G quote applies 4G twice (R3 941.73). And it
   ignores the thickness.
 
+## 5b. Manifest F — the stored PU 4G factor (RT1 ruling 2 §2a), 30 Sep night
+
+**The change** (`ops/prod-rt1/rt1_factor.py`, tool sha256 `6fa802ac…`) is one admin setting:
+- `admin_settings['costings.pu_foam_4g_factor']` `'1.3170731707317074'` (Burt's September 5 400 / 4 100) →
+  `'1.362881562881563'` (his 21 Sep 5 581 / 4 095);
+- a 4G PU foam line on the R4 095 material goes R5 393.41 → **R5 581.00** per m³, a ratio of 1.034780445891557.
+
+**The tool, run against a real database (the mirror):**
+- dry-run: 1 to apply;
+- apply: one transaction, with the row locked and its exact value guarded;
+- a second dry-run and a second apply both find nothing to do (`0 to apply, 1 already applied`);
+- revert: byte-exact, value and `updated_at`; a second revert does nothing.
+
+Each of these is refused and writes nothing:
+- a third value in the row (dry-run and apply, exit 2);
+- a row that moved after F (revert, exit 2);
+- the wrong `--target` (exit 1).
+
+F was then re-applied. The journals are in `F/journals/`. The VM paste (`ops/prod-rt1/rt1_factor.sh`) passes its
+WSL simulation 20 of 20 (`ops/prod-release-v1.59.2/sim/run_factor_sim.sh`).
+
+**The engine, line by line** (`F/f_linecheck_compare.txt`, `../f_linecheck.py`): every scenario of the five packs
+(272, of which 40 at 4G), re-costed in-process from the payload the audit sent, before and after F. The capture
+reproduces the audit's MES side, 2 872 of 2 872 cells to the cent. **ALL OK:**
+- **32D:** 232 scenarios, 2 442 section cells. **Every line is identical, field for field.**
+- **4G:** 430 section cells.
+  - 117 costed PU foam lines move: unit price × exactly 1.034780445891557, cost × the same ratio to the cent
+    (largest deviation R0.0100, the engine's rounding).
+  - 74 more PU foam lines are not costed in their scenario (an EPS panel, or the other rear door). Their price
+    scales; their cost stays R0.
+  - Every other line is identical.
+- **So 117 cells move, each by (ratio − 1) × its PU foam part**, to the cent (largest deviation R0.0091).
+  **313 4G cells have no costed PU foam line and do not move.**
+- No cell is PU foam alone, so no cell total moves by the full ratio. The ratio holds on the PU foam line itself.
+- 4G cells moved / not moved, by pack:
+
+  | pack | moved | not moved |
+  |---|---:|---:|
+  | chillers | 0 | 151 (their 4G variants are the EPS as-sheet bodies) |
+  | explosive | 36 | 60 |
+  | freezers | 41 | 56 |
+  | icecream | 40 | 46 |
+  | smoke | — | — (no 4G variant) |
+
+**The audit's own cells** (`F/f_audit_afterM_vs_afterF.txt`; the reports are in `F/reports/`):
+- **32D:** 2 963 cells, **every one unchanged** (status, both totals, section, reason).
+- **4G:** 510 cells. MES moved on 117. The golden did not move.
+
+**80 status changes, all on 4G cells:**
+
+| change | cells | where |
+|---|---:|---|
+| PASS → FLAG | 62 | |
+| ACCEPTED → FLAG | 8 | |
+| **FLAG, total** | **70** | freezers 27, icecream 37, explosive 6 |
+| PASS → ACCEPTED | 10 | explosive 7 (the explosive plywood entry, whose causes include `BOTH PU` / `DIFF PU`); icecream 3 (the tapping-block entry) |
+
+**Why the cells flag:**
+- The golden is Burt's **September workbook**: `PRICE 2017 MARCH.xlsx` sha `6956102e…`, with 32D at R4 100 and
+  **4G at R5 400** (the golden was generated 25 Sep).
+- F moves MES's 4G onto his **21 Sep list** (4G **R5 581**). Every costed 4G PU foam line now reads **+3.35 %**
+  against the golden.
+- A section with a PU foam share above about a third goes over the 1 % tolerance.
+- The 8 ACCEPTED → FLAG cells carry an accepted cause for another line. F's PU difference is the unexplained remainder:
+  v1.57.2's rule is that an entry must explain the whole difference.
+- Before F the same lines read −0.12 % at both grades: at 4G R5 393.41 against R5 400; at 32D R4 095 against R4 100.
+  Both were inside the tolerance.
+
+**A candidate entry** (`F/accepted_differences.prod.candidateF.yaml`, **not ruled**):
+- one `tolerated` entry: `variant: foam_4g`, `cause: [DIFF PU, BOTH PU]`;
+- re-scored (`reaccept`) on the after-F reports: **all five packs exit 0**. Exactly the 70 FLAG cells become ACCEPTED;
+  PASS, UNVERIFIABLE and SKIP are unchanged;
+- on the after-M reports (before F) it changes no count.
+
+**A and F touch disjoint cells.** A's 57 are all REAR FRAME + FLOOR PLATE; F's 117 are DRD / FLOOR / FRONT / ROOF /
+SIDES. The overlap is 0.
+
+**Both MEAT HANGERs against Burt after F** (`F/verify_f_after.txt`, `../verify_manifest_f.py`; the cases as in §5a,
+with EPS at the 4G toggle). **ALL OK:**
+- **32D:** every panel = Burt's row at R4 095. F does not touch 32D.
+- **4G, FRONT / DRD / SIDES / ROOF / FLOOR** = Burt's rows at R5 581, **to the cent, as his sheet is written**. One
+  exception: MEAT BODY FRONT divides by 2.99 where MES divides by 2.98 (+R6.88, × 1.003354).
+- **4G, SRD:** MES prices R2 057.86 at 0.062 (LARGE) and R1 991.48 at 0.06 (SMALL-MEDIUM). Burt keeps SRD at 32D
+  (R1 509.94 / R1 461.23). That is **+R547.92 / +R530.25**, the known structural difference (ruling 2 §2b).
+- **EPS at 4G:** no PU line is costed.
+
+| MEAT HANGER LARGE, 6.7 m, PU, DRD | FRONT | DRD | SIDES (×2) | ROOF | FLOOR | **total** |
+|---|---:|---:|---:|---:|---:|---:|
+| after M, 4G, factor 1.31707 | 1 988.70 | 1 988.70 | 11 003.03 | 8 873.42 | 8 873.42 | **32 727.27** |
+| **after F, 4G** | 2 057.86 | 2 057.86 | 11 385.73 | 9 182.04 | 9 182.04 | **33 865.53** |
+| Burt's MEAT BODY (21 Sep prices, 4G panels) | 2 050.98 | 2 057.86 | 11 385.73 | 9 182.04 | 9 182.04 | **33 858.65** |
+
+**Noted, not changed:**
+- The code fallback `FACTOR_4G_DEFAULT = 5 875 / 4 310 = 1.3631090487238979` (`insulation_foam.py`) is used only when
+  the row is missing or unparseable.
+- Migration 0046 seeds a fresh database with that same value. So CI and any fresh database price 4G at 1.36311,
+  0.017 % above F's 1.36288.
+- CI's pull-request audit runs only the smoke pack, which has no 4G variant.
+
 ## 5. State left behind
 
-The mirror is left at **A + M** (the default B was reverted after Q-A = YES; the formula-only B was superseded by M):
-prod's state after the window and Manifest M. In that state every single-rear-door PU line prices R1 461.23 at T = 0.06
+The mirror is left at **A + M + F** (the default B was reverted after Q-A = YES; the formula-only B was superseded by
+M): prod's state after the window and Manifests M and F. In that state every single-rear-door PU line prices R1 461.23 at T = 0.06
 (Burt's formula at R4 095), the two MEAT HANGERs included. Journals: `journals/` (the apply / revert records of every
 step above). Reports: `reports/` (md; the JSON stay local).

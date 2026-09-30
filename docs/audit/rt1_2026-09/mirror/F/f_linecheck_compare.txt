@@ -1,0 +1,11 @@
+factor 1.3170731707317074 -> 1.362881562881563; ratio 1.034780445891557
+scenarios: 232 at 32D, 40 at 4G; PU foam lines at 4G: 117 costed (price and cost x the ratio) + 74 not costed in their scenario (price x the ratio, cost R0 before and after)
+cells at 32D: 2442, every one unchanged (every line identical)
+cells at 4G: 430 = 117 moved by (ratio - 1) x their PU foam part + 313 with no PU foam line, unchanged
+   chillers   32D cells   878 unchanged | 4G cells  151: moved    0, no PU foam  151
+   explosive  32D cells   471 unchanged | 4G cells   96: moved   36, no PU foam   60
+   freezers   32D cells   476 unchanged | 4G cells   97: moved   41, no PU foam   56
+   icecream   32D cells   422 unchanged | 4G cells   86: moved   40, no PU foam   46
+   smoke      32D cells   195 unchanged | 4G cells    0: moved    0, no PU foam    0
+largest deviation: a PU foam line 0.0100, a cell 0.0091 (engine rounding to the cent)
+ALL OK

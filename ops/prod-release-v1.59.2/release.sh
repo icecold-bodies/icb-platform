@@ -88,7 +88,7 @@ service_start_epoch() { # the current service start, as epoch seconds (monotonic
   awk -v mono="$(systemctl show "$SERVICE" -p ActiveEnterTimestampMonotonic --value)" -v now="$(date +%s.%N)" \
       '{ printf "%d\n", now - $1 + mono / 1000000 }' /proc/uptime
 }
-service_since() { echo "@$(( $(service_start_epoch) - 5 ))"; }   # journalctl --since for the current start
+service_since() { echo "@$(( $(service_start_epoch) - 1 ))"; }   # journalctl --since for the current start (1 s rounding margin)
 head_moved_epoch() { # when HEAD last moved (the fast-forward), from icb's reflog
   gitr reflog show -1 --date=unix --format=%gd HEAD 2>/dev/null | sed -n 's/.*@{\([0-9]*\)}.*/\1/p'
 }

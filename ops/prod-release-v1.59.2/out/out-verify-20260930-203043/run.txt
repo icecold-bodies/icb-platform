@@ -1,0 +1,24 @@
+== prod: db=icb_platform alembic=0049 code=de74796 mode=verify target=1d9cb47 (v1.59.2) 2026-09-30T20:30:43+02:00
+== code + tag + schema
+   FAIL HEAD = 'de74796bd22070e59876572a49c8b39b804c75b9' (want 1d9cb47b84a8f10a4be74f139b37671ec21f35bd)
+   FAIL TAG_LOCAL = 'missing' (want 5948a1a3cef3ff5dd50232eaf1d0c97de916b1df)
+   FAIL DESCRIBE = 'v1.50.0' (want v1.59.2)
+   PASS ALEMBIC = 0049
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   PASS TOOL_IMPORT = ok
+   PASS OPENAPI_DOORS_EQUAL = yes
+== served bytes: the calculator page loads ?v=184, and both doors serve the target blob
+   FAIL TEMPLATE_V = '182' (want 184)
+   FAIL CALC_LOCAL = 'd174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90' (want 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635)
+   FAIL CALC_LAN = 'd174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90' (want 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635)
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+
+######## VERIFY: 6 check(s) failed — tell the CA: /tmp/icb-release-v1.59.2/out-verify-20260930-203043

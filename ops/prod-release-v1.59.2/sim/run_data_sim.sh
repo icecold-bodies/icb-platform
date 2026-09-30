@@ -15,7 +15,7 @@ echo "== sim origin + a target commit carrying the kit, a stand-in manifest_b.ya
 $G clone -q --bare --single-branch --branch backport/v1.39-base "$WIN/icb-platform" "$SIM/origin.git" || exit 1
 git clone -q "$SIM/origin.git" "$SIM/work" && cd "$SIM/work" || exit 1
 git -c advice.detachedHead=false checkout -q -B backport/v1.39-base origin/backport/v1.39-base
-$G fetch -q "$WIN/icb-platform" release/v1.59.2 && git merge -q --ff-only FETCH_HEAD || exit 1
+$G fetch -q "$WIN/icb-platform" data/rt1-manifest-m && git merge -q --ff-only FETCH_HEAD || exit 1
 D=docs/audit/srd_rear_frame_2026-09
 { echo "note: sim stand-in"; echo "changes:"; for i in 1 2 3 4 5 6 7; do echo "- finding: B$i"; echo "  bom_id: $i"; done; } > $D/manifest_b.yaml
 git add $D/manifest_b.yaml && git -c user.email=sim@x -c user.name=sim commit -qm "sim: stand-in manifest B"
@@ -82,6 +82,9 @@ expect "revert A while B is on"       'STOP \[ORDER\]'                   revert 
 expect "revert B"                     'DONE \(revert\)'                  revert "$(jr B)"
 expect "revert A"                     'DONE \(revert\)'                  revert "$(jr A)"
 expect "revert A again (moved)"       'STOP \[REVERT\]'                  revert "$(jr A)"
+expect "M: dryrun (over v1.59.2)"     'DONE \(dryrun M: 11 to apply'     dryrun M
+expect "M: apply (no order with A)"   'DONE \(apply M\)'                 apply M
+expect "M: revert (independent)"      'DONE \(revert\)'                  revert "$(jr M)"
 touch "$SIMSTATE/guard_fail"
 expect "guard mismatch"               'STOP \[GUARD\]'                   dryrun A
 rm -f "$SIMSTATE/guard_fail"; touch "$SIMSTATE/plan_short"
@@ -92,6 +95,7 @@ expect "tampered manifest"            'STOP \[KIT\]'                     dryrun 
 tar -xf "$SIM/stageout/icb-rt1-data.tar" -C "$SIM/tmp" --overwrite   # restage the untampered kit
 git -C "$SIM/opt/icb-platform" -c user.email=x@x -c user.name=x commit -q --allow-empty -m "hand edit"
 expect "prod code moved"              'STOP \[CODE\]'                    dryrun A
+expect "prod code moved: M too"       'STOP \[CODE\]'                    dryrun M
 
 echo; echo "== phase 2: RT1_RULING_1 stops Manifest B (no manifest_b.yaml committed) — A goes alone"
 cd "$SIM/work" && git rm -q $D/manifest_b.yaml && git -c user.email=sim@x -c user.name=sim commit -qm "sim: B stops"
@@ -105,4 +109,13 @@ expect "no B: dryrun B is refused"    'STOP \[PLAN\]: Manifest B is not part' dr
 expect "no B: apply B is refused"     'STOP \[PLAN\]: Manifest B is not part' apply B
 expect "no B: apply A"                'DONE \(apply A\)'                 apply A
 expect "no B: revert A (no B check)"  'DONE \(revert\)'                  revert "$(jr A)"
+
+echo; echo "== phase 3: prod still on v1.59.0 (before the window) — M may go, A may not"
+PREV=$(git -C "$SIM/work" rev-parse "v1.59.0^{commit}")
+git -C "$SIM/opt/icb-platform" -c advice.detachedHead=false checkout -q "$PREV"
+echo 0 > "$SIMSTATE/applied_a"; echo 0 > "$SIMSTATE/applied_m"
+expect "v1.59.0: dryrun M allowed"    'DONE \(dryrun M: 11 to apply'     dryrun M
+expect "v1.59.0: apply M allowed"     'DONE \(apply M\)'                 apply M
+expect "v1.59.0: A is refused"        'STOP \[CODE\]: .*Manifest A goes only over the v1.59.2' dryrun A
+expect "v1.59.0: revert M allowed"    'DONE \(revert\)'                  revert "$(jr M)"
 echo; echo "== $PASSES passed, $FAILS failed · SIM=$SIM"

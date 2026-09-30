@@ -9,15 +9,29 @@ quote. The section still shows, at R0, with its lines struck through as not sele
 [`make_manifest_a.py`](make_manifest_a.py). The engine evaluates the rule on the server, so the calculator, saved
 costings, the audit probe and every export see the same result.
 
-## ⚠ These rules are TOOL-OWNED
+## These rules are tool-written — and safe to edit in the Designer from v1.59.1
 
-The 120 REAR FRAME rules below are written by Manifest A only. **Do not open a REAR FRAME line's inclusion rule in
-the Trailer Designer** until the editor keeps conditions it cannot offer. That fix is ruled for
-`feat/v1.59.1-section-not-selected`, Part B.
+The 120 REAR FRAME rules below are **tool-written** (Manifest A). They are **safe to edit in the Trailer Designer on
+any environment running v1.59.1 or later.** After editing one, **re-run the audit page**. For the MEAT HANGERs, which
+no audit pack covers, **quote one SRD and one DRD** instead. (BA addendum to ruling 6b, 30 Sep.)
 
-The reason: the SRD flags sit outside the REAR FRAME category's branch of the draft, so the editor cannot show
-them. Saving a rule there *replaces* it with the first flag it can offer, for example `FRONT EPS = N`, which would
-mis-price double-door quotes without any error.
+Why the version matters:
+- The SRD flags sit outside the REAR FRAME category's branch of the draft, so the rule editor cannot offer them.
+- Before v1.59.1, saving such a rule *replaced* it with the first flag the editor could offer (e.g. `FRONT EPS = N`).
+  That silently mis-prices double-door quotes.
+- v1.59.1 (#200, `f01971f`) keeps those conditions. They are shown read-only as "kept (outside this branch)", are
+  removed only after a confirm click, and are sent back with their `option_id`. So saving unchanged writes the rule
+  back exactly as Manifest A wrote it.
+- **On an environment still below v1.59.1, do not open these rules in the Designer.**
+
+**Where v1.59.1 runs (30 Sep):**
+- **Dev :8000:** yes. The main clone is at `f01971f`, and the server restarted after the merge.
+- **Prod:** not yet. Prod is on v1.59.0 (`de74796`).
+
+## Prod sequencing
+
+**Prod gets Manifest A only after v1.59.1 is accepted there**, and only on the BA's word. Manifest B follows A. Each
+gets its own dry-run and journal.
 
 ## Scope (prod, discovery 29 Sep) — 14 bodies, 120 lines
 

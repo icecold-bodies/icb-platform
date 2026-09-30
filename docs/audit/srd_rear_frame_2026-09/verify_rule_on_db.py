@@ -81,6 +81,12 @@ def main():
                 nx = sum(1 for it in rf if it.get("excluded"))
                 reason = next((it.get("excluded_reason") for it in rf if it.get("excluded")), "")
                 good = (total > 0 and nx == 0) if door == "DRD" else (total == 0 and nx == n_rf == len(rf))
+                # v1.59.1 (#200): the NOT SELECTED header shows when every line of a section is out
+                # BY A CONDITION — `excluded_by` rides on excluded lines (absent on older engines)
+                by = {it.get("excluded_by") for it in rf if it.get("excluded")}
+                if door == "SRD" and by != {None}:
+                    good &= by == {"condition"}
+                    reason = f"{reason} [excluded_by={','.join(sorted(map(str, by)))}]"
                 ok_all &= good
                 print(f"{name:<26} {door:<4} {total:>9.2f} {nx:>3}/{len(rf):<2}  {'yes' if rf else 'NO '}        "
                       f"{reason or '-'}  {'OK' if good else '!! FAIL'}")

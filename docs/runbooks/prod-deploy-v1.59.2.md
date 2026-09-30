@@ -14,7 +14,8 @@ Target: **`https://192.168.0.251/mes-app/`** and **`https://mes.icecoldgrp.onlin
 | Templates + static | `calculator.html` (`calculator.js?v=182` → **`?v=184`**), `calculator.js`, `admin_configurator_preview.html`, `admin_visual_configurator_settings.html`: they reload from disk |
 | Dependencies | **none** (`requirements` unchanged, asserted). PyYAML 6.0.2 is already in the venv since v1.59.0 (asserted, nothing installed) |
 | Env / `.env` | none |
-| Data, after the code is accepted | **Manifest A**: 120 REAR FRAME & FLOOR PLATE inclusion rules on 14 bodies, its own paste with its own dry-run and journal, **after the code**. **Manifest B: STOPPED.** Q-A was answered YES (Michael, 30 Sep): the 29 Sep R4 095 re-pricing was deliberate, and "a new PU price is a separate job". Only a B the BA rules in goes, as its own paste after A. Proposed: the formula-only variant, the MEAT HANGER lines to Burt's F1 shape with no price set |
+| Data | **Manifest A** (after the code is accepted): 120 REAR FRAME & FLOOR PLATE inclusion rules on 14 bodies, its own paste with its own dry-run and journal. **Manifest M** (RT1 ruling 1, option c+): the 11 MEAT HANGER PU lines to Burt's F1 shape, formula only. It is its own paste, applied as soon as the BA says GO, **before or after the code window** (no outage, no order with A). **Manifest B: none** (Q-A = YES; M supersedes the formula-only B) |
+| Window extra | Michael's two Body Template fixes by hand after 2f (CHILLER LARGE, ICECREAM BODY LARGE rear doors); the door report re-run at close (both must read OK) |
 
 ## Why
 
@@ -30,8 +31,9 @@ This window ends with prod carrying every tested change, verified, and the audit
   a rule-excluded calculator line reads e.g. `not used with SRD PU`.
 - **Repair category line order** (#201): `ORDER BY sort_order, id` (a journey flake, and a real order).
 - **Data:** a single rear door (SRD) quote no longer costs REAR FRAME & FLOOR PLATE (Michael's ruling, 28 Sep,
-  closes accepted entry #5). The MEAT HANGER single-door PU line (≈ R24.4k) is fixed only if the BA rules the
-  formula-only Manifest B in; the default B stopped when Q-A came back YES.
+  closes accepted entry #5). **Manifest M** (ruling 1, option c+) puts the 11 MEAT HANGER PU lines on Burt's F1
+  shape. Since 29 Sep they priced sheets at the m³ price (MEAT HANGER LARGE PU ≈ R318.5k instead of ≈ R24.8k at 32D).
+  The default B stopped when Q-A came back YES.
 
 ## The kits (committed with this runbook, staged byte-exact)
 
@@ -100,6 +102,20 @@ sudo prompt; do not pipe it.)
   28 Sep 15:28: if prod has logged an error since, it fails too and prints the excerpt. That is pre-existing, and worth
   knowing before a deploy: report it, it does not block.)
 
+**2½. Manifest M — as soon as the BA says GO, before or after the window (no outage).** On the VM:
+
+```
+sudo bash /tmp/icb-rt1-data/rt1_data.sh dryrun M
+sudo bash /tmp/icb-rt1-data/rt1_data.sh apply M
+```
+
+- **The dry-run must read 11 to apply, 0 already applied**, with 0 mismatches. `apply` re-runs it and takes a
+  data-only backup of the BOM tables. It then applies in one transaction, keeps the journal in
+  `/var/backups/icb-rt1-2026-09/`, and a second dry-run must find nothing.
+- **M runs over v1.59.0 or v1.59.2** (asserted), with no order against A.
+- **Then the sweep** (`sudo bash /tmp/icb-rt1-sweep/rt1_sweep.sh`) must report "M APPLIED: none of the 11" and 0
+  lines outside M.
+
 **3. The window.**
 
 | # | who | step | pass condition |
@@ -109,8 +125,9 @@ sudo prompt; do not pipe it.)
 | 2b | CA | the third door, from outside, **only now** (a CF probe before the disk matched would cache old bytes under the new URL) | `mes.icecoldgrp.online`: `calculator.js?v=184` and `/openapi.json` byte-identical to the LAN door |
 | 2c | Michael | **All** again | **"No change since" 2a.** Any changed cell = STOP: report it, change nothing |
 | 2d | Michael | `sudo bash /tmp/icb-rt1-data/rt1_data.sh dryrun A` → `… apply A` | dry-run **120 to apply, 0 already applied**, 0 mismatches → applied, journal kept → second dry-run finds nothing |
-| 2e | Michael | `… dryrun B` → `… apply B` (only if RT1_RULING_1 keeps a Manifest B) | dry-run **`B_TODO` to apply** (the ruled plan, pinned in `expected.env`) → applied → second dry-run finds nothing |
-| 2f | Michael | **All** | the 57 SRD REAR FRAME cells went **ACCEPTED → SKIP** (both sides R0); nothing else moved except B's 12 cells (+R1.78, default B only) — the counts in *Expected audit movement* |
+| 2e | Michael | (Manifest M, if not applied before the window) `… dryrun M` → `… apply M` | dry-run **11 to apply, 0 already applied** → applied → second dry-run finds nothing. No B is staged (`dryrun B` = `STOP [PLAN]`, by design) |
+| 2f | Michael | **All** | the 57 SRD REAR FRAME cells went **ACCEPTED → SKIP** (both sides R0); **nothing else moved** (M touches only the MEAT HANGERs, which no pack covers) — the counts in *Expected audit movement* |
+| 2f+ | Michael | **Body Templates, by hand** (not the calculator's door toggle — that is the defect) | **CHILLER LARGE:** DRD EPS (3433) 0 → **0.06**, SRD EPS (3435) 0.06 → **0**. **ICECREAM BODY LARGE:** DRD PU (5426) 0 → **0.12**, SRD PU (5428) 0.12 → **0**. These are the values the calculator's own load-time heal would write: the thickness moves to the door it opens with, same side (EPS / PU) |
 | 2g | Michael | the click-through (below) | all seen, and **every body ends on the door it opened with** |
 
 `release.sh deploy`, step by step:
@@ -137,7 +154,10 @@ Everything is logged under `/tmp/icb-release-v1.59.2/out-<mode>-<ts>/` and `/tmp
 | FREEZER MEDIUM → **single door** | REAR FRAME & FLOOR PLATE reads **NOT SELECTED**; the eye shows its lines struck through, each reading **not used with SRD PU** |
 | … → **double door** | REAR FRAME priced as before |
 | … → **back to the door it opened with** | (the door toggle rewrites the Body Template's rear-door thickness — a known defect, queued; ending on the original door puts it back) |
-| MEAT HANGER LARGE → **single door** | only if a Manifest B was ruled in: the SRD PU line ≈ **R1 461** (formula-only, at R4 095), not ≈ R24 380; then back to its original door. Without B the line still reads ≈ R24 380 — the known gap, not a window failure |
+| **After M:** MEAT HANGER LARGE, default size (6.7 × 2.6 × 2.6), PU panels (the template's), double door, foam **32D** | the PU panels total **R24 848.48** (FRONT 1 509.94 · DRD 1 509.94 · SIDES 8 354.16 · ROOF 6 737.22 · FLOOR 6 737.22), not ≈ R318 539 |
+| … foam **4G** | **R32 727.27** — ≈ Burt's MEAT BODY at his latest prices (R33 858.65, −3.3 %: the stored 4G factor, a price-update job) |
+| … all **EPS**, including the rear door | **no PU line costed** — no R24k on the rear door |
+| … → **back to the door and insulation it opened with** | the calculator's door / EPS–PU switches rewrite the Body Template (the known defect): end where it started |
 | Trailer Designer → a REAR FRAME card (any of the 14 bodies) | its rule chips read the database rule, marked **kept** |
 
 ## Expected audit movement (proved on the prod mirror — `docs/audit/rt1_2026-09/mirror/MIRROR_PROOF.md`)
@@ -158,8 +178,9 @@ refuse the data if it did.
 
 - **2f (after A, then B):** the **57 SRD REAR FRAME & FLOOR PLATE cells go ACCEPTED → SKIP** (entry #5's R2 447–R10 502
   extra is gone; both sides are R0 — SKIP is the audit's status for "both zero", not PASS). Every other cell stays
-  identical to the cent (3 416). The formula-only B, if ruled in, moves no cell. (The stopped default B would have
-  moved 12 SRD cells +R1.78, status unchanged.) Expected counts after A (the same with the formula-only B):
+  identical to the cent (3 416). **Manifest M moves no pack cell** (3 473 / 3 473 identical on the mirror; the MEAT
+  HANGERs are in no pack). The stopped default B would have moved 12 SRD cells +R1.78. Expected counts after A,
+  with or without M:
 
   | pack | UNVERIFIABLE | ACCEPTED | PASS | SKIP |
   |---|---:|---:|---:|---:|
@@ -169,13 +190,13 @@ refuse the data if it did.
   | icecream | 40 | 55 | 413 | 104 |
   | explosive | 36 | 146 | 385 | 117 |
 
-- **Manifest B's plan size** follows the BA's ruling:
-  - **none** (the default after Q-A = YES): no `manifest_b.yaml` is committed, `B_TODO=0`, and any B step is a
-    `STOP [PLAN]`;
-  - **2**, if the BA rules the formula-only variant in: it is committed as `manifest_b.yaml`.
+- **The plan sizes pinned in the staged `expected.env`:**
+  - **A = 120**;
+  - **M = 11**;
+  - **B = 0.** No `manifest_b.yaml` is committed, so any B step is a `STOP [PLAN]`. The stopped default B is kept as
+    the record `manifest_b_default.yaml`, and the formula-only B is superseded by M; the kit stages neither.
 
-  The staged `expected.env` pins it; any other plan is a `STOP [PLAN]`. The stopped default B (7 entries) is kept as
-  the record `manifest_b_default.yaml`, which the kit never stages.
+  Any other plan is a `STOP [PLAN]`.
 
 **For the OUTCOME, the rule reasons (BA-confirmed):** 13 bodies get `SRD EPS = N AND SRD PU = N`; **CHILLER LARGE
 gets `SRD = N` (7233)** because on that body the door is a DOOR TYPE master and its SRD insulation radio stays ticked on
@@ -189,10 +210,12 @@ vanishes instead of showing NOT SELECTED — a later cosmetic Trailer Designer t
   or directly: `sudo -u icb git -C /opt/icb-platform reset --hard de74796` then `sudo systemctl restart icb-backend`.
   Re-probe the three doors. No SPA rebuild (frontend untouched), no migration to undo. The tag stays; the header then
   reads `v1.59.0` (prod has the tag after this fetch).
-- **Data:** `sudo bash /tmp/icb-rt1-data/rt1_data.sh revert /var/backups/icb-rt1-2026-09/journal_B_<…>.json`, then the
-  same for A's journal. The kit refuses A's revert while B is on prod. Each revert puts every journaled line back column
-  for column, deletes the `bom_override_history` rows the apply wrote, and refuses if a line moved since. **Proved
-  byte-exact on the prod mirror** (RT1_RETURN_1).
+- **Data:** `sudo bash /tmp/icb-rt1-data/rt1_data.sh revert /var/backups/icb-rt1-2026-09/journal_<A|M>_<…>.json`.
+  - **M and A revert independently**, in either order. A (B) revert only over v1.59.2; M over v1.59.0 or v1.59.2.
+  - Each revert puts every journaled line back column for column and deletes the `bom_override_history` rows the apply
+    wrote. It refuses if a line moved since.
+  - **Proved byte-exact on the prod mirror** for A, B and M (RT1_RETURN_1 / 1b).
+- **The two Body Template fixes (2f+):** put the before-values back by hand (they are in the sweep's section 3).
 - **Last resort:** the step-4 dump `icb_platform_pre-v1.59.2_<ts>.dump` (the whole database before the window).
 
 **After a STOP:**
@@ -234,9 +257,13 @@ check. The real tool's behaviour (guards, one transaction, byte-exact revert) is
 
 ## After the window (RT1 Stage 3)
 
-Prune entry #5 from `accepted_differences.prod.yaml` alone, then `audit reaccept --env prod` on the 2f reports; the
-prod baseline paste (`rt1_snapshot.sh`, mode `baseline`) regenerates the CI snapshot, committed with the pruned list;
-the OUTCOME docs PR merges when CI is green on its exact head; Michael removes the `/tmp` staging on the VM.
+- **Prune** entry #5 from `accepted_differences.prod.yaml` alone, then `audit reaccept --env prod` on the 2f reports.
+- **The prod baseline paste** (`rt1_snapshot.sh`, mode `baseline`) runs **after A and M**. It regenerates the CI
+  snapshot (committed with the pruned list) **and re-runs the door report**: CHILLER LARGE and ICECREAM BODY LARGE
+  must read OK.
+- **The sweep** (`rt1_sweep.sh`) re-run after M must report **"M APPLIED: none of the 11"** and 0 lines outside M.
+- **The OUTCOME docs PR** merges when CI is green on its exact head.
+- **Michael removes the `/tmp` staging on the VM.**
 
 ## OUTCOME
 

@@ -1,0 +1,24 @@
+
+== 0. preflight
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  de74796b  release(v1.59.0): prod runbook + release kit for the costing aud
+  ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+== 1. fetch
+  ok  1d9cb47b84a8f10a4be74f139b37671ec21f35bd already present - no fetch needed
+  ok  1d9cb47b84a8f10a4be74f139b37671ec21f35bd = 1d9cb47b
+
+== 2. plan
+  de74796b -> 1d9cb47b   (6 commit(s), 150 file(s))
+    1d9cb47 release(v1.59.2): RT1 release train — prod kit, runbook, 1b records, mirror proofs, Manifest B; VERSION -> v1.59.2 (#204)
+    22b9d20 feat(designer,costing): rule chips read the database rule + plain-English reasons on rule-excluded lines (v1.59.2) (#203)
+    4f08f4c data(audit): SRD bodies — REAR FRAME & FLOOR PLATE not costed on a single rear door (v1.58.1) (#202)
+    f01971f feat(costing): NOT SELECTED section header + rule editor keeps out-of-branch conditions (v1.59.1) (#200)
+    6cf51cd fix(ci): two journey flakes — 55 % ratio default race + repair category line order (v1.59.1) (#201)
+    e62e339 docs(release): v1.59.0 prod OUTCOME — deployed de74796, alembic 0049, tag v1.59.0 (#199)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 21 Python file(s) changed
+
+  ok  dry run - nothing changed.

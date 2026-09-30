@@ -1,0 +1,39 @@
+database icb_platform (--target prod); manifest manifest_m.yaml sha256 59d37b082c4c35ac…, 11 entries
+── M1
+  APPLY bom=5842   MEAT HANGER LARGE / FRONT / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=5877   MEAT HANGER LARGE / DRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=5851   MEAT HANGER LARGE / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=5899   MEAT HANGER LARGE / SIDES / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  APPLY bom=5910   MEAT HANGER LARGE / ROOF / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  APPLY bom=5921   MEAT HANGER LARGE / FLOOR / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  APPLY bom=6150   MEAT HANGER SMALL-MEDIUM / FRONT / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=6185   MEAT HANGER SMALL-MEDIUM / DRD / PU  .formula_expression
+          '((1.22*2.44))*2'
+       -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=6159   MEAT HANGER SMALL-MEDIUM / SRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  APPLY bom=6207   MEAT HANGER SMALL-MEDIUM / SIDES / PU  .formula_expression
+          '(length+{Waste})/1.22 * (1.22*2.44)'
+       -> '(1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  APPLY bom=6218   MEAT HANGER SMALL-MEDIUM / ROOF / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+
+11 to apply, 0 already applied.
+APPLIED 11 changes on 11 lines (0 bom_override_history rows). Journal: /tmp/icb-rt1-data/out-apply-M-20260930T184756Z/pricing_corrections_journal_prod_20260930T184759Z.json
+Undo: python tools/audit_pricing_corrections.py --target prod --revert /tmp/icb-rt1-data/out-apply-M-20260930T184756Z/pricing_corrections_journal_prod_20260930T184759Z.json

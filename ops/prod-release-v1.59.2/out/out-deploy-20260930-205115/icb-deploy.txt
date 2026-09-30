@@ -1,0 +1,336 @@
+
+== 0. preflight
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  de74796b  release(v1.59.0): prod runbook + release kit for the costing aud
+  ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+== 1. fetch
+  ok  1d9cb47b84a8f10a4be74f139b37671ec21f35bd already present - no fetch needed
+  ok  1d9cb47b84a8f10a4be74f139b37671ec21f35bd = 1d9cb47b
+
+== 2. plan
+  de74796b -> 1d9cb47b   (6 commit(s), 150 file(s))
+    1d9cb47 release(v1.59.2): RT1 release train — prod kit, runbook, 1b records, mirror proofs, Manifest B; VERSION -> v1.59.2 (#204)
+    22b9d20 feat(designer,costing): rule chips read the database rule + plain-English reasons on rule-excluded lines (v1.59.2) (#203)
+    4f08f4c data(audit): SRD bodies — REAR FRAME & FLOOR PLATE not costed on a single rear door (v1.58.1) (#202)
+    f01971f feat(costing): NOT SELECTED section header + rule editor keeps out-of-branch conditions (v1.59.1) (#200)
+    6cf51cd fix(ci): two journey flakes — 55 % ratio default race + repair category line order (v1.59.1) (#201)
+    e62e339 docs(release): v1.59.0 prod OUTCOME — deployed de74796, alembic 0049, tag v1.59.0 (#199)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 21 Python file(s) changed
+
+  rollback anchor de74796b saved to /tmp/icb-rollback-20260930-205119.txt
+
+== 3. database backup - skipped (no migration in this range)
+
+== 4. fast-forward the code
+Updating de74796..1d9cb47
+Fast-forward
+ backend/VERSION                                    |      2 +-
+ backend/app/formula_engine.py                      |      5 +
+ backend/app/routers/calculator.py                  |     12 +
+ backend/app/routers/repair_templates.py            |     11 +-
+ backend/app/routers/trailers.py                    |     29 +-
+ backend/app/services/free_hand.py                  |      4 +
+ backend/app/static/js/calculator.js                |    116 +-
+ .../app/templates/admin_configurator_preview.html  |      7 +-
+ .../admin_visual_configurator_settings.html        |    233 +-
+ backend/app/templates/calculator.html              |      2 +-
+ backend/tests/journeys/_common.py                  |     20 +
+ .../journeys/test_capture_for_user_journey.py      |      4 +-
+ .../journeys/test_costing_bom_order_journey.py     |      4 +-
+ .../journeys/test_free_hand_repairs_journey.py     |     12 +-
+ .../journeys/test_repair_categories_journey.py     |     11 +-
+ .../journeys/test_repair_quote_doc_journey.py      |      4 +-
+ .../journeys/test_rule_display_tidy_journey.py     |    371 +
+ .../test_rule_editor_keeps_rules_journey.py        |    189 +
+ .../journeys/test_section_not_selected_journey.py  |    183 +
+ backend/tests/test_calculator_enter_chain.py       |      4 +-
+ backend/tests/test_repair_categories_templates.py  |     54 +
+ backend/tests/test_rule_display_tidy.py            |    466 +
+ backend/tests/test_rule_editor_keeps_rules.py      |    163 +
+ backend/tests/test_section_not_selected.py         |    272 +
+ .../tests/test_v1_58_audit_pricing_corrections.py  |    136 +
+ backend/tools/audit_pricing_corrections.py         |     98 +-
+ docs/audit/rt1_2026-09/compare_reports.py          |    119 +
+ docs/audit/rt1_2026-09/load_mirror.py              |     50 +
+ docs/audit/rt1_2026-09/mirror/MIRROR_PROOF.md      |     98 +
+ .../mirror/accepted_differences.prod.pruned5.yaml  |    159 +
+ .../rt1_2026-09/mirror/cmp_afterA_vs_afterB.txt    |     19 +
+ .../mirror/cmp_afterA_vs_afterBformula.txt         |      5 +
+ .../rt1_2026-09/mirror/cmp_before_vs_afterA.txt    |     64 +
+ .../mirror/cmp_prod_vs_mirror_before.txt           |      5 +
+ ...orrections_journal_mirror_20260930T143420Z.json |   5533 +
+ ...orrections_journal_mirror_20260930T143519Z.json |   5533 +
+ ...orrections_journal_mirror_20260930T143856Z.json |    269 +
+ ...orrections_journal_mirror_20260930T144029Z.json |   5533 +
+ ...orrections_journal_mirror_20260930T144031Z.json |    105 +
+ ...orrections_journal_mirror_20260930T144123Z.json |    269 +
+ ...corrections_revert_mirror_20260930T143458Z.json |      8 +
+ ...corrections_revert_mirror_20260930T143955Z.json |      8 +
+ ...corrections_revert_mirror_20260930T143956Z.json |      8 +
+ ...corrections_revert_mirror_20260930T144121Z.json |      8 +
+ .../mirror/reports/mirror_afterA_chillers.md       |     25 +
+ .../mirror/reports/mirror_afterA_explosive.md      |     50 +
+ .../mirror/reports/mirror_afterA_freezers.md       |     30 +
+ .../mirror/reports/mirror_afterA_icecream.md       |     49 +
+ .../mirror/reports/mirror_afterA_smoke.md          |     27 +
+ .../mirror/reports/mirror_afterB_chillers.md       |     25 +
+ .../mirror/reports/mirror_afterB_explosive.md      |     50 +
+ .../mirror/reports/mirror_afterB_freezers.md       |     30 +
+ .../mirror/reports/mirror_afterB_icecream.md       |     49 +
+ .../mirror/reports/mirror_afterB_smoke.md          |     27 +
+ .../mirror/reports/mirror_afterBf_chillers.md      |     25 +
+ .../mirror/reports/mirror_afterBf_explosive.md     |     50 +
+ .../mirror/reports/mirror_afterBf_freezers.md      |     30 +
+ .../mirror/reports/mirror_afterBf_icecream.md      |     49 +
+ .../mirror/reports/mirror_afterBf_smoke.md         |     27 +
+ .../mirror/reports/mirror_before_chillers.md       |     28 +
+ .../mirror/reports/mirror_before_explosive.md      |     53 +
+ .../mirror/reports/mirror_before_freezers.md       |     33 +
+ .../mirror/reports/mirror_before_icecream.md       |     52 +
+ .../mirror/reports/mirror_before_smoke.md          |     28 +
+ .../pruned5_afterB_mirror_afterB_chillers.md       |     26 +
+ .../pruned5_afterB_mirror_afterB_explosive.md      |     51 +
+ .../pruned5_afterB_mirror_afterB_freezers.md       |     31 +
+ .../pruned5_afterB_mirror_afterB_icecream.md       |     50 +
+ .../reports/pruned5_afterB_mirror_afterB_smoke.md  |     28 +
+ .../pruned5_before_mirror_before_chillers.md       |     59 +
+ .../pruned5_before_mirror_before_explosive.md      |     65 +
+ .../pruned5_before_mirror_before_freezers.md       |     45 +
+ .../pruned5_before_mirror_before_icecream.md       |     63 +
+ .../reports/pruned5_before_mirror_before_smoke.md  |     36 +
+ docs/audit/rt1_2026-09/mirror/verify_b_after.txt   |     18 +
+ docs/audit/rt1_2026-09/mirror/verify_b_before.txt  |     13 +
+ .../rt1_2026-09/mirror/verify_b_formula_only.txt   |     19 +
+ .../rt1_2026-09/mirror/verify_rule_on_mirror.txt   |     30 +
+ docs/audit/rt1_2026-09/mirror_vs_snapshot.py       |     78 +
+ .../prod/1b_20260930-162834/MANIFEST.txt           |      9 +
+ .../prod/1b_20260930-162834/SHA256SUMS.out         |      3 +
+ .../rt1_2026-09/prod/1b_20260930-162834/all.json   | 126454 ++++++++++++++++++
+ .../prod/1b_20260930-162834/door_report.txt        |     20 +
+ .../prod/1b_20260930-162834/meat_hangers.json      |  27646 ++++
+ .../reports/prod_costing_audit_chillers.csv        |   1254 +
+ .../reports/prod_costing_audit_chillers.md         |     28 +
+ .../reports/prod_costing_audit_explosive.csv       |    685 +
+ .../reports/prod_costing_audit_explosive.md        |     53 +
+ .../reports/prod_costing_audit_freezers.csv        |    691 +
+ .../reports/prod_costing_audit_freezers.md         |     33 +
+ .../reports/prod_costing_audit_icecream.csv        |    613 +
+ .../reports/prod_costing_audit_icecream.md         |     52 +
+ .../reports/prod_costing_audit_smoke.csv           |    235 +
+ .../reports/prod_costing_audit_smoke.md            |     28 +
+ .../rt1_2026-09/prod/1b_20260930-162834/run.txt    |     52 +
+ .../snapshot_diff_28sep_to_30sep.txt               |    108 +
+ docs/audit/rt1_2026-09/snapshot_diff.py            |     65 +
+ .../SECTION_3_0_DISCOVERY.md                       |     93 +
+ docs/audit/srd_rear_frame_2026-09/README.md        |     74 +
+ .../srd_rear_frame_2026-09/RETURN_6c_2026-09-29.md |    147 +
+ .../srd_rear_frame_2026-09/RETURN_6d_2026-09-30.md |    131 +
+ .../SECTION_3_0_DISCOVERY.md                       |    118 +
+ .../srd_rear_frame_2026-09/dev/preview_DRD.pdf     |    169 +
+ .../srd_rear_frame_2026-09/dev/preview_SRD.pdf     |    169 +
+ ...g_corrections_journal_dev_20260929T123145Z.json |   5533 +
+ .../srd_rear_frame_2026-09/make_manifest_a.py      |    106 +
+ .../srd_rear_frame_2026-09/make_manifest_b.py      |    120 +
+ docs/audit/srd_rear_frame_2026-09/manifest_a.yaml  |   1928 +
+ .../srd_rear_frame_2026-09/manifest_b_default.yaml |     78 +
+ .../manifest_b_formula_only.yaml                   |     28 +
+ .../prod/RETURN_6b_2026-09-29.md                   |    101 +
+ .../prod/discovery_20260929T112139Z.txt            |    174 +
+ .../srd_rear_frame_2026-09/verify_manifest_b.py    |    102 +
+ .../srd_rear_frame_2026-09/verify_pdf_preview.py   |     64 +
+ .../srd_rear_frame_2026-09/verify_rule_on_db.py    |    102 +
+ .../prod-deploy-v1.59.0-costing-audit-admin.md     |     53 +-
+ docs/runbooks/prod-deploy-v1.59.2.md               |    243 +
+ .../01-designer-rear-frame-chips.png               |    Bin 0 -> 168651 bytes
+ .../rule_display_tidy/02-config-preview.png        |    Bin 0 -> 167617 bytes
+ .../rule_display_tidy/03-drd-quote-needs.png       |    Bin 0 -> 119241 bytes
+ .../04-srd-quote-not-used-with.png                 |    Bin 0 -> 129216 bytes
+ .../05-back-on-the-original-door.png               |    Bin 0 -> 140838 bytes
+ .../01-kept-condition-shown.png                    |    Bin 0 -> 95835 bytes
+ .../rule_editor_keeps_rules/02-in-branch-added.png |    Bin 0 -> 97999 bytes
+ .../03-remove-asks-first.png                       |    Bin 0 -> 99835 bytes
+ .../01-not-selected-header.png                     |    Bin 0 -> 106253 bytes
+ .../02-eye-shows-struck-through-lines.png          |    Bin 0 -> 112601 bytes
+ .../03-switched-on-shows-subtotal.png              |    Bin 0 -> 107435 bytes
+ .../out/out-deploy-20260928-152814/OUTCOME.txt     |     13 +
+ .../icb-deploy-dryrun.txt                          |     28 +
+ .../out/out-deploy-20260928-152814/icb-deploy.txt  |    422 +
+ .../out-deploy-20260928-152814/rollback-anchor.txt |      1 +
+ .../out/out-deploy-20260928-152814/run.txt         |    530 +
+ .../out/out-preflight-20260928-152646/run.txt      |     36 +
+ .../out/out-verify-20260928-152659/run.txt         |     28 +
+ ops/prod-release-v1.59.2/mkstage.sh                |     80 +
+ ops/prod-release-v1.59.2/release.sh                |    300 +
+ ops/prod-release-v1.59.2/sim/fake_tool.py          |     62 +
+ ops/prod-release-v1.59.2/sim/run_all.sh            |      5 +
+ ops/prod-release-v1.59.2/sim/run_data_sim.sh       |    108 +
+ ops/prod-release-v1.59.2/sim/run_sim.sh            |    108 +
+ ops/prod-release-v1.59.2/sim/stubs.sh              |     95 +
+ ops/prod-rt1/mkstage_data.sh                       |     65 +
+ ops/prod-rt1/mkstage_snapshot.sh                   |     50 +
+ ops/prod-rt1/rt1_data.sh                           |    159 +
+ ops/prod-rt1/rt1_door_report.py                    |    237 +
+ ops/prod-rt1/rt1_snapshot.sh                       |    137 +
+ ops/prod-srd-rear-frame/SHA256SUMS                 |      2 +
+ ops/prod-srd-rear-frame/srd_discovery.py           |    477 +
+ ops/prod-srd-rear-frame/srd_discovery.sh           |     40 +
+ 150 files changed, 192013 insertions(+), 86 deletions(-)
+ create mode 100644 backend/tests/journeys/test_rule_display_tidy_journey.py
+ create mode 100644 backend/tests/journeys/test_rule_editor_keeps_rules_journey.py
+ create mode 100644 backend/tests/journeys/test_section_not_selected_journey.py
+ create mode 100644 backend/tests/test_rule_display_tidy.py
+ create mode 100644 backend/tests/test_rule_editor_keeps_rules.py
+ create mode 100644 backend/tests/test_section_not_selected.py
+ create mode 100644 docs/audit/rt1_2026-09/compare_reports.py
+ create mode 100644 docs/audit/rt1_2026-09/load_mirror.py
+ create mode 100644 docs/audit/rt1_2026-09/mirror/MIRROR_PROOF.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/accepted_differences.prod.pruned5.yaml
+ create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_afterA_vs_afterB.txt
+ create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_afterA_vs_afterBformula.txt
+ create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_before_vs_afterA.txt
+ create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_prod_vs_mirror_before.txt
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T143420Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T143519Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T143856Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T144029Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T144031Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T144123Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T143458Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T143955Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T143956Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T144121Z.json
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_chillers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_explosive.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_freezers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_icecream.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_smoke.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_chillers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_explosive.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_freezers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_icecream.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_smoke.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_chillers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_explosive.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_freezers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_icecream.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_smoke.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_chillers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_explosive.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_freezers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_icecream.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_smoke.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_chillers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_explosive.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_freezers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_icecream.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_smoke.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_chillers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_explosive.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_freezers.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_icecream.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_smoke.md
+ create mode 100644 docs/audit/rt1_2026-09/mirror/verify_b_after.txt
+ create mode 100644 docs/audit/rt1_2026-09/mirror/verify_b_before.txt
+ create mode 100644 docs/audit/rt1_2026-09/mirror/verify_b_formula_only.txt
+ create mode 100644 docs/audit/rt1_2026-09/mirror/verify_rule_on_mirror.txt
+ create mode 100644 docs/audit/rt1_2026-09/mirror_vs_snapshot.py
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/MANIFEST.txt
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/SHA256SUMS.out
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/all.json
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/door_report.txt
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/meat_hangers.json
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_chillers.csv
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_chillers.md
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_explosive.csv
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_explosive.md
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_freezers.csv
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_freezers.md
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_icecream.csv
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_icecream.md
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_smoke.csv
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_smoke.md
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/run.txt
+ create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/snapshot_diff_28sep_to_30sep.txt
+ create mode 100644 docs/audit/rt1_2026-09/snapshot_diff.py
+ create mode 100644 docs/audit/section_not_selected_2026-09/SECTION_3_0_DISCOVERY.md
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/README.md
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/RETURN_6c_2026-09-29.md
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/RETURN_6d_2026-09-30.md
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/SECTION_3_0_DISCOVERY.md
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/dev/preview_DRD.pdf
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/dev/preview_SRD.pdf
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/dev/pricing_corrections_journal_dev_20260929T123145Z.json
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/make_manifest_a.py
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/make_manifest_b.py
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/manifest_a.yaml
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/manifest_b_default.yaml
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/manifest_b_formula_only.yaml
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/prod/RETURN_6b_2026-09-29.md
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/prod/discovery_20260929T112139Z.txt
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/verify_manifest_b.py
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/verify_pdf_preview.py
+ create mode 100644 docs/audit/srd_rear_frame_2026-09/verify_rule_on_db.py
+ create mode 100644 docs/runbooks/prod-deploy-v1.59.2.md
+ create mode 100644 docs/screenshots/journeys/rule_display_tidy/01-designer-rear-frame-chips.png
+ create mode 100644 docs/screenshots/journeys/rule_display_tidy/02-config-preview.png
+ create mode 100644 docs/screenshots/journeys/rule_display_tidy/03-drd-quote-needs.png
+ create mode 100644 docs/screenshots/journeys/rule_display_tidy/04-srd-quote-not-used-with.png
+ create mode 100644 docs/screenshots/journeys/rule_display_tidy/05-back-on-the-original-door.png
+ create mode 100644 docs/screenshots/journeys/rule_editor_keeps_rules/01-kept-condition-shown.png
+ create mode 100644 docs/screenshots/journeys/rule_editor_keeps_rules/02-in-branch-added.png
+ create mode 100644 docs/screenshots/journeys/rule_editor_keeps_rules/03-remove-asks-first.png
+ create mode 100644 docs/screenshots/journeys/section_not_selected/01-not-selected-header.png
+ create mode 100644 docs/screenshots/journeys/section_not_selected/02-eye-shows-struck-through-lines.png
+ create mode 100644 docs/screenshots/journeys/section_not_selected/03-switched-on-shows-subtotal.png
+ create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/OUTCOME.txt
+ create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/icb-deploy-dryrun.txt
+ create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/icb-deploy.txt
+ create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/rollback-anchor.txt
+ create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/run.txt
+ create mode 100644 ops/prod-release-v1.59.0/out/out-preflight-20260928-152646/run.txt
+ create mode 100644 ops/prod-release-v1.59.0/out/out-verify-20260928-152659/run.txt
+ create mode 100644 ops/prod-release-v1.59.2/mkstage.sh
+ create mode 100644 ops/prod-release-v1.59.2/release.sh
+ create mode 100644 ops/prod-release-v1.59.2/sim/fake_tool.py
+ create mode 100644 ops/prod-release-v1.59.2/sim/run_all.sh
+ create mode 100644 ops/prod-release-v1.59.2/sim/run_data_sim.sh
+ create mode 100644 ops/prod-release-v1.59.2/sim/run_sim.sh
+ create mode 100644 ops/prod-release-v1.59.2/sim/stubs.sh
+ create mode 100644 ops/prod-rt1/mkstage_data.sh
+ create mode 100644 ops/prod-rt1/mkstage_snapshot.sh
+ create mode 100644 ops/prod-rt1/rt1_data.sh
+ create mode 100644 ops/prod-rt1/rt1_door_report.py
+ create mode 100644 ops/prod-rt1/rt1_snapshot.sh
+ create mode 100644 ops/prod-srd-rear-frame/SHA256SUMS
+ create mode 100644 ops/prod-srd-rear-frame/srd_discovery.py
+ create mode 100644 ops/prod-srd-rear-frame/srd_discovery.sh
+  ok  at 1d9cb47b (verified by SHA, not by git describe)
+
+== 5. migrations - skipped
+
+== 6. SPA build - skipped (frontend/ untouched in this range)
+
+== 7. restart icb-backend
+  active since (before): Wed 2026-09-30 06:24:40 SAST
+  active since (after):  Wed 2026-09-30 20:51:20 SAST
+  ok  restarted
+
+== 8. verify
+  workers started      4 (expected 4)
+  BOOTSTRAP FAILED     0 (expected 0)
+  https://127.0.0.1/health -> 200
+  ok  healthy
+
+DEPLOYED  de74796b -> 1d9cb47b  (1d9cb47b84a8f10a4be74f139b37671ec21f35bd)
+
+Rollback (code-only - additive migrations are left in place deliberately):
+    /opt/icb-platform/deploy/prod/icb-rollback.sh de74796b
+
+  or, without the script:
+    sudo -u icb git -C /opt/icb-platform reset --hard de74796b
+    sudo systemctl restart icb-backend
+

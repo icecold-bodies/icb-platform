@@ -1,0 +1,9 @@
+# RT1 2b — the Cloudflare door, probed by the CA from outside after DEPLOYED (the disk matched from 20:51:48)
+# 2026-09-30T21:49:42+02:00
+cf  calc: 200 542720 cf-cache=HIT  sha 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+lan calc: 200 542720 cf-cache=  sha 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+want calc sha 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+cf  openapi: 200 354193 cf-cache=DYNAMIC  sha fe1258bda4874d6379a0252f9dc476f52eef8c33add0d1c42d61b90a7ac78b97
+lan openapi: 200 354193 cf-cache=  sha fe1258bda4874d6379a0252f9dc476f52eef8c33add0d1c42d61b90a7ac78b97
+CALC: PASS (cf = lan = the target blob)
+OPENAPI: PASS (cf = lan)

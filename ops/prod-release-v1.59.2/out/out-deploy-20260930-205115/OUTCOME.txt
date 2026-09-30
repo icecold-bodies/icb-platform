@@ -1,0 +1,11 @@
+deployed      de74796 -> 1d9cb47 (1d9cb47b84a8f10a4be74f139b37671ec21f35bd)
+tag           v1.59.2 = 5948a1a3cef3ff5dd50232eaf1d0c97de916b1df (local = origin, peels to the target); git describe = v1.59.2
+alembic       0049 -> 0049 (no migration)
+backup        /var/backups/postgres/icb_platform_pre-v1.59.2_20260930-205115.dump  1944436 bytes  sha256 dff20003fc51c65f012a37c43e0ff7de14e837ebdfb514b88c03af6d31c3524f
+restart       Wed 2026-09-30 06:24:40 SAST -> Wed 2026-09-30 20:51:20 SAST (pid 161135 -> 167288), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+calculator    calculator.html loads ?v=184; calculator.js 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635 (local = lan = the target blob)
+spa           assets/index-Be8qL-PA.js 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (local = lan = disk; unchanged, no rebuild)
+openapi       local = lan
+finished      2026-09-30T20:51:48+02:00

@@ -10,9 +10,13 @@ with the September factor a 4G line prices at R5 393.41 against Burt's R5 581. T
 calculation (no cache), so the change takes effect on the next calculation: no restart, no deploy. The code fallback
 FACTOR_4G_DEFAULT (5 875 / 4 310) is left alone; it is only used when the row is missing or unparseable.
 
-    DATABASE_URL=...  python rt1_factor.py --target prod|mirror                           dry-run, READ ONLY
-    DATABASE_URL=...  python rt1_factor.py --target prod|mirror --apply --out-dir DIR     one transaction + journal
-    DATABASE_URL=...  python rt1_factor.py --target prod|mirror --revert J --out-dir DIR  value AND updated_at back
+    DATABASE_URL=...  python rt1_factor.py --target prod|mirror [--manifest F|F2]                           dry-run
+    DATABASE_URL=...  python rt1_factor.py --target prod|mirror [--manifest F|F2] --apply --out-dir DIR     apply
+    DATABASE_URL=...  python rt1_factor.py --target prod|mirror [--manifest F|F2] --revert J --out-dir DIR  revert
+
+F2 (RT1 ruling 3 addendum, 1 Oct): Burt corrected his 32D to R4 100 and Michael set prod's PU material back to R4 100;
+his 4G stays R5 581, so F2 moves the row on from F's '1.362881562881563' to repr(5581/4100) = '1.361219512195122'
+(4G = R5 587.81 -> R5 581.00 per m³). Same guards, same journal, same byte-exact revert (back to F's state).
 
 Guards: apply needs the row to hold exactly BEFORE; revert needs it to hold exactly what the journal wrote (value
 and updated_at). Anything else refuses with exit 2 and writes nothing. Idempotent: apply over F, or revert over a
@@ -34,11 +38,19 @@ from pathlib import Path
 import psycopg
 
 KEY = "costings.pu_foam_4g_factor"
-BEFORE = "1.3170731707317074"    # repr(5400 / 4100), written by tools/september_price_import.py (v1.52)
-AFTER = "1.362881562881563"      # repr(5581 / 4095)
-assert BEFORE == repr(5400 / 4100) and AFTER == repr(5581 / 4095) and float(AFTER) == 5581 / 4095
-P32 = 4095.0                     # the shared PU material on prod since 29 Sep = Burt's 21 Sep 32D
+# Each manifest is one guarded move of the same row: (before, after, the 32D material price it is set for).
+#   F   RT1 ruling 2 §2a: the September factor -> Burt's 21 Sep 4G / 32D, with the PU material at R4 095.
+#   F2  RT1 ruling 3 addendum: Burt corrected his 32D to R4 100 (prod's PU material, 1 Oct); his 4G stays R5 581,
+#       so the factor that prices 4G at R5 581 on R4 100 is 5581/4100. Guarded on F's value.
+MANIFESTS = {
+    "F": ("1.3170731707317074", "1.362881562881563", 4095.0),   # repr(5400/4100) -> repr(5581/4095)
+    "F2": ("1.362881562881563", "1.361219512195122", 4100.0),   # repr(5581/4095) -> repr(5581/4100)
+}
+assert MANIFESTS["F"][:2] == (repr(5400 / 4100), repr(5581 / 4095)) and float(MANIFESTS["F"][1]) == 5581 / 4095
+assert MANIFESTS["F2"][:2] == (repr(5581 / 4095), repr(5581 / 4100)) and float(MANIFESTS["F2"][1]) == 5581 / 4100
+BEFORE, AFTER, P32 = MANIFESTS["F"]   # set from --manifest in main()
 TARGETS = {"prod": "icb_platform", "mirror": "icb_prodmirror"}
+MANIFEST = "F"
 TABLE = "icb_costings.admin_settings"
 PLAN_TODO = "1 to apply, 0 already applied."
 PLAN_DONE = "0 to apply, 1 already applied."
@@ -104,7 +116,7 @@ def impact(cx) -> None:
 
 
 def dry_run(cx, db: str, target: str) -> int:
-    print(f"database {db} (--target {target}); Manifest F: admin_settings[{KEY!r}]; tool sha256 {tool_sha()[:16]}…")
+    print(f"database {db} (--target {target}); Manifest {MANIFEST}: admin_settings[{KEY!r}]; tool sha256 {tool_sha()[:16]}…")
     with cx.transaction():
         cx.execute("set transaction read only")
         row = read_row(cx)
@@ -120,7 +132,7 @@ def dry_run(cx, db: str, target: str) -> int:
             impact(cx)
             return 0
         if value != BEFORE:
-            print(f"  REFUSED: the value is {value!r}; F expects exactly {BEFORE!r} (or {AFTER!r} once applied). Nothing written.")
+            print(f"  REFUSED: the value is {value!r}; {MANIFEST} expects exactly {BEFORE!r} (or {AFTER!r} once applied). Nothing written.")
             return 2
         print(f"  APPLY {BEFORE!r} -> {AFTER!r}  (x {float(AFTER) / float(BEFORE)!r})")
         print(f"        a 4G PU foam line on the R{P32:,.0f} material: {show_price(BEFORE)} -> {show_price(AFTER)} per m³ (Burt's 4G: R5,581.00)")
@@ -143,7 +155,7 @@ def write_file(out_dir: Path, stem: str, data: dict) -> tuple[Path, Path]:
 
 
 def apply(cx, db: str, target: str, out_dir: Path) -> int:
-    print(f"database {db} (--target {target}); Manifest F: admin_settings[{KEY!r}]; tool sha256 {tool_sha()[:16]}…")
+    print(f"database {db} (--target {target}); Manifest {MANIFEST}: admin_settings[{KEY!r}]; tool sha256 {tool_sha()[:16]}…")
     with cx.transaction():
         row = read_row(cx, lock=True)
         if row is None:
@@ -155,12 +167,12 @@ def apply(cx, db: str, target: str, out_dir: Path) -> int:
             print("nothing to apply.")
             return 0
         if value != BEFORE:
-            raise Refused(f"row id {rid} holds {value!r}; F expects exactly {BEFORE!r}")
+            raise Refused(f"row id {rid} holds {value!r}; {MANIFEST} expects exactly {BEFORE!r}")
         got = cx.execute(f"update {TABLE} set value = %s, updated_at = now() where id = %s and key = %s and value = %s "
                          f"returning value, updated_at::text", (AFTER, rid, KEY, BEFORE)).fetchall()
         if len(got) != 1 or got[0][0] != AFTER:
             raise RuntimeError(f"the update touched {len(got)} row(s): {got!r}")
-        journal = {"tool": "rt1_factor", "manifest": "F", "tool_sha256": tool_sha(), "target": target, "database": db,
+        journal = {"tool": "rt1_factor", "manifest": MANIFEST, "tool_sha256": tool_sha(), "target": target, "database": db,
                    "key": KEY, "row_id": rid,
                    "before": {"value": value, "updated_at": upd},
                    "after": {"value": got[0][0], "updated_at": got[0][1]},
@@ -181,12 +193,12 @@ def apply(cx, db: str, target: str, out_dir: Path) -> int:
 
 def revert(cx, db: str, target: str, jpath: Path, out_dir: Path) -> int:
     j = json.loads(jpath.read_text(encoding="utf-8"))
-    if j.get("tool") != "rt1_factor" or j.get("manifest") != "F" or j.get("key") != KEY:
-        raise SystemExit(f"REFUSED: {jpath} is not a Manifest F journal")
+    if j.get("tool") != "rt1_factor" or j.get("manifest") != MANIFEST or j.get("key") != KEY:
+        raise SystemExit(f"REFUSED: {jpath} is not a Manifest {MANIFEST} journal")
     if j.get("database") != db or j.get("target") != target:
         raise SystemExit(f"REFUSED: the journal was written on {j.get('database')!r} (--target {j.get('target')}); this is {db!r}")
     b, a, rid = j["before"], j["after"], j["row_id"]
-    print(f"database {db} (--target {target}); revert Manifest F from {jpath.name}; tool sha256 {tool_sha()[:16]}…")
+    print(f"database {db} (--target {target}); revert Manifest {MANIFEST} from {jpath.name}; tool sha256 {tool_sha()[:16]}…")
     with cx.transaction():
         row = read_row(cx, lock=True)
         if row is None or row[0] != rid:
@@ -203,7 +215,7 @@ def revert(cx, db: str, target: str, jpath: Path, out_dir: Path) -> int:
         if got != [(b["value"], b["updated_at"])]:
             raise RuntimeError(f"the revert wrote {got!r}, expected {[(b['value'], b['updated_at'])]!r}")
         part, final = write_file(out_dir, f"rt1_factor_revert_{target}",
-                                 {"tool": "rt1_factor", "manifest": "F", "reverted_journal": jpath.name, "row_id": rid,
+                                 {"tool": "rt1_factor", "manifest": MANIFEST, "reverted_journal": jpath.name, "row_id": rid,
                                   "from": a, "to": b, "reverted_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")})
         print(f"  REVERT row id {rid}: ({value!r}, {upd}) -> ({b['value']!r}, {b['updated_at']})")
     part.replace(final)
@@ -224,9 +236,13 @@ def main(argv=None) -> int:
     g.add_argument("--apply", action="store_true")
     g.add_argument("--revert", metavar="JOURNAL")
     ap.add_argument("--out-dir", default=None)
+    ap.add_argument("--manifest", default="F", choices=sorted(MANIFESTS))
     a = ap.parse_args(argv)
     if (a.apply or a.revert) and not a.out_dir:
         ap.error("--apply / --revert need --out-dir")
+    global MANIFEST, BEFORE, AFTER, P32
+    MANIFEST = a.manifest
+    BEFORE, AFTER, P32 = MANIFESTS[MANIFEST]
     cx, db = connect(a.target, read_only=not (a.apply or a.revert))
     try:
         if a.apply:

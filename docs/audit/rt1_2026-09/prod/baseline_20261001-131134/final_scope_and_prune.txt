@@ -1,0 +1,6 @@
+smoke      keeping #5 changes 0 cell(s) | the F entry changes 0 cell(s): {}; outside foam_4g FLAG->ACCEPTED: 0
+chillers   keeping #5 changes 0 cell(s) | the F entry changes 0 cell(s): {}; outside foam_4g FLAG->ACCEPTED: 0
+freezers   keeping #5 changes 0 cell(s) | the F entry changes 27 cell(s): {('FLAG', 'ACCEPTED'): 27}; outside foam_4g FLAG->ACCEPTED: 0
+icecream   keeping #5 changes 0 cell(s) | the F entry changes 34 cell(s): {('FLAG', 'ACCEPTED'): 34}; outside foam_4g FLAG->ACCEPTED: 0
+explosive  keeping #5 changes 0 cell(s) | the F entry changes 3 cell(s): {('FLAG', 'ACCEPTED'): 3}; outside foam_4g FLAG->ACCEPTED: 0
+ALL: keeping #5 changes 0; the F entry changes 64 (all foam_4g FLAG -> ACCEPTED: 64, anything else: 0); cells in scope of the entry's variant: 510 4G, out of scope: 2963 non-4G

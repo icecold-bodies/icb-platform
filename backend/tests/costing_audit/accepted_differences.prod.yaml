@@ -157,3 +157,16 @@
   reason: "[DATA] 0.9 MM ALU PLATE on the EXPLOSIVE UP TO 2.7 single rear door priced/quantified differently from Burt's sheet (-R325), prod as dev."
   owner: BA
   review_by: 2026-10-31
+
+# ── RT1 ruling 3 (1 Oct 2026): Manifest F — the golden's 4G price is older than prod's ──
+# A stop-gap until the golden is rebuilt from Burt's 21 Sep workbooks. It absorbs only a 4G-variant PU foam
+# difference: the 32D variants of the same lines still guard every formula and quantity.
+
+- body: "*"
+  section: "*"
+  variant: foam_4g
+  cause: ["DIFF PU", "BOTH PU"]
+  kind: tolerated
+  reason: "[RULING] Manifest F (RT1 ruling 3): prod prices 4G PU foam at Burt's 21 Sep list (R4 095 x 5581/4095 = R5 581); the golden is his September workbook (4G R5 400), so every costed 4G PU foam line reads +3.35 % against it. A stop-gap: rebuild the golden from the 21 Sep workbooks, then remove this entry. EXPIRED means the golden refresh has not shipped."
+  owner: BA
+  review_by: 2026-10-15

@@ -1,0 +1,6 @@
+smoke      cells   234: 32D   234, 4G    0 (variant foam_4g    0) | changed by the F entry:   0 (FLAG -> ACCEPTED, all foam_4g: 0; anything else: 0) | cells the F entry accepts: 0
+chillers   cells  1253: 32D  1074, 4G  179 (variant foam_4g  179) | changed by the F entry:   0 (FLAG -> ACCEPTED, all foam_4g: 0; anything else: 0) | cells the F entry accepts: 0
+freezers   cells   690: 32D   575, 4G  115 (variant foam_4g  115) | changed by the F entry:  27 (FLAG -> ACCEPTED, all foam_4g: 27; anything else: 0) | cells the F entry accepts: 27
+icecream   cells   612: 32D   510, 4G  102 (variant foam_4g  102) | changed by the F entry:  37 (FLAG -> ACCEPTED, all foam_4g: 37; anything else: 0) | cells the F entry accepts: 37
+explosive  cells   684: 32D   570, 4G  114 (variant foam_4g  114) | changed by the F entry:   6 (FLAG -> ACCEPTED, all foam_4g: 6; anything else: 0) | cells the F entry accepts: 6
+ALL       cells 3473: 32D 2963 (none in the entry's scope), 4G 510 | changed by the F entry: 70 (FLAG -> ACCEPTED), anything else: 0 | cells the F entry accepts: 70

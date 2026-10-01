@@ -1,0 +1,35 @@
+smoke      counts {'ACCEPTED': 15, 'PASS': 171, 'SKIP': 39, 'UNVERIFIABLE': 9} -> {'ACCEPTED': 15, 'PASS': 171, 'SKIP': 39, 'UNVERIFIABLE': 9}
+           32D cells 234, unchanged 234 | 4G cells 0, MES total moved on 0
+chillers   counts {'ACCEPTED': 17, 'PASS': 1012, 'SKIP': 224} -> {'ACCEPTED': 17, 'PASS': 1012, 'SKIP': 224}
+           32D cells 1074, unchanged 1074 | 4G cells 179, MES total moved on 0
+              4G         PASS -> PASS         151
+              4G         SKIP -> SKIP         28
+freezers   counts {'ACCEPTED': 55, 'PASS': 491, 'SKIP': 117, 'UNVERIFIABLE': 27} -> {'ACCEPTED': 51, 'PASS': 495, 'SKIP': 117, 'UNVERIFIABLE': 27}
+           32D cells 575, unchanged 575 | 4G cells 115, MES total moved on 41
+              4G     ACCEPTED -> ACCEPTED     31
+              4G     ACCEPTED -> PASS         4
+              4G         PASS -> PASS         62
+              4G         SKIP -> SKIP         18
+              changed:  UP TO 4.8 MT FREEZER  (2 L3 DRD: Excel 6,458.11 MES 6,522.65 (+1.00 %) ACCEPTED -> PASS
+              changed:  UP TO 4.8 MT FREEZER  (2 L4.2 DRD: Excel 6,458.11 MES 6,522.65 (+1.00 %) ACCEPTED -> PASS
+              changed:  UP TO 4.8 MT FREEZER  (2 L4.8 DRD: Excel 6,458.11 MES 6,522.65 (+1.00 %) ACCEPTED -> PASS
+              changed:  UP TO 4.8 MT FREEZER  (2 L5.6 DRD: Excel 6,458.11 MES 6,522.65 (+1.00 %) ACCEPTED -> PASS
+icecream   counts {'ACCEPTED': 87, 'PASS': 381, 'SKIP': 104, 'UNVERIFIABLE': 40} -> {'ACCEPTED': 84, 'PASS': 384, 'SKIP': 104, 'UNVERIFIABLE': 40}
+           32D cells 510, unchanged 510 | 4G cells 102, MES total moved on 40
+              4G     ACCEPTED -> ACCEPTED     40
+              4G     ACCEPTED -> PASS         3
+              4G         PASS -> PASS         43
+              4G         SKIP -> SKIP         16
+              changed:  icecream 4.9 up L4.9 FLOOR: Excel 22,324.57 MES 22,542.94 (+0.98 %) ACCEPTED -> PASS
+              changed:  icecream 4.9 up L6.7 FLOOR: Excel 30,088.86 MES 30,386.64 (+0.99 %) ACCEPTED -> PASS
+              changed:  icecream 4.9 up L8 FLOOR: Excel 35,696.40 MES 36,051.53 (+0.99 %) ACCEPTED -> PASS
+explosive  counts {'ACCEPTED': 159, 'PASS': 372, 'SKIP': 117, 'UNVERIFIABLE': 36} -> {'ACCEPTED': 156, 'PASS': 375, 'SKIP': 117, 'UNVERIFIABLE': 36}
+           32D cells 570, unchanged 570 | 4G cells 114, MES total moved on 36
+              4G     ACCEPTED -> ACCEPTED     33
+              4G     ACCEPTED -> PASS         3
+              4G         PASS -> PASS         60
+              4G         SKIP -> SKIP         18
+              changed: EXPLOSIVE UP TO 2.7 L1.8 ROOF: Excel 3,388.83 MES 3,422.27 (+0.99 %) ACCEPTED -> PASS
+              changed: EXPLOSIVE UP TO 2.7 L2.3 ROOF: Excel 4,278.94 MES 4,321.41 (+0.99 %) ACCEPTED -> PASS
+              changed: EXPLOSIVE UP TO 2.7 L2.7 ROOF: Excel 4,991.02 MES 5,040.72 (+1.00 %) ACCEPTED -> PASS
+ALL PACKS: 32D cells 2963, unchanged 2963 | 4G cells 510, MES total moved on 117

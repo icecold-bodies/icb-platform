@@ -21,8 +21,10 @@ Checks:
     difference is the known structural one (RT1 ruling 2 §2b), shown in rand;
   * EPS quotes: no PU line is costed.
 
-    (DATABASE_URL + SESSION_SECRET; PYTHONPATH = backend/)  python verify_manifest_f.py
+    (DATABASE_URL + SESSION_SECRET; PYTHONPATH = backend/)  [RT1_P32=4100] python verify_manifest_f.py
+    RT1_P32 = the PU material's 32D price the check expects (default 4095, Manifest F; 4100 for F2).
 """
+import os
 import sys
 
 from sqlalchemy import create_engine, event, text
@@ -37,7 +39,7 @@ from app.routers.calculator import (_apply_body_variable_overrides, _bom_load_op
 from app.services import get_formula_lib, get_global_vars, get_section_snapshot
 from app.services import insulation_foam as pu_foam
 
-P32 = 4095.0              # Burt's 21 Sep PU!C17 (32D) = the shared PU material
+P32 = float(os.environ.get("RT1_P32", "4095"))   # the shared PU material: 4095 under F, 4100 (Burt's corrected 32D) under F2
 P4G = 5581.0              # Burt's 21 Sep PU!C19 (4G)
 AREA = 1.22 * 2.44
 BODIES = {

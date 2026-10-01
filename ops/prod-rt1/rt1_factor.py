@@ -108,7 +108,7 @@ def impact(cx) -> None:
             hits.append((qn, status, day, body))
     by = Counter(h[1] for h in hits)
     print(f"saved costings graded 4G (not deleted): {len(hits)}" + (f" — by status {dict(sorted(by.items()))}" if hits else ""))
-    print("   a saved costing keeps its saved totals; one re-opened and re-calculated after F prices its PU foam at the new factor")
+    print(f"   a saved costing keeps its saved totals; one re-opened and re-calculated after {MANIFEST} prices its PU foam at the new factor")
     for qn, status, day, body in hits[:80]:
         print(f"   {qn or '(no quote number)'} | {status} | saved {day} | {body}")
     if len(hits) > 80:
@@ -187,7 +187,7 @@ def apply(cx, db: str, target: str, out_dir: Path) -> int:
         print(f"!! after commit the row reads {now!r} — tell the CA")
         return 1
     print(f"APPLIED 1 change (admin_settings id {rid}). Journal: {final}")
-    print(f"Undo: python rt1_factor.py --target {target} --revert {final} --out-dir <dir>")
+    print(f"Undo: python rt1_factor.py --target {target} --manifest {MANIFEST} --revert {final} --out-dir <dir>")
     return 0
 
 

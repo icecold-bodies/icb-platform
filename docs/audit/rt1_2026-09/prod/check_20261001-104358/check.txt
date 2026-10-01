@@ -1,0 +1,172 @@
+== prod: db=icb_platform alembic=0049 code=1d9cb47 staged=f710180 2026-10-01T10:43:58+02:00
+database / read only: ('icb_platform', 'on')
+
+=== 1. PU FOAM PRICES (the engine's PU foam: material named PU / PU FOAM)
+   material   207 'PU'         R4100.0  (last updated 2026-10-01 09:52:16.431134; 15 line(s) on active bodies)  OK
+   material   209 'PU'         R4100.0  (last updated 2026-10-01 09:52:29.833805; 15 line(s) on active bodies)  OK
+   material   211 'PU'         R4100.0  (last updated 2026-10-01 09:52:39.577899; 15 line(s) on active bodies)  OK
+   material   213 'PU'         R4100.0  (last updated 2026-10-01 09:52:47.994772; 15 line(s) on active bodies)  OK
+   material   236 'PU'         R4100.0  (last updated 2026-10-01 09:52:58.301089; 12 line(s) on active bodies)  OK
+   material   292 'PU'         R4100.0  (last updated 2026-10-01 09:53:05.395414; 14 line(s) on active bodies)  OK
+   SUMMARY: every PU foam material reads R4 100
+   PU foam lines with their OWN price (they do not follow the material): 57
+      CHILLER 2.3 METER            bom  3692 FRONT                  own R3090.0  | (1.22*2.44*{FRONT PU})
+      CHILLER 2.3 METER            bom  3699 SRD                    own R3090.0  | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)
+      CHILLER 2.3 METER            bom  3723 DRD                    own R3090.0  | (1.22*2.44*{DRD PU})
+      CHILLER 2.3 METER            bom  3743 SIDES                  own R3090.0  | (1.22*2.44*{SIDES PU})
+      CHILLER 2.3 METER            bom  3751 ROOF                   own R3090.0  | (1.22*2.44*{ROOF PU})
+      CHILLER 2.3 METER            bom  3759 FLOOR                  own R3090.0  | (1.22*2.44*{FLOOR PU})
+      CHILLER LARGE                bom  3310 FRONT                  own R3090.0  | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+      CHILLER LARGE                bom  3319 SRD                    own R3090.0  | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+      CHILLER LARGE                bom  3345 DRD                    own R3090.0  | ((1.22*2.44*{DRD PU}))*2
+      CHILLER LARGE                bom  3367 SIDES                  own R3090.0  | (1.22*2.44*{SIDES PU}*((length+{Waste})/1.22))
+      CHILLER LARGE                bom  3377 ROOF                   own R3090.0  | ((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22)
+      CHILLER LARGE                bom  3385 FLOOR                  own R3090.0  | ((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22)
+      CHILLER MEDIUM               bom  3170 FRONT                  own R3090.0  | (1.22*2.44*{FRONT PU})*2
+      CHILLER MEDIUM               bom  3179 SRD                    own R3090.0  | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+      CHILLER MEDIUM               bom  3205 DRD                    own R3090.0  | (1.22*2.44*{DRD PU})*2
+      CHILLER MEDIUM               bom  3227 SIDES                  own R3090.0  | ((1.22 * 2.44  * {SIDES PU}) * (length+{Waste})/1.22)
+      CHILLER MEDIUM               bom  3237 ROOF                   own R3090.0  | ((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22)
+      CHILLER MEDIUM               bom  3245 FLOOR                  own R3090.0  | ((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22)
+      EXPLOSIVE 2.7 TO 4.8         bom  6337 FRONT                  own R167.9194899328859  | 2.44*1.22*2
+      EXPLOSIVE 2.7 TO 4.8         bom  6345 SRD                    own R4100.0  | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+      EXPLOSIVE 2.7 TO 4.8         bom  6371 DRD                    own R167.9194899328859  | 2.44*1.22*2
+      EXPLOSIVE 2.7 TO 4.8         bom  6393 SIDES                  own R167.9194899328859  | 1.22*2.44*(length+{Waste})/1.22
+      EXPLOSIVE 2.7 TO 4.8         bom  6402 ROOF                   own R167.9194899328859  | 1.22*2.44*(length+{Waste})/1.22
+      EXPLOSIVE 4.9 AND UP         bom  3940 FRONT                  own R234.15  | 1.22*2.44*2
+      EXPLOSIVE 4.9 AND UP         bom  3948 SRD                    own R4100.0  | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+      EXPLOSIVE 4.9 AND UP         bom  3974 DRD                    own R234.15  | 1.22*2.44*2
+      EXPLOSIVE 4.9 AND UP         bom  3996 SIDES                  own R234.15  | 1.22*2.44*(length+{Waste})/1.22
+      EXPLOSIVE 4.9 AND UP         bom  4005 ROOF                   own R234.15  | 1.22*2.44*(length+{Waste})/1.22
+      EXPLOSIVE UP TO 2.7          bom  5176 FRONT                  own R167.9194899328859  | 1.22*2.44*2
+      EXPLOSIVE UP TO 2.7          bom  5184 SRD                    own R4100.0  | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+      EXPLOSIVE UP TO 2.7          bom  5210 DRD                    own R167.9194899328859  | 1.22*2.44*2
+      EXPLOSIVE UP TO 2.7          bom  5232 SIDES                  own R167.9194899328859  | 1.22*2.44*(length+{Waste})/1.22
+      EXPLOSIVE UP TO 2.7          bom  5241 ROOF                   own R167.9194899328859  | 1.22*2.44*(length+{Waste})/1.22
+      FREEZER 2.3 METER            bom  3600 DRD                    own R245.73583892617447  | 1.22*2.44*2
+      FREEZER LARGE                bom  2560 SRD                    own R4100.0  | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+      ICECREAM BODY LARGE          bom  5298 FRONT                  own R4100.0  | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+      ICECREAM BODY LARGE          bom  5306 SRD                    own R4100.0  | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+      ICECREAM BODY LARGE          bom  5333 DRD                    own R4100.0  | (1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2
+      ICECREAM BODY LARGE          bom  5356 SIDES                  own R4100.0  | (1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      ICECREAM BODY LARGE          bom  5365 ROOF                   own R4100.0  | (1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      ICECREAM BODY LARGE          bom  5372 FLOOR                  own R4100.0  | (1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      ICECREAM BODY MEDIUM         bom  5577 FRONT                  own R4100.0  | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+      ICECREAM BODY MEDIUM         bom  5635 SIDES                  own R4100.0  | (1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      ICECREAM BODY MEDIUM         bom  5644 ROOF                   own R4100.0  | (1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      ICECREAM BODY MEDIUM         bom  5651 FLOOR                  own R4100.0  | (1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      ICECREAM BODY SMALL          bom  5720 FRONT                  own R4100.0  | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+      ICECREAM BODY SMALL          bom  5726 SRD                    own R4100.0  | ((2.44*1.22)*{SRD PU})*2
+      ICECREAM BODY SMALL          bom  5751 DRD                    own R4100.0  | (1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2
+      ICECREAM BODY SMALL          bom  5772 SIDES                  own R4100.0  | (1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      ICECREAM BODY SMALL          bom  5779 ROOF                   own R4100.0  | (1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      ICECREAM BODY SMALL          bom  5786 FLOOR                  own R4100.0  | (1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+      MEAT HANGER SMALL-MEDIUM     bom  6229 FLOOR                  own R446.02  | 1.22*2.44*(length+{Waste})/1.22
+      RHINORANGE TRAILER           bom  1797 FRONT                  own R585.8456375838927  | 1.22*2.65*2
+      RHINORANGE TRAILER           bom  1808 DRD                    own R351.50738255033554  | 1.22*2.65*2
+      RHINORANGE TRAILER           bom  1830 SIDES                  own R298.7812751677852  | 1.22*2.65*(length+{Waste})/1.22
+      RHINORANGE TRAILER           bom  1840 ROOF                   own R585.8456375838927  | 1.22*(width+{Waste})*(length+{Waste})/1.22
+      RHINORANGE TRAILER           bom  1848 FLOOR                  own R585.8456375838927  | 1.22*(width+{Waste})*(length+{Waste})/1.22
+
+=== 2. STORED 4G FACTOR: ('1.362881562881563',)
+
+=== 3. THE CHILLERS
+-- 25 CHILLER 2.3 METER: ('CHILLER 2.3 METER', True, True)
+   body-option masters: 15; of them named PU: 6
+      master  3795 'DRD EPS'      group DRD        sub INSULATION  thickness 0.0 default True
+      master  3796 'DRD PU'       group DRD        sub INSULATION  thickness 0.0 default False
+      master  3803 'FLOOR EPS'    group FLOOR      sub INSULATION  thickness 0.076 default True
+      master  3804 'FLOOR PU'     group FLOOR      sub INSULATION  thickness 0.0 default False
+      master  3793 'FRONT EPS'    group FRONT      sub INSULATION  thickness 0.06 default True
+      master  3794 'FRONT PU'     group FRONT      sub INSULATION  thickness 0.0 default False
+      master  3801 'ROOF EPS'     group ROOF       sub INSULATION  thickness 0.076 default True
+      master  3802 'ROOF PU'      group ROOF       sub INSULATION  thickness 0.0 default False
+      master  3799 'SIDES EPS'    group SIDES      sub INSULATION  thickness 0.06 default True
+      master  3800 'SIDES PU'     group SIDES      sub INSULATION  thickness 0.0 default False
+      master  3797 'SRD EPS'      group SRD        sub INSULATION  thickness 0.06 default False
+      master  3798 'SRD PU'       group SRD        sub INSULATION  thickness 0.0 default False
+   PU foam lines: 6
+      bom  3723 DRD          own 3090.0 | (1.22*2.44*{DRD PU}) | rules [{"option": "DRD PU", "equals": "Y", "option_id": 3796}]
+      bom  3759 FLOOR        own 3090.0 | (1.22*2.44*{FLOOR PU}) | rules [{"option": "FLOOR PU", "equals": "Y", "option_id": 3804}]
+      bom  3692 FRONT        own 3090.0 | (1.22*2.44*{FRONT PU}) | rules [{"option": "FRONT PU", "equals": "Y", "option_id": 3794}]
+      bom  3751 ROOF         own 3090.0 | (1.22*2.44*{ROOF PU}) | rules [{"option": "ROOF PU", "equals": "Y", "option_id": 3802}]
+      bom  3743 SIDES        own 3090.0 | (1.22*2.44*{SIDES PU}) | rules [{"option": "SIDES PU", "equals": "Y", "option_id": 3800}]
+      bom  3699 SRD          own 3090.0 | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44) | rules [{"option": "SRD PU", "equals": "Y", "option_id": 3798}]
+   draft saved 2026-10-01 10:12:47.499574: 21 node(s); nodes that name PU: 0
+-- 26 CHILLER MEDIUM: ('CHILLER MEDIUM', True, True)
+   body-option masters: 16; of them named PU: 6
+      master  3294 'DRD EPS'      group DRD        sub INSULATION  thickness 0.06 default True
+      master  3295 'DRD PU'       group DRD        sub INSULATION  thickness 0.0 default False
+      master  3302 'FLOOR EPS'    group FLOOR      sub INSULATION  thickness 0.076 default True
+      master  3303 'FLOOR PU'     group FLOOR      sub INSULATION  thickness 0.0 default False
+      master  3292 'FRONT EPS'    group FRONT      sub INSULATION  thickness 0.06 default True
+      master  3293 'FRONT PU'     group FRONT      sub INSULATION  thickness 0.0 default False
+      master  3300 'ROOF EPS'     group ROOF       sub INSULATION  thickness 0.076 default True
+      master  3301 'ROOF PU'      group ROOF       sub INSULATION  thickness 0.0 default False
+      master  3298 'SIDES EPS'    group SIDES      sub INSULATION  thickness 0.06 default True
+      master  3299 'SIDES PU'     group SIDES      sub INSULATION  thickness 0.0 default False
+      master  3296 'SRD EPS'      group SRD        sub INSULATION  thickness 0.0 default False
+      master  3297 'SRD PU'       group SRD        sub INSULATION  thickness 0.0 default False
+   PU foam lines: 6
+      bom  3205 DRD          own 3090.0 | (1.22*2.44*{DRD PU})*2 | rules [{"option": "DRD PU", "equals": "Y", "option_id": 3295}]
+      bom  3245 FLOOR        own 3090.0 | ((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22) | rules [{"option": "FLOOR PU", "equals": "Y", "option_id": 3303}]
+      bom  3170 FRONT        own 3090.0 | (1.22*2.44*{FRONT PU})*2 | rules [{"option": "FRONT PU", "equals": "Y", "option_id": 3293}]
+      bom  3237 ROOF         own 3090.0 | ((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22) | rules [{"option": "ROOF PU", "equals": "Y", "option_id": 3301}]
+      bom  3227 SIDES        own 3090.0 | ((1.22 * 2.44  * {SIDES PU}) * (length+{Waste})/1.22) | rules [{"option": "SIDES PU", "equals": "Y", "option_id": 3299}]
+      bom  3179 SRD          own 3090.0 | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2 | rules [{"option": "SRD PU", "equals": "Y", "option_id": 3297}]
+   draft saved 2026-10-01 10:12:07.562658: 28 node(s); nodes that name PU: 0
+-- 27 CHILLER LARGE: ('CHILLER LARGE', True, True)
+   body-option masters: 18; of them named PU: 6
+      master  7232 'DRD'          group DOOR TYPE  sub DOOR TYPE   thickness None default True
+      master  7233 'SRD'          group DOOR TYPE  sub DOOR TYPE   thickness None default False
+      master  3433 'DRD EPS'      group DRD        sub INSULATION  thickness 0.06 default True
+      master  3434 'DRD PU'       group DRD        sub INSULATION  thickness 0.0 default False
+      master  3441 'FLOOR EPS'    group FLOOR      sub INSULATION  thickness 0.1 default True
+      master  3442 'FLOOR PU'     group FLOOR      sub INSULATION  thickness 0.0 default False
+      master  3431 'FRONT EPS'    group FRONT      sub INSULATION  thickness 0.06 default True
+      master  3432 'FRONT PU'     group FRONT      sub INSULATION  thickness 0.0 default False
+      master  3439 'ROOF EPS'     group ROOF       sub INSULATION  thickness 0.1 default True
+      master  3440 'ROOF PU'      group ROOF       sub INSULATION  thickness 0.0 default False
+      master  3437 'SIDES EPS'    group SIDES      sub INSULATION  thickness 0.06 default True
+      master  3438 'SIDES PU'     group SIDES      sub INSULATION  thickness 0.0 default False
+      master  3435 'SRD EPS'      group SRD        sub INSULATION  thickness 0.0 default False
+      master  3436 'SRD PU'       group SRD        sub INSULATION  thickness 0.0 default False
+   PU foam lines: 6
+      bom  3345 DRD          own 3090.0 | ((1.22*2.44*{DRD PU}))*2 | rules [{"option": "DRD PU", "equals": "Y", "option_id": 3434}]
+      bom  3385 FLOOR        own 3090.0 | ((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22) | rules [{"option": "FLOOR PU", "equals": "Y", "option_id": 3442}]
+      bom  3310 FRONT        own 3090.0 | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2 | rules [{"option": "FRONT PU", "equals": "Y", "option_id": 3432}]
+      bom  3377 ROOF         own 3090.0 | ((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22) | rules [{"option": "ROOF PU", "equals": "Y", "option_id": 3440}]
+      bom  3367 SIDES        own 3090.0 | (1.22*2.44*{SIDES PU}*((length+{Waste})/1.22)) | rules [{"option": "SIDES PU", "equals": "Y", "option_id": 3438}]
+      bom  3319 SRD          own 3090.0 | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2 | rules [{"option": "SRD PU", "equals": "Y", "option_id": 3436}]
+   draft saved 2026-10-01 10:07:21.138039: 27 node(s); nodes that name PU: 0
+   chiller_rows.json: 811 BOM rows of the three chillers (pricing columns only)
+
+=== 4. REAR FRAME & FLOOR PLATE RULES -> their masters (every active body)
+   CHILLER 2.3 METER            'SRD EPS'  option_id 3797   x9  OK
+   CHILLER 2.3 METER            'SRD PU'   option_id 3798   x9  OK
+   CHILLER LARGE                'SRD'      option_id 7233   x9  OK
+   CHILLER MEDIUM               'SRD EPS'  option_id 3296   x9  OK
+   CHILLER MEDIUM               'SRD PU'   option_id 3297   x9  OK
+   EXPLOSIVE 2.7 TO 4.8         'SRD EPS'  option_id 6454   x6  OK
+   EXPLOSIVE 2.7 TO 4.8         'SRD PU'   option_id 6455   x6  OK
+   EXPLOSIVE 4.9 AND UP         'SRD EPS'  option_id 4057   x6  OK
+   EXPLOSIVE 4.9 AND UP         'SRD PU'   option_id 4058   x6  OK
+   EXPLOSIVE UP TO 2.7          'SRD EPS'  option_id 5285   x9  OK
+   EXPLOSIVE UP TO 2.7          'SRD PU'   option_id 5286   x9  OK
+   FREEZER 2.3 METER            'SRD EPS'  option_id 3677   x9  OK
+   FREEZER 2.3 METER            'SRD PU'   option_id 3678   x9  OK
+   FREEZER LARGE                'SRD EPS'  option_id 2684   x9  OK
+   FREEZER LARGE                'SRD PU'   option_id 2685   x9  OK
+   FREEZER MEDIUM               'SRD EPS'  option_id 2536   x9  OK
+   FREEZER MEDIUM               'SRD PU'   option_id 2537   x9  OK
+   ICECREAM BODY LARGE          'SRD EPS'  option_id 5427   x9  OK
+   ICECREAM BODY LARGE          'SRD PU'   option_id 5428   x9  OK
+   ICECREAM BODY MEDIUM         'SRD EPS'  option_id 5705   x9  OK
+   ICECREAM BODY MEDIUM         'SRD PU'   option_id 5706   x9  OK
+   ICECREAM BODY SMALL          'SRD EPS'  option_id 5827   x9  OK
+   ICECREAM BODY SMALL          'SRD PU'   option_id 5828   x9  OK
+   MEAT HANGER LARGE            'SRD EPS'  option_id 5980   x9  OK
+   MEAT HANGER LARGE            'SRD PU'   option_id 5981   x9  OK
+   MEAT HANGER SMALL-MEDIUM     'SRD EPS'  option_id 6288   x9  OK
+   MEAT HANGER SMALL-MEDIUM     'SRD PU'   option_id 6289   x9  OK
+   SUMMARY: 120 rule row(s); 231 condition(s); 0 not OK

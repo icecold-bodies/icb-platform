@@ -327,11 +327,22 @@ def test_the_committed_manifest_substitutions_hold_at_6_7_m():
     assert PC.check_equivalences(changes, {"Waste": 0.05}) == []
 
 
+# Prod moved on after the v1.58 apply, deliberately, and the CI snapshot is prod's pricing (RT1 Stage 3, 1 Oct 2026):
+# on 29 Sep Michael put these two single-rear-door PU lines onto the shared PU material (ratified: RT1 ruling 1, Q-A),
+# dropping the own R4 100 that F1 gave them; the material is R4 100 again since 1 Oct (Burt's corrected 32D), so they
+# price as F1 intended. Each must sit exactly at its later value; every other entry stays wholly at guard or new.
+LATER_PROD = {
+    ("F1", 3576, "unit_price_override"): None,   # FREEZER 2.3 METER / SRD / PU
+    ("F1", 2415, "unit_price_override"): None,   # FREEZER MEDIUM / SRD / PU
+}
+
+
 def test_the_committed_snapshot_is_wholly_before_or_wholly_after_the_corrections():
     """The CI snapshot is prod's pricing. Before the prod apply every entry sits at
     its guard; after the close step (snapshot regenerated from prod) every entry
     sits at its new value. Anything in between means prod drifted or the apply
-    was partial — surface it, never commit it."""
+    was partial — surface it, never commit it. A later, ratified prod change is
+    named in LATER_PROD and must sit exactly at its later value."""
     snap = json.loads(SNAPSHOT.read_text(encoding="utf-8"))["tables"]
     bom = {r["id"]: r for r in snap["bill_of_materials"]}
     tt = {r["id"]: r["name"] for r in snap["trailer_types"]}
@@ -343,6 +354,10 @@ def test_the_committed_snapshot_is_wholly_before_or_wholly_after_the_corrections
         assert (r["trailer_type_id"], tt[r["trailer_type_id"]], r["bom_section"], mat[r["material_id"]]) \
             == (c.body_id, c.body, c.section, c.line), c.key
         have = r[c.field]
+        later = (c.finding, c.bom_id, c.field)
+        if later in LATER_PROD:
+            assert have == LATER_PROD[later], f"{c.key}: the ratified later value is {LATER_PROD[later]!r}, the snapshot has {have!r}"
+            continue
         assert have in (c.current, c.new), f"{c.key}: snapshot has {have!r}"
         (at_current if have == c.current else at_new).append(c.key)
     assert not (at_current and at_new), f"half-applied: {len(at_new)} at new, {len(at_current)} at guard"

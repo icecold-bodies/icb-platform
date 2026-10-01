@@ -1,0 +1,52 @@
+database: icb_prodmirror | stored 4G factor 1.3170731707317074 | Burt's latest 4G / 32D = 5581.0/4095.0 = 1.362881562881563
+MEAT HANGER LARGE L5.3 DRD PU 32D            FRONT  bom  5842 T=0.062  MES   24,379.99  expected    1,509.94  !! DIFFERS  | Burt's sheet at his latest prices    2,050.98 (sheet /2.99: 2,050.98)
+MEAT HANGER LARGE L5.3 DRD PU 32D            DRD    bom  5877 T=0.062  MES   24,379.99  expected    1,509.94  !! DIFFERS  | Burt's sheet at his latest prices    2,057.86
+MEAT HANGER LARGE L5.3 DRD PU 32D            SIDES  bom  5899 T=0.062  MES  106,912.26  expected    6,621.44  !! DIFFERS  | Burt's sheet at his latest prices    9,024.24
+MEAT HANGER LARGE L5.3 DRD PU 32D            ROOF   bom  5910 T=0.1    MES   53,456.13  expected    5,339.87  !! DIFFERS  | Burt's sheet at his latest prices    7,277.61
+MEAT HANGER LARGE L5.3 DRD PU 32D            FLOOR  bom  5921 T=0.1    MES   53,456.13  expected    5,339.87  !! DIFFERS  | Burt's sheet at his latest prices    7,277.61
+                                             TOTAL  MES  262,584.50  expected   20,321.06  | Burt's sheet   27,688.30  (+848.36 % vs the sheet)
+MEAT HANGER LARGE L5.3 DRD PU 4G             FRONT  bom  5842 T=0.062  MES   32,110.23  expected    1,988.70  !! DIFFERS  | Burt's sheet at his latest prices    2,050.98 (sheet /2.99: 2,050.98)
+MEAT HANGER LARGE L5.3 DRD PU 4G             DRD    bom  5877 T=0.062  MES   32,110.23  expected    1,988.70  !! DIFFERS  | Burt's sheet at his latest prices    2,057.86
+MEAT HANGER LARGE L5.3 DRD PU 4G             SIDES  bom  5899 T=0.062  MES  140,811.27  expected    8,720.92  !! DIFFERS  | Burt's sheet at his latest prices    9,024.24
+MEAT HANGER LARGE L5.3 DRD PU 4G             ROOF   bom  5910 T=0.1    MES   70,405.63  expected    7,033.00  !! DIFFERS  | Burt's sheet at his latest prices    7,277.61
+MEAT HANGER LARGE L5.3 DRD PU 4G             FLOOR  bom  5921 T=0.1    MES   70,405.63  expected    7,033.00  !! DIFFERS  | Burt's sheet at his latest prices    7,277.61
+                                             TOTAL  MES  345,842.99  expected   26,764.32  | Burt's sheet   27,688.30  (+1149.06 % vs the sheet)
+MEAT HANGER LARGE L5.3 DRD EPS 32D           PU lines costed: none  OK
+MEAT HANGER LARGE L5.3 SRD PU 32D            FRONT  bom  5842 T=0.062  MES   24,379.99  expected    1,509.94  !! DIFFERS  | Burt's sheet at his latest prices    2,050.98 (sheet /2.99: 2,050.98)
+MEAT HANGER LARGE L5.3 SRD PU 32D            SRD    bom  5851 T=0.062  MES   24,379.99  expected    1,509.94  !! DIFFERS  | Burt's sheet at his latest prices    1,509.94
+MEAT HANGER LARGE L5.3 SRD PU 32D            SIDES  bom  5899 T=0.062  MES  106,912.26  expected    6,621.44  !! DIFFERS  | Burt's sheet at his latest prices    9,024.24
+MEAT HANGER LARGE L5.3 SRD PU 32D            ROOF   bom  5910 T=0.1    MES   53,456.13  expected    5,339.87  !! DIFFERS  | Burt's sheet at his latest prices    7,277.61
+MEAT HANGER LARGE L5.3 SRD PU 32D            FLOOR  bom  5921 T=0.1    MES   53,456.13  expected    5,339.87  !! DIFFERS  | Burt's sheet at his latest prices    7,277.61
+                                             TOTAL  MES  262,584.50  expected   20,321.06  | Burt's sheet   27,140.38  (+867.50 % vs the sheet)
+MEAT HANGER LARGE L5.3 SRD PU 4G             FRONT  bom  5842 T=0.062  MES   32,110.23  expected    1,988.70  !! DIFFERS  | Burt's sheet at his latest prices    2,050.98 (sheet /2.99: 2,050.98)
+MEAT HANGER LARGE L5.3 SRD PU 4G             SRD    bom  5851 T=0.062  MES   32,110.23  expected    1,988.70  !! DIFFERS  | Burt's sheet at his latest prices    1,509.94
+MEAT HANGER LARGE L5.3 SRD PU 4G             SIDES  bom  5899 T=0.062  MES  140,811.27  expected    8,720.92  !! DIFFERS  | Burt's sheet at his latest prices    9,024.24
+MEAT HANGER LARGE L5.3 SRD PU 4G             ROOF   bom  5910 T=0.1    MES   70,405.63  expected    7,033.00  !! DIFFERS  | Burt's sheet at his latest prices    7,277.61
+MEAT HANGER LARGE L5.3 SRD PU 4G             FLOOR  bom  5921 T=0.1    MES   70,405.63  expected    7,033.00  !! DIFFERS  | Burt's sheet at his latest prices    7,277.61
+                                             TOTAL  MES  345,842.99  expected   26,764.32  | Burt's sheet   27,140.38  (+1174.27 % vs the sheet)
+MEAT HANGER LARGE L5.3 SRD EPS 32D           PU lines costed: none  OK
+MEAT HANGER LARGE L6.7 DRD PU 32D            FRONT  bom  5842 T=0.062  MES   24,379.99  expected    1,509.94  !! DIFFERS  | Burt's sheet at his latest prices    2,050.98 (sheet /2.99: 2,050.98)
+MEAT HANGER LARGE L6.7 DRD PU 32D            DRD    bom  5877 T=0.062  MES   24,379.99  expected    1,509.94  !! DIFFERS  | Burt's sheet at his latest prices    2,057.86
+MEAT HANGER LARGE L6.7 DRD PU 32D            SIDES  bom  5899 T=0.062  MES  134,889.30  expected    8,354.16  !! DIFFERS  | Burt's sheet at his latest prices   11,385.73
+MEAT HANGER LARGE L6.7 DRD PU 32D            ROOF   bom  5910 T=0.1    MES   67,444.65  expected    6,737.22  !! DIFFERS  | Burt's sheet at his latest prices    9,182.04
+MEAT HANGER LARGE L6.7 DRD PU 32D            FLOOR  bom  5921 T=0.1    MES   67,444.65  expected    6,737.22  !! DIFFERS  | Burt's sheet at his latest prices    9,182.04
+                                             TOTAL  MES  318,538.58  expected   24,848.48  | Burt's sheet   33,858.65  (+840.79 % vs the sheet)
+MEAT HANGER LARGE L6.7 DRD PU 4G             FRONT  bom  5842 T=0.062  MES   32,110.23  expected    1,988.70  !! DIFFERS  | Burt's sheet at his latest prices    2,050.98 (sheet /2.99: 2,050.98)
+MEAT HANGER LARGE L6.7 DRD PU 4G             DRD    bom  5877 T=0.062  MES   32,110.23  expected    1,988.70  !! DIFFERS  | Burt's sheet at his latest prices    2,057.86
+MEAT HANGER LARGE L6.7 DRD PU 4G             SIDES  bom  5899 T=0.062  MES  177,659.08  expected   11,003.03  !! DIFFERS  | Burt's sheet at his latest prices   11,385.73
+MEAT HANGER LARGE L6.7 DRD PU 4G             ROOF   bom  5910 T=0.1    MES   88,829.54  expected    8,873.42  !! DIFFERS  | Burt's sheet at his latest prices    9,182.04
+MEAT HANGER LARGE L6.7 DRD PU 4G             FLOOR  bom  5921 T=0.1    MES   88,829.54  expected    8,873.42  !! DIFFERS  | Burt's sheet at his latest prices    9,182.04
+                                             TOTAL  MES  419,538.62  expected   32,727.27  | Burt's sheet   33,858.65  (+1139.09 % vs the sheet)
+MEAT HANGER LARGE L6.7 DRD EPS 32D           PU lines costed: none  OK
+MEAT HANGER LARGE L6.7 SRD PU 32D            FRONT  bom  5842 T=0.062  MES   24,379.99  expected    1,509.94  !! DIFFERS  | Burt's sheet at his latest prices    2,050.98 (sheet /2.99: 2,050.98)
+MEAT HANGER LARGE L6.7 SRD PU 32D            SRD    bom  5851 T=0.062  MES   24,379.99  expected    1,509.94  !! DIFFERS  | Burt's sheet at his latest prices    1,509.94
+MEAT HANGER LARGE L6.7 SRD PU 32D            SIDES  bom  5899 T=0.062  MES  134,889.30  expected    8,354.16  !! DIFFERS  | Burt's sheet at his latest prices   11,385.73
+MEAT HANGER LARGE L6.7 SRD PU 32D            ROOF   bom  5910 T=0.1    MES   67,444.65  expected    6,737.22  !! DIFFERS  | Burt's sheet at his latest prices    9,182.04
+MEAT HANGER LARGE L6.7 SRD PU 32D            FLOOR  bom  5921 T=0.1    MES   67,444.65  expected    6,737.22  !! DIFFERS  | Burt's sheet at his latest prices    9,182.04
+                                             TOTAL  MES  318,538.58  expected   24,848.48  | Burt's sheet   33,310.73  (+856.26 % vs the sheet)
+MEAT HANGER LARGE L6.7 SRD PU 4G             FRONT  bom  5842 T=0.062  MES   32,110.23  expected    1,988.70  !! DIFFERS  | Burt's sheet at his latest prices    2,050.98 (sheet /2.99: 2,050.98)
+MEAT HANGER LARGE L6.7 SRD PU 4G             SRD    bom  5851 T=0.062  MES   32,110.23  expected    1,988.70  !! DIFFERS  | Burt's sheet at his latest prices    1,509.94
+MEAT HANGER LARGE L6.7 SRD PU 4G             SIDES  bom  5899 T=0.062  MES  177,659.08  expected   11,003.03  !! DIFFERS  | Burt's sheet at his latest prices   11,385.73
+MEAT HANGER LARGE L6.7 SRD PU 4G             ROOF   bom  5910 T=0.1    MES   88,829.54  expected    8,873.42  !! DIFFERS  | Burt's sheet at his latest prices    9,182.04
+MEAT HANGER LARGE L6.7 SRD PU 4G             FLOOR  bom  5921 T=0.1    MES   88,829.54  expected    8,873.42  !! DIFFERS  | Burt's sheet at his latest prices    9,182.04
+                                             TOTAL  MES  419,538.62  expected   32,727.27  | Burt's sheet   33,310.73  (+1159.47 % vs the sheet)

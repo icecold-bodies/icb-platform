@@ -1,0 +1,432 @@
+== prod: db=icb_platform alembic=0049 code=de74796 mode=deploy target=1d9cb47 (v1.59.2) 2026-09-30T20:51:15+02:00
+== 1. anchors
+   ok   fresh: code de74796, alembic 0049
+   ok   rollback anchor de74796 -> /tmp/icb-release-v1.59.2/out-deploy-20260930-205115/rollback-anchor.txt
+== 2. served-bytes baseline
+   ok   calculator.js d174a732bec054d8  ·  SPA assets/index-Be8qL-PA.js 2a4f277f7127fe7d
+== 3. PyYAML 6.0.2 present (nothing is installed by this release)
+   ok   present (6.0.2)
+== 4. backup (no migration: this is the window's restore point, before the code and the data move)
+   ok   /var/backups/postgres/icb_platform_pre-v1.59.2_20260930-205115.dump  1944436 bytes  sha256 dff20003fc51c65f012a37c43e0ff7de14e837ebdfb514b88c03af6d31c3524f  (101 table-data entries)
+== 5. fetch (with tags) + tag and range guards
+   remote: Enumerating objects: 470, done.        
+   remote: Counting objects:   0% (1/456)        remote: Counting objects:   1% (5/456)        remote: Counting objects:   2% (10/456)        remote: Counting objects:   3% (14/456)        remote: Counting objects:   4% (19/456)        remote: Counting objects:   5% (23/456)        remote: Counting objects:   6% (28/456)        remote: Counting objects:   7% (32/456)        remote: Counting objects:   8% (37/456)        remote: Counting objects:   9% (42/456)        remote: Counting objects:  10% (46/456)        remote: Counting objects:  11% (51/456)        remote: Counting objects:  12% (55/456)        remote: Counting objects:  13% (60/456)        remote: Counting objects:  14% (64/456)        remote: Counting objects:  15% (69/456)        remote: Counting objects:  16% (73/456)        remote: Counting objects:  17% (78/456)        remote: Counting objects:  18% (83/456)        remote: Counting objects:  19% (87/456)        remote: Counting objects:  20% (92/456)        remote: Counting objects:  21% (96/456)        remote: Counting objects:  22% (101/456)        remote: Counting objects:  23% (105/456)        remote: Counting objects:  24% (110/456)        remote: Counting objects:  25% (114/456)        remote: Counting objects:  26% (119/456)        remote: Counting objects:  27% (124/456)        remote: Counting objects:  28% (128/456)        remote: Counting objects:  29% (133/456)        remote: Counting objects:  30% (137/456)        remote: Counting objects:  31% (142/456)        remote: Counting objects:  32% (146/456)        remote: Counting objects:  33% (151/456)        remote: Counting objects:  34% (156/456)        remote: Counting objects:  35% (160/456)        remote: Counting objects:  36% (165/456)        remote: Counting objects:  37% (169/456)        remote: Counting objects:  38% (174/456)        remote: Counting objects:  39% (178/456)        remote: Counting objects:  40% (183/456)        remote: Counting objects:  41% (187/456)        remote: Counting objects:  42% (192/456)        remote: Counting objects:  43% (197/456)        remote: Counting objects:  44% (201/456)        remote: Counting objects:  45% (206/456)        remote: Counting objects:  46% (210/456)        remote: Counting objects:  47% (215/456)        remote: Counting objects:  48% (219/456)        remote: Counting objects:  49% (224/456)        remote: Counting objects:  50% (228/456)        remote: Counting objects:  51% (233/456)        remote: Counting objects:  52% (238/456)        remote: Counting objects:  53% (242/456)        remote: Counting objects:  54% (247/456)        remote: Counting objects:  55% (251/456)        remote: Counting objects:  56% (256/456)        remote: Counting objects:  57% (260/456)        remote: Counting objects:  58% (265/456)        remote: Counting objects:  59% (270/456)        remote: Counting objects:  60% (274/456)        remote: Counting objects:  61% (279/456)        remote: Counting objects:  62% (283/456)        remote: Counting objects:  63% (288/456)        remote: Counting objects:  64% (292/456)        remote: Counting objects:  65% (297/456)        remote: Counting objects:  66% (301/456)        remote: Counting objects:  67% (306/456)        remote: Counting objects:  68% (311/456)        remote: Counting objects:  69% (315/456)        remote: Counting objects:  70% (320/456)        remote: Counting objects:  71% (324/456)        remote: Counting objects:  72% (329/456)        remote: Counting objects:  73% (333/456)        remote: Counting objects:  74% (338/456)        remote: Counting objects:  75% (342/456)        remote: Counting objects:  76% (347/456)        remote: Counting objects:  77% (352/456)        remote: Counting objects:  78% (356/456)        remote: Counting objects:  79% (361/456)        remote: Counting objects:  80% (365/456)        remote: Counting objects:  81% (370/456)        remote: Counting objects:  82% (374/456)        remote: Counting objects:  83% (379/456)        remote: Counting objects:  84% (384/456)        remote: Counting objects:  85% (388/456)        remote: Counting objects:  86% (393/456)        remote: Counting objects:  87% (397/456)        remote: Counting objects:  88% (402/456)        remote: Counting objects:  89% (406/456)        remote: Counting objects:  90% (411/456)        remote: Counting objects:  91% (415/456)        remote: Counting objects:  92% (420/456)        remote: Counting objects:  93% (425/456)        remote: Counting objects:  94% (429/456)        remote: Counting objects:  95% (434/456)        remote: Counting objects:  96% (438/456)        remote: Counting objects:  97% (443/456)        remote: Counting objects:  98% (447/456)        remote: Counting objects:  99% (452/456)        remote: Counting objects: 100% (456/456)        remote: Counting objects: 100% (456/456), done.        
+   remote: Compressing objects:   0% (1/237)        remote: Compressing objects:   1% (3/237)        remote: Compressing objects:   2% (5/237)        remote: Compressing objects:   3% (8/237)        remote: Compressing objects:   4% (10/237)        remote: Compressing objects:   5% (12/237)        remote: Compressing objects:   6% (15/237)        remote: Compressing objects:   7% (17/237)        remote: Compressing objects:   8% (19/237)        remote: Compressing objects:   9% (22/237)        remote: Compressing objects:  10% (24/237)        remote: Compressing objects:  11% (27/237)        remote: Compressing objects:  12% (29/237)        remote: Compressing objects:  13% (31/237)        remote: Compressing objects:  14% (34/237)        remote: Compressing objects:  15% (36/237)        remote: Compressing objects:  16% (38/237)        remote: Compressing objects:  17% (41/237)        remote: Compressing objects:  18% (43/237)        remote: Compressing objects:  19% (46/237)        remote: Compressing objects:  20% (48/237)        remote: Compressing objects:  21% (50/237)        remote: Compressing objects:  22% (53/237)        remote: Compressing objects:  23% (55/237)        remote: Compressing objects:  24% (57/237)        remote: Compressing objects:  25% (60/237)        remote: Compressing objects:  26% (62/237)        remote: Compressing objects:  27% (64/237)        remote: Compressing objects:  28% (67/237)        remote: Compressing objects:  29% (69/237)        remote: Compressing objects:  30% (72/237)        remote: Compressing objects:  31% (74/237)        remote: Compressing objects:  32% (76/237)        remote: Compressing objects:  33% (79/237)        remote: Compressing objects:  34% (81/237)        remote: Compressing objects:  35% (83/237)        remote: Compressing objects:  36% (86/237)        remote: Compressing objects:  37% (88/237)        remote: Compressing objects:  38% (91/237)        remote: Compressing objects:  39% (93/237)        remote: Compressing objects:  40% (95/237)        remote: Compressing objects:  41% (98/237)        remote: Compressing objects:  42% (100/237)        remote: Compressing objects:  43% (102/237)        remote: Compressing objects:  44% (105/237)        remote: Compressing objects:  45% (107/237)        remote: Compressing objects:  46% (110/237)        remote: Compressing objects:  47% (112/237)        remote: Compressing objects:  48% (114/237)        remote: Compressing objects:  49% (117/237)        remote: Compressing objects:  50% (119/237)        remote: Compressing objects:  51% (121/237)        remote: Compressing objects:  52% (124/237)        remote: Compressing objects:  53% (126/237)        remote: Compressing objects:  54% (128/237)        remote: Compressing objects:  55% (131/237)        remote: Compressing objects:  56% (133/237)        remote: Compressing objects:  57% (136/237)        remote: Compressing objects:  58% (138/237)        remote: Compressing objects:  59% (140/237)        remote: Compressing objects:  60% (143/237)        remote: Compressing objects:  61% (145/237)        remote: Compressing objects:  62% (147/237)        remote: Compressing objects:  63% (150/237)        remote: Compressing objects:  64% (152/237)        remote: Compressing objects:  65% (155/237)        remote: Compressing objects:  66% (157/237)        remote: Compressing objects:  67% (159/237)        remote: Compressing objects:  68% (162/237)        remote: Compressing objects:  69% (164/237)        remote: Compressing objects:  70% (166/237)        remote: Compressing objects:  71% (169/237)        remote: Compressing objects:  72% (171/237)        remote: Compressing objects:  73% (174/237)        remote: Compressing objects:  74% (176/237)        remote: Compressing objects:  75% (178/237)        remote: Compressing objects:  76% (181/237)        remote: Compressing objects:  77% (183/237)        remote: Compressing objects:  78% (185/237)        remote: Compressing objects:  79% (188/237)        remote: Compressing objects:  80% (190/237)        remote: Compressing objects:  81% (192/237)        remote: Compressing objects:  82% (195/237)        remote: Compressing objects:  83% (197/237)        remote: Compressing objects:  84% (200/237)        remote: Compressing objects:  85% (202/237)        remote: Compressing objects:  86% (204/237)        remote: Compressing objects:  87% (207/237)        remote: Compressing objects:  88% (209/237)        remote: Compressing objects:  89% (211/237)        remote: Compressing objects:  90% (214/237)        remote: Compressing objects:  91% (216/237)        remote: Compressing objects:  92% (219/237)        remote: Compressing objects:  93% (221/237)        remote: Compressing objects:  94% (223/237)        remote: Compressing objects:  95% (226/237)        remote: Compressing objects:  96% (228/237)        remote: Compressing objects:  97% (230/237)        remote: Compressing objects:  98% (233/237)        remote: Compressing objects:  99% (235/237)        remote: Compressing objects: 100% (237/237)        remote: Compressing objects: 100% (237/237), done.        
+   Receiving objects:   0% (1/470)Receiving objects:   1% (5/470)Receiving objects:   2% (10/470)Receiving objects:   3% (15/470)Receiving objects:   4% (19/470)Receiving objects:   5% (24/470)Receiving objects:   6% (29/470)Receiving objects:   7% (33/470)Receiving objects:   8% (38/470)Receiving objects:   9% (43/470)Receiving objects:  10% (47/470)Receiving objects:  11% (52/470)Receiving objects:  12% (57/470)Receiving objects:  13% (62/470)Receiving objects:  14% (66/470)Receiving objects:  15% (71/470)Receiving objects:  16% (76/470)Receiving objects:  17% (80/470)Receiving objects:  18% (85/470)Receiving objects:  19% (90/470)Receiving objects:  20% (94/470)Receiving objects:  21% (99/470)Receiving objects:  22% (104/470)Receiving objects:  23% (109/470)Receiving objects:  24% (113/470)Receiving objects:  25% (118/470)Receiving objects:  26% (123/470)Receiving objects:  27% (127/470)Receiving objects:  28% (132/470)Receiving objects:  29% (137/470)Receiving objects:  30% (141/470)Receiving objects:  31% (146/470)Receiving objects:  32% (151/470)Receiving objects:  33% (156/470)Receiving objects:  34% (160/470)Receiving objects:  35% (165/470)Receiving objects:  36% (170/470)Receiving objects:  37% (174/470)Receiving objects:  38% (179/470)Receiving objects:  39% (184/470)Receiving objects:  40% (188/470)Receiving objects:  41% (193/470)Receiving objects:  42% (198/470)Receiving objects:  43% (203/470)Receiving objects:  44% (207/470)Receiving objects:  45% (212/470)Receiving objects:  46% (217/470)Receiving objects:  47% (221/470)Receiving objects:  48% (226/470)Receiving objects:  49% (231/470)Receiving objects:  50% (235/470)Receiving objects:  51% (240/470)Receiving objects:  52% (245/470)Receiving objects:  53% (250/470)Receiving objects:  54% (254/470)Receiving objects:  55% (259/470)Receiving objects:  56% (264/470)Receiving objects:  57% (268/470)Receiving objects:  58% (273/470)Receiving objects:  59% (278/470)Receiving objects:  60% (282/470)Receiving objects:  61% (287/470)Receiving objects:  62% (292/470)Receiving objects:  63% (297/470)Receiving objects:  64% (301/470)Receiving objects:  65% (306/470)Receiving objects:  66% (311/470)Receiving objects:  67% (315/470)Receiving objects:  68% (320/470)Receiving objects:  69% (325/470)Receiving objects:  70% (329/470)Receiving objects:  71% (334/470)Receiving objects:  72% (339/470)Receiving objects:  73% (344/470)Receiving objects:  74% (348/470)Receiving objects:  75% (353/470)Receiving objects:  76% (358/470)Receiving objects:  77% (362/470)Receiving objects:  78% (367/470)Receiving objects:  79% (372/470)Receiving objects:  80% (376/470)Receiving objects:  81% (381/470)Receiving objects:  82% (386/470)Receiving objects:  83% (391/470)Receiving objects:  84% (395/470)Receiving objects:  85% (400/470)Receiving objects:  86% (405/470)Receiving objects:  87% (409/470)Receiving objects:  88% (414/470)Receiving objects:  89% (419/470)Receiving objects:  90% (423/470)Receiving objects:  91% (428/470)Receiving objects:  92% (433/470)Receiving objects:  93% (438/470)Receiving objects:  94% (442/470)Receiving objects:  95% (447/470)Receiving objects:  96% (452/470)Receiving objects:  97% (456/470)Receiving objects:  98% (461/470)Receiving objects:  99% (466/470)remote: Total 470 (delta 284), reused 378 (delta 214), pack-reused 14 (from 1)        
+   Receiving objects: 100% (470/470)Receiving objects: 100% (470/470), 2.36 MiB | 21.18 MiB/s, done.
+   Resolving deltas:   0% (0/285)Resolving deltas:   1% (3/285)Resolving deltas:   2% (6/285)Resolving deltas:   3% (9/285)Resolving deltas:   4% (12/285)Resolving deltas:   5% (15/285)Resolving deltas:   6% (18/285)Resolving deltas:   7% (20/285)Resolving deltas:   8% (23/285)Resolving deltas:   9% (26/285)Resolving deltas:  10% (29/285)Resolving deltas:  11% (33/285)Resolving deltas:  12% (35/285)Resolving deltas:  13% (38/285)Resolving deltas:  14% (40/285)Resolving deltas:  15% (43/285)Resolving deltas:  16% (46/285)Resolving deltas:  17% (49/285)Resolving deltas:  18% (52/285)Resolving deltas:  19% (55/285)Resolving deltas:  20% (57/285)Resolving deltas:  21% (60/285)Resolving deltas:  22% (63/285)Resolving deltas:  23% (66/285)Resolving deltas:  24% (69/285)Resolving deltas:  25% (72/285)Resolving deltas:  26% (75/285)Resolving deltas:  27% (77/285)Resolving deltas:  28% (80/285)Resolving deltas:  29% (83/285)Resolving deltas:  30% (86/285)Resolving deltas:  31% (89/285)Resolving deltas:  32% (92/285)Resolving deltas:  33% (95/285)Resolving deltas:  34% (97/285)Resolving deltas:  35% (100/285)Resolving deltas:  36% (103/285)Resolving deltas:  37% (107/285)Resolving deltas:  38% (109/285)Resolving deltas:  39% (112/285)Resolving deltas:  40% (114/285)Resolving deltas:  41% (117/285)Resolving deltas:  42% (120/285)Resolving deltas:  43% (123/285)Resolving deltas:  44% (126/285)Resolving deltas:  45% (129/285)Resolving deltas:  46% (132/285)Resolving deltas:  47% (134/285)Resolving deltas:  48% (137/285)Resolving deltas:  49% (140/285)Resolving deltas:  50% (143/285)Resolving deltas:  51% (146/285)Resolving deltas:  52% (149/285)Resolving deltas:  53% (152/285)Resolving deltas:  54% (154/285)Resolving deltas:  55% (157/285)Resolving deltas:  56% (160/285)Resolving deltas:  57% (163/285)Resolving deltas:  58% (166/285)Resolving deltas:  59% (169/285)Resolving deltas:  60% (171/285)Resolving deltas:  61% (174/285)Resolving deltas:  62% (177/285)Resolving deltas:  63% (180/285)Resolving deltas:  64% (183/285)Resolving deltas:  65% (186/285)Resolving deltas:  66% (189/285)Resolving deltas:  67% (191/285)Resolving deltas:  68% (194/285)Resolving deltas:  69% (197/285)Resolving deltas:  70% (200/285)Resolving deltas:  71% (203/285)Resolving deltas:  72% (206/285)Resolving deltas:  73% (209/285)Resolving deltas:  74% (211/285)Resolving deltas:  75% (214/285)Resolving deltas:  76% (217/285)Resolving deltas:  77% (221/285)Resolving deltas:  78% (223/285)Resolving deltas:  79% (226/285)Resolving deltas:  80% (228/285)Resolving deltas:  81% (231/285)Resolving deltas:  82% (234/285)Resolving deltas:  83% (237/285)Resolving deltas:  84% (240/285)Resolving deltas:  85% (243/285)Resolving deltas:  86% (246/285)Resolving deltas:  87% (248/285)Resolving deltas:  88% (251/285)Resolving deltas:  89% (254/285)Resolving deltas:  90% (257/285)Resolving deltas:  91% (260/285)Resolving deltas:  92% (263/285)Resolving deltas:  93% (266/285)Resolving deltas:  94% (268/285)Resolving deltas:  95% (271/285)Resolving deltas:  96% (274/285)Resolving deltas:  97% (277/285)Resolving deltas:  98% (280/285)Resolving deltas:  99% (283/285)Resolving deltas: 100% (285/285)Resolving deltas: 100% (285/285), completed with 26 local objects.
+   From https://github.com/icecold-bodies/icb-platform
+      de74796..1d9cb47  backport/v1.39-base   -> origin/backport/v1.39-base
+    * [new branch]      data/rt1-manifest-m   -> origin/data/rt1-manifest-m
+    * [new branch]      data/v1.58.1-srd-rear-frame -> origin/data/v1.58.1-srd-rear-frame
+    * [new branch]      docs/v1.59.0-outcome  -> origin/docs/v1.59.0-outcome
+    * [new branch]      feat/v1.59.1-section-not-selected -> origin/feat/v1.59.1-section-not-selected
+    * [new branch]      feat/v1.59.2-rule-display-tidy -> origin/feat/v1.59.2-rule-display-tidy
+    * [new branch]      fix/v1.59.1-ci-flakes -> origin/fix/v1.59.1-ci-flakes
+    * [new branch]      release/v1.59.2       -> origin/release/v1.59.2
+    ! [rejected]        v1.47.1               -> v1.47.1  (would clobber existing tag)
+    * [new tag]         v1.59.0               -> v1.59.0
+    * [new tag]         v1.59.2               -> v1.59.2
+   ok   v1.59.2 = tag object 5948a1a3cef3 -> 1d9cb47; git describe at the target = v1.59.2
+   ok   150 files (C-sorted sha256 574720e9c5a7c09c): no migration, no requirements, frontend/ and deploy/ untouched
+== 6. the repo's deploy script — dry run
+   | 
+   | == 0. preflight
+   |   repo      /opt/icb-platform (branch HEAD)
+   |   deployed  de74796b  release(v1.59.0): prod runbook + release kit for the costing aud
+   |   ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+   | 
+   | == 1. fetch
+   |   ok  1d9cb47b84a8f10a4be74f139b37671ec21f35bd already present - no fetch needed
+   |   ok  1d9cb47b84a8f10a4be74f139b37671ec21f35bd = 1d9cb47b
+   | 
+   | == 2. plan
+   |   de74796b -> 1d9cb47b   (6 commit(s), 150 file(s))
+   |     1d9cb47 release(v1.59.2): RT1 release train — prod kit, runbook, 1b records, mirror proofs, Manifest B; VERSION -> v1.59.2 (#204)
+   |     22b9d20 feat(designer,costing): rule chips read the database rule + plain-English reasons on rule-excluded lines (v1.59.2) (#203)
+   |     4f08f4c data(audit): SRD bodies — REAR FRAME & FLOOR PLATE not costed on a single rear door (v1.58.1) (#202)
+   |     f01971f feat(costing): NOT SELECTED section header + rule editor keeps out-of-branch conditions (v1.59.1) (#200)
+   |     6cf51cd fix(ci): two journey flakes — 55 % ratio default race + repair category line order (v1.59.1) (#201)
+   |     e62e339 docs(release): v1.59.0 prod OUTCOME — deployed de74796, alembic 0049, tag v1.59.0 (#199)
+   | 
+   |   DB migration     no  (no new files in backend/alembic/versions/)
+   |   SPA rebuild      no  (frontend/ untouched)
+   |   Service restart  YES - 21 Python file(s) changed
+   | 
+   |   ok  dry run - nothing changed.
+   ok   plan: no migration, no SPA rebuild, restart
+== 7. deploy (fast-forward, restart, health, completion record)
+   | 
+   | == 0. preflight
+   |   repo      /opt/icb-platform (branch HEAD)
+   |   deployed  de74796b  release(v1.59.0): prod runbook + release kit for the costing aud
+   |   ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+   | 
+   | == 1. fetch
+   |   ok  1d9cb47b84a8f10a4be74f139b37671ec21f35bd already present - no fetch needed
+   |   ok  1d9cb47b84a8f10a4be74f139b37671ec21f35bd = 1d9cb47b
+   | 
+   | == 2. plan
+   |   de74796b -> 1d9cb47b   (6 commit(s), 150 file(s))
+   |     1d9cb47 release(v1.59.2): RT1 release train — prod kit, runbook, 1b records, mirror proofs, Manifest B; VERSION -> v1.59.2 (#204)
+   |     22b9d20 feat(designer,costing): rule chips read the database rule + plain-English reasons on rule-excluded lines (v1.59.2) (#203)
+   |     4f08f4c data(audit): SRD bodies — REAR FRAME & FLOOR PLATE not costed on a single rear door (v1.58.1) (#202)
+   |     f01971f feat(costing): NOT SELECTED section header + rule editor keeps out-of-branch conditions (v1.59.1) (#200)
+   |     6cf51cd fix(ci): two journey flakes — 55 % ratio default race + repair category line order (v1.59.1) (#201)
+   |     e62e339 docs(release): v1.59.0 prod OUTCOME — deployed de74796, alembic 0049, tag v1.59.0 (#199)
+   | 
+   |   DB migration     no  (no new files in backend/alembic/versions/)
+   |   SPA rebuild      no  (frontend/ untouched)
+   |   Service restart  YES - 21 Python file(s) changed
+   | 
+   |   rollback anchor de74796b saved to /tmp/icb-rollback-20260930-205119.txt
+   | 
+   | == 3. database backup - skipped (no migration in this range)
+   | 
+   | == 4. fast-forward the code
+   | Updating de74796..1d9cb47
+   | Fast-forward
+   |  backend/VERSION                                    |      2 +-
+   |  backend/app/formula_engine.py                      |      5 +
+   |  backend/app/routers/calculator.py                  |     12 +
+   |  backend/app/routers/repair_templates.py            |     11 +-
+   |  backend/app/routers/trailers.py                    |     29 +-
+   |  backend/app/services/free_hand.py                  |      4 +
+   |  backend/app/static/js/calculator.js                |    116 +-
+   |  .../app/templates/admin_configurator_preview.html  |      7 +-
+   |  .../admin_visual_configurator_settings.html        |    233 +-
+   |  backend/app/templates/calculator.html              |      2 +-
+   |  backend/tests/journeys/_common.py                  |     20 +
+   |  .../journeys/test_capture_for_user_journey.py      |      4 +-
+   |  .../journeys/test_costing_bom_order_journey.py     |      4 +-
+   |  .../journeys/test_free_hand_repairs_journey.py     |     12 +-
+   |  .../journeys/test_repair_categories_journey.py     |     11 +-
+   |  .../journeys/test_repair_quote_doc_journey.py      |      4 +-
+   |  .../journeys/test_rule_display_tidy_journey.py     |    371 +
+   |  .../test_rule_editor_keeps_rules_journey.py        |    189 +
+   |  .../journeys/test_section_not_selected_journey.py  |    183 +
+   |  backend/tests/test_calculator_enter_chain.py       |      4 +-
+   |  backend/tests/test_repair_categories_templates.py  |     54 +
+   |  backend/tests/test_rule_display_tidy.py            |    466 +
+   |  backend/tests/test_rule_editor_keeps_rules.py      |    163 +
+   |  backend/tests/test_section_not_selected.py         |    272 +
+   |  .../tests/test_v1_58_audit_pricing_corrections.py  |    136 +
+   |  backend/tools/audit_pricing_corrections.py         |     98 +-
+   |  docs/audit/rt1_2026-09/compare_reports.py          |    119 +
+   |  docs/audit/rt1_2026-09/load_mirror.py              |     50 +
+   |  docs/audit/rt1_2026-09/mirror/MIRROR_PROOF.md      |     98 +
+   |  .../mirror/accepted_differences.prod.pruned5.yaml  |    159 +
+   |  .../rt1_2026-09/mirror/cmp_afterA_vs_afterB.txt    |     19 +
+   |  .../mirror/cmp_afterA_vs_afterBformula.txt         |      5 +
+   |  .../rt1_2026-09/mirror/cmp_before_vs_afterA.txt    |     64 +
+   |  .../mirror/cmp_prod_vs_mirror_before.txt           |      5 +
+   |  ...orrections_journal_mirror_20260930T143420Z.json |   5533 +
+   |  ...orrections_journal_mirror_20260930T143519Z.json |   5533 +
+   |  ...orrections_journal_mirror_20260930T143856Z.json |    269 +
+   |  ...orrections_journal_mirror_20260930T144029Z.json |   5533 +
+   |  ...orrections_journal_mirror_20260930T144031Z.json |    105 +
+   |  ...orrections_journal_mirror_20260930T144123Z.json |    269 +
+   |  ...corrections_revert_mirror_20260930T143458Z.json |      8 +
+   |  ...corrections_revert_mirror_20260930T143955Z.json |      8 +
+   |  ...corrections_revert_mirror_20260930T143956Z.json |      8 +
+   |  ...corrections_revert_mirror_20260930T144121Z.json |      8 +
+   |  .../mirror/reports/mirror_afterA_chillers.md       |     25 +
+   |  .../mirror/reports/mirror_afterA_explosive.md      |     50 +
+   |  .../mirror/reports/mirror_afterA_freezers.md       |     30 +
+   |  .../mirror/reports/mirror_afterA_icecream.md       |     49 +
+   |  .../mirror/reports/mirror_afterA_smoke.md          |     27 +
+   |  .../mirror/reports/mirror_afterB_chillers.md       |     25 +
+   |  .../mirror/reports/mirror_afterB_explosive.md      |     50 +
+   |  .../mirror/reports/mirror_afterB_freezers.md       |     30 +
+   |  .../mirror/reports/mirror_afterB_icecream.md       |     49 +
+   |  .../mirror/reports/mirror_afterB_smoke.md          |     27 +
+   |  .../mirror/reports/mirror_afterBf_chillers.md      |     25 +
+   |  .../mirror/reports/mirror_afterBf_explosive.md     |     50 +
+   |  .../mirror/reports/mirror_afterBf_freezers.md      |     30 +
+   |  .../mirror/reports/mirror_afterBf_icecream.md      |     49 +
+   |  .../mirror/reports/mirror_afterBf_smoke.md         |     27 +
+   |  .../mirror/reports/mirror_before_chillers.md       |     28 +
+   |  .../mirror/reports/mirror_before_explosive.md      |     53 +
+   |  .../mirror/reports/mirror_before_freezers.md       |     33 +
+   |  .../mirror/reports/mirror_before_icecream.md       |     52 +
+   |  .../mirror/reports/mirror_before_smoke.md          |     28 +
+   |  .../pruned5_afterB_mirror_afterB_chillers.md       |     26 +
+   |  .../pruned5_afterB_mirror_afterB_explosive.md      |     51 +
+   |  .../pruned5_afterB_mirror_afterB_freezers.md       |     31 +
+   |  .../pruned5_afterB_mirror_afterB_icecream.md       |     50 +
+   |  .../reports/pruned5_afterB_mirror_afterB_smoke.md  |     28 +
+   |  .../pruned5_before_mirror_before_chillers.md       |     59 +
+   |  .../pruned5_before_mirror_before_explosive.md      |     65 +
+   |  .../pruned5_before_mirror_before_freezers.md       |     45 +
+   |  .../pruned5_before_mirror_before_icecream.md       |     63 +
+   |  .../reports/pruned5_before_mirror_before_smoke.md  |     36 +
+   |  docs/audit/rt1_2026-09/mirror/verify_b_after.txt   |     18 +
+   |  docs/audit/rt1_2026-09/mirror/verify_b_before.txt  |     13 +
+   |  .../rt1_2026-09/mirror/verify_b_formula_only.txt   |     19 +
+   |  .../rt1_2026-09/mirror/verify_rule_on_mirror.txt   |     30 +
+   |  docs/audit/rt1_2026-09/mirror_vs_snapshot.py       |     78 +
+   |  .../prod/1b_20260930-162834/MANIFEST.txt           |      9 +
+   |  .../prod/1b_20260930-162834/SHA256SUMS.out         |      3 +
+   |  .../rt1_2026-09/prod/1b_20260930-162834/all.json   | 126454 ++++++++++++++++++
+   |  .../prod/1b_20260930-162834/door_report.txt        |     20 +
+   |  .../prod/1b_20260930-162834/meat_hangers.json      |  27646 ++++
+   |  .../reports/prod_costing_audit_chillers.csv        |   1254 +
+   |  .../reports/prod_costing_audit_chillers.md         |     28 +
+   |  .../reports/prod_costing_audit_explosive.csv       |    685 +
+   |  .../reports/prod_costing_audit_explosive.md        |     53 +
+   |  .../reports/prod_costing_audit_freezers.csv        |    691 +
+   |  .../reports/prod_costing_audit_freezers.md         |     33 +
+   |  .../reports/prod_costing_audit_icecream.csv        |    613 +
+   |  .../reports/prod_costing_audit_icecream.md         |     52 +
+   |  .../reports/prod_costing_audit_smoke.csv           |    235 +
+   |  .../reports/prod_costing_audit_smoke.md            |     28 +
+   |  .../rt1_2026-09/prod/1b_20260930-162834/run.txt    |     52 +
+   |  .../snapshot_diff_28sep_to_30sep.txt               |    108 +
+   |  docs/audit/rt1_2026-09/snapshot_diff.py            |     65 +
+   |  .../SECTION_3_0_DISCOVERY.md                       |     93 +
+   |  docs/audit/srd_rear_frame_2026-09/README.md        |     74 +
+   |  .../srd_rear_frame_2026-09/RETURN_6c_2026-09-29.md |    147 +
+   |  .../srd_rear_frame_2026-09/RETURN_6d_2026-09-30.md |    131 +
+   |  .../SECTION_3_0_DISCOVERY.md                       |    118 +
+   |  .../srd_rear_frame_2026-09/dev/preview_DRD.pdf     |    169 +
+   |  .../srd_rear_frame_2026-09/dev/preview_SRD.pdf     |    169 +
+   |  ...g_corrections_journal_dev_20260929T123145Z.json |   5533 +
+   |  .../srd_rear_frame_2026-09/make_manifest_a.py      |    106 +
+   |  .../srd_rear_frame_2026-09/make_manifest_b.py      |    120 +
+   |  docs/audit/srd_rear_frame_2026-09/manifest_a.yaml  |   1928 +
+   |  .../srd_rear_frame_2026-09/manifest_b_default.yaml |     78 +
+   |  .../manifest_b_formula_only.yaml                   |     28 +
+   |  .../prod/RETURN_6b_2026-09-29.md                   |    101 +
+   |  .../prod/discovery_20260929T112139Z.txt            |    174 +
+   |  .../srd_rear_frame_2026-09/verify_manifest_b.py    |    102 +
+   |  .../srd_rear_frame_2026-09/verify_pdf_preview.py   |     64 +
+   |  .../srd_rear_frame_2026-09/verify_rule_on_db.py    |    102 +
+   |  .../prod-deploy-v1.59.0-costing-audit-admin.md     |     53 +-
+   |  docs/runbooks/prod-deploy-v1.59.2.md               |    243 +
+   |  .../01-designer-rear-frame-chips.png               |    Bin 0 -> 168651 bytes
+   |  .../rule_display_tidy/02-config-preview.png        |    Bin 0 -> 167617 bytes
+   |  .../rule_display_tidy/03-drd-quote-needs.png       |    Bin 0 -> 119241 bytes
+   |  .../04-srd-quote-not-used-with.png                 |    Bin 0 -> 129216 bytes
+   |  .../05-back-on-the-original-door.png               |    Bin 0 -> 140838 bytes
+   |  .../01-kept-condition-shown.png                    |    Bin 0 -> 95835 bytes
+   |  .../rule_editor_keeps_rules/02-in-branch-added.png |    Bin 0 -> 97999 bytes
+   |  .../03-remove-asks-first.png                       |    Bin 0 -> 99835 bytes
+   |  .../01-not-selected-header.png                     |    Bin 0 -> 106253 bytes
+   |  .../02-eye-shows-struck-through-lines.png          |    Bin 0 -> 112601 bytes
+   |  .../03-switched-on-shows-subtotal.png              |    Bin 0 -> 107435 bytes
+   |  .../out/out-deploy-20260928-152814/OUTCOME.txt     |     13 +
+   |  .../icb-deploy-dryrun.txt                          |     28 +
+   |  .../out/out-deploy-20260928-152814/icb-deploy.txt  |    422 +
+   |  .../out-deploy-20260928-152814/rollback-anchor.txt |      1 +
+   |  .../out/out-deploy-20260928-152814/run.txt         |    530 +
+   |  .../out/out-preflight-20260928-152646/run.txt      |     36 +
+   |  .../out/out-verify-20260928-152659/run.txt         |     28 +
+   |  ops/prod-release-v1.59.2/mkstage.sh                |     80 +
+   |  ops/prod-release-v1.59.2/release.sh                |    300 +
+   |  ops/prod-release-v1.59.2/sim/fake_tool.py          |     62 +
+   |  ops/prod-release-v1.59.2/sim/run_all.sh            |      5 +
+   |  ops/prod-release-v1.59.2/sim/run_data_sim.sh       |    108 +
+   |  ops/prod-release-v1.59.2/sim/run_sim.sh            |    108 +
+   |  ops/prod-release-v1.59.2/sim/stubs.sh              |     95 +
+   |  ops/prod-rt1/mkstage_data.sh                       |     65 +
+   |  ops/prod-rt1/mkstage_snapshot.sh                   |     50 +
+   |  ops/prod-rt1/rt1_data.sh                           |    159 +
+   |  ops/prod-rt1/rt1_door_report.py                    |    237 +
+   |  ops/prod-rt1/rt1_snapshot.sh                       |    137 +
+   |  ops/prod-srd-rear-frame/SHA256SUMS                 |      2 +
+   |  ops/prod-srd-rear-frame/srd_discovery.py           |    477 +
+   |  ops/prod-srd-rear-frame/srd_discovery.sh           |     40 +
+   |  150 files changed, 192013 insertions(+), 86 deletions(-)
+   |  create mode 100644 backend/tests/journeys/test_rule_display_tidy_journey.py
+   |  create mode 100644 backend/tests/journeys/test_rule_editor_keeps_rules_journey.py
+   |  create mode 100644 backend/tests/journeys/test_section_not_selected_journey.py
+   |  create mode 100644 backend/tests/test_rule_display_tidy.py
+   |  create mode 100644 backend/tests/test_rule_editor_keeps_rules.py
+   |  create mode 100644 backend/tests/test_section_not_selected.py
+   |  create mode 100644 docs/audit/rt1_2026-09/compare_reports.py
+   |  create mode 100644 docs/audit/rt1_2026-09/load_mirror.py
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/MIRROR_PROOF.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/accepted_differences.prod.pruned5.yaml
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_afterA_vs_afterB.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_afterA_vs_afterBformula.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_before_vs_afterA.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_prod_vs_mirror_before.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T143420Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T143519Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T143856Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T144029Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T144031Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T144123Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T143458Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T143955Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T143956Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T144121Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterA_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterB_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterBf_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_before_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_afterB_mirror_afterB_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/pruned5_before_mirror_before_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/verify_b_after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/verify_b_before.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/verify_b_formula_only.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/verify_rule_on_mirror.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror_vs_snapshot.py
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/MANIFEST.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/all.json
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/door_report.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/meat_hangers.json
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_chillers.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_explosive.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_freezers.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_icecream.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_smoke.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/reports/prod_costing_audit_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/1b_20260930-162834/snapshot_diff_28sep_to_30sep.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/snapshot_diff.py
+   |  create mode 100644 docs/audit/section_not_selected_2026-09/SECTION_3_0_DISCOVERY.md
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/README.md
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/RETURN_6c_2026-09-29.md
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/RETURN_6d_2026-09-30.md
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/SECTION_3_0_DISCOVERY.md
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/dev/preview_DRD.pdf
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/dev/preview_SRD.pdf
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/dev/pricing_corrections_journal_dev_20260929T123145Z.json
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/make_manifest_a.py
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/make_manifest_b.py
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/manifest_a.yaml
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/manifest_b_default.yaml
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/manifest_b_formula_only.yaml
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/prod/RETURN_6b_2026-09-29.md
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/prod/discovery_20260929T112139Z.txt
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/verify_manifest_b.py
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/verify_pdf_preview.py
+   |  create mode 100644 docs/audit/srd_rear_frame_2026-09/verify_rule_on_db.py
+   |  create mode 100644 docs/runbooks/prod-deploy-v1.59.2.md
+   |  create mode 100644 docs/screenshots/journeys/rule_display_tidy/01-designer-rear-frame-chips.png
+   |  create mode 100644 docs/screenshots/journeys/rule_display_tidy/02-config-preview.png
+   |  create mode 100644 docs/screenshots/journeys/rule_display_tidy/03-drd-quote-needs.png
+   |  create mode 100644 docs/screenshots/journeys/rule_display_tidy/04-srd-quote-not-used-with.png
+   |  create mode 100644 docs/screenshots/journeys/rule_display_tidy/05-back-on-the-original-door.png
+   |  create mode 100644 docs/screenshots/journeys/rule_editor_keeps_rules/01-kept-condition-shown.png
+   |  create mode 100644 docs/screenshots/journeys/rule_editor_keeps_rules/02-in-branch-added.png
+   |  create mode 100644 docs/screenshots/journeys/rule_editor_keeps_rules/03-remove-asks-first.png
+   |  create mode 100644 docs/screenshots/journeys/section_not_selected/01-not-selected-header.png
+   |  create mode 100644 docs/screenshots/journeys/section_not_selected/02-eye-shows-struck-through-lines.png
+   |  create mode 100644 docs/screenshots/journeys/section_not_selected/03-switched-on-shows-subtotal.png
+   |  create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/OUTCOME.txt
+   |  create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/icb-deploy-dryrun.txt
+   |  create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/icb-deploy.txt
+   |  create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/rollback-anchor.txt
+   |  create mode 100644 ops/prod-release-v1.59.0/out/out-deploy-20260928-152814/run.txt
+   |  create mode 100644 ops/prod-release-v1.59.0/out/out-preflight-20260928-152646/run.txt
+   |  create mode 100644 ops/prod-release-v1.59.0/out/out-verify-20260928-152659/run.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/mkstage.sh
+   |  create mode 100644 ops/prod-release-v1.59.2/release.sh
+   |  create mode 100644 ops/prod-release-v1.59.2/sim/fake_tool.py
+   |  create mode 100644 ops/prod-release-v1.59.2/sim/run_all.sh
+   |  create mode 100644 ops/prod-release-v1.59.2/sim/run_data_sim.sh
+   |  create mode 100644 ops/prod-release-v1.59.2/sim/run_sim.sh
+   |  create mode 100644 ops/prod-release-v1.59.2/sim/stubs.sh
+   |  create mode 100644 ops/prod-rt1/mkstage_data.sh
+   |  create mode 100644 ops/prod-rt1/mkstage_snapshot.sh
+   |  create mode 100644 ops/prod-rt1/rt1_data.sh
+   |  create mode 100644 ops/prod-rt1/rt1_door_report.py
+   |  create mode 100644 ops/prod-rt1/rt1_snapshot.sh
+   |  create mode 100644 ops/prod-srd-rear-frame/SHA256SUMS
+   |  create mode 100644 ops/prod-srd-rear-frame/srd_discovery.py
+   |  create mode 100644 ops/prod-srd-rear-frame/srd_discovery.sh
+   |   ok  at 1d9cb47b (verified by SHA, not by git describe)
+   | 
+   | == 5. migrations - skipped
+   | 
+   | == 6. SPA build - skipped (frontend/ untouched in this range)
+   | 
+   | == 7. restart icb-backend
+   |   active since (before): Wed 2026-09-30 06:24:40 SAST
+   |   active since (after):  Wed 2026-09-30 20:51:20 SAST
+   |   ok  restarted
+   | 
+   | == 8. verify
+   |   workers started      4 (expected 4)
+   |   BOOTSTRAP FAILED     0 (expected 0)
+   |   https://127.0.0.1/health -> 200
+   |   ok  healthy
+   | 
+   | DEPLOYED  de74796b -> 1d9cb47b  (1d9cb47b84a8f10a4be74f139b37671ec21f35bd)
+   | 
+   | Rollback (code-only - additive migrations are left in place deliberately):
+   |     /opt/icb-platform/deploy/prod/icb-rollback.sh de74796b
+   | 
+   |   or, without the script:
+   |     sudo -u icb git -C /opt/icb-platform reset --hard de74796b
+   |     sudo systemctl restart icb-backend
+   | 
+   ok   restart: Wed 2026-09-30 06:24:40 SAST -> Wed 2026-09-30 20:51:20 SAST (pid 161135 -> 167288)
+   ok   deploy record: completed 1d9cb47
+== 8. post-deploy asserts (waiting 20 s for all workers to log startup)
+== code + tag + schema
+   PASS HEAD = 1d9cb47b84a8f10a4be74f139b37671ec21f35bd
+   PASS TAG_LOCAL = 5948a1a3cef3ff5dd50232eaf1d0c97de916b1df
+   PASS DESCRIBE = v1.59.2
+   PASS ALEMBIC = 0049
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   PASS TOOL_IMPORT = ok
+   PASS OPENAPI_DOORS_EQUAL = yes
+== served bytes: the calculator page loads ?v=184, and both doors serve the target blob
+   PASS TEMPLATE_V = 184
+   PASS CALC_LOCAL = 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+   PASS CALC_LAN = 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+
+deployed      de74796 -> 1d9cb47 (1d9cb47b84a8f10a4be74f139b37671ec21f35bd)
+tag           v1.59.2 = 5948a1a3cef3ff5dd50232eaf1d0c97de916b1df (local = origin, peels to the target); git describe = v1.59.2
+alembic       0049 -> 0049 (no migration)
+backup        /var/backups/postgres/icb_platform_pre-v1.59.2_20260930-205115.dump  1944436 bytes  sha256 dff20003fc51c65f012a37c43e0ff7de14e837ebdfb514b88c03af6d31c3524f
+restart       Wed 2026-09-30 06:24:40 SAST -> Wed 2026-09-30 20:51:20 SAST (pid 161135 -> 167288), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+calculator    calculator.html loads ?v=184; calculator.js 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635 (local = lan = the target blob)
+spa           assets/index-Be8qL-PA.js 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (local = lan = disk; unchanged, no rebuild)
+openapi       local = lan
+finished      2026-09-30T20:51:48+02:00
+
+######## DEPLOYED — tell the CA: /tmp/icb-release-v1.59.2/out-deploy-20260930-205115  (Cloudflare is probed by the CA from outside, now that the disk matches)

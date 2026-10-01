@@ -1,0 +1,108 @@
+smoke      counts {'ACCEPTED': 15, 'PASS': 171, 'SKIP': 39, 'UNVERIFIABLE': 9} -> {'ACCEPTED': 15, 'PASS': 171, 'SKIP': 39, 'UNVERIFIABLE': 9}
+           32D cells 234, unchanged 234 | 4G cells 0, MES total moved on 0
+chillers   counts {'ACCEPTED': 17, 'PASS': 1012, 'SKIP': 224} -> {'ACCEPTED': 17, 'PASS': 1012, 'SKIP': 224}
+           32D cells 1074, unchanged 1074 | 4G cells 179, MES total moved on 0
+              4G         PASS -> PASS         151
+              4G         SKIP -> SKIP         28
+freezers   counts {'ACCEPTED': 24, 'PASS': 522, 'SKIP': 117, 'UNVERIFIABLE': 27} -> {'ACCEPTED': 24, 'FLAG': 27, 'PASS': 495, 'SKIP': 117, 'UNVERIFIABLE': 27}
+           32D cells 575, unchanged 575 | 4G cells 115, MES total moved on 41
+              4G     ACCEPTED -> ACCEPTED     4
+              4G         PASS -> FLAG         27
+              4G         PASS -> PASS         66
+              4G         SKIP -> SKIP         18
+              changed:  4.9 & UP FREEZER BODY (2 L4.9 FRONT: Excel 6,052.04 MES 6,124.76 (+1.20 %) PASS -> FLAG
+              changed:  4.9 & UP FREEZER BODY (2 L4.9 ROOF: Excel 13,565.13 MES 13,783.42 (+1.61 %) PASS -> FLAG
+              changed:  4.9 & UP FREEZER BODY (2 L4.9 SIDES: Excel 23,605.66 MES 23,867.46 (+1.11 %) PASS -> FLAG
+              changed:  4.9 & UP FREEZER BODY (2 L6.5 FRONT: Excel 6,052.04 MES 6,124.76 (+1.20 %) PASS -> FLAG
+              changed:  4.9 & UP FREEZER BODY (2 L6.5 ROOF: Excel 17,903.61 MES 18,192.45 (+1.61 %) PASS -> FLAG
+              changed:  4.9 & UP FREEZER BODY (2 L6.5 SIDES: Excel 31,113.56 MES 31,459.98 (+1.11 %) PASS -> FLAG
+              changed:  4.9 & UP FREEZER BODY (2 L8.2 FRONT: Excel 6,052.04 MES 6,124.76 (+1.20 %) PASS -> FLAG
+              changed:  4.9 & UP FREEZER BODY (2 L8.2 ROOF: Excel 22,513.24 MES 22,877.05 (+1.62 %) PASS -> FLAG
+              changed:  4.9 & UP FREEZER BODY (2 L8.2 SIDES: Excel 39,090.70 MES 39,527.04 (+1.12 %) PASS -> FLAG
+              changed:  UP TO 2,3 MTR FREEZER  L1.8 DRD: Excel 3,923.40 MES 3,990.40 (+1.71 %) PASS -> FLAG
+              changed:  UP TO 2,3 MTR FREEZER  L1.8 FRONT: Excel 3,165.41 MES 3,229.98 (+2.04 %) PASS -> FLAG
+              changed:  UP TO 2,3 MTR FREEZER  L1.8 SIDES: Excel 5,834.44 MES 5,932.34 (+1.68 %) PASS -> FLAG
+              changed:  UP TO 2,3 MTR FREEZER  L2.31 DRD: Excel 3,923.40 MES 3,990.40 (+1.71 %) PASS -> FLAG
+              changed:  UP TO 2,3 MTR FREEZER  L2.31 FRONT: Excel 3,165.41 MES 3,229.98 (+2.04 %) PASS -> FLAG
+              changed:  UP TO 2,3 MTR FREEZER  L2.31 SIDES: Excel 7,363.74 MES 7,488.64 (+1.70 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L3 FRONT: Excel 5,691.12 MES 5,755.65 (+1.13 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L3 ROOF: Excel 7,269.63 MES 7,371.84 (+1.41 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L3 SIDES: Excel 14,190.09 MES 14,351.40 (+1.14 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L4.2 FRONT: Excel 5,691.12 MES 5,755.65 (+1.13 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L4.2 ROOF: Excel 10,085.26 MES 10,227.69 (+1.41 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L4.2 SIDES: Excel 19,628.30 MES 19,853.09 (+1.15 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L4.8 FRONT: Excel 5,691.12 MES 5,755.65 (+1.13 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L4.8 ROOF: Excel 11,493.08 MES 11,655.61 (+1.41 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L4.8 SIDES: Excel 22,347.41 MES 22,603.93 (+1.15 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L5.6 FRONT: Excel 5,691.12 MES 5,755.65 (+1.13 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L5.6 ROOF: Excel 13,370.16 MES 13,559.50 (+1.42 %) PASS -> FLAG
+              changed:  UP TO 4.8 MT FREEZER  (2 L5.6 SIDES: Excel 25,972.88 MES 26,271.72 (+1.15 %) PASS -> FLAG
+icecream   counts {'ACCEPTED': 55, 'PASS': 413, 'SKIP': 104, 'UNVERIFIABLE': 40} -> {'ACCEPTED': 50, 'FLAG': 37, 'PASS': 381, 'SKIP': 104, 'UNVERIFIABLE': 40}
+           32D cells 510, unchanged 510 | 4G cells 102, MES total moved on 40
+              4G     ACCEPTED -> ACCEPTED     3
+              4G     ACCEPTED -> FLAG         8
+              4G         PASS -> ACCEPTED     3
+              4G         PASS -> FLAG         29
+              4G         PASS -> PASS         43
+              4G         SKIP -> SKIP         16
+              changed:  icecream 4.9 up L4.9 DRD: Excel 7,966.03 MES 8,359.73 (+4.94 %) ACCEPTED -> FLAG
+              changed:  icecream 4.9 up L4.9 FLOOR: Excel 22,324.57 MES 22,551.16 (+1.01 %) PASS -> FLAG
+              changed:  icecream 4.9 up L4.9 FRONT: Excel 7,027.98 MES 7,161.95 (+1.91 %) PASS -> FLAG
+              changed:  icecream 4.9 up L4.9 ROOF: Excel 15,088.12 MES 15,371.23 (+1.88 %) PASS -> FLAG
+              changed:  icecream 4.9 up L4.9 SIDES: Excel 29,063.74 MES 29,607.33 (+1.87 %) PASS -> FLAG
+              changed:  icecream 4.9 up L6.7 DRD: Excel 7,966.03 MES 8,359.73 (+4.94 %) ACCEPTED -> FLAG
+              changed:  icecream 4.9 up L6.7 FLOOR: Excel 30,088.86 MES 30,397.85 (+1.03 %) PASS -> FLAG
+              changed:  icecream 4.9 up L6.7 FRONT: Excel 7,027.98 MES 7,161.95 (+1.91 %) PASS -> FLAG
+              changed:  icecream 4.9 up L6.7 ROOF: Excel 20,537.66 MES 20,923.73 (+1.88 %) PASS -> FLAG
+              changed:  icecream 4.9 up L6.7 SIDES: Excel 39,491.18 MES 40,232.44 (+1.88 %) PASS -> FLAG
+              changed:  icecream 4.9 up L8 DRD: Excel 7,966.03 MES 8,359.73 (+4.94 %) ACCEPTED -> FLAG
+              changed:  icecream 4.9 up L8 FLOOR: Excel 35,696.40 MES 36,064.91 (+1.03 %) PASS -> FLAG
+              changed:  icecream 4.9 up L8 FRONT: Excel 7,027.98 MES 7,161.95 (+1.91 %) PASS -> FLAG
+              changed:  icecream 4.9 up L8 ROOF: Excel 24,473.44 MES 24,933.87 (+1.88 %) PASS -> FLAG
+              changed:  icecream 4.9 up L8 SIDES: Excel 47,022.11 MES 47,906.13 (+1.88 %) PASS -> FLAG
+              changed: icecream up to 3,2 L2.4 DRD: Excel 6,222.13 MES 6,567.80 (+5.55 %) ACCEPTED -> FLAG
+              changed: icecream up to 3,2 L2.4 FLOOR: Excel 9,797.97 MES 9,910.12 (+1.15 %) PASS -> FLAG
+              changed: icecream up to 3,2 L2.4 FRONT: Excel 5,086.26 MES 5,197.94 (+2.20 %) PASS -> FLAG
+              changed: icecream up to 3,2 L2.4 ROOF: Excel 5,904.37 MES 6,016.49 (+1.90 %) PASS -> FLAG
+              changed: icecream up to 3,2 L2.4 SIDES: Excel 11,460.12 MES 11,684.37 (+1.96 %) PASS -> FLAG
+              changed: icecream up to 3,2 L3.2 DRD: Excel 6,222.13 MES 6,567.80 (+5.55 %) ACCEPTED -> FLAG
+              changed: icecream up to 3,2 L3.2 FLOOR: Excel 12,665.26 MES 12,814.03 (+1.18 %) PASS -> FLAG
+              changed: icecream up to 3,2 L3.2 FRONT: Excel 5,086.26 MES 5,197.94 (+2.20 %) PASS -> FLAG
+              changed: icecream up to 3,2 L3.2 ROOF: Excel 7,805.34 MES 7,954.08 (+1.91 %) PASS -> FLAG
+              changed: icecream up to 3,2 L3.2 SIDES: Excel 15,104.29 MES 15,401.76 (+1.97 %) PASS -> FLAG
+              changed: icecream up to 4.8 L3.6 DRD: Excel 7,411.87 MES 7,541.00 (+1.74 %) PASS -> ACCEPTED
+              changed: icecream up to 4.8 L3.6 FLOOR: Excel 16,644.59 MES 14,972.76 (+10.04 %) ACCEPTED -> FLAG
+              changed: icecream up to 4.8 L3.6 FRONT: Excel 6,236.63 MES 6,370.62 (+2.15 %) PASS -> FLAG
+              changed: icecream up to 4.8 L3.6 ROOF: Excel 11,530.44 MES 11,772.64 (+2.10 %) PASS -> FLAG
+              changed: icecream up to 4.8 L3.6 SIDES: Excel 20,106.63 MES 20,507.49 (+1.99 %) PASS -> FLAG
+              changed: icecream up to 4.8 L4.2 DRD: Excel 7,411.87 MES 7,541.00 (+1.74 %) PASS -> ACCEPTED
+              changed: icecream up to 4.8 L4.2 FLOOR: Excel 19,351.38 MES 17,404.72 (+10.06 %) ACCEPTED -> FLAG
+              changed: icecream up to 4.8 L4.2 FRONT: Excel 6,236.63 MES 6,370.62 (+2.15 %) PASS -> FLAG
+              changed: icecream up to 4.8 L4.2 ROOF: Excel 13,411.01 MES 13,693.01 (+2.10 %) PASS -> FLAG
+              changed: icecream up to 4.8 L4.2 SIDES: Excel 23,357.10 MES 23,823.85 (+2.00 %) PASS -> FLAG
+              changed: icecream up to 4.8 L4.8 DRD: Excel 7,411.87 MES 7,541.00 (+1.74 %) PASS -> ACCEPTED
+              changed: icecream up to 4.8 L4.8 FLOOR: Excel 22,058.17 MES 19,836.69 (+10.07 %) ACCEPTED -> FLAG
+              changed: icecream up to 4.8 L4.8 FRONT: Excel 6,236.63 MES 6,370.62 (+2.15 %) PASS -> FLAG
+              changed: icecream up to 4.8 L4.8 ROOF: Excel 15,291.57 MES 15,613.39 (+2.10 %) PASS -> FLAG
+              changed: icecream up to 4.8 L4.8 SIDES: Excel 26,607.58 MES 27,140.22 (+2.00 %) PASS -> FLAG
+explosive  counts {'ACCEPTED': 146, 'PASS': 385, 'SKIP': 117, 'UNVERIFIABLE': 36} -> {'ACCEPTED': 153, 'FLAG': 6, 'PASS': 372, 'SKIP': 117, 'UNVERIFIABLE': 36}
+           32D cells 570, unchanged 570 | 4G cells 114, MES total moved on 36
+              4G     ACCEPTED -> ACCEPTED     23
+              4G         PASS -> ACCEPTED     7
+              4G         PASS -> FLAG         6
+              4G         PASS -> PASS         60
+              4G         SKIP -> SKIP         18
+              changed: EXPLOSIVE 2.7 TO 4.8 L2.7 DRD: Excel 6,638.97 MES 6,730.94 (+1.39 %) PASS -> ACCEPTED
+              changed: EXPLOSIVE 2.7 TO 4.8 L2.7 ROOF: Excel 5,860.14 MES 5,970.26 (+1.88 %) PASS -> ACCEPTED
+              changed: EXPLOSIVE 2.7 TO 4.8 L2.7 SIDES: Excel 11,356.29 MES 11,569.48 (+1.88 %) PASS -> ACCEPTED
+              changed: EXPLOSIVE 2.7 TO 4.8 L4.2 DRD: Excel 6,638.97 MES 6,730.94 (+1.39 %) PASS -> ACCEPTED
+              changed: EXPLOSIVE 2.7 TO 4.8 L4.2 SIDES: Excel 17,481.99 MES 17,811.46 (+1.89 %) PASS -> ACCEPTED
+              changed: EXPLOSIVE 2.7 TO 4.8 L4.8 DRD: Excel 6,638.97 MES 6,730.94 (+1.39 %) PASS -> ACCEPTED
+              changed: EXPLOSIVE 2.7 TO 4.8 L4.8 SIDES: Excel 19,932.27 MES 20,308.26 (+1.89 %) PASS -> ACCEPTED
+              changed: EXPLOSIVE UP TO 2.7 L1.8 FRONT: Excel 3,960.14 MES 4,005.94 (+1.16 %) PASS -> FLAG
+              changed: EXPLOSIVE UP TO 2.7 L1.8 ROOF: Excel 3,388.83 MES 3,423.53 (+1.02 %) PASS -> FLAG
+              changed: EXPLOSIVE UP TO 2.7 L2.3 FRONT: Excel 3,960.14 MES 4,005.94 (+1.16 %) PASS -> FLAG
+              changed: EXPLOSIVE UP TO 2.7 L2.3 ROOF: Excel 4,278.94 MES 4,323.01 (+1.03 %) PASS -> FLAG
+              changed: EXPLOSIVE UP TO 2.7 L2.7 FRONT: Excel 3,960.14 MES 4,005.94 (+1.16 %) PASS -> FLAG
+              changed: EXPLOSIVE UP TO 2.7 L2.7 ROOF: Excel 4,991.02 MES 5,042.59 (+1.03 %) PASS -> FLAG
+ALL PACKS: 32D cells 2963, unchanged 2963 | 4G cells 510, MES total moved on 117

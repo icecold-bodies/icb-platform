@@ -35,7 +35,7 @@ if "--revert" in args:
     sys.exit(0)
 
 m = Path(opt("--manifest"))
-x = "a" if m.name == "manifest_a.yaml" else "b"
+x = m.stem.split("_")[-1]          # manifest_a / manifest_b / manifest_m -> a / b / m
 n = sum(1 for ln in m.read_text().splitlines() if ln.startswith("- finding:"))
 sha = hashlib.sha256(m.read_bytes()).hexdigest()
 print(f"database icb_platform (--target prod); manifest {m.name} sha256 {sha[:16]}…, {n} entries")

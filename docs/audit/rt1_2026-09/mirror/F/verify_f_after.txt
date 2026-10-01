@@ -1,0 +1,146 @@
+database: icb_prodmirror | stored 4G factor 1.362881562881563 | Burt's 21 Sep 4G / 32D = 1.362881562881563  OK
+MEAT HANGER LARGE L5.3 DRD PU 32D            FRONT  bom  5842 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L5.3 DRD PU 32D            DRD    bom  5877 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L5.3 DRD PU 32D            SIDES  bom  5899 T=0.062  MES    6,621.44  expected    6,621.44  OK
+MEAT HANGER LARGE L5.3 DRD PU 32D            ROOF   bom  5910 T=0.1    MES    5,339.87  expected    5,339.87  OK
+MEAT HANGER LARGE L5.3 DRD PU 32D            FLOOR  bom  5921 T=0.1    MES    5,339.87  expected    5,339.87  OK
+                                             TOTAL  MES   20,321.06  | Burt's sheet   20,321.06  (+0.00, +0.000 %)
+MEAT HANGER LARGE L5.3 DRD PU 4G             FRONT  bom  5842 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet /2.99: 2,050.98 (MES x 1.003354)
+MEAT HANGER LARGE L5.3 DRD PU 4G             DRD    bom  5877 T=0.062  MES    2,057.86  expected    2,057.86  OK  = Burt's sheet
+MEAT HANGER LARGE L5.3 DRD PU 4G             SIDES  bom  5899 T=0.062  MES    9,024.24  expected    9,024.24  OK  = Burt's sheet
+MEAT HANGER LARGE L5.3 DRD PU 4G             ROOF   bom  5910 T=0.1    MES    7,277.61  expected    7,277.61  OK  = Burt's sheet
+MEAT HANGER LARGE L5.3 DRD PU 4G             FLOOR  bom  5921 T=0.1    MES    7,277.61  expected    7,277.61  OK  = Burt's sheet
+                                             TOTAL  MES   27,695.18  | Burt's sheet   27,688.30  (+6.88, +0.025 %)
+MEAT HANGER LARGE L5.3 DRD EPS 4G            PU lines costed: none  OK
+MEAT HANGER LARGE L5.3 SRD PU 32D            FRONT  bom  5842 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L5.3 SRD PU 32D            SRD    bom  5851 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L5.3 SRD PU 32D            SIDES  bom  5899 T=0.062  MES    6,621.44  expected    6,621.44  OK
+MEAT HANGER LARGE L5.3 SRD PU 32D            ROOF   bom  5910 T=0.1    MES    5,339.87  expected    5,339.87  OK
+MEAT HANGER LARGE L5.3 SRD PU 32D            FLOOR  bom  5921 T=0.1    MES    5,339.87  expected    5,339.87  OK
+                                             TOTAL  MES   20,321.06  | Burt's sheet   20,321.06  (+0.00, +0.000 %)
+MEAT HANGER LARGE L5.3 SRD PU 4G             FRONT  bom  5842 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet /2.99: 2,050.98 (MES x 1.003354)
+MEAT HANGER LARGE L5.3 SRD PU 4G             SRD    bom  5851 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet keeps SRD at 32D: 1,509.94 (MES +547.92)
+MEAT HANGER LARGE L5.3 SRD PU 4G             SIDES  bom  5899 T=0.062  MES    9,024.24  expected    9,024.24  OK  = Burt's sheet
+MEAT HANGER LARGE L5.3 SRD PU 4G             ROOF   bom  5910 T=0.1    MES    7,277.61  expected    7,277.61  OK  = Burt's sheet
+MEAT HANGER LARGE L5.3 SRD PU 4G             FLOOR  bom  5921 T=0.1    MES    7,277.61  expected    7,277.61  OK  = Burt's sheet
+                                             TOTAL  MES   27,695.18  | Burt's sheet   27,140.38  (+554.80, +2.044 %)
+MEAT HANGER LARGE L5.3 SRD EPS 4G            PU lines costed: none  OK
+MEAT HANGER LARGE L6.7 DRD PU 32D            FRONT  bom  5842 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L6.7 DRD PU 32D            DRD    bom  5877 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L6.7 DRD PU 32D            SIDES  bom  5899 T=0.062  MES    8,354.16  expected    8,354.16  OK
+MEAT HANGER LARGE L6.7 DRD PU 32D            ROOF   bom  5910 T=0.1    MES    6,737.22  expected    6,737.22  OK
+MEAT HANGER LARGE L6.7 DRD PU 32D            FLOOR  bom  5921 T=0.1    MES    6,737.22  expected    6,737.22  OK
+                                             TOTAL  MES   24,848.48  | Burt's sheet   24,848.48  (+0.00, +0.000 %)
+MEAT HANGER LARGE L6.7 DRD PU 4G             FRONT  bom  5842 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet /2.99: 2,050.98 (MES x 1.003354)
+MEAT HANGER LARGE L6.7 DRD PU 4G             DRD    bom  5877 T=0.062  MES    2,057.86  expected    2,057.86  OK  = Burt's sheet
+MEAT HANGER LARGE L6.7 DRD PU 4G             SIDES  bom  5899 T=0.062  MES   11,385.73  expected   11,385.73  OK  = Burt's sheet
+MEAT HANGER LARGE L6.7 DRD PU 4G             ROOF   bom  5910 T=0.1    MES    9,182.04  expected    9,182.04  OK  = Burt's sheet
+MEAT HANGER LARGE L6.7 DRD PU 4G             FLOOR  bom  5921 T=0.1    MES    9,182.04  expected    9,182.04  OK  = Burt's sheet
+                                             TOTAL  MES   33,865.53  | Burt's sheet   33,858.65  (+6.88, +0.020 %)
+MEAT HANGER LARGE L6.7 DRD EPS 4G            PU lines costed: none  OK
+MEAT HANGER LARGE L6.7 SRD PU 32D            FRONT  bom  5842 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L6.7 SRD PU 32D            SRD    bom  5851 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L6.7 SRD PU 32D            SIDES  bom  5899 T=0.062  MES    8,354.16  expected    8,354.16  OK
+MEAT HANGER LARGE L6.7 SRD PU 32D            ROOF   bom  5910 T=0.1    MES    6,737.22  expected    6,737.22  OK
+MEAT HANGER LARGE L6.7 SRD PU 32D            FLOOR  bom  5921 T=0.1    MES    6,737.22  expected    6,737.22  OK
+                                             TOTAL  MES   24,848.48  | Burt's sheet   24,848.48  (+0.00, +0.000 %)
+MEAT HANGER LARGE L6.7 SRD PU 4G             FRONT  bom  5842 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet /2.99: 2,050.98 (MES x 1.003354)
+MEAT HANGER LARGE L6.7 SRD PU 4G             SRD    bom  5851 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet keeps SRD at 32D: 1,509.94 (MES +547.92)
+MEAT HANGER LARGE L6.7 SRD PU 4G             SIDES  bom  5899 T=0.062  MES   11,385.73  expected   11,385.73  OK  = Burt's sheet
+MEAT HANGER LARGE L6.7 SRD PU 4G             ROOF   bom  5910 T=0.1    MES    9,182.04  expected    9,182.04  OK  = Burt's sheet
+MEAT HANGER LARGE L6.7 SRD PU 4G             FLOOR  bom  5921 T=0.1    MES    9,182.04  expected    9,182.04  OK  = Burt's sheet
+                                             TOTAL  MES   33,865.53  | Burt's sheet   33,310.73  (+554.80, +1.666 %)
+MEAT HANGER LARGE L6.7 SRD EPS 4G            PU lines costed: none  OK
+MEAT HANGER LARGE L8.4 DRD PU 32D            FRONT  bom  5842 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L8.4 DRD PU 32D            DRD    bom  5877 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L8.4 DRD PU 32D            SIDES  bom  5899 T=0.062  MES   10,458.17  expected   10,458.17  OK
+MEAT HANGER LARGE L8.4 DRD PU 32D            ROOF   bom  5910 T=0.1    MES    8,434.00  expected    8,434.00  OK
+MEAT HANGER LARGE L8.4 DRD PU 32D            FLOOR  bom  5921 T=0.1    MES    8,434.00  expected    8,434.00  OK
+                                             TOTAL  MES   30,346.05  | Burt's sheet   30,346.05  (+0.00, +0.000 %)
+MEAT HANGER LARGE L8.4 DRD PU 4G             FRONT  bom  5842 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet /2.99: 2,050.98 (MES x 1.003354)
+MEAT HANGER LARGE L8.4 DRD PU 4G             DRD    bom  5877 T=0.062  MES    2,057.86  expected    2,057.86  OK  = Burt's sheet
+MEAT HANGER LARGE L8.4 DRD PU 4G             SIDES  bom  5899 T=0.062  MES   14,253.24  expected   14,253.24  OK  = Burt's sheet
+MEAT HANGER LARGE L8.4 DRD PU 4G             ROOF   bom  5910 T=0.1    MES   11,494.55  expected   11,494.55  OK  = Burt's sheet
+MEAT HANGER LARGE L8.4 DRD PU 4G             FLOOR  bom  5921 T=0.1    MES   11,494.55  expected   11,494.55  OK  = Burt's sheet
+                                             TOTAL  MES   41,358.06  | Burt's sheet   41,351.18  (+6.88, +0.017 %)
+MEAT HANGER LARGE L8.4 DRD EPS 4G            PU lines costed: none  OK
+MEAT HANGER LARGE L8.4 SRD PU 32D            FRONT  bom  5842 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L8.4 SRD PU 32D            SRD    bom  5851 T=0.062  MES    1,509.94  expected    1,509.94  OK
+MEAT HANGER LARGE L8.4 SRD PU 32D            SIDES  bom  5899 T=0.062  MES   10,458.17  expected   10,458.17  OK
+MEAT HANGER LARGE L8.4 SRD PU 32D            ROOF   bom  5910 T=0.1    MES    8,434.00  expected    8,434.00  OK
+MEAT HANGER LARGE L8.4 SRD PU 32D            FLOOR  bom  5921 T=0.1    MES    8,434.00  expected    8,434.00  OK
+                                             TOTAL  MES   30,346.05  | Burt's sheet   30,346.05  (+0.00, +0.000 %)
+MEAT HANGER LARGE L8.4 SRD PU 4G             FRONT  bom  5842 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet /2.99: 2,050.98 (MES x 1.003354)
+MEAT HANGER LARGE L8.4 SRD PU 4G             SRD    bom  5851 T=0.062  MES    2,057.86  expected    2,057.86  OK  | Burt's sheet keeps SRD at 32D: 1,509.94 (MES +547.92)
+MEAT HANGER LARGE L8.4 SRD PU 4G             SIDES  bom  5899 T=0.062  MES   14,253.24  expected   14,253.24  OK  = Burt's sheet
+MEAT HANGER LARGE L8.4 SRD PU 4G             ROOF   bom  5910 T=0.1    MES   11,494.55  expected   11,494.55  OK  = Burt's sheet
+MEAT HANGER LARGE L8.4 SRD PU 4G             FLOOR  bom  5921 T=0.1    MES   11,494.55  expected   11,494.55  OK  = Burt's sheet
+                                             TOTAL  MES   41,358.06  | Burt's sheet   40,803.26  (+554.80, +1.360 %)
+MEAT HANGER LARGE L8.4 SRD EPS 4G            PU lines costed: none  OK
+MEAT HANGER SMALL-MEDIUM L2.7 DRD PU 32D     FRONT  bom  6150 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L2.7 DRD PU 32D     DRD    bom  6185 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L2.7 DRD PU 32D     SIDES  bom  6207 T=0.06   MES    3,293.75  expected    3,293.75  OK
+MEAT HANGER SMALL-MEDIUM L2.7 DRD PU 32D     ROOF   bom  6218 T=0.076  MES    2,086.04  expected    2,086.04  OK
+                                             TOTAL  MES    8,302.25  | Burt's sheet    8,302.25  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L2.7 DRD PU 4G      FRONT  bom  6150 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L2.7 DRD PU 4G      DRD    bom  6185 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L2.7 DRD PU 4G      SIDES  bom  6207 T=0.06   MES    4,489.00  expected    4,489.00  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L2.7 DRD PU 4G      ROOF   bom  6218 T=0.076  MES    2,843.03  expected    2,843.03  OK  = Burt's sheet
+                                             TOTAL  MES   11,314.99  | Burt's sheet   11,314.99  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L2.7 DRD EPS 4G     PU lines costed: none  OK
+MEAT HANGER SMALL-MEDIUM L2.7 SRD PU 32D     FRONT  bom  6150 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L2.7 SRD PU 32D     SRD    bom  6159 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L2.7 SRD PU 32D     SIDES  bom  6207 T=0.06   MES    3,293.75  expected    3,293.75  OK
+MEAT HANGER SMALL-MEDIUM L2.7 SRD PU 32D     ROOF   bom  6218 T=0.076  MES    2,086.04  expected    2,086.04  OK
+                                             TOTAL  MES    8,302.25  | Burt's sheet    8,302.25  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L2.7 SRD PU 4G      FRONT  bom  6150 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L2.7 SRD PU 4G      SRD    bom  6159 T=0.06   MES    1,991.48  expected    1,991.48  OK  | Burt's sheet keeps SRD at 32D: 1,461.23 (MES +530.25)
+MEAT HANGER SMALL-MEDIUM L2.7 SRD PU 4G      SIDES  bom  6207 T=0.06   MES    4,489.00  expected    4,489.00  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L2.7 SRD PU 4G      ROOF   bom  6218 T=0.076  MES    2,843.03  expected    2,843.03  OK  = Burt's sheet
+                                             TOTAL  MES   11,314.99  | Burt's sheet   10,784.74  (+530.25, +4.917 %)
+MEAT HANGER SMALL-MEDIUM L2.7 SRD EPS 4G     PU lines costed: none  OK
+MEAT HANGER SMALL-MEDIUM L5.2 DRD PU 32D     FRONT  bom  6150 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L5.2 DRD PU 32D     DRD    bom  6185 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L5.2 DRD PU 32D     SIDES  bom  6207 T=0.06   MES    6,288.07  expected    6,288.07  OK
+MEAT HANGER SMALL-MEDIUM L5.2 DRD PU 32D     ROOF   bom  6218 T=0.076  MES    3,982.45  expected    3,982.45  OK
+                                             TOTAL  MES   13,192.98  | Burt's sheet   13,192.98  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L5.2 DRD PU 4G      FRONT  bom  6150 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.2 DRD PU 4G      DRD    bom  6185 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.2 DRD PU 4G      SIDES  bom  6207 T=0.06   MES    8,569.90  expected    8,569.90  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.2 DRD PU 4G      ROOF   bom  6218 T=0.076  MES    5,427.60  expected    5,427.60  OK  = Burt's sheet
+                                             TOTAL  MES   17,980.46  | Burt's sheet   17,980.46  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L5.2 DRD EPS 4G     PU lines costed: none  OK
+MEAT HANGER SMALL-MEDIUM L5.2 SRD PU 32D     FRONT  bom  6150 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L5.2 SRD PU 32D     SRD    bom  6159 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L5.2 SRD PU 32D     SIDES  bom  6207 T=0.06   MES    6,288.07  expected    6,288.07  OK
+MEAT HANGER SMALL-MEDIUM L5.2 SRD PU 32D     ROOF   bom  6218 T=0.076  MES    3,982.45  expected    3,982.45  OK
+                                             TOTAL  MES   13,192.98  | Burt's sheet   13,192.98  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L5.2 SRD PU 4G      FRONT  bom  6150 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.2 SRD PU 4G      SRD    bom  6159 T=0.06   MES    1,991.48  expected    1,991.48  OK  | Burt's sheet keeps SRD at 32D: 1,461.23 (MES +530.25)
+MEAT HANGER SMALL-MEDIUM L5.2 SRD PU 4G      SIDES  bom  6207 T=0.06   MES    8,569.90  expected    8,569.90  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.2 SRD PU 4G      ROOF   bom  6218 T=0.076  MES    5,427.60  expected    5,427.60  OK  = Burt's sheet
+                                             TOTAL  MES   17,980.46  | Burt's sheet   17,450.21  (+530.25, +3.039 %)
+MEAT HANGER SMALL-MEDIUM L5.2 SRD EPS 4G     PU lines costed: none  OK
+MEAT HANGER SMALL-MEDIUM L5.8 DRD PU 32D     FRONT  bom  6150 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L5.8 DRD PU 32D     DRD    bom  6185 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L5.8 DRD PU 32D     SIDES  bom  6207 T=0.06   MES    7,006.71  expected    7,006.71  OK
+MEAT HANGER SMALL-MEDIUM L5.8 DRD PU 32D     ROOF   bom  6218 T=0.076  MES    4,437.58  expected    4,437.58  OK
+                                             TOTAL  MES   14,366.75  | Burt's sheet   14,366.75  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L5.8 DRD PU 4G      FRONT  bom  6150 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.8 DRD PU 4G      DRD    bom  6185 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.8 DRD PU 4G      SIDES  bom  6207 T=0.06   MES    9,549.32  expected    9,549.32  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.8 DRD PU 4G      ROOF   bom  6218 T=0.076  MES    6,047.90  expected    6,047.90  OK  = Burt's sheet
+                                             TOTAL  MES   19,580.18  | Burt's sheet   19,580.18  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L5.8 DRD EPS 4G     PU lines costed: none  OK
+MEAT HANGER SMALL-MEDIUM L5.8 SRD PU 32D     FRONT  bom  6150 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L5.8 SRD PU 32D     SRD    bom  6159 T=0.06   MES    1,461.23  expected    1,461.23  OK
+MEAT HANGER SMALL-MEDIUM L5.8 SRD PU 32D     SIDES  bom  6207 T=0.06   MES    7,006.71  expected    7,006.71  OK
+MEAT HANGER SMALL-MEDIUM L5.8 SRD PU 32D     ROOF   bom  6218 T=0.076  MES    4,437.58  expected    4,437.58  OK
+                                             TOTAL  MES   14,366.75  | Burt's sheet   14,366.75  (+0.00, +0.000 %)
+MEAT HANGER SMALL-MEDIUM L5.8 SRD PU 4G      FRONT  bom  6150 T=0.06   MES    1,991.48  expected    1,991.48  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.8 SRD PU 4G      SRD    bom  6159 T=0.06   MES    1,991.48  expected    1,991.48  OK  | Burt's sheet keeps SRD at 32D: 1,461.23 (MES +530.25)
+MEAT HANGER SMALL-MEDIUM L5.8 SRD PU 4G      SIDES  bom  6207 T=0.06   MES    9,549.32  expected    9,549.32  OK  = Burt's sheet
+MEAT HANGER SMALL-MEDIUM L5.8 SRD PU 4G      ROOF   bom  6218 T=0.076  MES    6,047.90  expected    6,047.90  OK  = Burt's sheet
+                                             TOTAL  MES   19,580.18  | Burt's sheet   19,049.93  (+530.25, +2.783 %)
+MEAT HANGER SMALL-MEDIUM L5.8 SRD EPS 4G     PU lines costed: none  OK
+ALL OK

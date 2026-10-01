@@ -1,0 +1,21 @@
+== prod: db=icb_platform alembic=0049 code=1d9cb47 staged=a36f445 2026-10-01T07:28:04+02:00
+then = committed snapshot all.json generated 2026-09-28T11:46:14+00:00
+read_only session: on
+
+body | draft saved | opens with | template door | DRD EPS / DRD PU / SRD EPS / SRD PU (then -> now) | verdict
+ 25 CHILLER 2.3 METER          | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 3795:0.0->0.06 / 3796:0.0 / 3797:0.06->0.0 / 3798:0.0 | OK
+ 27 CHILLER LARGE              | 2026-10-01 07:24 | DRD [door folder (folderValue 1)] | DRD | 3433:0.0->0.1 / 3434:0.0 / 3435:0.06->0.0 / 3436:0.0 | OK  (DOOR TYPE masters ['7232:DRD*', '7233:SRD'])
+ 26 CHILLER MEDIUM             | 2026-07-20 18:01 | DRD [door folder (folderValue 1)] | DRD | 3294:0.06 / 3295:0.0 / 3296:0.0 / 3297:0.0 | OK
+ 37 EXPLOSIVE 2.7 TO 4.8       | 2026-08-05 08:22 | DRD [door folder (folderValue 1)] | DRD | 6452:0.0 / 6453:0.041 / 6454:0.0 / 6455:0.0 | OK
+ 24 EXPLOSIVE 4.9 AND UP       | 2026-07-20 13:26 | DRD [door folder (no folder marked: the first in draft order)] | DRD | 4055:0.0 / 4056:0.042 / 4057:0.0 / 4058:0.0 | OK
+ 34 EXPLOSIVE UP TO 2.7        | 2026-08-05 08:21 | DRD [door folder (folderValue 1)] | DRD | 5283:0.0 / 5284:0.06 / 5285:0.0 / 5286:0.0 | OK
+ 19 FREEZER 2.3 METER          | 2026-09-29 12:37 | DRD [door folder (folderValue 1)] | DRD | 3675:0.0 / 3676:0.06 / 3677:0.0 / 3678:0.0 | OK
+ 21 FREEZER LARGE              | 2026-09-29 14:00 | DRD [door folder (folderValue 1)] | DRD | 2682:0.0 / 2683:0.06 / 2684:0.0 / 2685:0.0 | OK
+ 20 FREEZER MEDIUM             | 2026-09-29 12:39 | DRD [door folder (no folder marked: the first in draft order)] | DRD | 2534:0.0 / 2535:0.0->0.06 / 2536:0.06->0.0 / 2537:0.0 | OK
+ 18 ICECREAM BODY LARGE        | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5425:0.0 / 5426:0.12 / 5427:0.0 / 5428:0.0 | OK
+ 17 ICECREAM BODY MEDIUM       | 2026-09-29 12:33 | DRD [door folder (folderValue 1)] | DRD | 5703:0.06->0.0 / 5704:0.0->0.12 / 5705:0.0 / 5706:0.0 | OK
+ 16 ICECREAM BODY SMALL        | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5825:0.0 / 5826:0.1 / 5827:0.0 / 5828:0.0 | OK
+ 12 MEAT HANGER LARGE          | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5978:0.0 / 5979:0.062 / 5980:0.0 / 5981:0.0 | OK
+ 36 MEAT HANGER SMALL-MEDIUM   | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 6286:0.06 / 6287:0.0 / 6288:0.0 / 6289:0.0 | OK
+
+SUMMARY: 14 OK; no exceptions

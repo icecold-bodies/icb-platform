@@ -1,0 +1,103 @@
+== prod: db=icb_platform alembic=0049 code=de74796 staged=ae9f9b2 2026-09-30T20:29:44+02:00
+database / read only: ('icb_platform', 'on')
+
+=== 1. SWEEP — PU materials (name has PU as a word):
+   material   207 'PU'                         R4095.0
+   material   209 'PU'                         R4095.0
+   material   211 'PU'                         R4095.0
+   material   213 'PU'                         R4095.0
+   material   236 'PU'                         R4095.0
+   material   264 'PU INJECTION'               R56.61904761904762
+   material   270 'PU INJECTION'               R56.61904762
+   material   273 'PU INJECTION'               R56.61904762
+   material   276 'PU INJECTION'               R56.61904762
+   material   278 'PU INTECTION'               R68.0
+   material   292 'PU'                         R4095.0
+   material   425 '30MM PU INJECTION'          R60.0
+   material   427 '30MM PU INJECTION'          R60.0
+   material   429 '30MM PU INJECTION'          R60.0
+   material   431 '45MM PU INJECTION'          R60.0
+   material   443 'PU INJECTION'               R56.61904762
+   material   469 'FRONT PU'                   R0.0
+   material   471 'DRD PU'                     R0.0
+   material   473 'SRD PU'                     R0.65
+   material   475 'SIDES PU'                   R0.0
+   material   477 'ROOF PU'                    R0.0
+   material   479 'FLOOR PU'                   R0.0
+   material   495 'PU INJECTION'               R56.61904762
+   material   504 '30MM PU INJECTION'          R60.0
+   material   899 'FLOOR PU'                   R0.0
+
+lines inheriting a PU material on active bodies: 35; of them WITHOUT a thickness term: 11
+body | v2 | section | bom | material (price) | formula | conditions
+    12 MEAT HANGER LARGE            | Y | DRD                      |   5877 | 209 PU R4095.0 | 1.22*2.44*2 | [{"option": "DRD PU", "equals": "Y", "option_id": 5979}]
+    12 MEAT HANGER LARGE            | Y | FLOOR                    |   5921 | 236 PU R4095.0 | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "FLOOR PU", "equals": "Y", "option_id": 5987}]
+    12 MEAT HANGER LARGE            | Y | FRONT                    |   5842 | 207 PU R4095.0 | 1.22*2.44*2 | [{"option": "FRONT PU", "equals": "Y", "option_id": 5977}]
+    12 MEAT HANGER LARGE            | Y | ROOF                     |   5910 | 213 PU R4095.0 | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "ROOF PU", "equals": "Y", "option_id": 5985}]
+    12 MEAT HANGER LARGE            | Y | SIDES                    |   5899 | 211 PU R4095.0 | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "SIDES PU", "equals": "Y", "option_id": 5983}]
+    12 MEAT HANGER LARGE            | Y | SRD                      |   5851 | 292 PU R4095.0 | 1.22*2.44*2 | [{"option": "SRD PU", "equals": "Y", "option_id": 5981}]
+    36 MEAT HANGER SMALL-MEDIUM     | Y | DRD                      |   6185 | 209 PU R4095.0 | ((1.22*2.44))*2 | [{"option": "DRD PU", "equals": "Y", "option_id": 6287}]
+    36 MEAT HANGER SMALL-MEDIUM     | Y | FRONT                    |   6150 | 207 PU R4095.0 | 1.22*2.44*2 | [{"option": "FRONT PU", "equals": "Y", "option_id": 6285}]
+    36 MEAT HANGER SMALL-MEDIUM     | Y | ROOF                     |   6218 | 213 PU R4095.0 | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "ROOF PU", "equals": "Y", "option_id": 6293}]
+    36 MEAT HANGER SMALL-MEDIUM     | Y | SIDES                    |   6207 | 211 PU R4095.0 | (length+{Waste})/1.22 * (1.22*2.44) | [{"option": "SIDES PU", "equals": "Y", "option_id": 6291}]
+    36 MEAT HANGER SMALL-MEDIUM     | Y | SRD                      |   6159 | 292 PU R4095.0 | 1.22*2.44*2 | [{"option": "SRD PU", "equals": "Y", "option_id": 6289}]
+
+KNOWN HIT: all 11 Manifest M lines found (M is not on this database yet)
+SUMMARY: 0 swept line(s) OUTSIDE Manifest M (expected: none)
+
+=== 2. MANIFEST M LINES AS THEY ARE NOW (the guards) + 6229
+   M         5842 MEAT HANGER LARGE          FRONT   material 207 PU R4095.0 | own None | 1.22*2.44*2 | [{"option": "FRONT PU", "equals": "Y", "option_id": 5977}]
+   M         5851 MEAT HANGER LARGE          SRD     material 292 PU R4095.0 | own None | 1.22*2.44*2 | [{"option": "SRD PU", "equals": "Y", "option_id": 5981}]
+   M         5877 MEAT HANGER LARGE          DRD     material 209 PU R4095.0 | own None | 1.22*2.44*2 | [{"option": "DRD PU", "equals": "Y", "option_id": 5979}]
+   M         5899 MEAT HANGER LARGE          SIDES   material 211 PU R4095.0 | own None | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "SIDES PU", "equals": "Y", "option_id": 5983}]
+   M         5910 MEAT HANGER LARGE          ROOF    material 213 PU R4095.0 | own None | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "ROOF PU", "equals": "Y", "option_id": 5985}]
+   M         5921 MEAT HANGER LARGE          FLOOR   material 236 PU R4095.0 | own None | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "FLOOR PU", "equals": "Y", "option_id": 5987}]
+   M         6150 MEAT HANGER SMALL-MEDIUM   FRONT   material 207 PU R4095.0 | own None | 1.22*2.44*2 | [{"option": "FRONT PU", "equals": "Y", "option_id": 6285}]
+   M         6159 MEAT HANGER SMALL-MEDIUM   SRD     material 292 PU R4095.0 | own None | 1.22*2.44*2 | [{"option": "SRD PU", "equals": "Y", "option_id": 6289}]
+   M         6185 MEAT HANGER SMALL-MEDIUM   DRD     material 209 PU R4095.0 | own None | ((1.22*2.44))*2 | [{"option": "DRD PU", "equals": "Y", "option_id": 6287}]
+   M         6207 MEAT HANGER SMALL-MEDIUM   SIDES   material 211 PU R4095.0 | own None | (length+{Waste})/1.22 * (1.22*2.44) | [{"option": "SIDES PU", "equals": "Y", "option_id": 6291}]
+   M         6218 MEAT HANGER SMALL-MEDIUM   ROOF    material 213 PU R4095.0 | own None | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "ROOF PU", "equals": "Y", "option_id": 6293}]
+   OUT OF M  6229 MEAT HANGER SMALL-MEDIUM   FLOOR   material 236 PU R4095.0 | own 446.02 | 1.22*2.44*(length+{Waste})/1.22 | [{"option": "FLOOR PU", "equals": "Y", "option_id": 6295}]
+   MEAT HANGER insulation masters (body, id, name, thickness, default):
+      (12, 5976, 'FRONT EPS', 0.0, False)
+      (12, 5977, 'FRONT PU', 0.062, True)
+      (12, 5978, 'DRD EPS', 0.0, False)
+      (12, 5979, 'DRD PU', 0.062, True)
+      (12, 5980, 'SRD EPS', 0.0, False)
+      (12, 5981, 'SRD PU', 0.0, False)
+      (12, 5982, 'SIDES EPS', 0.0, False)
+      (12, 5983, 'SIDES PU', 0.062, True)
+      (12, 5984, 'ROOF EPS', 0.0, False)
+      (12, 5985, 'ROOF PU', 0.1, True)
+      (12, 5986, 'FLOOR EPS', 0.0, False)
+      (12, 5987, 'FLOOR PU', 0.1, True)
+      (36, 6284, 'FRONT EPS', 0.06, True)
+      (36, 6285, 'FRONT PU', 0.0, False)
+      (36, 6286, 'DRD EPS', 0.06, True)
+      (36, 6287, 'DRD PU', 0.0, False)
+      (36, 6288, 'SRD EPS', 0.0, False)
+      (36, 6289, 'SRD PU', 0.0, False)
+      (36, 6290, 'SIDES EPS', 0.06, True)
+      (36, 6291, 'SIDES PU', 0.0, False)
+      (36, 6292, 'ROOF EPS', 0.076, True)
+      (36, 6293, 'ROOF PU', 0.0, False)
+      (36, 6294, 'FLOOR EPS', 0.076, True)
+      (36, 6295, 'FLOOR PU', 0.0, False)
+
+=== 3. REAR-DOOR MASTERS NOW (CHILLER LARGE, ICECREAM BODY LARGE)
+   ICECREAM BODY LARGE  master  5425 DRD EPS  group DRD       thickness 0.0
+   ICECREAM BODY LARGE  master  5426 DRD PU   group DRD       thickness 0.0
+   ICECREAM BODY LARGE  master  5427 SRD EPS  group SRD       thickness 0.0
+   ICECREAM BODY LARGE  master  5428 SRD PU   group SRD       thickness 0.12
+   CHILLER LARGE        master  3433 DRD EPS  group DRD       thickness 0.0
+   CHILLER LARGE        master  3434 DRD PU   group DRD       thickness 0.0
+   CHILLER LARGE        master  3435 SRD EPS  group SRD       thickness 0.06
+   CHILLER LARGE        master  3436 SRD PU   group SRD       thickness 0.0
+   CHILLER LARGE        master  7232 DRD      group DOOR TYPE thickness None
+   CHILLER LARGE        master  7233 SRD      group DOOR TYPE thickness None
+
+=== 4. STORED 4G FACTOR: ('1.3170731707317074',)
+
+=== 5. IMPACT — saved costings on a body with a swept line, saved on/after 29 Sep (quote numbers only;
+    the PU materials moved at 08:12 SAST that day — a quote saved before then shows per-sheet line costs)
+   0 costing(s)

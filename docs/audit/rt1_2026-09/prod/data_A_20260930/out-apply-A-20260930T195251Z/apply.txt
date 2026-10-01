@@ -1,0 +1,366 @@
+database icb_platform (--target prod); manifest manifest_a.yaml sha256 2952a935a6badf20…, 120 entries
+── R1
+  APPLY bom=5961   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5962   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5963   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5964   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5965   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5966   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5967   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5968   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5969   MEAT HANGER LARGE / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5980}, {"option": "SRD PU", "equals": "N", "option_id": 5981}]'
+  APPLY bom=5813   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5814   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5815   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5816   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5817   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / M10*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5818   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / M10*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5819   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / M10 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5820   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5821   ICECREAM BODY SMALL | ICECREAM UP TO 3,2 / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5827}, {"option": "SRD PU", "equals": "N", "option_id": 5828}]'
+  APPLY bom=5690   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5691   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5692   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5693   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5694   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5695   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5696   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5697   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5698   ICECREAM BODY MEDIUM | ICECREAM UP TO 4.8 / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5705}, {"option": "SRD PU", "equals": "N", "option_id": 5706}]'
+  APPLY bom=5412   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=5413   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=5414   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=5415   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=5416   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=5417   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=5418   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=5419   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=5420   ICECREAM BODY LARGE | ICECREAM 4.9 UP / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5427}, {"option": "SRD PU", "equals": "N", "option_id": 5428}]'
+  APPLY bom=3663   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=3664   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=3665   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=3666   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=3667   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=3668   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=3669   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=3670   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=3671   FREEZER 2.3 METER / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3677}, {"option": "SRD PU", "equals": "N", "option_id": 3678}]'
+  APPLY bom=2521   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / 2,5MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2522   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2523   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2524   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2525   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2526   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2527   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2528   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2529   FREEZER MEDIUM / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2536}, {"option": "SRD PU", "equals": "N", "option_id": 2537}]'
+  APPLY bom=2669   FREEZER LARGE / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=2670   FREEZER LARGE / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=2671   FREEZER LARGE / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=2672   FREEZER LARGE / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=2673   FREEZER LARGE / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=2674   FREEZER LARGE / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=2675   FREEZER LARGE / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=2676   FREEZER LARGE / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=2677   FREEZER LARGE / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 2684}, {"option": "SRD PU", "equals": "N", "option_id": 2685}]'
+  APPLY bom=4045   EXPLOSIVE 4.9 AND UP / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 4057}, {"option": "SRD PU", "equals": "N", "option_id": 4058}]'
+  APPLY bom=4046   EXPLOSIVE 4.9 AND UP / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 4057}, {"option": "SRD PU", "equals": "N", "option_id": 4058}]'
+  APPLY bom=4047   EXPLOSIVE 4.9 AND UP / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 4057}, {"option": "SRD PU", "equals": "N", "option_id": 4058}]'
+  APPLY bom=4048   EXPLOSIVE 4.9 AND UP / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 4057}, {"option": "SRD PU", "equals": "N", "option_id": 4058}]'
+  APPLY bom=4049   EXPLOSIVE 4.9 AND UP / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 4057}, {"option": "SRD PU", "equals": "N", "option_id": 4058}]'
+  APPLY bom=4050   EXPLOSIVE 4.9 AND UP / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 4057}, {"option": "SRD PU", "equals": "N", "option_id": 4058}]'
+  APPLY bom=3783   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / 2MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3784   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3785   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / 2MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3786   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3787   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3788   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3789   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3790   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3791   CHILLER 2.3 METER / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3797}, {"option": "SRD PU", "equals": "N", "option_id": 3798}]'
+  APPLY bom=3281   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / 2.5MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3282   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3283   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3284   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3285   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3286   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3287   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3288   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3289   CHILLER MEDIUM / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 3296}, {"option": "SRD PU", "equals": "N", "option_id": 3297}]'
+  APPLY bom=3420   CHILLER LARGE / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=3421   CHILLER LARGE / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=3422   CHILLER LARGE / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=3423   CHILLER LARGE / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=3424   CHILLER LARGE / REAR FRAME & FLOOR PLATE / M10*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=3425   CHILLER LARGE / REAR FRAME & FLOOR PLATE / M10*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=3426   CHILLER LARGE / REAR FRAME & FLOOR PLATE / M10 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=3427   CHILLER LARGE / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=3428   CHILLER LARGE / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD", "equals": "N", "option_id": 7233}]'
+  APPLY bom=5271   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=5272   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=5273   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=5274   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=5275   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / M10*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=5276   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / M10*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=5277   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / M10 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=5278   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=5279   EXPLOSIVE UP TO 2.7 / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 5285}, {"option": "SRD PU", "equals": "N", "option_id": 5286}]'
+  APPLY bom=6269   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / 2,5MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6270   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6271   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6272   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6273   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / M8*150 GALV. CUP SQUARES  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6274   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / M8*45*3 FENDER WASHER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6275   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / M8 NYLOCK NUT  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6276   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6277   MEAT HANGER SMALL-MEDIUM / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6288}, {"option": "SRD PU", "equals": "N", "option_id": 6289}]'
+  APPLY bom=6442   EXPLOSIVE 2.7 TO 4.8 / REAR FRAME & FLOOR PLATE / 3MM 3CR12 REAR FRAME  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6454}, {"option": "SRD PU", "equals": "N", "option_id": 6455}]'
+  APPLY bom=6443   EXPLOSIVE 2.7 TO 4.8 / REAR FRAME & FLOOR PLATE / TOP FRAME RAIN GUTTER  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6454}, {"option": "SRD PU", "equals": "N", "option_id": 6455}]'
+  APPLY bom=6444   EXPLOSIVE 2.7 TO 4.8 / REAR FRAME & FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6454}, {"option": "SRD PU", "equals": "N", "option_id": 6455}]'
+  APPLY bom=6445   EXPLOSIVE 2.7 TO 4.8 / REAR FRAME & FLOOR PLATE / SILPLUS X-WHITE  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6454}, {"option": "SRD PU", "equals": "N", "option_id": 6455}]'
+  APPLY bom=6446   EXPLOSIVE 2.7 TO 4.8 / REAR FRAME & FLOOR PLATE / 5MM CORNER GUSSET  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6454}, {"option": "SRD PU", "equals": "N", "option_id": 6455}]'
+  APPLY bom=6447   EXPLOSIVE 2.7 TO 4.8 / REAR FRAME & FLOOR PLATE / 2771-0824 MONOBOLTS  .bom_conditions
+          null
+       -> '[{"option": "SRD EPS", "equals": "N", "option_id": 6454}, {"option": "SRD PU", "equals": "N", "option_id": 6455}]'
+
+120 to apply, 0 already applied.
+APPLIED 120 changes on 120 lines (0 bom_override_history rows). Journal: /tmp/icb-rt1-data/out-apply-A-20260930T195251Z/pricing_corrections_journal_prod_20260930T195254Z.json
+Undo: python tools/audit_pricing_corrections.py --target prod --revert /tmp/icb-rt1-data/out-apply-A-20260930T195251Z/pricing_corrections_journal_prod_20260930T195254Z.json

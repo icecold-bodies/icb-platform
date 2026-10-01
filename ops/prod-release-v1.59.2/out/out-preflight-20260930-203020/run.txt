@@ -1,0 +1,33 @@
+== prod: db=icb_platform alembic=0049 code=de74796 mode=preflight target=1d9cb47 (v1.59.2) 2026-09-30T20:30:20+02:00
+== anchors
+   PASS ALEMBIC = 0049
+   PASS HEAD = de74796bd22070e59876572a49c8b39b804c75b9
+   PASS TRACKED_CLEAN = 0
+== served bytes (the v1.59.0 calculator is what prod serves today)
+   PASS TEMPLATE_V = 182
+   PASS CALC_LOCAL = d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90
+   PASS CALC_LAN = d174a732bec054d81a5d980678afbe822f6fed0e1d6ae078d12ad9795edefe90
+   PASS SPA_DISK_NAME = assets/index-Be8qL-PA.js
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   SPA bundle assets/index-Be8qL-PA.js sha256 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (frontend/ unchanged in the range: the deploy must leave it as is)
+   PASS HEALTH = 200
+== PyYAML (installed by v1.59.0; this release installs nothing)
+   PASS PYYAML = 6.0.2
+== the tag is on origin BEFORE the window (the footer reads it at startup)
+   PASS TAG_ON_ORIGIN = 5948a1a3cef3ff5dd50232eaf1d0c97de916b1df
+== backup location
+   PASS BACKUP_DIR = writable
+   free space: /dev/mapper/ubuntu--vg-ubuntu--lv   98G  9.8G   84G  11% /
+   latest backups:
+      total 39356
+      drwxr-xr-x 2 postgres postgres    4096 Sep 30 06:24 wal
+      -rw------- 1 root     postgres 1314321 Sep 30 02:30 icb_platform_20260930-0230.dump.gz
+      -rw------- 1 root     postgres 1205982 Sep 29 02:30 icb_platform_20260929-0230.dump.gz
+== deploy tooling on prod
+   PASS DEPLOY_SCRIPT = 012d701097d2671c6f0468479d600368e7ae3e2b5dc533bd57f8a5e671d23317
+   PASS ICB_SUDO = nopasswd
+   deploy record: completed de74796bd22070e59876572a49c8b39b804c75b9 (owner icb)
+   footer today: git describe -> v1.50.0 (the tag arrives with the deploy's fetch)
+
+######## PREFLIGHT PASSED — tell the CA: /tmp/icb-release-v1.59.2/out-preflight-20260930-203020

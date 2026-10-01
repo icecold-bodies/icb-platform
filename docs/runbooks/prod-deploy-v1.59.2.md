@@ -383,7 +383,7 @@ Records are under `docs/audit/rt1_2026-09/prod/` and `ops/prod-release-v1.59.2/o
 | "no PU on any chiller" (Michael) | ~10:07 – 10:20 | the three chiller drafts re-saved with no PU node; the BOM unchanged (§ below) | `prod/check_20261001-104358` |
 | the read-only check (ruling 3 addendum) | 10:43:58 | PU materials all R4 100; 57 own-priced PU lines; 120 REAR FRAME rules → 0 missing masters | `prod/check_20261001-104358` |
 | **Manifest F2** | **10:44:16 → 12:44:36** | dry-run `'1.362881562881563' -> '1.361219512195122'`, 1 / 0 (the BA's GO condition) → applied (journal `e31a2896…`) → 0 / 1; psql reads `'1.361219512195122'` | `prod/factor_F2_20261001` |
-| CHILLER 2.3 METER door, by hand | before 13:06 | 3795 DRD EPS 0 → 0.06, 3797 SRD EPS 0.06 → 0 (it had moved at ~10:43) | `prod/baseline_20261001-131134/door_report.txt` |
+| CHILLER 2.3 METER door, by hand | 13:02 → 13:10:35 | 3795 DRD EPS 0 → 0.06, 3797 SRD EPS 0.06 → 0 (it had moved at ~10:43); door report **14 OK** at 13:10:35 | `prod/doors_window` |
 | **the baseline paste (final)** | **13:11:34 → 13:11:57** | 5 packs exit 0; **snapshot `6155eeff…`** = the 09:57 one + F2 only; no-people gate on both files; door report **14 OK** | `prod/baseline_20261001-131134` |
 
 **Counts at the final baseline** (UNVERIFIABLE / ACCEPTED / PASS / SKIP):
@@ -417,7 +417,10 @@ means the next quote on that body opens with the rear-door insulation on the wro
 | 08:14:51 | 14 | CHILLER LARGE 3433 = 0.06 |
 | 09:57 (first baseline) | 14 | none |
 | ~10:43 (the check) | — | CHILLER 2.3 METER back on SRD EPS, during the chiller edit |
-| **13:11 (final baseline)** | **14** | CHILLER 2.3 METER fixed by hand |
+| 13:02 – 13:07 | 13 | CHILLER 2.3 METER on SRD (its draft re-saved 13:06) |
+| 13:09:42 | 13 | CHILLER 2.3 METER: both doors carry a thickness, mid-fix |
+| **13:10:35** | **14** | CHILLER 2.3 METER fixed by hand |
+| **13:11 (final baseline)** | **14** | none |
 
 **The chiller edit at data level** (`prod/check_20261001-104358/`, 09:57 snapshot → 10:43):
 - **The configurator drafts changed:** all three re-saved (CHILLER LARGE 10:07:21, CHILLER MEDIUM 10:12:07,

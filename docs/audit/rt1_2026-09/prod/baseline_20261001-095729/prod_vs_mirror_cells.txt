@@ -1,0 +1,96 @@
+smoke      prod {'ACCEPTED': 15, 'PASS': 171, 'SKIP': 39, 'UNVERIFIABLE': 9} | mirror {'ACCEPTED': 15, 'PASS': 171, 'SKIP': 39, 'UNVERIFIABLE': 9} | cells only on one side 0 | cells that differ 21
+   icecream up to 4.8           L3.6  as_sheet DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L3.6  srd      SRD                      mirror PASS      MES   4,883.75 | prod PASS      MES   4,885.53 Excel   4,885.58 | cause None | 
+   icecream up to 4.8           L4.2  as_sheet DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L4.2  srd      SRD                      mirror PASS      MES   4,883.75 | prod PASS      MES   4,885.53 Excel   4,885.58 | cause None | 
+   icecream up to 4.8           L4.8  as_sheet DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L4.8  srd      SRD                      mirror PASS      MES   4,883.75 | prod PASS      MES   4,885.53 Excel   4,885.58 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L4.2  as_sheet DRD                      mirror PASS      MES   5,992.40 | prod PASS      MES   5,994.18 Excel   5,994.22 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L4.2  as_sheet FLOOR                    mirror PASS      MES  34,793.97 | prod PASS      MES  34,797.90 Excel  34,797.93 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L4.2  as_sheet FRONT                    mirror PASS      MES   5,225.40 | prod PASS      MES   5,227.18 Excel   5,227.24 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L4.2  as_sheet ROOF                     mirror PASS      MES   9,057.80 | prod PASS      MES   9,061.73 Excel   9,061.81 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L4.2  as_sheet SIDES                    mirror PASS      MES  18,005.89 | prod PASS      MES  18,012.11 Excel  18,012.32 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L5.6  as_sheet DRD                      mirror PASS      MES   5,992.40 | prod PASS      MES   5,994.18 Excel   5,994.22 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L5.6  as_sheet FLOOR                    mirror PASS      MES  45,776.25 | prod PASS      MES  45,781.48 Excel  45,781.52 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L5.6  as_sheet FRONT                    mirror PASS      MES   5,225.40 | prod PASS      MES   5,227.18 Excel   5,227.24 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L5.6  as_sheet ROOF                     mirror PASS      MES  12,004.24 | prod PASS      MES  12,009.47 Excel  12,009.57 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L5.6  as_sheet SIDES                    mirror PASS      MES  23,816.04 | prod PASS      MES  23,824.30 Excel  23,824.57 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L6    as_sheet DRD                      mirror PASS      MES   5,992.40 | prod PASS      MES   5,994.18 Excel   5,994.22 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L6    as_sheet FLOOR                    mirror PASS      MES  48,914.04 | prod PASS      MES  48,919.65 Excel  48,919.69 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L6    as_sheet FRONT                    mirror PASS      MES   5,225.40 | prod PASS      MES   5,227.18 Excel   5,227.24 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L6    as_sheet ROOF                     mirror PASS      MES  12,846.08 | prod PASS      MES  12,851.69 Excel  12,851.79 | cause None | 
+    UP TO 4.8 MT FREEZER  (2    L6    as_sheet SIDES                    mirror PASS      MES  25,476.08 | prod PASS      MES  25,484.93 Excel  25,485.22 | cause None | 
+chillers   prod {'ACCEPTED': 20, 'PASS': 1009, 'SKIP': 224} | mirror {'ACCEPTED': 17, 'PASS': 1012, 'SKIP': 224} | cells only on one side 0 | cells that differ 15
+   UP TO 2.3 CHILLER BODY       L1.8  all_pu   DRD                      mirror ACCEPTED  MES   3,605.39 | prod ACCEPTED  MES   3,053.50 Excel   3,484.66 | cause MISSING_IN_MES EPS (-431.74) | [RULING] Burt's UP TO 2.3 CHILLER sheet charges the double r
+   UP TO 2.3 CHILLER BODY       L1.8  srd      SRD                      mirror ACCEPTED  MES   2,231.48 | prod ACCEPTED  MES   2,291.48 Excel   2,315.70 | cause PRICE_DIFF EPS (-24.21) | [DATA] PROD SRD EPS line priced differently from Burt on CHI
+   UP TO 2.3 CHILLER BODY       L1.8  srd_pu   SRD                      mirror PASS      MES   2,407.60 | prod ACCEPTED  MES   2,467.60 Excel   2,407.62 | cause GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s) | [DATA] 130*62MM TAPPING BLOCKS: on prod the icecream and EXP
+   UP TO 2.3 CHILLER BODY       L2.3  all_pu   DRD                      mirror ACCEPTED  MES   3,605.39 | prod ACCEPTED  MES   3,053.50 Excel   3,484.66 | cause MISSING_IN_MES EPS (-431.74) | [RULING] Burt's UP TO 2.3 CHILLER sheet charges the double r
+   UP TO 2.3 CHILLER BODY       L2.3  srd      SRD                      mirror ACCEPTED  MES   2,231.48 | prod ACCEPTED  MES   2,291.48 Excel   2,315.70 | cause PRICE_DIFF EPS (-24.21) | [DATA] PROD SRD EPS line priced differently from Burt on CHI
+   UP TO 2.3 CHILLER BODY       L2.3  srd_pu   SRD                      mirror PASS      MES   2,407.60 | prod ACCEPTED  MES   2,467.60 Excel   2,407.62 | cause GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s) | [DATA] 130*62MM TAPPING BLOCKS: on prod the icecream and EXP
+   UP TO 2.3 CHILLER BODY       L2.7  all_pu   DRD                      mirror ACCEPTED  MES   3,605.39 | prod ACCEPTED  MES   3,053.50 Excel   3,484.66 | cause MISSING_IN_MES EPS (-431.74) | [RULING] Burt's UP TO 2.3 CHILLER sheet charges the double r
+   UP TO 2.3 CHILLER BODY       L2.7  srd      SRD                      mirror ACCEPTED  MES   2,231.48 | prod ACCEPTED  MES   2,291.48 Excel   2,315.70 | cause PRICE_DIFF EPS (-24.21) | [DATA] PROD SRD EPS line priced differently from Burt on CHI
+   UP TO 2.3 CHILLER BODY       L2.7  srd_pu   SRD                      mirror PASS      MES   2,407.60 | prod ACCEPTED  MES   2,467.60 Excel   2,407.62 | cause GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s) | [DATA] 130*62MM TAPPING BLOCKS: on prod the icecream and EXP
+   UP TO 5.5 CHILLER AND 2.3 WI L3    srd      SRD DOOR FITTINGS        mirror PASS      MES   6,226.24 | prod PASS      MES   6,166.06 Excel   6,166.06 | cause None | 
+   UP TO 5.5 CHILLER AND 2.3 WI L3    srd_pu   SRD DOOR FITTINGS        mirror PASS      MES   6,226.24 | prod PASS      MES   6,166.06 Excel   6,166.06 | cause None | 
+   UP TO 5.5 CHILLER AND 2.3 WI L4.2  srd      SRD DOOR FITTINGS        mirror PASS      MES   6,226.24 | prod PASS      MES   6,166.06 Excel   6,166.06 | cause None | 
+   UP TO 5.5 CHILLER AND 2.3 WI L4.2  srd_pu   SRD DOOR FITTINGS        mirror PASS      MES   6,226.24 | prod PASS      MES   6,166.06 Excel   6,166.06 | cause None | 
+   UP TO 5.5 CHILLER AND 2.3 WI L5.5  srd      SRD DOOR FITTINGS        mirror PASS      MES   6,226.24 | prod PASS      MES   6,166.06 Excel   6,166.06 | cause None | 
+   UP TO 5.5 CHILLER AND 2.3 WI L5.5  srd_pu   SRD DOOR FITTINGS        mirror PASS      MES   6,226.24 | prod PASS      MES   6,166.06 Excel   6,166.06 | cause None | 
+freezers   prod {'ACCEPTED': 55, 'PASS': 491, 'SKIP': 117, 'UNVERIFIABLE': 27} | mirror {'ACCEPTED': 51, 'PASS': 495, 'SKIP': 117, 'UNVERIFIABLE': 27} | cells only on one side 0 | cells that differ 198
+    4.9 & UP FREEZER BODY (2    L4.9  all_pu   DRD                      mirror PASS      MES   6,350.99 | prod PASS      MES   6,352.78 Excel   6,352.84 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  all_pu   FLOOR                    mirror PASS      MES  22,688.03 | prod PASS      MES  22,694.06 Excel  22,693.88 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  all_pu   FRONT                    mirror PASS      MES   5,594.50 | prod PASS      MES   5,596.29 Excel   5,588.15 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  all_pu   ROOF                     mirror PASS      MES  11,990.56 | prod PASS      MES  11,996.59 Excel  11,996.68 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  all_pu   SIDES                    mirror PASS      MES  21,716.02 | prod PASS      MES  21,723.26 Excel  21,723.52 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  as_sheet DRD                      mirror PASS      MES   6,350.99 | prod PASS      MES   6,352.78 Excel   6,352.84 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  as_sheet FLOOR                    mirror PASS      MES  22,688.03 | prod PASS      MES  22,694.06 Excel  22,693.88 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  as_sheet FRONT                    mirror PASS      MES   5,594.50 | prod PASS      MES   5,596.29 Excel   5,588.15 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  as_sheet ROOF                     mirror PASS      MES  11,990.56 | prod PASS      MES  11,996.59 Excel  11,996.68 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  as_sheet SIDES                    mirror PASS      MES  21,716.02 | prod PASS      MES  21,723.26 Excel  21,723.52 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  drd      DRD                      mirror PASS      MES   6,350.99 | prod PASS      MES   6,352.78 Excel   6,352.84 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  drd      FLOOR                    mirror PASS      MES  22,688.03 | prod PASS      MES  22,694.06 Excel  22,693.88 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  drd      FRONT                    mirror PASS      MES   5,594.50 | prod PASS      MES   5,596.29 Excel   5,588.15 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  drd      ROOF                     mirror PASS      MES  11,990.56 | prod PASS      MES  11,996.59 Excel  11,996.68 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  drd      SIDES                    mirror PASS      MES  21,716.02 | prod PASS      MES  21,723.26 Excel  21,723.52 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  foam_4g  DRD                      mirror PASS      MES   6,881.25 | prod PASS      MES   6,883.68 Excel   6,816.72 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  foam_4g  FLOOR                    mirror PASS      MES  24,480.90 | prod PASS      MES  24,489.12 Excel  24,262.34 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  foam_4g  FRONT                    mirror ACCEPTED  MES   6,124.76 | prod ACCEPTED  MES   6,127.19 Excel   6,052.04 | cause BOTH PU (+67.01) | [RULING] Manifest F (RT1 ruling 3): prod prices 4G PU foam a
+    4.9 & UP FREEZER BODY (2    L4.9  foam_4g  ROOF                     mirror ACCEPTED  MES  13,783.42 | prod ACCEPTED  MES  13,791.64 Excel  13,565.13 | cause BOTH PU (+226.60) | [RULING] Manifest F (RT1 ruling 3): prod prices 4G PU foam a
+    4.9 & UP FREEZER BODY (2    L4.9  foam_4g  SIDES                    mirror ACCEPTED  MES  23,867.46 | prod ACCEPTED  MES  23,877.33 Excel  23,605.66 | cause BOTH PU (+271.92) | [RULING] Manifest F (RT1 ruling 3): prod prices 4G PU foam a
+    4.9 & UP FREEZER BODY (2    L4.9  srd      FLOOR                    mirror PASS      MES  22,688.03 | prod PASS      MES  22,694.06 Excel  22,693.88 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  srd      FRONT                    mirror PASS      MES   5,594.50 | prod PASS      MES   5,596.29 Excel   5,588.15 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  srd      ROOF                     mirror PASS      MES  11,990.56 | prod PASS      MES  11,996.59 Excel  11,996.68 | cause None | 
+    4.9 & UP FREEZER BODY (2    L4.9  srd      SIDES                    mirror PASS      MES  21,716.02 | prod PASS      MES  21,723.26 Excel  21,723.52 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  all_pu   DRD                      mirror PASS      MES   6,350.99 | prod PASS      MES   6,352.78 Excel   6,352.84 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  all_pu   FLOOR                    mirror PASS      MES  29,934.00 | prod PASS      MES  29,941.98 Excel  29,941.74 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  all_pu   FRONT                    mirror PASS      MES   5,594.50 | prod PASS      MES   5,596.29 Excel   5,588.15 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  all_pu   ROOF                     mirror PASS      MES  15,820.08 | prod PASS      MES  15,828.06 Excel  15,828.18 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  all_pu   SIDES                    mirror PASS      MES  28,613.13 | prod PASS      MES  28,622.71 Excel  28,623.05 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  as_sheet DRD                      mirror PASS      MES   6,350.99 | prod PASS      MES   6,352.78 Excel   6,352.84 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  as_sheet FLOOR                    mirror PASS      MES  29,934.00 | prod PASS      MES  29,941.98 Excel  29,941.74 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  as_sheet FRONT                    mirror PASS      MES   5,594.50 | prod PASS      MES   5,596.29 Excel   5,588.15 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  as_sheet ROOF                     mirror PASS      MES  15,820.08 | prod PASS      MES  15,828.06 Excel  15,828.18 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  as_sheet SIDES                    mirror PASS      MES  28,613.13 | prod PASS      MES  28,622.71 Excel  28,623.05 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  drd      DRD                      mirror PASS      MES   6,350.99 | prod PASS      MES   6,352.78 Excel   6,352.84 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  drd      FLOOR                    mirror PASS      MES  29,934.00 | prod PASS      MES  29,941.98 Excel  29,941.74 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  drd      FRONT                    mirror PASS      MES   5,594.50 | prod PASS      MES   5,596.29 Excel   5,588.15 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  drd      ROOF                     mirror PASS      MES  15,820.08 | prod PASS      MES  15,828.06 Excel  15,828.18 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  drd      SIDES                    mirror PASS      MES  28,613.13 | prod PASS      MES  28,622.71 Excel  28,623.05 | cause None | 
+    4.9 & UP FREEZER BODY (2    L6.5  foam_4g  DRD                      mirror PASS      MES   6,881.25 | prod PASS      MES   6,883.68 Excel   6,816.72 | cause None | 
+icecream   prod {'ACCEPTED': 87, 'PASS': 381, 'SKIP': 104, 'UNVERIFIABLE': 40} | mirror {'ACCEPTED': 87, 'PASS': 381, 'SKIP': 104, 'UNVERIFIABLE': 40} | cells only on one side 0 | cells that differ 15
+   icecream up to 4.8           L3.6  all_pu   DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L3.6  as_sheet DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L3.6  drd      DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L3.6  foam_4g  DRD                      mirror ACCEPTED  MES   7,541.00 | prod ACCEPTED  MES   7,545.86 Excel   7,411.87 | cause GROUP_DIFF 130*62MM TAPPING BLOCKS ~ TAPPING BLOCK | [DATA] 130*62MM TAPPING BLOCKS: on prod the icecream and EXP
+   icecream up to 4.8           L3.6  srd      SRD                      mirror PASS      MES   4,883.75 | prod PASS      MES   4,885.53 Excel   4,885.58 | cause None | 
+   icecream up to 4.8           L4.2  all_pu   DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L4.2  as_sheet DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L4.2  drd      DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L4.2  foam_4g  DRD                      mirror ACCEPTED  MES   7,541.00 | prod ACCEPTED  MES   7,545.86 Excel   7,411.87 | cause GROUP_DIFF 130*62MM TAPPING BLOCKS ~ TAPPING BLOCK | [DATA] 130*62MM TAPPING BLOCKS: on prod the icecream and EXP
+   icecream up to 4.8           L4.2  srd      SRD                      mirror PASS      MES   4,883.75 | prod PASS      MES   4,885.53 Excel   4,885.58 | cause None | 
+   icecream up to 4.8           L4.8  all_pu   DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L4.8  as_sheet DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L4.8  drd      DRD                      mirror PASS      MES   6,480.49 | prod PASS      MES   6,484.06 Excel   6,484.11 | cause None | 
+   icecream up to 4.8           L4.8  foam_4g  DRD                      mirror ACCEPTED  MES   7,541.00 | prod ACCEPTED  MES   7,545.86 Excel   7,411.87 | cause GROUP_DIFF 130*62MM TAPPING BLOCKS ~ TAPPING BLOCK | [DATA] 130*62MM TAPPING BLOCKS: on prod the icecream and EXP
+   icecream up to 4.8           L4.8  srd      SRD                      mirror PASS      MES   4,883.75 | prod PASS      MES   4,885.53 Excel   4,885.58 | cause None | 
+explosive  prod {'ACCEPTED': 159, 'PASS': 372, 'SKIP': 117, 'UNVERIFIABLE': 36} | mirror {'ACCEPTED': 159, 'PASS': 372, 'SKIP': 117, 'UNVERIFIABLE': 36} | cells only on one side 0 | cells that differ 0

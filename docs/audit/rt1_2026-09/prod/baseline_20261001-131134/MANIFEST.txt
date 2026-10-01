@@ -1,0 +1,9 @@
+database     icb_platform
+alembic      0049
+prod_code    1d9cb47b84a8f10a4be74f139b37671ec21f35bd
+mode         baseline
+staged_from  afcd769a8b26daa2066769c2f5dcd222f52ccba1
+packs_red     none
+all.json     6155eeff48ea2e955ee87f61afb3913b7e063761bb47aeeb3bf55c6c50510db0  3184758 bytes
+meat_hangers a34b4d93ca22174c60c5293d66866b46a15e91b445b63712a5af941550c8912c  673164 bytes
+finished     2026-10-01T13:11:57+02:00

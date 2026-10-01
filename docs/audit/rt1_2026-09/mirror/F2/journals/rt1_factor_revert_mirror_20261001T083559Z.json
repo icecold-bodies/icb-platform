@@ -1,0 +1,15 @@
+{
+  "tool": "rt1_factor",
+  "manifest": "F2",
+  "reverted_journal": "rt1_factor_journal_mirror_20261001T083328Z.json",
+  "row_id": 3,
+  "from": {
+    "value": "1.361219512195122",
+    "updated_at": "2026-10-01 10:33:28.286785"
+  },
+  "to": {
+    "value": "1.362881562881563",
+    "updated_at": "2026-09-30 21:19:44.512609"
+  },
+  "reverted_at_utc": "2026-10-01T08:35:59+00:00"
+}

@@ -1,0 +1,6 @@
+smoke      cells 234 | status changed by keeping #5: 0 | cells #5 would accept: 0 | SRD REAR FRAME cells 3, SKIP 3
+chillers   cells 1253 | status changed by keeping #5: 0 | cells #5 would accept: 0 | SRD REAR FRAME cells 28, SKIP 28
+freezers   cells 690 | status changed by keeping #5: 0 | cells #5 would accept: 0 | SRD REAR FRAME cells 9, SKIP 9
+icecream   cells 612 | status changed by keeping #5: 0 | cells #5 would accept: 0 | SRD REAR FRAME cells 8, SKIP 8
+explosive  cells 684 | status changed by keeping #5: 0 | cells #5 would accept: 0 | SRD REAR FRAME cells 9, SKIP 9
+ALL: cells whose status entry #5 changes on prod after A: 0; cells it would accept: 0

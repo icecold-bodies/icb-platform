@@ -1,0 +1,6 @@
+old all.json generated 2026-10-01T07:57:49+00:00 · new all.json generated 2026-10-01T11:11:53+00:00
+
+## admin_settings: +0 added, -0 removed, ~1 changed
+   ~ 10: updated_at '2026-10-01T09:56:30.050399' -> '2026-10-01T12:44:36.482581'; value '1.362881562881563' -> '1.361219512195122'
+
+1 row-level differences

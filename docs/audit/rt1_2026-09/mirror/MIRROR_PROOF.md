@@ -239,9 +239,51 @@ with EPS at the 4G toggle). **ALL OK:**
   0.017 % above F's 1.36288.
 - CI's pull-request audit runs only the smoke pack, which has no 4G variant.
 
+## 5c. Manifest F2 — the factor on Burt's corrected 32D R4 100 (RT1 ruling 3 addendum), 1 Oct
+
+**Why F2:** Burt corrected his 32D to R4 100. Michael set prod's six PU materials back to R4 100 (1 Oct 09:52, just
+before F went on at 09:56:30), and Burt's 4G stays R5 581. With F's 5581/4095, a 4G line on R4 100 prices
+R5 587.81.
+
+**The change:** F2 moves the same row on, guarded on F's value: `'1.362881562881563'` → repr(5581/4100) =
+`'1.361219512195122'`. A 4G line goes R5 587.81 → **R5 581.00**, a ratio of 0.998780487804878.
+- The BA's `1.3612195121951219` is one ulp below the exact ratio. On R4 100 it gives R5 580.999999999999.
+- So repr of the exact ratio is used, the same convention as F.
+
+**The mirror was first priced like prod:** the six PU materials R4 095 → R4 100, on the scratch mirror only.
+
+**The tool, against a real database** (`rt1_factor.py --manifest F2`):
+- dry-run: 1 to apply;
+- apply;
+- a second dry-run and a second apply: `0 to apply, 1 already applied`;
+- revert: byte-exact, back to F's value and `updated_at`; a second revert does nothing;
+- an F journal handed to F2: refused;
+- re-applied.
+
+The paste's WSL simulation passes 21 of 21 for F2, and still 21 of 21 for F.
+
+**The engine, line by line** (`F2/f2_linecheck_compare.txt`), **ALL OK:**
+- **32D:** 2 442 section cells, every line identical.
+- **4G:** 117 costed PU foam lines × exactly 0.998780487804878, both material-priced and own-priced. 117 cells move by
+  (ratio − 1) × their PU part. 313 do not move.
+
+**The audit** (`F2/f2_audit_before_vs_after.txt`; the five packs before and after F2, both on R4 100):
+- **32D:** 2 963 cells unchanged.
+- **4G:** of 510 cells, MES moved on 117.
+- **Status changes:** 10 cells go **ACCEPTED → PASS** (freezers 4, icecream 3, explosive 3); they are now nearer the
+  golden. There is no new FLAG.
+- With the final prod list, **all five packs exit 0** after F2.
+- Before F2 (R4 100 + F), freezers, icecream and explosive equal prod's 09:57 baseline count for count.
+
+**Both MEAT HANGERs against Burt at R4 100** (`F2/verify_f2_after.txt`, `RT1_P32=4100`), **ALL OK:**
+- **32D:** = Burt at R4 100. LARGE at 6.7 m, double door: **R24 878.82**.
+- **4G:** = Burt's rows at R5 581 to the cent. LARGE at 6.7 m, double door: **R33 865.53** against his sheet's
+  R33 858.65; the +R6.88 is his FRONT row's /2.99.
+- **4G, SRD:** +R546.08 (LARGE) / +R528.47 (SMALL-MEDIUM). Burt keeps the single rear door at 32D.
+
 ## 5. State left behind
 
-The mirror is left at **A + M + F** (the default B was reverted after Q-A = YES; the formula-only B was superseded by
-M): prod's state after the window and Manifests M and F. In that state every single-rear-door PU line prices R1 461.23 at T = 0.06
+The mirror is left at **A + M + F + F2, with the PU materials at R4 100** (the default B was reverted after Q-A = YES;
+the formula-only B was superseded by M). That is prod's state once F2 goes on. In that state every single-rear-door PU line prices R1 461.23 at T = 0.06
 (Burt's formula at R4 095), the two MEAT HANGERs included. Journals: `journals/` (the apply / revert records of every
 step above). Reports: `reports/` (md; the JSON stay local).

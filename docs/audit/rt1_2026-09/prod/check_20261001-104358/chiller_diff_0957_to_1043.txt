@@ -1,0 +1,4 @@
+09:57 snapshot: 811 rows · 10:43 check: 811 rows · added 0 · removed 0
+   ~ 3795 CHILLER 2.3 METER / BODY OPTIONS / DRD EPS: variable_value 0.06 -> 0.0
+   ~ 3797 CHILLER 2.3 METER / BODY OPTIONS / SRD EPS: variable_value 0.0 -> 0.06
+changed rows: 2

@@ -1,0 +1,4 @@
+database icb_platform (--target prod); Manifest F: admin_settings['costings.pu_foam_4g_factor']; tool sha256 6fa802ac4271f2f9…
+  APPLY row id 10: '1.3170731707317074' -> '1.362881562881563'  updated_at 2026-09-04 08:42:18.497914 -> 2026-10-01 09:56:30.050399
+APPLIED 1 change (admin_settings id 10). Journal: /tmp/icb-rt1-factor/out-apply-F-20261001T075628Z/rt1_factor_journal_prod_20261001T075630Z.json
+Undo: python rt1_factor.py --target prod --revert /tmp/icb-rt1-factor/out-apply-F-20261001T075628Z/rt1_factor_journal_prod_20261001T075630Z.json --out-dir <dir>

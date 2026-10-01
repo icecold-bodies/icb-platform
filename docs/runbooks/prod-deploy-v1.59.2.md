@@ -354,10 +354,13 @@ check. The real tool's behaviour (guards, one transaction, byte-exact revert) is
 
 ## OUTCOME
 
-**Prod = v1.59.2 = `1d9cb47`** (tag `v1.59.2` = tag object `5948a1a3…`, local = origin), alembic 0049. It carries
-Manifests **M**, **A** and **F**. Entry #5 is pruned, and the ratified F entry is in the prod list. **The CI snapshot =
-prod at 1 Oct 2026 09:57:49 SAST.** Records are under `docs/audit/rt1_2026-09/prod/` and
-`ops/prod-release-v1.59.2/out/`.
+**Prod = v1.59.2 = `1d9cb47`** (tag `v1.59.2` = tag object `5948a1a3…`, local = origin), alembic 0049.
+- **Data:** Manifests **M**, **A**, **F** and **F2** are on prod. The stored 4G factor is `1.361219512195122` (5581 / 4100),
+  with the PU materials at Burt's corrected 32D, R4 100.
+- **The list:** entry #5 is pruned, and the ratified F entry is in the prod list.
+- **The CI snapshot = prod at 1 Oct 2026 13:11:53 SAST.**
+
+Records are under `docs/audit/rt1_2026-09/prod/` and `ops/prod-release-v1.59.2/out/`.
 
 | step | when (SAST) | result | record |
 |---|---|---|---|
@@ -372,21 +375,32 @@ prod at 1 Oct 2026 09:57:49 SAST.** Records are under `docs/audit/rt1_2026-09/pr
 | **Manifest A** | **21:52:40 → 21:52:54** | 120 / 0, no mismatch → 120 lines, 0 history rows → 0 / 120 | `prod/data_A_20260930` |
 | audit **All** (2a / 2c / 2f) and the click-through (2g) | Michael | "ALL good" (no page counts reached the CA) | — |
 | Body Template fixes + door report | 21:53 → 1 Oct 08:14:51 | **14 OK** (the timeline below) | `prod/doors_window` |
-| **Manifest F** | **1 Oct 09:56:18 → 09:56:30** | 1 / 0 → `'1.3170731707317074' → '1.362881562881563'` (journal `a05f3023…`) → 0 / 1; psql reads the new value | `prod/factor_F_20261001` |
-| prune #5; the F entry (`review_by` 2026-10-15) | commits `22ec61c`, `7899740` | F entry: 70 FLAG → ACCEPTED, 0 other cells. #5 on prod's reports: 0 cells | `mirror/F/final_list/scope_proof.txt`, `prod/baseline_20261001-095729/prune_check.txt` |
-| **the baseline paste** | 09:57:29 → 09:57:53 | 5 packs exit 0; snapshot (`all.json` `8720c460…`); no-people gate on both files; door report **14 OK** | `prod/baseline_20261001-095729` |
-| sweep | 10:05:33 | `M APPLIED`, 0 outside; stored 4G factor `1.362881562881563` | `prod/sweep_20261001-100533` |
+| PU materials R4 095 → R4 100 | 1 Oct 09:52 – 09:53 | Michael, deliberate: Burt corrected his 32D | `prod/baseline_20261001-095729/snapshot_diff_1b_to_baseline.txt` |
+| **Manifest F** | **09:56:18 → 09:56:30** | 1 / 0 → `'1.3170731707317074' → '1.362881562881563'` (journal `a05f3023…`) → 0 / 1 | `prod/factor_F_20261001` |
+| prune #5; the F entry (`review_by` 2026-10-15) | commits `22ec61c`, `7899740` | on the mirror: F entry 70 FLAG → ACCEPTED, 0 other cells; #5: 0 cells | `mirror/F/final_list/scope_proof.txt` |
+| baseline paste (first) | 09:57:29 → 09:57:53 | 5 packs exit 0; snapshot `8720c460…`. Superseded by F2 | `prod/baseline_20261001-095729` |
+| sweep | 10:05:33 | `M APPLIED`, 0 outside | `prod/sweep_20261001-100533` |
+| "no PU on any chiller" (Michael) | ~10:07 – 10:20 | the three chiller drafts re-saved with no PU node; the BOM unchanged (§ below) | `prod/check_20261001-104358` |
+| the read-only check (ruling 3 addendum) | 10:43:58 | PU materials all R4 100; 57 own-priced PU lines; 120 REAR FRAME rules → 0 missing masters | `prod/check_20261001-104358` |
+| **Manifest F2** | **10:44:16 → 12:44:36** | dry-run `'1.362881562881563' -> '1.361219512195122'`, 1 / 0 (the BA's GO condition) → applied (journal `e31a2896…`) → 0 / 1; psql reads `'1.361219512195122'` | `prod/factor_F2_20261001` |
+| CHILLER 2.3 METER door, by hand | before 13:06 | 3795 DRD EPS 0 → 0.06, 3797 SRD EPS 0.06 → 0 (it had moved at ~10:43) | `prod/baseline_20261001-131134/door_report.txt` |
+| **the baseline paste (final)** | **13:11:34 → 13:11:57** | 5 packs exit 0; **snapshot `6155eeff…`** = the 09:57 one + F2 only; no-people gate on both files; door report **14 OK** | `prod/baseline_20261001-131134` |
 
-**Counts at the baseline** (UNVERIFIABLE / ACCEPTED / PASS / SKIP):
+**Counts at the final baseline** (UNVERIFIABLE / ACCEPTED / PASS / SKIP):
 - smoke 9 / 15 / 171 / 39;
 - chillers 0 / 20 / 1 009 / 224;
-- freezers 27 / 55 / 491 / 117;
-- icecream 40 / 87 / 381 / 104;
-- explosive 36 / 159 / 372 / 117.
+- freezers 27 / 51 / 495 / 117;
+- icecream 40 / 84 / 384 / 104;
+- explosive 36 / 156 / 375 / 117.
 
-**Where prod differs from the mirror's prediction:** smoke, icecream and explosive match it exactly. Chillers and
-freezers do not, for one reason: prod's own data moved after the 30 Sep 16:28 snapshot, outside RT1 (the list below).
-No cell is unaccepted.
+**Against the mirror's prediction:** freezers, icecream, explosive and smoke match the mirror's after-F2 run exactly
+(MIRROR_PROOF §5c). Chillers carry Michael's own chiller fixes of 1 Oct (below). No cell is unaccepted.
+
+**Two checks on these final reports** (`prod/baseline_20261001-131134/final_scope_and_prune.txt`):
+- **Keeping entry #5 changes 0 cells.**
+- **The F entry changes exactly 64 cells,** every one a foam_4g PU cell going FLAG → ACCEPTED (freezers 27,
+  icecream 34, explosive 3), and 0 others. The 2 963 non-4G cells are outside its scope; the 32D variants of the same
+  lines still guard every formula.
 
 **The door report through the window** (the evidence for the door-toggle defect, ruling 3 §4). Each wrong-door row
 means the next quote on that body opens with the rear-door insulation on the wrong side:
@@ -400,33 +414,51 @@ means the next quote on that body opens with the rear-door insulation on the wro
 | 07:21 – 07:25 | 12 → 13 | Michael's fixes |
 | 07:28 | 14 | CHILLER LARGE 3433 = 0.1 (not intended) |
 | 08:13:24 | 13 | CHILLER LARGE on SRD during the reset |
-| **08:14:51** | **14** | CHILLER LARGE 3433 = 0.06 |
-| 09:57 (baseline) | 14 | none |
+| 08:14:51 | 14 | CHILLER LARGE 3433 = 0.06 |
+| 09:57 (first baseline) | 14 | none |
+| ~10:43 (the check) | — | CHILLER 2.3 METER back on SRD EPS, during the chiller edit |
+| **13:11 (final baseline)** | **14** | CHILLER 2.3 METER fixed by hand |
+
+**The chiller edit at data level** (`prod/check_20261001-104358/`, 09:57 snapshot → 10:43):
+- **The configurator drafts changed:** all three re-saved (CHILLER LARGE 10:07:21, CHILLER MEDIUM 10:12:07,
+  CHILLER 2.3 METER 10:12:47), with no node naming PU now. The calculator no longer offers PU on a chiller.
+- **The BOM did not change:** the same 811 rows, 0 added, 0 removed. Every PU master (6 per chiller) and every PU foam
+  line (6 per chiller, own price R3 090) is still there. The only rows that moved were CHILLER 2.3 METER's rear-door
+  thickness (the door-toggle defect), fixed by hand before the final baseline.
+- **The REAR FRAME rules:** all 120 rule rows (231 conditions) point at existing masters of the same body and name.
+  None points at a missing master.
+- **The audit packs are unchanged** (ruling 3 addendum: the next job).
 
 **Prod data that moved outside RT1** (`prod/baseline_20261001-095729/snapshot_diff_1b_to_baseline.txt`):
-- **The six shared PU materials went R4 095 → R4 100** (Michael, 1 Oct 09:52–09:53, deliberate).
-  - Since F's factor is 5 581 / 4 095, a 4G PU foam line now prices at **R5 587.81** per m³ (Burt's 21 Sep 4G is
-    R5 581).
-  - MEAT HANGER LARGE, 6.7 m, PU, double door: **R24 878.82** at 32D and **R33 906.89** at 4G (Burt's sheet R33 858.65).
-  - The factor that would give Burt's 4G on R4 100 is 5 581 / 4 100 = 1.361219512195122. It is not changed: the BA's
-    call.
+- **The six shared PU materials R4 095 → R4 100** (Michael, deliberate: Burt's corrected 32D), hence F2.
+  - With F2, a 4G PU foam line prices **R5 581.00 = Burt's 4G**.
+  - MEAT HANGER LARGE, 6.7 m, PU, double door: **R24 878.82** at 32D, **R33 865.53** at 4G (Burt's sheet R33 858.65;
+    +R6.88 is his FRONT row's /2.99).
 - **CHILLER 2.3 METER:**
   - the DRD PU formula lost its ×2;
   - the single-door tapping blocks went from 6 × 200 mm to 3 × 200 mm + 3 × 250 mm (new material 1002, bom 11212);
   - its insulation masters moved to EPS.
 - **CHILLER MEDIUM and CHILLER LARGE:** the single-door fittings formulas now use the roof / floor thickness variables.
-- **CHILLER LARGE:** FLOOR moved PU → EPS (0.1), and its draft was re-saved twice.
+- **CHILLER LARGE:** FLOOR moved PU → EPS (0.1), and its draft was re-saved.
 
-**Noted, not changed:**
+**Noted, not changed (for RT3 / the next jobs):**
+- **57 PU foam lines carry their own price** (the full list: `prod/check_20261001-104358/check.txt` §1):
+  - chillers R3 090 (18);
+  - icecream bodies R4 100 (16);
+  - single rear doors R4 100 (4);
+  - explosive per-sheet R167.92 / R234.15 (12);
+  - FREEZER 2.3 METER 3600 R245.74;
+  - 6229 R446.02;
+  - RHINORANGE TRAILER (5).
 - **The F entry goes EXPIRED (red) on 15 Oct** if the golden has not been rebuilt from Burt's 21 Sep workbooks by then.
-- **Until the next deploy,** prod's page reads its deployed list, so it shows **F's 70 4G cells as FLAG**. They are
-  the known golden gap, not a pricing defect.
-- **With the 4G toggle,** MES also moves the single rear door to 4G (+R530 to +R548 against Burt, who keeps it at
+- **Until the next deploy,** prod's page reads its deployed list, so it shows **64 4G cells as FLAG**: F's known
+  golden gap, not a pricing defect.
+- **With the 4G toggle,** MES also moves the single rear door to 4G (+R528 to +R546 against Burt, who keeps it at
   32D). This is recorded as known (ruling 2 §2b).
 - **The rear-door templates move with ordinary calculator use** (the timeline). The BA recommends this as the next
   job.
 
 **Rollback** is still valid:
 - **Code:** `de74796` (see Rollback).
-- **Data:** each manifest by its own journal in `/var/backups/icb-rt1-2026-09/` (A, M, F). Each is independent and
-  byte-exact.
+- **Data:** each manifest by its own journal in `/var/backups/icb-rt1-2026-09/` (A, M, F, F2). Each is independent and
+  byte-exact; F2's revert returns the row to F's value.

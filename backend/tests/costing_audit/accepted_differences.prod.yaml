@@ -48,15 +48,6 @@
   owner: BA
   review_by: 2026-10-31
 
-- body: "*"
-  section: "REAR FRAME + FLOOR PLATE"
-  variant: [srd, srd_pu]
-  cause: "EXTRA_IN_MES"
-  kind: known_defect
-  reason: "[RULING] Burt gates REAR FRAME + FLOOR PLATE on the DRD flags, so a single-rear-door body carries R0 there; MES always includes the section (R2.4k-R5.5k). Which is right needs Burt/Michael."
-  owner: BA
-  review_by: 2026-10-31
-
 - body: "icecream up to 4.8"
   section: FLOOR
   variant: "*"

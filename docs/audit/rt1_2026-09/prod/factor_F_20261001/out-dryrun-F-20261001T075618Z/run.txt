@@ -1,0 +1,17 @@
+== prod: db=icb_platform alembic=0049 code=1d9cb47 staged=d36b9e1 mode=dryrun F  2026-10-01T09:56:18+02:00
+   psql: the stored 4G factor is '1.3170731707317074'
+== dry-run F (READ ONLY)
+database icb_platform (--target prod); Manifest F: admin_settings['costings.pu_foam_4g_factor']; tool sha256 6fa802ac4271f2f9…
+  row id 10  value '1.3170731707317074'  updated_at 2026-09-04 08:42:18.497914
+  APPLY '1.3170731707317074' -> '1.362881562881563'  (x 1.034780445891557)
+        a 4G PU foam line on the R4,095 material: R5,393.41 -> R5,581.00 per m³ (Burt's 4G: R5,581.00)
+        32D quotes, EPS quotes and every non-foam line: unchanged
+1 to apply, 0 already applied.
+(DRY RUN — nothing written. Re-run with --apply.)
+saved costings graded 4G (not deleted): 3 — by status {'pending': 3}
+   a saved costing keeps its saved totals; one re-opened and re-calculated after F prices its PU foam at the new factor
+   N9978/08/2026 | pending | saved 2026-08-28 | FREEZER LARGE
+   N9979/08/2026 | pending | saved 2026-08-28 | FREEZER MEDIUM
+   N10009/09/2026 | pending | saved 2026-09-25 | FREEZER LARGE
+
+######## DONE (dryrun F: 1 to apply, 0 already applied.) — tell the CA: /tmp/icb-rt1-factor/out-dryrun-F-20261001T075618Z

@@ -1,0 +1,18 @@
+{
+  "tool": "rt1_factor",
+  "manifest": "F",
+  "tool_sha256": "6fa802ac4271f2f9c8359530f978a9d40ab4c3efc20390cd2622a8b1e768c056",
+  "target": "prod",
+  "database": "icb_platform",
+  "key": "costings.pu_foam_4g_factor",
+  "row_id": 10,
+  "before": {
+    "value": "1.3170731707317074",
+    "updated_at": "2026-09-04 08:42:18.497914"
+  },
+  "after": {
+    "value": "1.362881562881563",
+    "updated_at": "2026-10-01 09:56:30.050399"
+  },
+  "applied_at_utc": "2026-10-01T07:56:30+00:00"
+}

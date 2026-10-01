@@ -22,9 +22,14 @@ from ..services import (
     archive_trailer_template_binding,
     get_section_snapshot, section_effective_optional,
 )
+from ..services import insulation_foam as pu_foam   # RT2 Part 1c — the per-body default grade
 from ..templates_config import templates
 
 router = APIRouter()
+
+# RT2 R2 — a BOM row's thickness (variable_value) is a Body Template default; quoting
+# never writes it (calculator.js keeps a quote's thicknesses in the costing itself).
+TEMPLATE_THICKNESS_ADMIN_ONLY = "Template thickness is set in Body Templates by an administrator."
 
 
 # ─── Trailer Types ────────────────────────────────────────────────────────────
@@ -37,6 +42,8 @@ def _trailer_row(t: TrailerType) -> dict:
             "markup_percentage": t.markup_percentage or 0.0,
             "protect_overrides": bool(t.protect_overrides),
             "configurator_v2":   bool(t.configurator_v2),
+            # RT2 Part 1c — the foam grade a NEW costing on this body opens on
+            "default_insulation_foam": pu_foam.normalise(t.default_insulation_foam),
             "is_active":         bool(t.is_active)}
 
 
@@ -110,6 +117,14 @@ async def update_trailer(tt_id: int, request: Request, db: Session = Depends(get
         ).first()
         if existing:
             raise HTTPException(status_code=400, detail=f'A trailer type named "{new_name}" already exists')
+    if "default_insulation_foam" in body:
+        # RT2 Part 1c — exactly one of the two grades, stored in its canonical
+        # spelling; anything else is refused rather than silently read as 32D.
+        grade = str(body["default_insulation_foam"] or "").strip().upper()
+        if grade not in (pu_foam.FOAM_32D, pu_foam.FOAM_4G):
+            raise HTTPException(status_code=400,
+                                detail="default_insulation_foam must be '32D' or '4G'")
+        body["default_insulation_foam"] = grade
     for k, v in body.items():
         if hasattr(tt, k) and k not in ["id"]:
             setattr(tt, k, v)
@@ -143,6 +158,7 @@ async def duplicate_trailer(tt_id: int, request: Request, db: Session = Depends(
         default_width=src.default_width,
         default_height=src.default_height,
         markup_percentage=src.markup_percentage,
+        default_insulation_foam=src.default_insulation_foam,
         group_id=src.group_id,
         override_report_template_id=src.override_report_template_id,
     )
@@ -322,15 +338,23 @@ async def add_bom_item(tt_id: int, request: Request, db: Session = Depends(get_d
 @router.put("/api/bom/{bom_id}")
 async def update_bom_item(bom_id: int, request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    # variable_value (insulation thickness in metres) may be written by any
-    # logged-in user so that switching an insulation radio persists for everyone.
+    keys = set(body.keys())
+    # RT2 R2 — variable_value (an insulation thickness, metres) is a Body Template
+    # DEFAULT. It used to be writable by any logged-in user "so that switching an
+    # insulation radio persists for everyone" — which let every quote's door and
+    # insulation toggles rewrite the template for the next user. A quote now keeps
+    # its thicknesses in the costing itself (calculator.js quoteVarOverlay, sent as
+    # body_variable_overrides), so a thickness-only body is an admin's template edit.
+    # Body Templates sends a full body, which takes the admin branch below anyway.
     # A price-only body (unit_price_override) is the costings-page "save permanent
     # price" path — gated on costings.price_master_edit (seeded {admin, full})
     # rather than the admin role, so Internal Sales can maintain prices.
     # All other BOM fields (formula, group, section…) remain admin-only.
-    if set(body.keys()) <= {"variable_value"}:
-        require_user(request, db)
-    elif set(body.keys()) <= {"unit_price_override"}:
+    if keys == {"variable_value"}:
+        user = require_user(request, db)
+        if user.role != "admin":
+            raise HTTPException(status_code=403, detail=TEMPLATE_THICKNESS_ADMIN_ONLY)
+    elif keys and keys <= {"unit_price_override"}:
         user = require_user(request, db)
         if not user_can(user, "costings.price_master_edit", db):
             raise HTTPException(status_code=403,

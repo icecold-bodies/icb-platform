@@ -19,7 +19,9 @@ saved costing's input_state, v1.56):
                              gates DRD/SRD on v2 bodies without door masters)
     flag_overrides           {flag name: bool} aliases, as the UI sends them
     optional_sections_enabled []  — OPTIONAL EXTRAS off (Excel has none)
-    insulation_foam          32D | 4G
+    insulation_foam          32D | 4G — the scenario's own grade for foam_4g / foam_32d,
+                             else the BODY's default_insulation_foam (RT2 R6.4: what a
+                             new quote opens on)
     dimensions               length/width/height + the UI's zero defaults
 """
 from __future__ import annotations
@@ -137,13 +139,23 @@ class MesProbe:
     # ── payload ─────────────────────────────────────────────────────────
     def build_payload(self, sc: Scenario) -> tuple[dict, list[str], list[str]]:
         """Returns (payload, unmatched sheet flags, notes)."""
-        _, rows = self._load(sc.trailer_id)
+        tt, rows = self._load(sc.trailer_id)
         masters = [r for r in rows if r.is_body_option and r.material]
         sel: dict[str, bool] = {}
         var_over: dict[str, float] = {}
         flag_over: dict[str, bool] = {}
         notes: list[str] = []
         handled: set[int] = set()
+
+        # RT2 Part 1c (RT2_RULING_1 R6.4) — a variant that does not name its grade
+        # opens on the BODY's default, the way a real new quote does (Body Templates;
+        # 32D unless an admin set 4G). foam_4g / foam_32d keep their own grade.
+        from app.services import insulation_foam as pu_foam
+        body_foam = pu_foam.normalise(getattr(tt, "default_insulation_foam", None))
+        foam = pu_foam.normalise(sc.foam) if sc.sets_foam else body_foam
+        if not sc.sets_foam and body_foam != pu_foam.normalise(sc.foam):
+            notes.append(f"foam: the MES body opens on {body_foam} (its default); the golden priced "
+                         f"Burt's sheet at {sc.foam} (the pack's foam_default)")
 
         # insulation pairs
         for panel in PANELS:
@@ -215,7 +227,7 @@ class MesProbe:
             "flag_overrides": flag_over,
             "user_excluded_bom_ids": [],
             "optional_sections_enabled": [],
-            "insulation_foam": sc.foam,
+            "insulation_foam": foam,
             "profit_margin": 0,
             "chassis": {"enabled": False},
         }

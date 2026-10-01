@@ -213,6 +213,11 @@ class TrailerType(Base):
     # bill_of_materials.bom_conditions) in addition to the legacy gating.
     # Toggleable per trailer from /admin/templates so rollout can be gradual.
     configurator_v2 = Column(Boolean, default=False, nullable=False)
+    # RT2 Part 1c (migration 0050) — the PU foam grade a NEW costing on this body
+    # opens on: '32D' (every body, as before) or '4G' (the bodies Burt prices at
+    # 4G FOAM). Set by an admin in Body Templates. A saved costing keeps its own
+    # grade; the user can still change it on the quote.
+    default_insulation_foam = Column(String(8), nullable=False, default="32D", server_default="32D")
     # Quote/report assignment. group_id binds to a TrailerGroup which carries
     # the default ReportTemplate. override_report_template_id wins per-trailer
     # so one trailer in a group can use a different template.

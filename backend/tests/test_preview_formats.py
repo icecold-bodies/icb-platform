@@ -303,12 +303,21 @@ def test_admin_price_save_unchanged(client, admin_headers, seeded):
                json={"unit_price_override": None})
 
 
-def test_any_user_still_writes_variable_value(client, sales_headers, seeded):
-    """The insulation-radio path (variable_value-only body) stays require_user."""
-    r = client.put(f"/api/bom/{seeded['bom_id']}", headers=sales_headers,
+def test_only_an_admin_writes_template_thickness(client, sales_headers, full_headers,
+                                                 admin_headers, seeded):
+    """RT2 R2 — a variable_value-only body is a Body Template DEFAULT: admin only, and
+    the refusal says where the change belongs. Until RT2 it was require_user ("so that
+    switching an insulation radio persists for everyone"), which let every quote's door
+    and insulation toggles rewrite the template for the next user."""
+    for headers in (sales_headers, full_headers):
+        r = client.put(f"/api/bom/{seeded['bom_id']}", headers=headers,
+                       json={"variable_value": 0.05})
+        assert r.status_code == 403, r.text
+        assert r.json()["detail"] == "Template thickness is set in Body Templates by an administrator."
+    r = client.put(f"/api/bom/{seeded['bom_id']}", headers=admin_headers,
                    json={"variable_value": 0.05})
     assert r.status_code == 200, r.text
-    r = client.put(f"/api/bom/{seeded['bom_id']}", headers=sales_headers,
+    r = client.put(f"/api/bom/{seeded['bom_id']}", headers=admin_headers,
                    json={"variable_value": None})
     assert r.status_code == 200
 

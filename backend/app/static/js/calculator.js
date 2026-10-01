@@ -177,8 +177,60 @@ let editingVersion     = 1;
 let editingQuoteNumber = null;
 // While editing, pins the quote's body-variable values (insulation EPS/PU
 // thicknesses, by material name) so the recompute reproduces the saved figures
-// even if a global EPS/PU copy-on-switch changed the BOM since the quote saved.
+// even if the Body Template's defaults changed since the quote saved.
 let editBodyVarOverrides = null;
+// RT2 Part 1 — a quote NEVER writes the Body Template. Every thickness a quote
+// changes (the rear-door carry, the EPS/PU copy-on-switch, the load and render
+// heals, a typed or pasted thickness) lands in THIS costing's own overlay: the
+// in-memory BOM row plus quoteVarOverlay (bom id → metres). The overlay rides
+// every calc and save as name-keyed body_variable_overrides, so the price
+// follows the quote's own door and insulation; the save stores it in the
+// costing's body_variables, which a re-open replays through the edit pins; and
+// a reload of the SAME quote's BOM (preserveInputs) re-applies it. A fresh body
+// type starts a fresh overlay from the template. Template defaults change only
+// in Body Templates, by an administrator — the server refuses a
+// variable_value-only PUT /api/bom from anyone else.
+let quoteVarOverlay = {};
+let quoteVarTrailer = null;   // the trailer id (string) the overlay belongs to
+
+function _resetQuoteVars(tid) {
+  quoteVarOverlay = {};
+  quoteVarTrailer = (tid != null && tid !== '') ? String(tid) : null;
+}
+
+// Set one thickness on THIS quote (never the template). Returns true when the
+// value changed.
+function _setQuoteVar(row, v) {
+  if (!row) return false;
+  const val = Number(v) || 0;
+  const changed = row.variable_value == null || (Number(row.variable_value) || 0) !== val;
+  row.variable_value = val;
+  quoteVarOverlay[String(row.id)] = val;
+  if (quoteVarTrailer == null) quoteVarTrailer = String(document.getElementById('trailer-select')?.value || '');
+  return changed;
+}
+
+// After the same quote reloads its BOM, put its own thicknesses back on the
+// freshly-fetched template rows.
+function _reapplyQuoteVars() {
+  for (const r of (bomData || [])) {
+    const k = String(r.id);
+    if (Object.prototype.hasOwnProperty.call(quoteVarOverlay, k)) r.variable_value = quoteVarOverlay[k];
+  }
+}
+
+// The overlay keyed the way the server overlays body variables: by material name.
+function _quoteVarsPayload() {
+  const out = {};
+  for (const r of (bomData || [])) {
+    const k = String(r.id);
+    if (r && r.is_body_option && r.material_name != null
+        && Object.prototype.hasOwnProperty.call(quoteVarOverlay, k)) {
+      out[String(r.material_name)] = Number(quoteVarOverlay[k]) || 0;
+    }
+  }
+  return out;
+}
 // Edit-replay (legacy records with no UI snapshot): forces the recompute to
 // reproduce the saved result exactly — include only the saved-included rows with
 // their saved formulas + prices. { userExcluded:[], formulaOverrides:{},
@@ -213,7 +265,6 @@ const _DRDSR_TOGGLE_GROUPS = ['DRD', 'SRD'];
 
 function _boSelKey(tid)    { return `body_opt_sel_${tid}`; }
 function _drdSrdKey(tid)   { return `drd_srd_${tid}`; }
-function _insFoamKey(tid)  { return `ins_foam_${tid}`; }
 
 // ── v1.51 — BOM price tips are OPT-IN (Michael, 25 Aug) ─────────────────────
 // The coloured price bubbles (quote-only override / recently updated / outdated
@@ -313,17 +364,15 @@ function normaliseInsFoam(v) {
   return (t === INS_FOAM_4G || t === '4G FOAM') ? INS_FOAM_4G : INS_FOAM_32D;
 }
 
-function saveInsFoam() {
-  const tid = document.getElementById('trailer-select')?.value;
-  if (!tid) return;
-  try { localStorage.setItem(_insFoamKey(tid), insulationFoam); } catch(_) {}
-}
-
-function loadInsFoam(tid) {
-  try {
-    const raw = localStorage.getItem(_insFoamKey(tid));
-    if (raw) insulationFoam = normaliseInsFoam(raw);
-  } catch(_) {}
+// RT2 Part 1c (RT2_RULING_1 R6) — the grade a NEW costing on this body opens
+// on: the body's own default, set by an admin in Body Templates ('32D' unless
+// set to '4G'). It replaces the v1.51 per-browser memory (ins_foam_<tid> in
+// localStorage), which let one browser's last choice decide where a quote
+// started — the same class of defect as Part 1. A saved costing keeps its own
+// grade (applyCalculationInputs); the user can still change it on the quote.
+function _bodyDefaultFoam(tid) {
+  const t = (typeof trailerDefaults !== 'undefined') ? trailerDefaults[+tid] : null;
+  return normaliseInsFoam(t && t.default_insulation_foam);
 }
 
 /** True when this body has at least one PU foam COST line — the toggles
@@ -348,7 +397,6 @@ function onInsFoamChange(grade) {
   const next = normaliseInsFoam(grade);
   if (next === insulationFoam) return;
   insulationFoam = next;
-  saveInsFoam();
   renderInsulationFoam(bomData);
   refreshBomDisplay();
   scheduleCalc();
@@ -360,13 +408,18 @@ function renderInsulationFoam(items) {
   if (!_bodyUsesPuFoam(items)) { host.style.display = 'none'; host.innerHTML = ''; return; }
   host.style.display = '';
   const live = _puInsulationSelected(items);
+  // RT2 R6.3 — say where the opening grade came from: the body's default
+  // carries "(body default)", so sales can see why a quote opened on 4G.
+  const bodyDefault = _bodyDefaultFoam(document.getElementById('trailer-select')?.value);
   const radio = (grade) => `
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-size:11px">
         <input type="radio" name="ins-foam" value="${grade}"
                ${insulationFoam === grade ? 'checked' : ''}
+               ${grade === bodyDefault ? 'data-body-default="1"' : ''}
                style="accent-color:var(--blue);width:13px;height:13px;cursor:pointer"
                onchange="onInsFoamChange(this.value)"/>
-        <span>${INS_FOAM_LABELS[grade]}</span>
+        <span>${INS_FOAM_LABELS[grade]}${grade === bodyDefault
+          ? ' <span class="ins-foam-default" style="color:var(--text-dim)">(body default)</span>' : ''}</span>
       </label>`;
   host.innerHTML = `
     <div style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px">
@@ -453,6 +506,10 @@ function saveLastSession() {
       } : null,
       body_options: { ...bodyOptionSelections },
       drd_srd:     { ...drdSrdEnabled },
+      // RT2 — this costing's own foam grade and thicknesses (the template is never
+      // written, so they live only here until the costing is saved).
+      insulation_foam: insulationFoam,
+      quote_vars: (quoteVarTrailer === String(tid)) ? { ...quoteVarOverlay } : {},
       discount_kind:  discountKind,
       discount_input: discountInput,
     }));
@@ -482,6 +539,15 @@ async function restoreLastSession() {
   if (!_isV2) {
     if (session.body_options) Object.assign(bodyOptionSelections, session.body_options);
     if (session.drd_srd)      Object.assign(drdSrdEnabled,        session.drd_srd);
+  }
+  // RT2 — the foam grade and the thicknesses follow the same rule as the
+  // selections they belong to: a v1 body resumes its own; a v2 body restarts
+  // from its defaults (the body's default foam, the template's thicknesses).
+  insulationFoam = (!_isV2 && session.insulation_foam)
+    ? normaliseInsFoam(session.insulation_foam) : _bodyDefaultFoam(session.trailer_type_id);
+  _resetQuoteVars(session.trailer_type_id);
+  if (!_isV2 && session.quote_vars && typeof session.quote_vars === 'object') {
+    quoteVarOverlay = { ...session.quote_vars };
   }
 
   sel.value = session.trailer_type_id;
@@ -564,14 +630,11 @@ async function onDrdSrdToggle(grp, checked) {
     drdSrdEnabled[grp] = false;
     _clearDrdSrdSelections(grp);
     // No rear door selected → zero this door's insulation so it neither warns
-    // nor leaks a deduction into the {SRD …} formulas.
+    // nor leaks a deduction into the {SRD …} formulas. This quote only (RT2).
     const pair = _doorInsulationPair(grp);
     if (pair) {
       for (const row of [pair.eps, pair.pu]) {
-        if ((Number(row.variable_value) || 0) !== 0) {
-          row.variable_value = 0;
-          try { await api('PUT', `/api/bom/${row.id}`, { variable_value: 0 }); } catch (e) { /* non-fatal */ }
-        }
+        if ((Number(row.variable_value) || 0) !== 0) _setQuoteVar(row, 0);
       }
     }
   }
@@ -697,8 +760,7 @@ function _doorActiveCell(pair) {
 // Carry the rear-door thickness onto the newly-selected door's matching side
 // and zero the other door entirely. Thickness + side follow the previous door
 // (so EPS stays EPS, PU stays PU across the switch); default 0.06 m when no
-// value exists yet. Persists each change to the body template via PUT /api/bom,
-// mirroring the EPS/PU copy-on-switch flow.
+// value exists yet. RT2: on THIS quote only (its overlay) — never the template.
 async function _carryRearDoorThickness(newGrp, oldGrp) {
   const newPair = _doorInsulationPair(newGrp);
   if (!newPair) return;                       // door has no insulation pair
@@ -709,8 +771,8 @@ async function _carryRearDoorThickness(newGrp, oldGrp) {
   const writes = [];
   const setVal = (row, v) => {
     v = Number(v) || 0;
-    if ((Number(row.variable_value) || 0) !== v) { row.variable_value = v; writes.push([row.id, v]); }
-    _pinBodyVar(row, v);   // pin mirrors the FINAL pair state even when no PUT was needed (v1.42.1)
+    if (_setQuoteVar(row, v)) writes.push([row.id, v]);
+    _pinBodyVar(row, v);   // pin mirrors the FINAL pair state even when nothing changed (v1.42.1)
   };
   setVal(newPair.eps, side === 'EPS' ? T : 0);
   setVal(newPair.pu,  side === 'PU'  ? T : 0);
@@ -722,11 +784,8 @@ async function _carryRearDoorThickness(newGrp, oldGrp) {
     bodyOptionSelections[String(oldPair.eps.id)] = false;
     bodyOptionSelections[String(oldPair.pu.id)]  = false;
   }
-  for (const [id, v] of writes) {
-    try { await api('PUT', `/api/bom/${id}`, { variable_value: v }); } catch (e) { /* non-fatal */ }
-  }
   if (writes.length) {
-    try { toast(`Rear-door insulation → ${side} ${T.toFixed(3)} m on ${newGrp}  ·  Body Template updated`, 'success'); } catch (e) {}
+    try { toast(`Rear-door insulation → ${side} ${T.toFixed(3)} m on ${newGrp}`, 'success'); } catch (e) {}
   }
 }
 
@@ -734,11 +793,15 @@ async function _carryRearDoorThickness(newGrp, oldGrp) {
 // door (DRD/SRD) may carry insulation thickness; the inactive door's EPS/PU
 // must be 0 or they keep leaking into the {SRD …}/{DRD …} formula deductions
 // (under-quoting the active door's panels). The toggle path already enforces
-// this on every switch — this heals templates that were saved before the
-// invariant, once, when the body is opened. Writes only when dirty; ambiguous
-// door state (no selector checked, no solely-enabled gate) → no-op, never
-// guess. Deliberately does NOT touch editBodyVarOverrides: a reopened quote
-// keeps reproducing its saved figures via the pins + drift banner.
+// this on every switch — this aligns a body whose template carries thickness
+// on the door this quote does not quote. Ambiguous door state (no selector
+// checked, no solely-enabled gate) → no-op, never guess. Deliberately does NOT
+// touch editBodyVarOverrides: a reopened quote keeps reproducing its saved
+// figures via the pins + drift banner.
+// RT2 Part 1: THIS quote only. It used to PUT the zeros into the Body Template
+// on mere OPEN — from whichever door the opening browser remembered — which is
+// how one user's last door became the next user's template (RT2_RETURN_1 §1.2).
+// It now runs silently on every open and never writes.
 async function _zeroInactiveRearDoorInsulation() {
   const active = _selectedRearDoor();
   if (!active) return false;
@@ -747,16 +810,10 @@ async function _zeroInactiveRearDoorInsulation() {
     if (grp === active) continue;
     const pair = _doorInsulationPair(grp);
     if (!pair) continue;
-    let grpHealed = false;
     for (const row of [pair.eps, pair.pu]) {
       if ((Number(row.variable_value) || 0) === 0) continue;
-      row.variable_value = 0;
-      grpHealed = true;
-      try { await api('PUT', `/api/bom/${row.id}`, { variable_value: 0 }); } catch (e) { /* non-fatal */ }
-    }
-    if (grpHealed) {
+      _setQuoteVar(row, 0);
       healed = true;
-      try { toast(`${grp} insulation zeroed — only ${active} doors are quoted  ·  Body Template updated`, 'success'); } catch (e) {}
     }
   }
   return healed;
@@ -820,8 +877,8 @@ function _releaseFlippedPairRows(pair) {
 }
 
 // Copy-on-switch: when an insulation radio is newly selected, carry the
-// sibling's thickness onto the selected row and zero the sibling. Persists
-// both to the body template via PUT /api/bom (same flow as manual bv-edit).
+// sibling's thickness onto the selected row and zero the sibling — on THIS
+// quote only (RT2: its overlay, never the Body Template).
 async function _applyInsulationCopyZero(selectedMasterId) {
   const pair = _insulationPairFor(selectedMasterId);
   if (!pair) return;
@@ -849,17 +906,11 @@ async function _applyInsulationCopyZero(selectedMasterId) {
       return; // nothing to carry over — both-zero guard will flag it
     }
   }
-  selected.variable_value = carry;
-  other.variable_value = 0;
+  _setQuoteVar(selected, carry);
+  _setQuoteVar(other, 0);
   _pinBodyVar(selected, carry);   // in-edit toggle must reach the recompute (v1.42.1)
   _pinBodyVar(other, 0);
-  try {
-    await api('PUT', `/api/bom/${selected.id}`, { variable_value: carry });
-    await api('PUT', `/api/bom/${other.id}`,    { variable_value: 0 });
-    toast(`{${selected.material_name}} → ${carry.toFixed(3)} m  ·  Body Template updated`, 'success');
-  } catch (e) {
-    toast('Save failed: ' + e.message, 'error');
-  }
+  toast(`{${selected.material_name}} → ${carry.toFixed(3)} m`, 'success');
 }
 
 // Both-zero guard: turn both bv-edit value spans red and show an inline
@@ -1057,42 +1108,24 @@ async function editBodyVariable(span) {
     const _pinMoved = !!(editBodyVarOverrides && _pinKey)
       && Number(_pinBefore) !== Number(editBodyVarOverrides[_pinKey]);
     if (v === parseFloat(current)) {
-      // Template already holds v, so there is nothing to PUT — but releasing a
-      // stale pin still changes the numbers, so recompute when the pin moved.
+      // The quote already holds v — but releasing a stale pin still changes the
+      // numbers, so recompute when the pin moved.
       restore(`(${v.toFixed(3)} m)`, v);
       if (_pinMoved && typeof lastResult !== 'undefined' && lastResult
           && typeof runCalc === 'function') runCalc();
       return;
     }
-    try {
-      await api('PUT', `/api/bom/${bomId}`, { variable_value: v });
-      restore(`(${v.toFixed(3)} m)`, v);
-      toast(`{${name}} → ${v.toFixed(3)} m  ·  Body Template updated`, 'success');
-      // Show a persistent warning beneath the row. Placing it as a sibling of
-      // the <label> (rather than inside it) avoids wrapping and lets the
-      // warning span the full width of the panel without disturbing the row.
-      const fresh = document.querySelector(`#body-options-list span.bv-edit[data-bom-id="${bomId}"]`);
-      if (fresh) {
-        const label = fresh.closest('label');
-        // Remove any existing warning for this bom_id
-        document.querySelectorAll(`#body-options-list .bv-warn[data-bom-id="${bomId}"]`).forEach(w => w.remove());
-        const warn = document.createElement('div');
-        warn.className = 'bv-warn';
-        warn.dataset.bomId = bomId;
-        warn.title = 'This change updates the body template — all other costings using this template will see the new value';
-        warn.innerHTML = '<span style="font-size:11px">⚠</span>&nbsp;<span>TEMPLATE UPDATED</span>';
-        warn.style.cssText = 'margin:1px 0 6px 24px;font-size:9px;font-weight:700;color:#f0a500;letter-spacing:.5px;background:#1a1200;border:1px solid #b07800;border-radius:3px;padding:2px 6px;white-space:nowrap;display:inline-flex;align-items:center;gap:2px';
-        label.insertAdjacentElement('afterend', warn);
-      }
-      // Flag an insulation pair that now has zero thickness on both sides.
-      validateInsulationPairs();
-      // Re-run the calculation if we have results — the new value affects formulas
-      if (typeof lastResult !== 'undefined' && lastResult && typeof runCalc === 'function') {
-        runCalc();
-      }
-    } catch(e) {
-      toast('Save failed: ' + e.message, 'error');
-      restore(`(${Number(current).toFixed(3)} m)`, null);
+    // RT2 R3 — a typed thickness changes THIS quote only: its overlay (saved in
+    // the costing's body_variables, restored on re-open). It never reaches the
+    // Body Template; template defaults are set in Body Templates by an admin.
+    if (_row) _setQuoteVar(_row, v);
+    restore(`(${v.toFixed(3)} m)`, v);
+    toast(`{${name}} → ${v.toFixed(3)} m  ·  this quote only`, 'success');
+    // Flag an insulation pair that now has zero thickness on both sides.
+    validateInsulationPairs();
+    // Re-run the calculation if we have results — the new value affects formulas
+    if (typeof lastResult !== 'undefined' && lastResult && typeof runCalc === 'function') {
+      runCalc();
     }
   });
 }
@@ -1331,6 +1364,10 @@ function _saveReturnState(tid) {
       draft_folder:           (typeof draftFolderState        !== 'undefined') ? { ...draftFolderState }        : null,
       optional_sections_enabled: window.OptionalSections ? [...window.OptionalSections.loadEnabled(+tid)]       : [],
       optional_row_excl:         window.OptionalSections ? [...window.OptionalSections.loadRowExcl(+tid, 'c1')] : [],
+      // RT2 — the quote's own foam grade and thicknesses (never in the template)
+      // must survive the detour too.
+      insulation_foam: insulationFoam,
+      quote_vars: (quoteVarTrailer === String(tid)) ? { ...quoteVarOverlay } : {},
       editing: (typeof editingRecordId !== 'undefined' && editingRecordId) ? {
         record_id: editingRecordId,
         version:   (typeof editingVersion     !== 'undefined' && editingVersion)     ? editingVersion     : 1,
@@ -1406,6 +1443,14 @@ async function _restoreReturnState(tid) {
   if (st.draft_folder         && typeof draftFolderState        !== 'undefined') draftFolderState        = { ...st.draft_folder };
   bodyOptionSelections = { ...(st.body_option_selections || {}) };
   drdSrdEnabled        = { ...(st.drd_srd || {}) };
+  // RT2 — the quote's own foam grade and thicknesses come back on BOTH paths
+  // (the degraded plain loadBOM() above starts a fresh overlay + the body default).
+  if (st.insulation_foam) insulationFoam = normaliseInsFoam(st.insulation_foam);
+  if (st.quote_vars && typeof st.quote_vars === 'object') {
+    _resetQuoteVars(tid);
+    quoteVarOverlay = { ...st.quote_vars };
+    _reapplyQuoteVars();
+  }
 
   // Re-bind an in-flight EDIT so saving still offers overwrite-or-revision on
   // the original record instead of silently forking a new costing. The replay
@@ -2826,9 +2871,9 @@ function applyCalculationInputs(payload) {
   // v1.51 — restore the PU foam grade this quote was priced at. Runs for BOTH
   // hydrate paths (edit and recall-a-validated-reference) because both funnel
   // through here. A record saved before this lane has no key and reads as 32D,
-  // which is what it was priced at.
+  // which is what it was priced at. RT2 R6: a saved costing keeps its OWN grade,
+  // whatever its body's default is now.
   insulationFoam = normaliseInsFoam(payload.insulation_foam);
-  saveInsFoam();
   // Restore body-option selections from saved calculation
   if (payload.body_option_selections && typeof payload.body_option_selections === 'object') {
     Object.assign(bodyOptionSelections, payload.body_option_selections);
@@ -2951,6 +2996,7 @@ async function prefillCalculation(recordId) {
 
     clearOverrideSession();  // copied quote always starts with clean prices
     document.getElementById('trailer-select').value = payload.trailer_type_id;
+    _resetQuoteVars(payload.trailer_type_id);   // RT2 — never inherit another quote's thicknesses
     await loadBOM({ preserveInputs: true });
     applyCalculationInputs(payload);
     // WO v4.30 — a copy keeps the SOURCE ratio (applyCalculationInputs doesn't set it); reuse the
@@ -3038,6 +3084,7 @@ async function editCalculation(recordId) {
       toast(`Only pending costings can be edited — “${payload.quote_number || ('#'+recordId)}” is ${status}. Opening a copy instead.`, 'warn');
       clearOverrideSession();
       document.getElementById('trailer-select').value = payload.trailer_type_id;
+      _resetQuoteVars(payload.trailer_type_id);   // RT2 — never inherit another quote's thicknesses
       await loadBOM({ preserveInputs: true });
       applyCalculationInputs(payload);
       lastRecordId = null;
@@ -3069,6 +3116,9 @@ async function editCalculation(recordId) {
     }
     bodyOptionSelections = { ...(snap.body_option_selections || payload.body_option_selections || {}) };
     drdSrdEnabled        = { ...(snap.drd_srd || {}) };
+    // RT2 — the reopened costing's thicknesses come from its own saved
+    // body_variables (the edit pins below), never from another quote's overlay.
+    _resetQuoteVars(tid);
 
     await loadBOM({ preserveInputs: true });
     applyCalculationInputs(payload);             // dims, margin, customer, body options
@@ -3560,7 +3610,10 @@ async function loadBOM(options = {}) {
     priceOverrides = {};
     bodyOptionSelections = {};
     drdSrdEnabled = {};
-    insulationFoam = INS_FOAM_32D;  // v1.51 — every fresh costing starts on 32D
+    // RT2 R6 — a fresh costing opens on its BODY's default grade (Body
+    // Templates), never on a grade this browser remembers.
+    insulationFoam = _bodyDefaultFoam(tid);
+    _resetQuoteVars(tid);          // RT2 — a fresh costing starts from the template's thicknesses
     editBodyVarOverrides = null;   // pinned thicknesses only apply within an edit
     editReplay = null;             // replay state only applies within an edit
     discountKind = null; discountInput = 0;   // discount is per-costing, reset on a fresh trailer
@@ -3582,9 +3635,6 @@ async function loadBOM(options = {}) {
       loadBodyOptSel(tid);
       loadDrdSrdEnabled(tid);
     }
-    // v1.51 — the foam grade is not configurator state, so it restores on both
-    // v1 and v2 bodies. Absent key = 32D (already reset above).
-    loadInsFoam(tid);
   }
 
   // Apply default dimensions and markup from the trailer's saved values
@@ -3603,6 +3653,11 @@ async function loadBOM(options = {}) {
   area.innerHTML = '<div style="padding:20px;text-align:center"><span class="spinner"></span></div>';
   try {
     bomData = await api('GET', `/api/trailers/${tid}/bom`);
+    // RT2 — the template rows just fetched carry the Body Template's defaults; the
+    // SAME quote reloading its BOM puts its own thicknesses back on them. Any other
+    // reload (a different body, or a saved costing opening) starts a fresh overlay.
+    if (preserveInputs && quoteVarTrailer === String(tid)) _reapplyQuoteVars();
+    else if (preserveInputs) _resetQuoteVars(tid);
     // Restore any temp overrides saved before a permanent-edit navigation
     const restoredCount = restoreOverridesFromSession(tid);
     if (restoredCount) toast(`${restoredCount} temporary price override${restoredCount !== 1 ? 's' : ''} restored`, 'info');
@@ -3627,8 +3682,8 @@ async function loadBOM(options = {}) {
     renderBodyOptions(bomData);
     // v1.44.1 — enforce the rear-door invariant on load (see the function's
     // header comment). Runs after renderBodyOptions so bodyOptionSelections is
-    // fully seeded for flat AND v2 bodies; awaited so the template writes land
-    // before the debounced auto-calc reads them server-side. Re-render when a
+    // fully seeded for flat AND v2 bodies; it heals THIS quote's overlay, which
+    // the debounced auto-calc sends (RT2 — never the template). Re-render when a
     // heal actually changed values so the (0.000 m) spans show immediately.
     // (Panel pairs need no equivalent here — _enforceInsulationInvariant
     // already aligns them inside every renderBodyOptions pass.)
@@ -5289,11 +5344,12 @@ function renderBodyOptions(bomItems) {
 // showed "FRONT EPS (0.000) selected · FRONT PU (0.060)". Heal at the render
 // chokepoint, exactly like the rear-door heal: carry the stranded sibling
 // value onto the selected side (a both-nonzero pair keeps the SELECTED side's
-// own value), zero the sibling, persist through the same PUT /api/bom the
-// click flow uses. In-memory mutation is synchronous, so the warning pass in
-// this same render already sees the healed pairs; idempotence (a valid pair
-// yields no fix) is what stops the repaint recursion, the busy flag only
-// suppresses re-entry during the async PUT window.
+// own value), zero the sibling. RT2 Part 1: on THIS quote only (its overlay) —
+// it used to PUT the heal into the Body Template on every render, from the
+// opening browser's remembered radios. In-memory mutation is synchronous, so
+// the warning pass in this same render already sees the healed pairs;
+// idempotence (a valid pair yields no fix) is what stops the repaint
+// recursion, the busy flag only suppresses re-entry until the repaint.
 let _insInvariantBusy = false;
 function _enforceInsulationInvariant() {
   if (_insInvariantBusy) return;
@@ -5329,26 +5385,27 @@ function _enforceInsulationInvariant() {
     // gets the invented default — other pairs stay for the both-zero warning.
     let T = sv > 0 ? sv : ov;
     if (T <= 0) {
-      if (_DRDSR_TOGGLE_GROUPS.includes(grp)) T = DEFAULT_REAR_DOOR_THICKNESS_M;
-      else continue;
+      if (_DRDSR_TOGGLE_GROUPS.includes(grp)) {
+        // RT2 — a quote's door carry is no longer persisted, so a fresh quote
+        // on the door the template does NOT carry starts both-zero here. Take
+        // the rear-door thickness the template gives the OTHER door (the door
+        // machinery zeroes that door next), else the 0.06 m default — exactly
+        // what a door-type click carries. The radio keeps the side.
+        const otherDoor = _doorActiveCell(_doorInsulationPair(grp === 'DRD' ? 'SRD' : 'DRD'));
+        T = otherDoor ? otherDoor.T : DEFAULT_REAR_DOOR_THICKNESS_M;
+      } else continue;
     }
     fixes.push({ selected, other, T });
   }
   if (!fixes.length) return;
-  const writes = [];
   for (const f of fixes) {
-    if ((Number(f.selected.variable_value) || 0) !== f.T) { f.selected.variable_value = f.T; writes.push([f.selected.id, f.T]); }
-    if ((Number(f.other.variable_value) || 0) !== 0)      { f.other.variable_value = 0;      writes.push([f.other.id, 0]); }
+    _setQuoteVar(f.selected, f.T);
+    _setQuoteVar(f.other, 0);
   }
+  // In memory, this quote only — and silent: it now runs on every open, so a
+  // toast would fire for every body whose template disagrees with the radios.
   _insInvariantBusy = true;
-  (async () => {
-    for (const [id, v] of writes) {
-      try { await api('PUT', `/api/bom/${id}`, { variable_value: v }); } catch (e) { /* non-fatal; in-memory is healed */ }
-    }
-    try {
-      toast(`Insulation thickness moved to the selected side on ${fixes.length} pair${fixes.length !== 1 ? 's' : ''}  ·  Body Template updated`, 'success');
-    } catch (e) {}
-  })().then(() => {
+  Promise.resolve().then(() => {
     _insInvariantBusy = false;
     renderBodyOptions(bomData);   // repaint labels (healed pairs yield no fix → no re-heal)
     refreshBomDisplay();
@@ -5364,7 +5421,7 @@ function _enforceInsulationInvariant() {
 // configurator draft keeps its own default door, so the next fresh load
 // renders a selected door at 0/0. When a render surfaces that state, run the
 // same carry a door-type click performs (thickness comes from the other door,
-// else the 0.06 m default), persist it, and repaint. _carryRearDoorThickness
+// else the 0.06 m default) on THIS quote (RT2), and repaint. _carryRearDoorThickness
 // mutates bomData synchronously before its first await, so the
 // validateInsulationPairs pass that follows in renderBodyOptions already sees
 // the healed pair — the both-zero warning never paints.
@@ -5944,6 +6001,12 @@ async function runCalc() {
     ? [...window.OptionalSections.loadEnabled(+tid)]
     : [];
 
+  // RT2 Part 1 — THIS quote's own thicknesses (door carry, EPS/PU copy, heals,
+  // typed / pasted values), by material name. The template is never written,
+  // so this is the only way a quote's door or insulation reaches its price.
+  // Edit pins still win on collision: a reopened quote reproduces its saved figures.
+  const quoteVarsPayload = (quoteVarTrailer === String(tid)) ? _quoteVarsPayload() : {};
+
   lastCalcPayload = {
     trailer_type_id: +tid,
     dimensions: getDims(),
@@ -5957,8 +6020,9 @@ async function runCalc() {
     flag_overrides: Object.keys(flagOverridesPayload).length ? flagOverridesPayload : undefined,
     user_excluded_bom_ids: _optExcl,
     optional_sections_enabled: _optEnabledIds,
-    body_variable_overrides: (Object.keys(flagVarsPayload).length || (editBodyVarOverrides && Object.keys(editBodyVarOverrides).length))
-      ? { ...flagVarsPayload, ...(editBodyVarOverrides || {}) } : undefined,
+    body_variable_overrides: (Object.keys(flagVarsPayload).length || Object.keys(quoteVarsPayload).length
+                              || (editBodyVarOverrides && Object.keys(editBodyVarOverrides).length))
+      ? { ...flagVarsPayload, ...quoteVarsPayload, ...(editBodyVarOverrides || {}) } : undefined,
     // v1.47 — free-hand OPTIONAL EXTRAS. Omitted entirely when there are none,
     // so a costing without them sends exactly the pre-v1.47 payload.
     free_hand_lines: freeHandLines.length ? freeHandLines.map(_fhWireLine) : undefined,
@@ -7354,6 +7418,7 @@ async function recallValidatedReference(refId) {
     }
     bodyOptionSelections = { ...(snap.body_option_selections || payload.body_option_selections || {}) };
     drdSrdEnabled        = { ...(snap.drd_srd || {}) };
+    _resetQuoteVars(tid);   // RT2 — the reference's thicknesses ride its edit pins below
 
     await loadBOM({ preserveInputs: true });
     applyCalculationInputs(payload);          // dims, margin, customer, body options
@@ -8953,15 +9018,15 @@ async function _xpSelectPairSide(row) {
   }
 }
 
-// Pasted thickness (metres) onto a selected row — same PUT as the manual
-// bv-edit blur, plus the _pinBodyVar the carry/copy paths do (v1.42.1).
-// Pin FIRST and unconditionally: the pin must reflect the pasted value even
-// when the shared template already holds it (edit-mode parity).
+// Pasted thickness (metres) onto a selected row — THIS quote only, like the
+// manual bv-edit blur (RT2: its overlay, never the Body Template), plus the
+// _pinBodyVar the carry/copy paths do (v1.42.1). Pin FIRST and
+// unconditionally: the pin must reflect the pasted value even when the quote
+// already holds it (edit-mode parity).
 async function _xpSetThickness(row, v) {
   _pinBodyVar(row, v);
   if (row.variable_value != null && Math.abs(Number(row.variable_value) - v) < 1e-9) return false;
-  await api('PUT', `/api/bom/${row.id}`, { variable_value: v });
-  row.variable_value = v;
+  _setQuoteVar(row, v);
   return true;
 }
 
@@ -9038,7 +9103,7 @@ async function applyExcelPastePlan(plan) {
     toast('Body type changed since the paste — nothing applied', 'warn');
     return 0;
   }
-  let applied = 0, templateWrites = 0, failure = null;
+  let applied = 0, quoteThicknesses = 0, failure = null;
   try {
     plan.dims.forEach(d => {
       const el = document.getElementById(d.field);
@@ -9057,7 +9122,7 @@ async function applyExcelPastePlan(plan) {
     const pairActions = plan.door && doorOk ? [...plan.pairs, plan.door] : plan.pairs;
     for (const a of pairActions) {
       await _xpSelectPairSide(a.row);
-      if (a.thickness != null && (await _xpSetThickness(a.row, a.thickness))) templateWrites++;
+      if (a.thickness != null && (await _xpSetThickness(a.row, a.thickness))) quoteThicknesses++;
       applied++;
     }
 
@@ -9094,7 +9159,7 @@ async function applyExcelPastePlan(plan) {
   refreshBomDisplay();
   scheduleCalc();
   if (failure) throw failure;
-  if (templateWrites) toast(`Body Template updated for ${templateWrites} material${templateWrites === 1 ? '' : 's'}`, 'info');
+  if (quoteThicknesses) toast(`Thickness set on this quote for ${quoteThicknesses} material${quoteThicknesses === 1 ? '' : 's'}`, 'info');
   toast(`Applied ${applied} options + dims from Excel`, 'success');
   return applied;
 }

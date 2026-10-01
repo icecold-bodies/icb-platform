@@ -3,10 +3,12 @@
 Journey 1 (calculator): a body whose FRONT pair is INVERTED (EPS selected @ 0,
 PU carries 0.07) and whose SIDES pair has NO value at all (both NULL — the
 EXPLOSIVE-class invisible state) opens in the calculator →
-  - FRONT auto-aligns: EPS span shows (0.070 m), template persisted (EPS 0.07,
-    PU 0). This is _enforceInsulationInvariant (v1.39.10) doing its job at the
-    render chokepoint — locked here as a REGRESSION so the invariant can never
-    silently stop covering the load path;
+  - FRONT auto-aligns ON THE QUOTE: EPS span shows (0.070 m) and the calc prices
+    EPS 0.07 / PU 0, while the TEMPLATE keeps its inverted pair (RT2 Part 1: a quote
+    never writes the Body Template — this heal used to persist). This is
+    _enforceInsulationInvariant (v1.39.10) doing its job at the render chokepoint —
+    locked here as a REGRESSION so the invariant can never silently stop covering
+    the load path;
   - SIDES renders BOTH spans as (0.000 m) despite NULL — the v1.44.2 render
     hardening that makes a missing thickness loud + clickable instead of
     invisible (the invariant deliberately skips never-seeded pairs).
@@ -86,12 +88,20 @@ def _db_val(ids, key):
         return db.get(BillOfMaterial, ids[key]).variable_value
 
 
+def _is_aligned_calc(resp) -> bool:
+    if "/api/calculate" not in resp.url or resp.request.method != "POST" or resp.status != 200:
+        return False
+    bv = resp.json().get("body_variables") or {}
+    return bv.get(f"{MARK} FRONT EPS") == 0.07 and bv.get(f"{MARK} FRONT PU") == 0.0
+
+
 def test_load_aligns_pair_and_renders_null_as_zero(page: Page, live_server: str, staged) -> None:
     ids = staged
     admin_session(page, base=live_server)
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
-    page.select_option("#trailer-select", str(ids["trailer"]))
+    with page.expect_response(_is_aligned_calc, timeout=30_000):   # the QUOTE prices the heal
+        page.select_option("#trailer-select", str(ids["trailer"]))
 
     # Pair heal: FRONT EPS (selected) shows the carried 0.070.
     expect(page.locator(f"span.bv-edit[data-bom-id='{ids['front_eps']}']")).to_have_text(
@@ -101,13 +111,11 @@ def test_load_aligns_pair_and_renders_null_as_zero(page: Page, live_server: str,
     expect(page.locator(f"span.bv-edit[data-bom-id='{ids['sides_pu']}']")).to_have_text("(0.000 m)")
     shot(page, "01-aligned-and-null-rendered", journey=JOURNEY)
 
-    # Heal persisted to the template; NULL pair untouched by the heal (no guess).
-    for _ in range(40):
-        if float(_db_val(ids, "front_eps") or 0) == 0.07:
-            break
-        time.sleep(0.5)
-    assert float(_db_val(ids, "front_eps") or 0) == 0.07
-    assert float(_db_val(ids, "front_pu") or 0) == 0
+    # RT2 Part 1: the heal is the quote's own — the template keeps its inverted FRONT
+    # pair, and the NULL pair is untouched (no guess).
+    time.sleep(2)                                   # give any (wrong) template write time to land
+    assert float(_db_val(ids, "front_eps") or 0) == 0.0
+    assert float(_db_val(ids, "front_pu") or 0) == 0.07
     assert _db_val(ids, "sides_eps") is None and _db_val(ids, "sides_pu") is None
 
 

@@ -16,9 +16,9 @@ DRD with PU 0.06 m. One REAR FRAME line has a stale draft copy — the v1.59.1 d
 signature (``FRONT EPS = N``). A journey cannot use dev's real FREEZER MEDIUM: pytest
 refuses any database not named *_test (db_guard), and the test DB holds no bodies.
 
-Door trap: a door switch in the calculator REWRITES the body template's rear-door
-thickness (the carry). The journey ends on the original door and checks the template
-in the DB.
+Door trap (gone in RT2 Part 1): a door switch used to REWRITE the body template's
+rear-door thickness (the carry). It now moves the thickness on the quote only — the
+journey checks the quote's body_variables after each switch and the template in the DB.
 
 Marker JRD7; purge at setup AND teardown; admin_session gets base=live_server.
 """
@@ -191,16 +191,6 @@ def _door(ids) -> dict:
                 for k in ORIGINAL_DOOR}
 
 
-def _wait_door(ids, want: dict, tries: int = 40) -> dict:
-    """The carry's PUTs land asynchronously — poll the DB for the expected state."""
-    for _ in range(tries):
-        got = _door(ids)
-        if got == want:
-            return got
-        time.sleep(0.25)
-    return _door(ids)
-
-
 def _stored(item_id: int) -> str | None:
     from app.database import BillOfMaterial, SessionLocal
     with SessionLocal() as db:
@@ -338,8 +328,9 @@ def test_calculator_badges_read_plain_english(page: Page, live_server: str, stag
     expect(badge).to_have_attribute("title", f"Rule: {MARK} DRD EPS = Y")
     shot(page, "03-drd-quote-needs", journey=JOURNEY)
 
-    # 2. The single rear door: the rule switches REAR FRAME off. The carry REWRITES
-    # the template's door thickness (the door trap) — shown here, undone in step 3.
+    # 2. The single rear door: the rule switches REAR FRAME off. The carry moves the
+    # door thickness on THIS QUOTE only (RT2 Part 1): the calc's body_variables carry
+    # SRD PU 0.06 / DRD PU 0, while the Body Template still holds the original door.
     res = _switch_door(page, f"{MARK} SRD DOORS",
                        lambda j: RF not in (j.get("category_totals") or {}))
     rf_items = [i for i in res["items"] if i["bom_id"] in (ids["rail"], ids["plate"])]
@@ -347,8 +338,10 @@ def test_calculator_badges_read_plain_english(page: Page, live_server: str, stag
     for it in rf_items:
         assert it["excluded_by"] == "condition"
         assert it["excluded_reason"] == f"{MARK} SRD PU = N"   # the engine's words, unchanged
-    assert _wait_door(ids, {"drd_eps": 0.0, "drd_pu": 0.0, "srd_eps": 0.0, "srd_pu": 0.06}) == \
-        {"drd_eps": 0.0, "drd_pu": 0.0, "srd_eps": 0.0, "srd_pu": 0.06}
+    bv = res.get("body_variables") or {}
+    assert (bv.get(f"{MARK} DRD PU"), bv.get(f"{MARK} SRD PU")) == (0.0, 0.06), bv
+    time.sleep(1)                                   # any (wrong) write would have landed
+    assert _door(ids) == ORIGINAL_DOOR              # the template is untouched
     expect(_hdr(page, RF).locator(".calc-hdr-not-selected")).to_have_text("NOT SELECTED", timeout=T)
     _show_lines(page, RF, 2)
     for k in ("rail", "plate"):
@@ -362,10 +355,12 @@ def test_calculator_badges_read_plain_english(page: Page, live_server: str, stag
         expect(row).not_to_contain_text(f"excluded · {MARK} SRD PU = N")
     shot(page, "04-srd-quote-not-used-with", journey=JOURNEY)
 
-    # 3. Back to the ORIGINAL door: REAR FRAME is costed again, and the template's
-    # door thickness is exactly what it was before the journey (checked in the DB).
+    # 3. Back to the ORIGINAL door: REAR FRAME is costed again, the quote carries DRD PU
+    # 0.06 again, and the template's door thickness never moved (checked in the DB).
     res = _switch_door(page, f"{MARK} DRD DOORS",
                        lambda j: RF in (j.get("category_totals") or {}))
     assert res["category_totals"][RF] == pytest.approx(150.0)
-    assert _wait_door(ids, ORIGINAL_DOOR) == ORIGINAL_DOOR
+    bv = res.get("body_variables") or {}
+    assert (bv.get(f"{MARK} DRD PU"), bv.get(f"{MARK} SRD PU")) == (0.06, 0.0), bv
+    assert _door(ids) == ORIGINAL_DOOR
     shot(page, "05-back-on-the-original-door", journey=JOURNEY)

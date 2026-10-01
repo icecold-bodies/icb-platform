@@ -131,6 +131,37 @@ let priceOverrides = {};  // bomId (string) → { newPrice, originalPrice, mater
 const OVERRIDE_SESSION_KEY = 'bom_price_overrides';
 let bodyOptionSelections = {};  // bomId (string) → boolean
 let drdSrdEnabled = {};         // groupName → boolean; master ON/OFF toggle for DRD / SRD
+// RT2 Part 1 — as in calculator.js: a quote NEVER writes the Body Template. The
+// door carry, the EPS/PU copy, the render heal and a typed thickness land in
+// THIS quote's overlay (bom id → metres), sent on every calc as name-keyed
+// body_variable_overrides. A fresh body type starts a fresh overlay.
+let quoteVarOverlay = {};
+let quoteVarTrailer = null;
+function _resetQuoteVars(tid) { quoteVarOverlay = {}; quoteVarTrailer = (tid != null && tid !== '') ? String(tid) : null; }
+function _setQuoteVar(row, v) {
+  if (!row) return false;
+  const val = Number(v) || 0;
+  const changed = row.variable_value == null || (Number(row.variable_value) || 0) !== val;
+  row.variable_value = val;
+  quoteVarOverlay[String(row.id)] = val;
+  if (quoteVarTrailer == null) quoteVarTrailer = String(document.getElementById('trailer-select')?.value || '');
+  return changed;
+}
+function _reapplyQuoteVars() {
+  for (const r of (bomData || [])) {
+    const k = String(r.id);
+    if (Object.prototype.hasOwnProperty.call(quoteVarOverlay, k)) r.variable_value = quoteVarOverlay[k];
+  }
+}
+function _quoteVarsPayload() {
+  const out = {};
+  for (const r of (bomData || [])) {
+    const k = String(r.id);
+    if (r && r.is_body_option && r.material_name != null
+        && Object.prototype.hasOwnProperty.call(quoteVarOverlay, k)) out[String(r.material_name)] = Number(quoteVarOverlay[k]) || 0;
+  }
+  return out;
+}
 // Settings-page draft flag states (v2 trailers only).
 // keyed by flagBindingName/label → bool. Populated from localStorage draft
 // visual-body-configurator-ui:{tid} when the trailer has a settings draft.
@@ -348,7 +379,7 @@ async function _carryRearDoorThickness(newGrp, oldGrp) {
   const writes = [];
   const setVal = (row, v) => {
     v = Number(v) || 0;
-    if ((Number(row.variable_value) || 0) !== v) { row.variable_value = v; writes.push([row.id, v]); }
+    if (_setQuoteVar(row, v)) writes.push([row.id, v]);   // RT2: this quote only
   };
   setVal(newPair.eps, side === 'EPS' ? T : 0);
   setVal(newPair.pu,  side === 'PU'  ? T : 0);
@@ -360,11 +391,8 @@ async function _carryRearDoorThickness(newGrp, oldGrp) {
     bodyOptionSelections[String(oldPair.eps.id)] = false;
     bodyOptionSelections[String(oldPair.pu.id)]  = false;
   }
-  for (const [id, v] of writes) {
-    try { await api('PUT', `/api/bom/${id}`, { variable_value: v }); } catch (e) { /* non-fatal */ }
-  }
   if (writes.length) {
-    try { toast(`Rear-door insulation → ${side} ${T.toFixed(3)} m on ${newGrp}  ·  Body Template updated`, 'success'); } catch (e) {}
+    try { toast(`Rear-door insulation → ${side} ${T.toFixed(3)} m on ${newGrp}`, 'success'); } catch (e) {}
   }
 }
 
@@ -408,10 +436,7 @@ async function onDrdSrdToggle(grp, checked) {
     const pair = _doorInsulationPair(grp);
     if (pair) {
       for (const row of [pair.eps, pair.pu]) {
-        if ((Number(row.variable_value) || 0) !== 0) {
-          row.variable_value = 0;
-          try { await api('PUT', `/api/bom/${row.id}`, { variable_value: 0 }); } catch (e) { /* non-fatal */ }
-        }
+        if ((Number(row.variable_value) || 0) !== 0) _setQuoteVar(row, 0);   // RT2: this quote only
       }
     }
   }
@@ -584,33 +609,14 @@ async function editBodyVariable(span) {
     const v = parseFloat(inp.value);
     if (isNaN(v) || v < 0) { restore(`(${Number(current).toFixed(3)} m)`, null); return; }
     if (v === parseFloat(current)) { restore(`(${v.toFixed(3)} m)`, v); return; }
-    try {
-      await api('PUT', `/api/bom/${bomId}`, { variable_value: v });
-      restore(`(${v.toFixed(3)} m)`, v);
-      toast(`{${name}} → ${v.toFixed(3)} m  ·  Body Template updated`, 'success');
-      // Show a persistent warning beneath the row. Placing it as a sibling of
-      // the <label> (rather than inside it) avoids wrapping and lets the
-      // warning span the full width of the panel without disturbing the row.
-      const fresh = document.querySelector(`#body-options-list span.bv-edit[data-bom-id="${bomId}"]`);
-      if (fresh) {
-        const label = fresh.closest('label');
-        // Remove any existing warning for this bom_id
-        document.querySelectorAll(`#body-options-list .bv-warn[data-bom-id="${bomId}"]`).forEach(w => w.remove());
-        const warn = document.createElement('div');
-        warn.className = 'bv-warn';
-        warn.dataset.bomId = bomId;
-        warn.title = 'This change updates the body template — all other costings using this template will see the new value';
-        warn.innerHTML = '<span style="font-size:11px">⚠</span>&nbsp;<span>TEMPLATE UPDATED</span>';
-        warn.style.cssText = 'margin:1px 0 6px 24px;font-size:9px;font-weight:700;color:#f0a500;letter-spacing:.5px;background:#1a1200;border:1px solid #b07800;border-radius:3px;padding:2px 6px;white-space:nowrap;display:inline-flex;align-items:center;gap:2px';
-        label.insertAdjacentElement('afterend', warn);
-      }
-      // Re-run the calculation if we have results — the new value affects formulas
-      if (typeof lastResult !== 'undefined' && lastResult && typeof runCalc === 'function') {
-        runCalc();
-      }
-    } catch(e) {
-      toast('Save failed: ' + e.message, 'error');
-      restore(`(${Number(current).toFixed(3)} m)`, null);
+    // RT2 R3 — a typed thickness changes THIS quote only, never the template.
+    const _row = (typeof bomData !== 'undefined' ? bomData : []).find(b => String(b.id) === String(bomId));
+    if (_row) _setQuoteVar(_row, v);
+    restore(`(${v.toFixed(3)} m)`, v);
+    toast(`{${name}} → ${v.toFixed(3)} m  ·  this quote only`, 'success');
+    // Re-run the calculation if we have results — the new value affects formulas
+    if (typeof lastResult !== 'undefined' && lastResult && typeof runCalc === 'function') {
+      runCalc();
     }
   });
 }
@@ -2222,6 +2228,7 @@ async function loadBOM(options = {}) {
     priceOverrides = {};
     bodyOptionSelections = {};
     drdSrdEnabled = {};
+    _resetQuoteVars(tid);   // RT2 — a fresh costing starts from the template's thicknesses
     // Force the next renderBodyOptionsTree call to re-seed from
     // cfg_user_state_<tid>, since we just cleared bodyOptionSelections.
     _cfgStateSeededForTrailer = null;
@@ -2259,6 +2266,9 @@ async function loadBOM(options = {}) {
   area.innerHTML = '<div style="padding:20px;text-align:center"><span class="spinner"></span></div>';
   try {
     bomData = await api('GET', `/api/trailers/${tid}/bom`);
+    // RT2 — the same quote reloading its BOM keeps its own thicknesses.
+    if (preserveInputs && quoteVarTrailer === String(tid)) _reapplyQuoteVars();
+    else if (preserveInputs) _resetQuoteVars(tid);
     // Calc 2 exclusions are re-seeded from each row's admin-set default
     // (calc2_default_excluded, set in the Body Templates edit modal) on every
     // trailer load. The user can still toggle within the session, but a reload
@@ -3786,8 +3796,9 @@ function renderBodyOptions(bomItems) {
 // sibling = 0 — for EVERY insulation pair, not only the rear doors. Heal at
 // the render chokepoint: carry a stranded sibling value onto the selected
 // side (a both-nonzero pair keeps the SELECTED side's own value), zero the
-// sibling, persist via PUT /api/bom. Idempotence stops the repaint recursion;
-// the busy flag only suppresses re-entry during the async PUT window.
+// sibling — on THIS quote only (RT2: its overlay, never the Body Template).
+// Idempotence stops the repaint recursion; the busy flag only suppresses
+// re-entry until the repaint.
 let _insInvariantBusy = false;
 function _enforceInsulationInvariant() {
   if (_insInvariantBusy) return;
@@ -3813,26 +3824,22 @@ function _enforceInsulationInvariant() {
     if (sv > 0 && ov <= 0) continue;   // invariant holds
     let T = sv > 0 ? sv : ov;
     if (T <= 0) {
-      if (_DRDSR_TOGGLE_GROUPS.includes(grp)) T = DEFAULT_REAR_DOOR_THICKNESS_M;
-      else continue;                   // both-zero non-door: nothing to invent
+      if (_DRDSR_TOGGLE_GROUPS.includes(grp)) {
+        // RT2 — as calculator.js: carry the other door's template thickness,
+        // else the 0.06 m default; the radio keeps the side.
+        const otherDoor = _doorActiveCell(_doorInsulationPair(grp === 'DRD' ? 'SRD' : 'DRD'));
+        T = otherDoor ? otherDoor.T : DEFAULT_REAR_DOOR_THICKNESS_M;
+      } else continue;                 // both-zero non-door: nothing to invent
     }
     fixes.push({ selected, other, T });
   }
   if (!fixes.length) return;
-  const writes = [];
   for (const f of fixes) {
-    if ((Number(f.selected.variable_value) || 0) !== f.T) { f.selected.variable_value = f.T; writes.push([f.selected.id, f.T]); }
-    if ((Number(f.other.variable_value) || 0) !== 0)      { f.other.variable_value = 0;      writes.push([f.other.id, 0]); }
+    _setQuoteVar(f.selected, f.T);
+    _setQuoteVar(f.other, 0);
   }
   _insInvariantBusy = true;
-  (async () => {
-    for (const [id, v] of writes) {
-      try { await api('PUT', `/api/bom/${id}`, { variable_value: v }); } catch (e) { /* non-fatal; in-memory is healed */ }
-    }
-    try {
-      toast(`Insulation thickness moved to the selected side on ${fixes.length} pair${fixes.length !== 1 ? 's' : ''}  ·  Body Template updated`, 'success');
-    } catch (e) {}
-  })().then(() => {
+  Promise.resolve().then(() => {
     _insInvariantBusy = false;
     renderBodyOptions(bomData);   // repaint (healed pairs yield no fix → no re-heal)
     refreshBomDisplay();
@@ -4408,6 +4415,9 @@ async function runCalc() {
     user_excluded_bom_ids: [..._exclC2],
     optional_sections_enabled: _optEnabledIdsC2,
   };
+  // RT2 Part 1 — THIS quote's own thicknesses (the template is never written).
+  const _qv = (quoteVarTrailer === String(tid)) ? _quoteVarsPayload() : {};
+  if (Object.keys(_qv).length) lastCalcPayload.body_variable_overrides = _qv;
 
   const status = document.getElementById('calc-status');
   document.getElementById('approve-btn').disabled = true;

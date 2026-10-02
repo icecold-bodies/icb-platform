@@ -12,15 +12,6 @@
 # them. F2 narrowed to the ICECREAM 4.8 plywood draft choice. The held single-door rulings
 # (rear frame, SRD plywood/glue) also cover the chillers' new `srd_pu` scenarios.
 
-- body: ["UP TO 2.3 CHILLER BODY", "UP TO 5.5 CHILLER AND 2.3 WIDE", " 4.9 & UP CHILLER AND 2.5 WIDE "]
-  section: ["FRONT", "SIDES", "ROOF", "FLOOR", "DRD"]
-  variant: all_pu
-  cause: ["DIFF PU", "BOTH PU", "Rhinotex", "TAPPING BLOCKS", "GLUE LINE", "PLYWOOD", "PICTURE FRAME"]
-  kind: known_defect
-  reason: "[RULING] PROD prices chiller PU at R334.50/sheet (the September 32D rate) where Burt's chiller sheets hard-code a 2018 rate (3090 -> R185.20/sheet): MES +R890 (front) to +R4k (sides) per PU panel. Prod is likely the current one; Burt's sheets need the [1]PU! link."
-  owner: BA
-  review_by: 2026-10-31
-
 - body: ["UP TO 2.3 CHILLER BODY", " 4.9 & UP CHILLER AND 2.5 WIDE "]
   section: SRD
   variant: srd

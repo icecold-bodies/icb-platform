@@ -13,7 +13,7 @@
    "WIDTH": 2.3,
    "HEIGHT": 2.3
   },
-  "control_panel": true,
+  "control_panel": false,
   "selfcheck_ok": true,
   "flags": [
    {
@@ -253,7 +253,7 @@
       ]
      }
     ],
-    "cached_total": 5450.13694,
+    "cached_total": 4777.68562,
     "unverifiable": null
    },
    {
@@ -380,7 +380,7 @@
      "J191"
     ],
     "gates": [],
-    "cached_total": 8106.316432,
+    "cached_total": 7866.59462,
     "unverifiable": null
    },
    {
@@ -487,9 +487,10 @@
      "2ND ROW KICKPLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 66931.9474799038,
+   "grand_total": 66259.4961599038,
    "findings": [],
    "sections": {
     "FRONT": {
@@ -857,8 +858,8 @@
      "multiplier": 1.0
     },
     "DRD DOOR FITTINGS": {
-     "total": 5450.13694,
-     "raw_total": 5450.13694,
+     "total": 4777.68562,
+     "raw_total": 4777.68562,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -905,7 +906,7 @@
        "desc": "2317 DOOR RUBBER",
        "qty": 11.174,
        "price": 60.18,
-       "total": 672.45132,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -1398,7 +1399,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -1535,39 +1536,39 @@
   },
   {
    "scenario": {
-    "id": "UP_TO_5.5_CHILLER_AND_2.~L4.2~W2.3~H2.3~all_pu",
+    "id": "UP_TO_5.5_CHILLER_AND_2.~L4.2~W2.3~H2.3~srd",
     "pack": "smoke",
     "sheet": "UP TO 5.5 CHILLER AND 2.3 WIDE",
     "trailer_id": 26,
-    "variant": "all_pu",
+    "variant": "srd",
     "length": 4.2,
     "width": 2.3,
     "height": 2.3,
-    "door": "drd",
+    "door": "srd",
     "foam": "32D",
     "panels": {
      "FRONT": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.06
      },
      "DRD": {
-      "insulation": "pu",
-      "thickness": 0.06
-     },
-     "SRD": {
       "insulation": "none",
       "thickness": 0.0
      },
+     "SRD": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
      "SIDES": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.06
      },
      "ROOF": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.076
      },
      "FLOOR": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.076
      }
     },
@@ -1577,118 +1578,41 @@
      "2ND ROW KICKPLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 71745.4443840857,
+   "grand_total": 63477.9216906479,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 4852.924509,
-     "raw_total": 4852.9245089972,
+     "total": 4250.996789,
+     "raw_total": 4250.99678903558,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I29": 0,
-      "I30": 1
+      "I29": 1,
+      "I30": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 213.11,
-       "total": 1080.6850722,
+       "total": 1044.5671894,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 144.946655,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 127.72,
-       "total": 0.0,
-       "stale": false
-      },
-      {
-       "desc": "PU",
-       "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 1102.61215415839,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "4MM PF PLYWOOD",
-       "qty": 5.07102,
-       "price": 68.7919463087248,
-       "total": 348.84533557047,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "58 MM PICTURE FRAME",
-       "qty": 20.28408,
-       "price": 37.2864614450516,
-       "total": 756.321566868342,
-       "stale": false
-      },
-      {
-       "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.07102,
-       "price": 222.76,
-       "total": 1129.6204152,
-       "stale": false
-      }
-     ],
-     "multiplier": 1.0
-    },
-    "SRD": {
-     "total": 0.0,
-     "raw_total": 2968.1987974,
-     "status": "OK",
-     "reason": null,
-     "gates": {
-      "I43": 0,
-      "I44": 0,
-      "I51": 0,
-      "I52": 0
-     },
-     "lines": [
-      {
-       "desc": "Rhinotex 1150 BW",
-       "qty": 5.07102,
-       "price": 213.11,
-       "total": 1080.6850722,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "EPS",
-       "qty": 5.07102,
-       "price": 127.72,
-       "total": 0.0,
+       "total": 626.0246888,
        "stale": false
       },
       {
@@ -1700,30 +1624,108 @@
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 144.946655,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 5.07102,
+       "qty": 4.90154,
+       "price": 68.7919463087248,
+       "total": 337.186476510067,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "58 MM PICTURE FRAME",
+       "qty": 19.60616,
+       "price": 37.2864614450516,
+       "total": 731.044328925513,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 4.90154,
+       "price": 222.76,
+       "total": 1091.8670504,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 3510.663632,
+     "raw_total": 3510.66363193333,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I43": 1,
+      "I44": 0,
+      "I51": 1,
+      "I52": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 4.90154,
+       "price": 213.11,
+       "total": 1044.5671894,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 4.90154,
+       "price": 127.72,
+       "total": 626.0246888,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "4MM PF PLYWOOD",
+       "qty": 4.90154,
        "price": 68.7919463087248,
        "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
        "total": 0.0,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 222.76,
-       "total": 1129.6204152,
+       "total": 1091.8670504,
        "stale": false
       },
       {
@@ -1737,12 +1739,12 @@
      "multiplier": 1.0
     },
     "SRD DOOR FITTINGS": {
-     "total": 0.0,
-     "raw_total": 6212.55938,
+     "total": 6166.05802,
+     "raw_total": 6166.05802,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I73": 0,
+      "I73": 1,
       "I74": 0
      },
      "lines": [
@@ -1762,28 +1764,28 @@
       },
       {
        "desc": "28779 DOOR CAPPING",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 149.08,
-       "total": 931.45184,
+       "total": 908.79168,
        "stale": false
       },
       {
        "desc": "28777 DOOR CAPPING",
-       "qty": 5.398,
+       "qty": 5.246,
        "price": 132.13,
-       "total": 713.23774,
+       "total": 693.15398,
        "stale": false
       },
       {
        "desc": "2316 DOOR RUBBER",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 24.72,
-       "total": 154.45056,
+       "total": 150.69312,
        "stale": false
       },
       {
        "desc": "2317 DOOR RUBBER",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 60.18,
        "total": 0.0,
        "stale": false
@@ -1869,34 +1871,34 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 5113.158748,
-     "raw_total": 5113.15874808322,
+     "total": 0.0,
+     "raw_total": 3829.92777131007,
      "status": "OK",
      "reason": null,
      "gates": {
       "I80": 0,
-      "I81": 1,
+      "I81": 0,
       "I88": 0,
-      "I89": 1
+      "I89": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 213.11,
-       "total": 1109.7618006,
+       "total": 1044.5671894,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 127.72,
        "total": 0.0,
        "stale": false
@@ -1904,36 +1906,36 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 1102.61215415839,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 68.7919463087248,
-       "total": 358.231308724832,
+       "total": 337.186476510067,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 222.76,
-       "total": 1160.0137896,
+       "total": 1091.8670504,
        "stale": false
       },
       {
@@ -1947,13 +1949,13 @@
      "multiplier": 1.0
     },
     "DRD DOOR FITTINGS": {
-     "total": 5513.52626,
-     "raw_total": 5513.52626,
+     "total": 0.0,
+     "raw_total": 4756.82962,
      "status": "OK",
      "reason": null,
      "gates": {
       "I106": 0,
-      "I107": 1
+      "I107": 0
      },
      "lines": [
       {
@@ -1972,30 +1974,30 @@
       },
       {
        "desc": "28779 DOOR CAPPING",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 149.08,
-       "total": 1699.81016,
+       "total": 1647.93032,
        "stale": false
       },
       {
        "desc": "28777 DOOR CAPPING",
-       "qty": 2.274,
+       "qty": 2.198,
        "price": 132.13,
-       "total": 300.46362,
+       "total": 290.42174,
        "stale": false
       },
       {
        "desc": "2316 DOOR RUBBER",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 24.72,
-       "total": 281.85744,
+       "total": 273.25488,
        "stale": false
       },
       {
        "desc": "2317 DOOR RUBBER",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 60.18,
-       "total": 686.17236,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -2051,81 +2053,81 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 16417.093605,
-     "raw_total": 8208.54680260394,
+     "total": 14569.478233,
+     "raw_total": 7284.73911657167,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I113": 0,
-      "I114": 1
+      "I113": 1,
+      "I114": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 9.6645,
+       "qty": 9.3415,
        "price": 213.11,
-       "total": 2059.601595,
+       "total": 1990.767065,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 9.6645,
+       "qty": 9.3415,
        "price": 28.5833333333333,
-       "total": 276.243625,
+       "total": 267.011208333333,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 9.6645,
+       "qty": 9.3415,
        "price": 127.72,
-       "total": 0.0,
+       "total": 1193.09638,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 1920.5334652349,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 9.6645,
+       "qty": 9.3415,
        "price": 28.5833333333333,
-       "total": 276.243625,
+       "total": 267.011208333333,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 9.6645,
+       "qty": 9.3415,
        "price": 68.7919463087248,
-       "total": 664.839765100671,
+       "total": 642.619966442953,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 9.6645,
+       "qty": 9.3415,
        "price": 28.5833333333333,
-       "total": 276.243625,
+       "total": 267.011208333333,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 9.6645,
+       "qty": 9.3415,
        "price": 222.76,
-       "total": 2152.86402,
+       "total": 2080.91254,
        "stale": false
       },
       {
        "desc": "58 MM PICTURE FRAME",
-       "qty": 13.048,
+       "qty": 12.896,
        "price": 37.2864614450516,
-       "total": 486.513748935033,
+       "total": 480.846206795386,
        "stale": false
       },
       {
        "desc": "3MM MILD STEEL PLATE",
-       "qty": 0.4548,
+       "qty": 0.4396,
        "price": 95.4633333333333,
        "total": 95.4633333333333,
        "stale": false
@@ -2134,13 +2136,13 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 8038.517735,
-     "raw_total": 8038.51773537222,
+     "total": 7169.485013,
+     "raw_total": 7169.48501274135,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I128": 0,
-      "I129": 1
+      "I128": 1,
+      "I129": 0
      },
      "lines": [
       {
@@ -2161,14 +2163,14 @@
        "desc": "EPS",
        "qty": 9.9875,
        "price": 156.56,
-       "total": 0.0,
+       "total": 1563.643,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 234.587822818792,
-       "total": 2432.67572263087,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -2203,13 +2205,13 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 13833.335294,
-     "raw_total": 13833.3352939956,
+     "total": 12964.302571,
+     "raw_total": 12964.3025713648,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I141": 0,
-      "I142": 1,
+      "I141": 1,
+      "I142": 0,
       "I150": 0,
       "I151": 0,
       "I152": 0
@@ -2233,14 +2235,14 @@
        "desc": "EPS",
        "qty": 9.9875,
        "price": 156.56,
-       "total": 0.0,
+       "total": 1563.643,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 234.587822818792,
-       "total": 2432.67572263087,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -2488,7 +2490,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -2512,13 +2514,13 @@
      "multiplier": 1.0
     },
     "REAR FRAME + FLOOR PLATE": {
-     "total": 3129.9508,
+     "total": 0.0,
      "raw_total": 3129.9508,
      "status": "OK",
      "reason": null,
      "gates": {
       "I207": 0,
-      "I208": 1
+      "I208": 0
      },
      "lines": [
       {
@@ -2667,9 +2669,10 @@
      "2ND ROW KICKPLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 79305.083146397,
+   "grand_total": 78632.631826397,
    "findings": [],
    "sections": {
     "FRONT": {
@@ -3037,8 +3040,8 @@
      "multiplier": 1.0
     },
     "DRD DOOR FITTINGS": {
-     "total": 5450.13694,
-     "raw_total": 5450.13694,
+     "total": 4777.68562,
+     "raw_total": 4777.68562,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -3085,7 +3088,7 @@
        "desc": "2317 DOOR RUBBER",
        "qty": 11.174,
        "price": 60.18,
-       "total": 672.45132,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -3578,7 +3581,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -3715,39 +3718,39 @@
   },
   {
    "scenario": {
-    "id": "UP_TO_5.5_CHILLER_AND_2.~L5.5~W2.3~H2.3~all_pu",
+    "id": "UP_TO_5.5_CHILLER_AND_2.~L5.5~W2.3~H2.3~srd",
     "pack": "smoke",
     "sheet": "UP TO 5.5 CHILLER AND 2.3 WIDE",
     "trailer_id": 26,
-    "variant": "all_pu",
+    "variant": "srd",
     "length": 5.5,
     "width": 2.3,
     "height": 2.3,
-    "door": "drd",
+    "door": "srd",
     "foam": "32D",
     "panels": {
      "FRONT": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.06
      },
      "DRD": {
-      "insulation": "pu",
-      "thickness": 0.06
-     },
-     "SRD": {
       "insulation": "none",
       "thickness": 0.0
      },
+     "SRD": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
      "SIDES": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.06
      },
      "ROOF": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.076
      },
      "FLOOR": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.076
      }
     },
@@ -3757,118 +3760,41 @@
      "2ND ROW KICKPLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 85211.9093336285,
+   "grand_total": 75851.0573571411,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 4852.924509,
-     "raw_total": 4852.9245089972,
+     "total": 4250.996789,
+     "raw_total": 4250.99678903558,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I29": 0,
-      "I30": 1
+      "I29": 1,
+      "I30": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 213.11,
-       "total": 1080.6850722,
+       "total": 1044.5671894,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 144.946655,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 127.72,
-       "total": 0.0,
-       "stale": false
-      },
-      {
-       "desc": "PU",
-       "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 1102.61215415839,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "4MM PF PLYWOOD",
-       "qty": 5.07102,
-       "price": 68.7919463087248,
-       "total": 348.84533557047,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "58 MM PICTURE FRAME",
-       "qty": 20.28408,
-       "price": 37.2864614450516,
-       "total": 756.321566868342,
-       "stale": false
-      },
-      {
-       "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.07102,
-       "price": 222.76,
-       "total": 1129.6204152,
-       "stale": false
-      }
-     ],
-     "multiplier": 1.0
-    },
-    "SRD": {
-     "total": 0.0,
-     "raw_total": 2968.1987974,
-     "status": "OK",
-     "reason": null,
-     "gates": {
-      "I43": 0,
-      "I44": 0,
-      "I51": 0,
-      "I52": 0
-     },
-     "lines": [
-      {
-       "desc": "Rhinotex 1150 BW",
-       "qty": 5.07102,
-       "price": 213.11,
-       "total": 1080.6850722,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "EPS",
-       "qty": 5.07102,
-       "price": 127.72,
-       "total": 0.0,
+       "total": 626.0246888,
        "stale": false
       },
       {
@@ -3880,30 +3806,108 @@
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 144.946655,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 5.07102,
+       "qty": 4.90154,
+       "price": 68.7919463087248,
+       "total": 337.186476510067,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "58 MM PICTURE FRAME",
+       "qty": 19.60616,
+       "price": 37.2864614450516,
+       "total": 731.044328925513,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 4.90154,
+       "price": 222.76,
+       "total": 1091.8670504,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 3510.663632,
+     "raw_total": 3510.66363193333,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I43": 1,
+      "I44": 0,
+      "I51": 1,
+      "I52": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 4.90154,
+       "price": 213.11,
+       "total": 1044.5671894,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 4.90154,
+       "price": 127.72,
+       "total": 626.0246888,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "4MM PF PLYWOOD",
+       "qty": 4.90154,
        "price": 68.7919463087248,
        "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
        "total": 0.0,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 222.76,
-       "total": 1129.6204152,
+       "total": 1091.8670504,
        "stale": false
       },
       {
@@ -3917,12 +3921,12 @@
      "multiplier": 1.0
     },
     "SRD DOOR FITTINGS": {
-     "total": 0.0,
-     "raw_total": 6212.55938,
+     "total": 6166.05802,
+     "raw_total": 6166.05802,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I73": 0,
+      "I73": 1,
       "I74": 0
      },
      "lines": [
@@ -3942,28 +3946,28 @@
       },
       {
        "desc": "28779 DOOR CAPPING",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 149.08,
-       "total": 931.45184,
+       "total": 908.79168,
        "stale": false
       },
       {
        "desc": "28777 DOOR CAPPING",
-       "qty": 5.398,
+       "qty": 5.246,
        "price": 132.13,
-       "total": 713.23774,
+       "total": 693.15398,
        "stale": false
       },
       {
        "desc": "2316 DOOR RUBBER",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 24.72,
-       "total": 154.45056,
+       "total": 150.69312,
        "stale": false
       },
       {
        "desc": "2317 DOOR RUBBER",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 60.18,
        "total": 0.0,
        "stale": false
@@ -4049,34 +4053,34 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 5113.158748,
-     "raw_total": 5113.15874808322,
+     "total": 0.0,
+     "raw_total": 3829.92777131007,
      "status": "OK",
      "reason": null,
      "gates": {
       "I80": 0,
-      "I81": 1,
+      "I81": 0,
       "I88": 0,
-      "I89": 1
+      "I89": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 213.11,
-       "total": 1109.7618006,
+       "total": 1044.5671894,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 127.72,
        "total": 0.0,
        "stale": false
@@ -4084,36 +4088,36 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 1102.61215415839,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 68.7919463087248,
-       "total": 358.231308724832,
+       "total": 337.186476510067,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 222.76,
-       "total": 1160.0137896,
+       "total": 1091.8670504,
        "stale": false
       },
       {
@@ -4127,13 +4131,13 @@
      "multiplier": 1.0
     },
     "DRD DOOR FITTINGS": {
-     "total": 5513.52626,
-     "raw_total": 5513.52626,
+     "total": 0.0,
+     "raw_total": 4756.82962,
      "status": "OK",
      "reason": null,
      "gates": {
       "I106": 0,
-      "I107": 1
+      "I107": 0
      },
      "lines": [
       {
@@ -4152,30 +4156,30 @@
       },
       {
        "desc": "28779 DOOR CAPPING",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 149.08,
-       "total": 1699.81016,
+       "total": 1647.93032,
        "stale": false
       },
       {
        "desc": "28777 DOOR CAPPING",
-       "qty": 2.274,
+       "qty": 2.198,
        "price": 132.13,
-       "total": 300.46362,
+       "total": 290.42174,
        "stale": false
       },
       {
        "desc": "2316 DOOR RUBBER",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 24.72,
-       "total": 281.85744,
+       "total": 273.25488,
        "stale": false
       },
       {
        "desc": "2317 DOOR RUBBER",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 60.18,
-       "total": 686.17236,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -4231,81 +4235,81 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 21276.649387,
-     "raw_total": 10638.3246932872,
+     "total": 18867.348279,
+     "raw_total": 9433.67413971136,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I113": 0,
-      "I114": 1
+      "I113": 1,
+      "I114": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 12.6207,
+       "qty": 12.1989,
        "price": 213.11,
-       "total": 2689.597377,
+       "total": 2599.707579,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 12.6207,
+       "qty": 12.1989,
        "price": 28.5833333333333,
-       "total": 360.741675,
+       "total": 348.685225,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 12.6207,
+       "qty": 12.1989,
        "price": 127.72,
-       "total": 0.0,
+       "total": 1558.043508,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 2507.99076048322,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 12.6207,
+       "qty": 12.1989,
        "price": 28.5833333333333,
-       "total": 360.741675,
+       "total": 348.685225,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 12.6207,
+       "qty": 12.1989,
        "price": 68.7919463087248,
-       "total": 868.202516778523,
+       "total": 839.186073825503,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 12.6207,
+       "qty": 12.1989,
        "price": 28.5833333333333,
-       "total": 360.741675,
+       "total": 348.685225,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 12.6207,
+       "qty": 12.1989,
        "price": 222.76,
-       "total": 2811.387132,
+       "total": 2717.426964,
        "stale": false
       },
       {
        "desc": "58 MM PICTURE FRAME",
-       "qty": 15.648,
+       "qty": 15.496,
        "price": 37.2864614450516,
-       "total": 583.458548692168,
+       "total": 577.79100655252,
        "stale": false
       },
       {
        "desc": "3MM MILD STEEL PLATE",
-       "qty": 0.4548,
+       "qty": 0.4396,
        "price": 95.4633333333333,
        "total": 95.4633333333333,
        "stale": false
@@ -4314,13 +4318,13 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 10404.316032,
-     "raw_total": 10404.3160324439,
+     "total": 9269.461536,
+     "raw_total": 9269.46153583181,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I128": 0,
-      "I129": 1
+      "I128": 1,
+      "I129": 0
      },
      "lines": [
       {
@@ -4341,14 +4345,14 @@
        "desc": "EPS",
        "qty": 13.0425,
        "price": 156.56,
-       "total": 0.0,
+       "total": 2041.9338,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 234.587822818792,
-       "total": 3176.78829661208,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -4383,13 +4387,13 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 18010.176165,
-     "raw_total": 18010.1761651002,
+     "total": 16875.321668,
+     "raw_total": 16875.3216684881,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I141": 0,
-      "I142": 1,
+      "I141": 1,
+      "I142": 0,
       "I150": 0,
       "I151": 0,
       "I152": 0
@@ -4413,14 +4417,14 @@
        "desc": "EPS",
        "qty": 13.0425,
        "price": 156.56,
-       "total": 0.0,
+       "total": 2041.9338,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 234.587822818792,
-       "total": 3176.78829661208,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -4668,7 +4672,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -4692,13 +4696,13 @@
      "multiplier": 1.0
     },
     "REAR FRAME + FLOOR PLATE": {
-     "total": 3129.9508,
+     "total": 0.0,
      "raw_total": 3129.9508,
      "status": "OK",
      "reason": null,
      "gates": {
       "I207": 0,
-      "I208": 1
+      "I208": 0
      },
      "lines": [
       {
@@ -4847,9 +4851,10 @@
      "2ND ROW KICKPLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 82160.4221463569,
+   "grand_total": 81487.970826357,
    "findings": [],
    "sections": {
     "FRONT": {
@@ -5217,8 +5222,8 @@
      "multiplier": 1.0
     },
     "DRD DOOR FITTINGS": {
-     "total": 5450.13694,
-     "raw_total": 5450.13694,
+     "total": 4777.68562,
+     "raw_total": 4777.68562,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5265,7 +5270,7 @@
        "desc": "2317 DOOR RUBBER",
        "qty": 11.174,
        "price": 60.18,
-       "total": 672.45132,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -5758,7 +5763,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -5895,39 +5900,39 @@
   },
   {
    "scenario": {
-    "id": "UP_TO_5.5_CHILLER_AND_2.~L5.8~W2.3~H2.3~all_pu",
+    "id": "UP_TO_5.5_CHILLER_AND_2.~L5.8~W2.3~H2.3~srd",
     "pack": "smoke",
     "sheet": "UP TO 5.5 CHILLER AND 2.3 WIDE",
     "trailer_id": 26,
-    "variant": "all_pu",
+    "variant": "srd",
     "length": 5.8,
     "width": 2.3,
     "height": 2.3,
-    "door": "drd",
+    "door": "srd",
     "foam": "32D",
     "panels": {
      "FRONT": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.06
      },
      "DRD": {
-      "insulation": "pu",
-      "thickness": 0.06
-     },
-     "SRD": {
       "insulation": "none",
       "thickness": 0.0
      },
+     "SRD": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
      "SIDES": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.06
      },
      "ROOF": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.076
      },
      "FLOOR": {
-      "insulation": "pu",
+      "insulation": "eps",
       "thickness": 0.076
      }
     },
@@ -5937,118 +5942,41 @@
      "2ND ROW KICKPLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 88319.5550912153,
+   "grand_total": 78706.396357101,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 4852.924509,
-     "raw_total": 4852.9245089972,
+     "total": 4250.996789,
+     "raw_total": 4250.99678903558,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I29": 0,
-      "I30": 1
+      "I29": 1,
+      "I30": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 213.11,
-       "total": 1080.6850722,
+       "total": 1044.5671894,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 144.946655,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 127.72,
-       "total": 0.0,
-       "stale": false
-      },
-      {
-       "desc": "PU",
-       "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 1102.61215415839,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "4MM PF PLYWOOD",
-       "qty": 5.07102,
-       "price": 68.7919463087248,
-       "total": 348.84533557047,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "58 MM PICTURE FRAME",
-       "qty": 20.28408,
-       "price": 37.2864614450516,
-       "total": 756.321566868342,
-       "stale": false
-      },
-      {
-       "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.07102,
-       "price": 222.76,
-       "total": 1129.6204152,
-       "stale": false
-      }
-     ],
-     "multiplier": 1.0
-    },
-    "SRD": {
-     "total": 0.0,
-     "raw_total": 2968.1987974,
-     "status": "OK",
-     "reason": null,
-     "gates": {
-      "I43": 0,
-      "I44": 0,
-      "I51": 0,
-      "I52": 0
-     },
-     "lines": [
-      {
-       "desc": "Rhinotex 1150 BW",
-       "qty": 5.07102,
-       "price": 213.11,
-       "total": 1080.6850722,
-       "stale": false
-      },
-      {
-       "desc": "GLUE LINE",
-       "qty": 5.07102,
-       "price": 28.5833333333333,
-       "total": 144.946655,
-       "stale": false
-      },
-      {
-       "desc": "EPS",
-       "qty": 5.07102,
-       "price": 127.72,
-       "total": 0.0,
+       "total": 626.0246888,
        "stale": false
       },
       {
@@ -6060,30 +5988,108 @@
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 144.946655,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 5.07102,
+       "qty": 4.90154,
+       "price": 68.7919463087248,
+       "total": 337.186476510067,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "58 MM PICTURE FRAME",
+       "qty": 19.60616,
+       "price": 37.2864614450516,
+       "total": 731.044328925513,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex 1150 Bioshield",
+       "qty": 4.90154,
+       "price": 222.76,
+       "total": 1091.8670504,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 3510.663632,
+     "raw_total": 3510.66363193333,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I43": 1,
+      "I44": 0,
+      "I51": 1,
+      "I52": 0
+     },
+     "lines": [
+      {
+       "desc": "Rhinotex 1150 BW",
+       "qty": 4.90154,
+       "price": 213.11,
+       "total": 1044.5671894,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "EPS",
+       "qty": 4.90154,
+       "price": 127.72,
+       "total": 626.0246888,
+       "stale": false
+      },
+      {
+       "desc": "PU",
+       "qty": 2.9768,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "GLUE LINE",
+       "qty": 4.90154,
+       "price": 28.5833333333333,
+       "total": 140.102351666667,
+       "stale": false
+      },
+      {
+       "desc": "4MM PF PLYWOOD",
+       "qty": 4.90154,
        "price": 68.7919463087248,
        "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 28.5833333333333,
        "total": 0.0,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.07102,
+       "qty": 4.90154,
        "price": 222.76,
-       "total": 1129.6204152,
+       "total": 1091.8670504,
        "stale": false
       },
       {
@@ -6097,12 +6103,12 @@
      "multiplier": 1.0
     },
     "SRD DOOR FITTINGS": {
-     "total": 0.0,
-     "raw_total": 6212.55938,
+     "total": 6166.05802,
+     "raw_total": 6166.05802,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I73": 0,
+      "I73": 1,
       "I74": 0
      },
      "lines": [
@@ -6122,28 +6128,28 @@
       },
       {
        "desc": "28779 DOOR CAPPING",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 149.08,
-       "total": 931.45184,
+       "total": 908.79168,
        "stale": false
       },
       {
        "desc": "28777 DOOR CAPPING",
-       "qty": 5.398,
+       "qty": 5.246,
        "price": 132.13,
-       "total": 713.23774,
+       "total": 693.15398,
        "stale": false
       },
       {
        "desc": "2316 DOOR RUBBER",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 24.72,
-       "total": 154.45056,
+       "total": 150.69312,
        "stale": false
       },
       {
        "desc": "2317 DOOR RUBBER",
-       "qty": 6.248,
+       "qty": 6.096,
        "price": 60.18,
        "total": 0.0,
        "stale": false
@@ -6229,34 +6235,34 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 5113.158748,
-     "raw_total": 5113.15874808322,
+     "total": 0.0,
+     "raw_total": 3829.92777131007,
      "status": "OK",
      "reason": null,
      "gates": {
       "I80": 0,
-      "I81": 1,
+      "I81": 0,
       "I88": 0,
-      "I89": 1
+      "I89": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 213.11,
-       "total": 1109.7618006,
+       "total": 1044.5671894,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 127.72,
        "total": 0.0,
        "stale": false
@@ -6264,36 +6270,36 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 1102.61215415839,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 68.7919463087248,
-       "total": 358.231308724832,
+       "total": 337.186476510067,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 28.5833333333333,
-       "total": 148.846565,
+       "total": 140.102351666667,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 5.20746,
+       "qty": 4.90154,
        "price": 222.76,
-       "total": 1160.0137896,
+       "total": 1091.8670504,
        "stale": false
       },
       {
@@ -6307,13 +6313,13 @@
      "multiplier": 1.0
     },
     "DRD DOOR FITTINGS": {
-     "total": 5513.52626,
-     "raw_total": 5513.52626,
+     "total": 0.0,
+     "raw_total": 4756.82962,
      "status": "OK",
      "reason": null,
      "gates": {
       "I106": 0,
-      "I107": 1
+      "I107": 0
      },
      "lines": [
       {
@@ -6332,30 +6338,30 @@
       },
       {
        "desc": "28779 DOOR CAPPING",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 149.08,
-       "total": 1699.81016,
+       "total": 1647.93032,
        "stale": false
       },
       {
        "desc": "28777 DOOR CAPPING",
-       "qty": 2.274,
+       "qty": 2.198,
        "price": 132.13,
-       "total": 300.46362,
+       "total": 290.42174,
        "stale": false
       },
       {
        "desc": "2316 DOOR RUBBER",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 24.72,
-       "total": 281.85744,
+       "total": 273.25488,
        "stale": false
       },
       {
        "desc": "2317 DOOR RUBBER",
-       "qty": 11.402,
+       "qty": 11.054,
        "price": 60.18,
-       "total": 686.17236,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -6411,81 +6417,81 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 22398.085336,
-     "raw_total": 11199.0426680603,
+     "total": 19859.164444,
+     "raw_total": 9929.58222197436,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I113": 0,
-      "I114": 1
+      "I113": 1,
+      "I114": 0
      },
      "lines": [
       {
        "desc": "Rhinotex 1150 BW",
-       "qty": 13.3029,
+       "qty": 12.8583,
        "price": 213.11,
-       "total": 2834.981019,
+       "total": 2740.232313,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 13.3029,
+       "qty": 12.8583,
        "price": 28.5833333333333,
-       "total": 380.241225,
+       "total": 367.533075,
        "stale": false
       },
       {
        "desc": "EPS",
-       "qty": 13.3029,
+       "qty": 12.8583,
        "price": 127.72,
-       "total": 0.0,
+       "total": 1642.262076,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 185.200912751678,
-       "total": 2643.55782861745,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 13.3029,
+       "qty": 12.8583,
        "price": 28.5833333333333,
-       "total": 380.241225,
+       "total": 367.533075,
        "stale": false
       },
       {
        "desc": "4MM PF PLYWOOD",
-       "qty": 13.3029,
+       "qty": 12.8583,
        "price": 68.7919463087248,
-       "total": 915.132382550335,
+       "total": 884.547483221476,
        "stale": false
       },
       {
        "desc": "GLUE LINE",
-       "qty": 13.3029,
+       "qty": 12.8583,
        "price": 28.5833333333333,
-       "total": 380.241225,
+       "total": 367.533075,
        "stale": false
       },
       {
        "desc": "Rhinotex 1150 Bioshield",
-       "qty": 13.3029,
+       "qty": 12.8583,
        "price": 222.76,
-       "total": 2963.354004,
+       "total": 2864.314908,
        "stale": false
       },
       {
        "desc": "58 MM PICTURE FRAME",
-       "qty": 16.248,
+       "qty": 16.096,
        "price": 37.2864614450516,
-       "total": 605.830425559198,
+       "total": 600.162883419551,
        "stale": false
       },
       {
        "desc": "3MM MILD STEEL PLATE",
-       "qty": 0.4548,
+       "qty": 0.4396,
        "price": 95.4633333333333,
        "total": 95.4633333333333,
        "stale": false
@@ -6494,13 +6500,13 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 10950.269486,
-     "raw_total": 10950.2694856143,
+     "total": 9754.071503,
+     "raw_total": 9754.07150269884,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I128": 0,
-      "I129": 1
+      "I128": 1,
+      "I129": 0
      },
      "lines": [
       {
@@ -6521,14 +6527,14 @@
        "desc": "EPS",
        "qty": 13.7475,
        "price": 156.56,
-       "total": 0.0,
+       "total": 2152.3086,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 234.587822818792,
-       "total": 3348.50658291544,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -6563,13 +6569,13 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 18974.06252,
-     "raw_total": 18974.0625199705,
+     "total": 17777.864537,
+     "raw_total": 17777.864537055,
      "status": "OK",
      "reason": null,
      "gates": {
-      "I141": 0,
-      "I142": 1,
+      "I141": 1,
+      "I142": 0,
       "I150": 0,
       "I151": 0,
       "I152": 0
@@ -6593,14 +6599,14 @@
        "desc": "EPS",
        "qty": 13.7475,
        "price": 156.56,
-       "total": 0.0,
+       "total": 2152.3086,
        "stale": false
       },
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 234.587822818792,
-       "total": 3348.50658291544,
+       "price": 0.0,
+       "total": 0.0,
        "stale": false
       },
       {
@@ -6848,7 +6854,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -6872,13 +6878,13 @@
      "multiplier": 1.0
     },
     "REAR FRAME + FLOOR PLATE": {
-     "total": 3129.9508,
+     "total": 0.0,
      "raw_total": 3129.9508,
      "status": "OK",
      "reason": null,
      "gates": {
       "I207": 0,
-      "I208": 1
+      "I208": 0
      },
      "lines": [
       {

@@ -102,7 +102,7 @@
       ]
      }
     ],
-    "cached_total": 4313.126743,
+    "cached_total": 4310.153139,
     "unverifiable": null
    },
    {
@@ -210,7 +210,7 @@
       ]
      }
     ],
-    "cached_total": 5448.993893,
+    "cached_total": 5446.020289,
     "unverifiable": null
    },
    {
@@ -265,7 +265,7 @@
       ]
      }
     ],
-    "cached_total": 13044.701656,
+    "cached_total": 13036.780171,
     "unverifiable": null
    },
    {
@@ -292,7 +292,7 @@
       ]
      }
     ],
-    "cached_total": 6775.551843,
+    "cached_total": 6771.5911,
     "unverifiable": null
    },
    {
@@ -319,7 +319,7 @@
       ]
      }
     ],
-    "cached_total": 11635.464871,
+    "cached_total": 11631.504129,
     "unverifiable": null
    },
    {
@@ -436,7 +436,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 50906.2137481393,
    "findings": [],
@@ -1355,7 +1356,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 36119.7198716651,
    "findings": [],
@@ -2274,7 +2276,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 50906.2137481393,
    "findings": [],
@@ -3193,7 +3196,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 48285.9402870521,
    "findings": [],
@@ -4112,7 +4116,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 50906.2137481393,
    "findings": [],
@@ -5031,14 +5036,15 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 55557.7094839783,
+   "grand_total": 56205.3408133528,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 5086.263636,
-     "raw_total": 5086.26363614094,
+     "total": 5193.908081,
+     "raw_total": 5193.90808053289,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5070,8 +5076,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 3211.49171114094,
+       "price": 557.500697986577,
+       "total": 3319.13615553289,
        "stale": false
       },
       {
@@ -5295,8 +5301,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6222.130786,
-     "raw_total": 6222.13078614094,
+     "total": 6329.775231,
+     "raw_total": 6329.77523053289,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5330,8 +5336,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 3211.49171114094,
+       "price": 557.500697986577,
+       "total": 3319.13615553289,
        "stale": false
       },
       {
@@ -5470,8 +5476,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 11460.117039,
-     "raw_total": 5730.0585192953,
+     "total": 11676.288259,
+     "raw_total": 5838.14412944295,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5503,8 +5509,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 3224.65356241611,
+       "price": 557.500697986577,
+       "total": 3332.73917256376,
        "stale": false
       },
       {
@@ -5532,8 +5538,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 5904.373667,
-     "raw_total": 5904.37366717002,
+     "total": 6012.459277,
+     "raw_total": 6012.45927731767,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5565,8 +5571,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 3224.65356241611,
+       "price": 557.500697986577,
+       "total": 3332.73917256376,
        "stale": false
       },
       {
@@ -5594,8 +5600,8 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 9797.965128,
-     "raw_total": 9797.96512841899,
+     "total": 9906.050739,
+     "raw_total": 9906.05073856664,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5627,8 +5633,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 3224.65356241611,
+       "price": 557.500697986577,
+       "total": 3332.73917256376,
        "stale": false
       },
       {
@@ -5950,7 +5956,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 59456.190592227,
    "findings": [],
@@ -6869,7 +6876,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 41430.8336811935,
    "findings": [],
@@ -7788,7 +7796,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 59456.190592227,
    "findings": [],
@@ -8707,7 +8716,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 56835.9171311398,
    "findings": [],
@@ -9626,7 +9636,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 59456.190592227,
    "findings": [],
@@ -10545,14 +10556,15 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 65121.636352227,
+   "grand_total": 65910.4407234271,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 5086.263636,
-     "raw_total": 5086.26363614094,
+     "total": 5193.908081,
+     "raw_total": 5193.90808053289,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -10584,8 +10596,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 3211.49171114094,
+       "price": 557.500697986577,
+       "total": 3319.13615553289,
        "stale": false
       },
       {
@@ -10809,8 +10821,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6222.130786,
-     "raw_total": 6222.13078614094,
+     "total": 6329.775231,
+     "raw_total": 6329.77523053289,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -10844,8 +10856,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 3211.49171114094,
+       "price": 557.500697986577,
+       "total": 3319.13615553289,
        "stale": false
       },
       {
@@ -10984,8 +10996,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 15104.287643,
-     "raw_total": 7552.14382130872,
+     "total": 15391.045384,
+     "raw_total": 7695.52269191275,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11017,8 +11029,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 4277.60166442953,
+       "price": 557.500697986577,
+       "total": 4420.98053503356,
        "stale": false
       },
       {
@@ -11046,8 +11058,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 7805.344836,
-     "raw_total": 7805.34483585011,
+     "total": 7948.723706,
+     "raw_total": 7948.72370645414,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11079,8 +11091,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 4277.60166442953,
+       "price": 557.500697986577,
+       "total": 4420.98053503356,
        "stale": false
       },
       {
@@ -11108,8 +11120,8 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 12665.257864,
-     "raw_total": 12665.2578642293,
+     "total": 12808.636735,
+     "raw_total": 12808.6367348333,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11141,8 +11153,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 4277.60166442953,
+       "price": 557.500697986577,
+       "total": 4420.98053503356,
        "stale": false
       },
       {

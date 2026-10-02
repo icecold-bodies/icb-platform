@@ -92,7 +92,7 @@
       ]
      }
     ],
-    "cached_total": 5123.517155,
+    "cached_total": 5168.727822,
     "unverifiable": null
    },
    {
@@ -200,7 +200,7 @@
       ]
      }
     ],
-    "cached_total": 6745.300868,
+    "cached_total": 6790.511534,
     "unverifiable": null
    },
    {
@@ -255,7 +255,7 @@
       ]
      }
     ],
-    "cached_total": 59894.163347,
+    "cached_total": 60440.767719,
     "unverifiable": null
    },
    {
@@ -282,7 +282,7 @@
       ]
      }
     ],
-    "cached_total": 35525.941019,
+    "cached_total": 35799.243204,
     "unverifiable": null
    },
    {
@@ -324,7 +324,7 @@
      "J179"
     ],
     "gates": [],
-    "cached_total": 17524.174337,
+    "cached_total": 17284.452525,
     "unverifiable": null
    },
    {
@@ -398,7 +398,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -423,16 +423,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 108067.844682993,
+   "grand_total": 111059.108057557,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -464,8 +465,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -710,8 +711,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -745,8 +746,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -892,8 +893,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 18909.426816,
-     "raw_total": 9454.71340815213,
+     "total": 20410.36485,
+     "raw_total": 10205.1824250853,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -925,8 +926,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 2077.59822378523,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -968,8 +969,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 11326.940782,
-     "raw_total": 11326.9407816152,
+     "total": 12077.409799,
+     "raw_total": 12077.4097985484,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -1001,8 +1002,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 2077.59822378523,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -1267,7 +1268,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -1392,7 +1393,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "eps",
@@ -1417,11 +1418,12 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 99259.4176918438,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
@@ -2261,7 +2263,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -2386,7 +2388,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -2411,16 +2413,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 108067.844682993,
+   "grand_total": 111059.108057557,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -2452,8 +2455,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -2698,8 +2701,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -2733,8 +2736,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -2880,8 +2883,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 18909.426816,
-     "raw_total": 9454.71340815213,
+     "total": 20410.36485,
+     "raw_total": 10205.1824250853,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -2913,8 +2916,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 2077.59822378523,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -2956,8 +2959,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 11326.940782,
-     "raw_total": 11326.9407816152,
+     "total": 12077.409799,
+     "raw_total": 12077.4097985484,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -2989,8 +2992,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 2077.59822378523,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -3255,7 +3258,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -3380,7 +3383,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "srd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -3405,16 +3408,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 97172.9554543071,
+   "grand_total": 100322.759469678,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -3446,8 +3450,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -3482,8 +3486,8 @@
      "multiplier": 1.0
     },
     "SRD": {
-     "total": 6017.703527,
-     "raw_total": 6017.70352694443,
+     "total": 6546.17233,
+     "raw_total": 6546.17232963329,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -3517,8 +3521,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 245.735838926174,
-       "total": 1463.01289063087,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -3874,8 +3878,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 18909.426816,
-     "raw_total": 9454.71340815213,
+     "total": 20410.36485,
+     "raw_total": 10205.1824250853,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -3907,8 +3911,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 2077.59822378523,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -3950,8 +3954,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 11326.940782,
-     "raw_total": 11326.9407816152,
+     "total": 12077.409799,
+     "raw_total": 12077.4097985484,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -3983,8 +3987,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 2077.59822378523,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -4249,7 +4253,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -4374,7 +4378,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -4399,16 +4403,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 108067.844682993,
+   "grand_total": 111059.108057557,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -4440,8 +4445,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -4686,8 +4691,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -4721,8 +4726,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -4868,8 +4873,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 18909.426816,
-     "raw_total": 9454.71340815213,
+     "total": 20410.36485,
+     "raw_total": 10205.1824250853,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -4901,8 +4906,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 2077.59822378523,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -4944,8 +4949,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 11326.940782,
-     "raw_total": 11326.9407816152,
+     "total": 12077.409799,
+     "raw_total": 12077.4097985484,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -4977,8 +4982,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 2077.59822378523,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -5243,7 +5248,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -5393,16 +5398,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 110693.531642435,
+   "grand_total": 111059.108057557,
    "findings": [
     "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 5123.517155,
-     "raw_total": 5123.51715499275,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5434,8 +5440,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 1348.82651867919,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -5680,8 +5686,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6745.300868,
-     "raw_total": 6745.30086766819,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5715,8 +5721,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 1348.82651867919,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -5862,8 +5868,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 20226.928129,
-     "raw_total": 10113.4640644743,
+     "total": 20410.36485,
+     "raw_total": 10205.1824250853,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5895,8 +5901,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 2736.34888010738,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -5938,8 +5944,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 11985.691438,
-     "raw_total": 11985.6914379374,
+     "total": 12077.409799,
+     "raw_total": 12077.4097985484,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5971,8 +5977,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 2736.34888010738,
+       "price": 234.150293154362,
+       "total": 2828.06724071839,
        "stale": false
       },
       {
@@ -6237,7 +6243,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -6362,7 +6368,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -6387,16 +6393,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 152062.765730175,
+   "grand_total": 156464.001197159,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6428,8 +6435,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -6674,8 +6681,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6709,8 +6716,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -6856,8 +6863,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 30632.12388,
-     "raw_total": 15316.0619398568,
+     "total": 33073.043309,
+     "raw_total": 16536.5216542633,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6889,8 +6896,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 3378.72034373154,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -6932,8 +6939,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 18360.795345,
-     "raw_total": 18360.7953451857,
+     "total": 19581.25506,
+     "raw_total": 19581.2550595921,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6965,8 +6972,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 3378.72034373154,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -7231,7 +7238,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -7356,7 +7363,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "eps",
@@ -7381,11 +7388,12 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 139203.868301388,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
@@ -8225,7 +8233,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -8350,7 +8358,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -8375,16 +8383,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 152062.765730175,
+   "grand_total": 156464.001197159,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -8416,8 +8425,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -8662,8 +8671,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -8697,8 +8706,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -8844,8 +8853,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 30632.12388,
-     "raw_total": 15316.0619398568,
+     "total": 33073.043309,
+     "raw_total": 16536.5216542633,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -8877,8 +8886,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 3378.72034373154,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -8920,8 +8929,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 18360.795345,
-     "raw_total": 18360.7953451857,
+     "total": 19581.25506,
+     "raw_total": 19581.2550595921,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -8953,8 +8962,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 3378.72034373154,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -9219,7 +9228,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -9344,7 +9353,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "srd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -9369,16 +9378,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 141167.876501489,
+   "grand_total": 145727.65260928,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -9410,8 +9420,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -9446,8 +9456,8 @@
      "multiplier": 1.0
     },
     "SRD": {
-     "total": 6017.703527,
-     "raw_total": 6017.70352694443,
+     "total": 6546.17233,
+     "raw_total": 6546.17232963329,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -9481,8 +9491,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 245.735838926174,
-       "total": 1463.01289063087,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -9838,8 +9848,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 30632.12388,
-     "raw_total": 15316.0619398568,
+     "total": 33073.043309,
+     "raw_total": 16536.5216542633,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -9871,8 +9881,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 3378.72034373154,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -9914,8 +9924,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 18360.795345,
-     "raw_total": 18360.7953451857,
+     "total": 19581.25506,
+     "raw_total": 19581.2550595921,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -9947,8 +9957,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 3378.72034373154,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -10213,7 +10223,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -10338,7 +10348,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -10363,16 +10373,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 152062.765730175,
+   "grand_total": 156464.001197159,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -10404,8 +10415,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -10650,8 +10661,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -10685,8 +10696,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -10832,8 +10843,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 30632.12388,
-     "raw_total": 15316.0619398568,
+     "total": 33073.043309,
+     "raw_total": 16536.5216542633,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -10865,8 +10876,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 3378.72034373154,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -10908,8 +10919,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 18360.795345,
-     "raw_total": 18360.7953451857,
+     "total": 19581.25506,
+     "raw_total": 19581.2550595921,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -10941,8 +10952,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 3378.72034373154,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -11207,7 +11218,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -11357,16 +11368,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 155926.105437859,
+   "grand_total": 156464.001197159,
    "findings": [
     "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 5123.517155,
-     "raw_total": 5123.51715499275,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11398,8 +11410,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 1348.82651867919,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -11644,8 +11656,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6745.300868,
-     "raw_total": 6745.30086766819,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11679,8 +11691,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 1348.82651867919,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -11826,8 +11838,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 32774.727025,
-     "raw_total": 16387.3635122595,
+     "total": 33073.043309,
+     "raw_total": 16536.5216542633,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11859,8 +11871,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 4450.02191613423,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -11902,8 +11914,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 19432.096918,
-     "raw_total": 19432.0969175884,
+     "total": 19581.25506,
+     "raw_total": 19581.2550595921,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11935,8 +11947,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 4450.02191613423,
+       "price": 234.150293154362,
+       "total": 4599.18005813799,
        "stale": false
       },
       {
@@ -12201,7 +12213,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -12326,7 +12338,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -12351,16 +12363,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 247148.562832149,
+   "grand_total": 254597.157337589,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12392,8 +12405,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -12638,8 +12651,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12673,8 +12686,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -12820,8 +12833,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 55968.275597,
-     "raw_total": 27984.1377987025,
+     "total": 60440.767719,
+     "raw_total": 30220.3838592609,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12853,8 +12866,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 6190.82299006711,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -12896,8 +12909,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 33562.997144,
-     "raw_total": 33562.9971438703,
+     "total": 35799.243204,
+     "raw_total": 35799.2432044286,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12929,8 +12942,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 6190.82299006711,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -13195,7 +13208,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -13320,7 +13333,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "eps",
@@ -13345,11 +13358,12 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 225535.422844597,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
@@ -14189,7 +14203,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -14314,7 +14328,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -14339,16 +14353,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 247148.562832149,
+   "grand_total": 254597.157337589,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -14380,8 +14395,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -14626,8 +14641,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -14661,8 +14676,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -14808,8 +14823,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 55968.275597,
-     "raw_total": 27984.1377987025,
+     "total": 60440.767719,
+     "raw_total": 30220.3838592609,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -14841,8 +14856,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 6190.82299006711,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -14884,8 +14899,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 33562.997144,
-     "raw_total": 33562.9971438703,
+     "total": 35799.243204,
+     "raw_total": 35799.2432044286,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -14917,8 +14932,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 6190.82299006711,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -15183,7 +15198,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -15308,7 +15323,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "srd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -15333,16 +15348,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 236253.673603463,
+   "grand_total": 243860.808749709,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -15374,8 +15390,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -15410,8 +15426,8 @@
      "multiplier": 1.0
     },
     "SRD": {
-     "total": 6017.703527,
-     "raw_total": 6017.70352694443,
+     "total": 6546.17233,
+     "raw_total": 6546.17232963329,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -15445,8 +15461,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 245.735838926174,
-       "total": 1463.01289063087,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -15802,8 +15818,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 55968.275597,
-     "raw_total": 27984.1377987025,
+     "total": 60440.767719,
+     "raw_total": 30220.3838592609,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -15835,8 +15851,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 6190.82299006711,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -15878,8 +15894,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 33562.997144,
-     "raw_total": 33562.9971438703,
+     "total": 35799.243204,
+     "raw_total": 35799.2432044286,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -15911,8 +15927,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 6190.82299006711,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -16177,7 +16193,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -16302,7 +16318,7 @@
     "width": 2.6,
     "height": 2.1,
     "door": "drd",
-    "foam": "32D",
+    "foam": "4G",
     "panels": {
      "FRONT": {
       "insulation": "pu",
@@ -16327,16 +16343,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
-   "grand_total": 247148.562832149,
+   "grand_total": 254597.157337589,
    "findings": [
-    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 32D for this scenario"
+    "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 4798.79966,
-     "raw_total": 4798.79965975517,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -16368,8 +16385,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -16614,8 +16631,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6420.583372,
-     "raw_total": 6420.5833724306,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -16649,8 +16666,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 1024.10902344161,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -16796,8 +16813,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 55968.275597,
-     "raw_total": 27984.1377987025,
+     "total": 60440.767719,
+     "raw_total": 30220.3838592609,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -16829,8 +16846,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 6190.82299006711,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -16872,8 +16889,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 33562.997144,
-     "raw_total": 33562.9971438703,
+     "total": 35799.243204,
+     "raw_total": 35799.2432044286,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -16905,8 +16922,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 172.015087248322,
-       "total": 6190.82299006711,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -17171,7 +17188,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -17321,16 +17338,17 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 253686.829447323,
+   "grand_total": 254597.157337589,
    "findings": [
     "mixed PU references on the sheet as saved: 1x 32D (C17) + 4x 4G (C19); normalised to 4G for this scenario"
    ],
    "sections": {
     "FRONT": {
-     "total": 5123.517155,
-     "raw_total": 5123.51715499275,
+     "total": 5168.727822,
+     "raw_total": 5168.72782163737,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -17362,8 +17380,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 1348.82651867919,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -17608,8 +17626,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6745.300868,
-     "raw_total": 6745.30086766819,
+     "total": 6790.511534,
+     "raw_total": 6790.51153431281,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -17643,8 +17661,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 1348.82651867919,
+       "price": 234.150293154362,
+       "total": 1394.03718532381,
        "stale": false
       },
       {
@@ -17790,8 +17808,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 59894.163347,
-     "raw_total": 29947.0816736018,
+     "total": 60440.767719,
+     "raw_total": 30220.3838592609,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -17823,8 +17841,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 8153.76686496644,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -17866,8 +17884,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 35525.941019,
-     "raw_total": 35525.9410187696,
+     "total": 35799.243204,
+     "raw_total": 35799.2432044286,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -17899,8 +17917,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 226.556456375839,
-       "total": 8153.76686496644,
+       "price": 234.150293154362,
+       "total": 8427.0690506255,
        "stale": false
       },
       {
@@ -18165,7 +18183,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,

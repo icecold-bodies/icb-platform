@@ -1,44 +1,172 @@
 {
  "pack": "chillers",
- "pack_fingerprint": "af303744a6e4",
- "generated_at": "2026-09-25T14:12:11+00:00",
+ "pack_fingerprint": "ee4d5c872ea3",
+ "generated_at": "2026-10-01T17:57:03+00:00",
  "tool_version": "1.57.0",
  "workbook_month": "2026-09",
  "workbook": {
-  "dir": "C:\\Users\\micge\\Documents\\Burt Costing Model\\September costings",
+  "dir": "C:\\Users\\micge\\AppData\\Local\\Temp\\claude\\C--Users-micge-Documents-icb-platform\\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\\scratchpad\\rt2wb\\corrected",
   "files": {
-   "GRP Costings 2018.xlsx": "d87a573177dc8da203580982e5a4e0ff58a4456c559c1f8a5b096539ddf6a6c6",
-   "PRICE 2017 MARCH.xlsx": "6956102ee71d3b440e328927b7d4aa2568df992c8eb742cb0f255c3c2d1ccd04",
-   "FORMULAS 2018.xls": "8fd4a5730c8215dbddf5505e65bce8fbd4cf821149238fbca88b648c95b6ec6d"
+   "GRP Costings 2018.xlsx": "04c774e2a7de631458a67fb9e01663973ae20a621b58157cdeb63d0ef59e70bb",
+   "PRICE 2017 MARCH.xlsx": "b85f25aefcdffcfc6cef7df3ecf886532be304c6a2fe9de4b6a4d1f32f5cc75e",
+   "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f"
+  },
+  "provenance": {
+   "source": {
+    "zip": "nuwepryslyste.zip",
+    "zip_sha256": "ee8e2159031be94738797b72f0b9a11a7baa1ee5eabd3a4f34269606106eea7b",
+    "received": "21 Sep 2026 08:39 (Burt's email)",
+    "confirmed": "Michael, 1 Oct 2026 (RT2_RULING_1 R1)",
+    "members": {
+     "GRP Costings 2018.xlsx": "c0926043ff87a1d117c65d6290ce9c144daf58f0df871ed6e0c11a5baf9547db",
+     "PRICE 2017 MARCH.xlsx": "073cdc8409f33f4259737f1cf2961530898116121de31f9c5133a404ea0945a5",
+     "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f"
+    }
+   },
+   "corrections": [
+    {
+     "file": "PRICE 2017 MARCH.xlsx",
+     "sheet": "PU",
+     "cell": "C17",
+     "from": "4095",
+     "to": "4100",
+     "what": "32D PU FOAM sheet price",
+     "authority": "Burt, 1 Oct 2026 (relayed by Michael, RT2_RULING_1 R1): 32D PU FOAM is R4 100",
+     "id": 1,
+     "cells_changed": [
+      "formula PU!C17: 4095 -> 4100",
+      "value PU!C17: 4095 -> 4100",
+      "cache externalLink1.xml PU!C17: '4095' -> '4100'"
+     ],
+     "applied_to": [
+      "PRICE 2017 MARCH.xlsx PU!C17",
+      "GRP Costings 2018.xlsx xl/externalLinks/externalLink1.xml cached [1]PU!C17"
+     ]
+    },
+    {
+     "file": "GRP Costings 2018.xlsx",
+     "section": "SUB FRAME + LIGHT BOX ASSY",
+     "line": "1.2MM GALV PLATE (label kept)",
+     "from": "='[1]MILD STEEL'!$D$28/2.98",
+     "to": "='[1]MILD STEEL'!$D$27/2.98",
+     "cells": [
+      "UP TO 2.3 CHILLER BODY!G163",
+      "UP TO 5.5 CHILLER AND 2.3 WIDE!G187",
+      "4.9 & UP CHILLER AND 2.5 WIDE!R185",
+      "UP TO 4.8 MT FREEZER  (2!G196",
+      "EXPLOSIVE UP TO 2.7!G165",
+      "EXPLOSIVE 2.7 TO 4.8!G175",
+      "EXPLOSIVE 4.9 AND UP!G175"
+     ],
+     "authority": "Burt's email of 7 Sep 2026 15:47 to Michael and Nadie: \"Sorry that should be 1,0mm Galv Plate. We have changed it but never corrected the costing.\" Michael, same thread: \"...the case on all 'SUB FRAME + LIGHT BOX ASSY' where the 1.2MM GALV PLATE is being used.\"",
+     "id": 2,
+     "cells_changed": [
+      "formula UP TO 4.8 MT FREEZER  (2!G196: \"='[1]MILD STEEL'!$D$28/2.98\" -> \"='[1]MILD STEEL'!$D$27/2.98\"",
+      "formula EXPLOSIVE UP TO 2.7!G165: \"='[1]MILD STEEL'!$D$28/2.98\" -> \"='[1]MILD STEEL'!$D$27/2.98\"",
+      "formula EXPLOSIVE 2.7 TO 4.8!G175: \"='[1]MILD STEEL'!$D$28/2.98\" -> \"='[1]MILD STEEL'!$D$27/2.98\"",
+      "formula EXPLOSIVE 4.9 AND UP!G175: \"='[1]MILD STEEL'!$D$28/2.98\" -> \"='[1]MILD STEEL'!$D$27/2.98\"",
+      "formula UP TO 2.3 CHILLER BODY!G163: \"='[1]MILD STEEL'!$D$28/2.98\" -> \"='[1]MILD STEEL'!$D$27/2.98\"",
+      "formula UP TO 5.5 CHILLER AND 2.3 WIDE!G187: \"='[1]MILD STEEL'!$D$28/2.98\" -> \"='[1]MILD STEEL'!$D$27/2.98\"",
+      "formula 4.9 & UP CHILLER AND 2.5 WIDE!R185: \"='[1]MILD STEEL'!$D$28/2.98\" -> \"='[1]MILD STEEL'!$D$27/2.98\""
+     ],
+     "patched": [
+      {
+       "sheet": "UP TO 2.3 CHILLER BODY",
+       "cell": "G163",
+       "part": "xl/worksheets/sheet33.xml",
+       "from": "='[1]MILD STEEL'!$D$28/2.98",
+       "to": "='[1]MILD STEEL'!$D$27/2.98"
+      },
+      {
+       "sheet": "UP TO 5.5 CHILLER AND 2.3 WIDE",
+       "cell": "G187",
+       "part": "xl/worksheets/sheet34.xml",
+       "from": "='[1]MILD STEEL'!$D$28/2.98",
+       "to": "='[1]MILD STEEL'!$D$27/2.98"
+      },
+      {
+       "sheet": " 4.9 & UP CHILLER AND 2.5 WIDE ",
+       "cell": "R185",
+       "part": "xl/worksheets/sheet35.xml",
+       "from": "='[1]MILD STEEL'!$D$28/2.98",
+       "to": "='[1]MILD STEEL'!$D$27/2.98"
+      },
+      {
+       "sheet": " UP TO 4.8 MT FREEZER  (2",
+       "cell": "G196",
+       "part": "xl/worksheets/sheet28.xml",
+       "from": "='[1]MILD STEEL'!$D$28/2.98",
+       "to": "='[1]MILD STEEL'!$D$27/2.98"
+      },
+      {
+       "sheet": "EXPLOSIVE UP TO 2.7",
+       "cell": "G165",
+       "part": "xl/worksheets/sheet30.xml",
+       "from": "='[1]MILD STEEL'!$D$28/2.98",
+       "to": "='[1]MILD STEEL'!$D$27/2.98"
+      },
+      {
+       "sheet": "EXPLOSIVE 2.7 TO 4.8",
+       "cell": "G175",
+       "part": "xl/worksheets/sheet31.xml",
+       "from": "='[1]MILD STEEL'!$D$28/2.98",
+       "to": "='[1]MILD STEEL'!$D$27/2.98"
+      },
+      {
+       "sheet": "EXPLOSIVE 4.9 AND UP",
+       "cell": "G175",
+       "part": "xl/worksheets/sheet32.xml",
+       "from": "='[1]MILD STEEL'!$D$28/2.98",
+       "to": "='[1]MILD STEEL'!$D$27/2.98"
+      }
+     ]
+    }
+   ],
+   "note": "LibreOffice headless prices external references from the GRP's own link cache, never from the adjacent PRICE file (PRICE PU!C17 = 9999 moved nothing) \u2014 so a price correction is made in the cache too, and a new price list only reaches the golden through a GRP saved with its links updated.",
+   "files": {
+    "original": {
+     "PRICE 2017 MARCH.xlsx": "073cdc8409f33f4259737f1cf2961530898116121de31f9c5133a404ea0945a5",
+     "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f",
+     "GRP Costings 2018.xlsx": "c0926043ff87a1d117c65d6290ce9c144daf58f0df871ed6e0c11a5baf9547db"
+    },
+    "c1": {
+     "GRP Costings 2018.xlsx": "1bfbc058f2455d03a6dca3291d2776e05631686d2a14bd158b203d345c37a1df",
+     "PRICE 2017 MARCH.xlsx": "b85f25aefcdffcfc6cef7df3ecf886532be304c6a2fe9de4b6a4d1f32f5cc75e",
+     "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f"
+    },
+    "corrected": {
+     "GRP Costings 2018.xlsx": "04c774e2a7de631458a67fb9e01663973ae20a621b58157cdeb63d0ef59e70bb",
+     "PRICE 2017 MARCH.xlsx": "b85f25aefcdffcfc6cef7df3ecf886532be304c6a2fe9de4b6a4d1f32f5cc75e",
+     "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f"
+    }
+   },
+   "first_check_on_burts_next_set": "both corrections must already be in his file (RT2_RULING_1 R1)",
+   "proof": {
+    "script": "docs/audit/rt2_2026-10/golden/prove_corrections.py",
+    "ran_at": "2026-10-01T17:53:36+00:00",
+    "prove_then_trust_on_original": "OK on all 12 pack sheets",
+    "move_only": {
+     "correction 1 (PU!C17 4095 -> 4100)": {
+      "lines_moved": 40,
+      "sections_moved": 40
+     },
+     "correction 2 (SUB FRAME galv $D$28 -> $D$27)": {
+      "lines_moved": 7,
+      "sections_moved": 7
+     }
+    },
+    "result": "OK \u2014 0 other lines, 0 other sections moved"
+   }
   }
  },
  "stale_links": {
   "3": "PRICE 20.04.2004.xls"
  },
- "scenario_count": 98,
+ "scenario_count": 56,
  "sheets": {
   "UP TO 2.3 CHILLER BODY": "up_to_2_3_chiller_body.json",
   "UP TO 5.5 CHILLER AND 2.3 WIDE": "up_to_5_5_chiller_and_2_3_wide.json",
   " 4.9 & UP CHILLER AND 2.5 WIDE ": "4_9_up_chiller_and_2_5_wide.json"
  },
- "additions": [
-  {
-   "variant": "srd_pu",
-   "scenarios": 14,
-   "added_at": "2026-09-28T09:38:35+00:00",
-   "generated_at": "2026-09-28T09:35:54+00:00",
-   "tool_version": "1.57.0",
-   "workbook": {
-    "dir": "C:\\Users\\micge\\Documents\\Burt Costing Model\\September costings",
-    "files": {
-     "GRP Costings 2018.xlsx": "af64176d4ff9456162311fdb1d218aac0a1e5c341b8edb3eaf4220e5c5f30de3",
-     "PRICE 2017 MARCH.xlsx": "6956102ee71d3b440e328927b7d4aa2568df992c8eb742cb0f255c3c2d1ccd04",
-     "FORMULAS 2018.xls": "8fd4a5730c8215dbddf5505e65bce8fbd4cf821149238fbca88b648c95b6ec6d"
-    },
-    "saved": "2026-09-27T07:43:22+02:00 (file mtime); read from a byte-copy on 28 Sep, the original left untouched"
-   },
-   "why": "v1.58: the chillers' SRD PU line had no audit cell (the named srd variant is EPS on every chiller). The September workbook had been saved again on 27 Sep 07:43, so only these scenarios come from that save; the other scenarios keep the 25 Sep source above.",
-   "check": "outside SRD every added scenario equals the committed srd scenario of the same size within 1.0 % (max 0.55 % over 123 section cells)"
-  }
- ]
+ "prove_then_trust": "replaced by the corrections proof"
 }

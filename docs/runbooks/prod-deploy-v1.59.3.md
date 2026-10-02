@@ -3,9 +3,11 @@
 Target: **`https://192.168.0.251/mes-app/`** and **`https://mes.icecoldgrp.online`** · repo `/opt/icb-platform`
 · service `icb-backend` (`uvicorn --workers 4`) · DB `icb_platform` · BA dispatch **RT2** (one CA, one window).
 
-> **Status: DRAFT for RT2_RETURN_2.** Every number marked **PENDING R8** comes from the mirror rehearsal on the
-> read-only prod export of the 15 bodies (RT2_RULING_1 R8), which has not reached the CA yet. No prod step other
-> than the R8 export runs before **RT2_RULING_2**.
+> **Status: for the window.** Michael ordered the window on 2 Oct ("push to prod, the users are waiting"), ahead of
+> RT2_RULING_2; RT2_RETURN_2 follows with this runbook as its record. Every expected count comes from the mirror
+> rehearsal on the read-only R8 export of the 15 bodies (prod 2 Oct 09:01:23,
+> `docs/audit/rt2_2026-10/prod/r8_export_20261002-090123/`; the CI snapshot is that export). The counts hold only if
+> prod's pricing does not move after 09:01; Manifest P's guards refuse a line that moved.
 
 | | |
 |---|---|
@@ -18,7 +20,7 @@ Target: **`https://192.168.0.251/mes-app/`** and **`https://mes.icecoldgrp.onlin
 | Templates + static | `calculator.html` (`?v=184` → **`185`**), `calculator2.html` (`?v=126` → **`127`**), `admin_templates.html` (`?v=18` → **`19`**) and their three scripts: they reload from disk |
 | Dependencies | **none** (`requirements` unchanged, asserted). PyYAML 6.0.2 is in the venv since v1.59.0 (asserted) |
 | Env / `.env` | none |
-| Data | **Manifest P** (Part 3, ratified): every active own-priced PU foam line onto the shared PU price — P1 own-price removals, P2 conversions to Burt's row shape (formula + own price, one transaction). **PENDING R8: N entries on L lines** (provisional on the 1 Oct 13:11 data: 47 entries on 33 lines; with the 15-body export 59 on 39). The 18 chiller PU lines stay as they are (no PU on chillers, Burt 1 Oct). **Manifest D** (R6): the four 4G body defaults, `32D` → `4G` on MEAT HANGER LARGE (12), MEAT HANGER SMALL-MEDIUM (36), EXPLOSIVE 4.9 AND UP (24), RHINORANGE TRAILER (15). **D strictly after P** (asserted) |
+| Data | **Manifest P** (Part 3, ratified): every active own-priced PU foam line onto the shared PU price — P1 own-price removals, P2 conversions to Burt's row shape (formula + own price, one transaction). **59 entries on 39 lines** (P1: 19 own-price removals; P2: 20 lines, formula + own price). Guards = the R8 export. The 18 chiller PU lines stay as they are (no PU on chillers, Burt 1 Oct). **Manifest D** (R6): the four 4G body defaults, `32D` → `4G` on MEAT HANGER LARGE (12), MEAT HANGER SMALL-MEDIUM (36), EXPLOSIVE 4.9 AND UP (24), RHINORANGE TRAILER (15). **D strictly after P** (asserted) |
 | Window extra | The door test (Michael toggles a test quote DRD ↔ SRD and EPS ↔ PU several times) → the door report must still read **14 OK**: the prod proof of Part 1 |
 
 ## Why
@@ -129,11 +131,12 @@ sudo prompt; do not pipe it.)
 
 | # | who | step | pass condition |
 |---|---|---|---|
+| 0 | Michael | **Body Templates, by hand** — only if these were not deliberate (the R8 export found them changed after 1 Oct 13:11, the calculator's toggle defect): CHILLER MEDIUM 3294 DRD EPS **0 → 0.06**, 3296 SRD EPS **0.06 → 0**; FREEZER LARGE 2689 ROOF PU **0 → 0.1**, 2688 ROOF EPS **0.1 → 0**, 2691 FLOOR PU **0 → 0.1**, 2690 FLOOR EPS **0.1 → 0** | moves no audit cell (the audit sets every panel's thickness itself); the door report reads 14 OK again |
 | 1 | Michael | Admin → Costing audit → **All**; when it has finished, `sudo bash /tmp/icb-rt2-all/rt2_all.sh pre` | `PAGE = CLI`; the counts = **table 1** (prod's v1.59.2 golden + list, as today) |
 | 2 | Michael | `sudo bash /tmp/icb-release-v1.59.3/release.sh deploy` | `######## DEPLOYED`: every step below; `DEFAULTS_ALL_32D` = 0 |
 | 2+ | CA | the Cloudflare door, from outside, **only now** (a CF probe before the disk matched would cache old bytes under the new URL) | `mes.icecoldgrp.online`: the three bundles at their new `?v=` = the target blobs; `/openapi.json` = the LAN door |
 | 3 | Michael | **All** → `rt2_all.sh post` | `PAGE = CLI` at the same moment; the counts = **table 2** (the new golden, packs and list on prod's data: **"No change" is not the test**) |
-| 4 | Michael | `sudo bash /tmp/icb-rt2-data/rt2_data.sh dryrun P` → `… apply P` | dry-run **N to apply, 0 already applied**, 0 mismatches → applied, journal kept → second dry-run **0 to apply, N already applied** |
+| 4 | Michael | `sudo bash /tmp/icb-rt2-data/rt2_data.sh dryrun P` → `… apply P` | dry-run **59 to apply, 0 already applied**, 0 mismatches → applied (39 lines, 39 history rows), journal kept → second dry-run **0 to apply, 59 already applied** |
 | 5 | Michael | **All** → `rt2_all.sh afterP` | `PAGE = CLI`; the counts = **table 3**: against step 3, **only P's cells move** (the list below) |
 | 5b | Michael | `rt2_data.sh dryrun D` → `… apply D` | the order check reads P fully on; dry-run **4 to apply, 0 already applied**, `OTHERS_4G: 0` → applied → **0 to apply, 4 already applied** |
 | 5c | Michael | **All** → `rt2_all.sh afterD` | `PAGE = CLI`; the counts = **table 4**: against step 5, **only EXPLOSIVE 4.9 AND UP's default-foam cells move** (the probe now opens it on 4G, R6.4) |
@@ -168,26 +171,55 @@ reports, `OUTCOME.txt`). The CA fetches them.
 |---|---|
 | the page header | **v1.59.3** (also `/debug/health` → `"version": "v1.59.3"`) |
 | Body Templates → MEAT HANGER LARGE (and the other three 4G bodies) | the **Default foam** select reads **4G**; any other body reads **32D** |
-| Calculator → a **new** costing on MEAT HANGER LARGE, default size (6.7 × 2.6 × 2.6), PU panels, double door | the foam selector reads **`4G (body default)`** — whatever this browser chose last time; the PU panels total **PENDING R8** (= Burt's MEAT BODY at 4G, apart from the named single-rear-door gap R6.6, +≈R530 on a single door only) |
+| Calculator → a **new** costing on MEAT HANGER LARGE, default size (6.7 × 2.6 × 2.6), PU panels, double door | the foam selector reads **`4G (body default)`** — whatever this browser chose last time; the PU foam lines total **R33 865.53** (FRONT 2 057.86 · DRD 2 057.86 · SIDES 11 385.73 · ROOF 9 182.04 · FLOOR 9 182.04; R24 878.82 at 32D). The named single-rear-door gap R6.6 (+≈R530) is on a single door only |
+| … MEAT HANGER SMALL-MEDIUM (5.8 × 2.3 × 2.3), PU, double door | opens **4G (body default)**; PU foam lines **R25 628.08** (FLOOR 6229 R6 047.90 at the carried 0.076 = Burt's row) |
+| … RHINORANGE TRAILER (15.5 × 2.6 × 2.84), PU, double door | opens **4G (body default)**; PU foam lines **R81 614.32** (each line = Burt's row on the 1.22 × 2.65 panel) |
 | … switch to 32D, then open a new costing on the same body | the new costing opens on **4G (body default)** again (the browser's memory no longer decides) |
 | … a saved 32D MEAT HANGER costing, re-opened | it re-opens on **32D**, its own grade |
 | … toggle double ↔ single door, EPS ↔ PU, edit a door thickness | the toast says **"this quote only"**; no TEMPLATE UPDATED warning; the door report afterwards: 14 OK (step 6) |
 | EXPLOSIVE UP TO 2.7, default size, PU, double door | **bom 5210 (DRD PU) prices R999.73** (Burt's), not R1 463 (R7: 5284 = 0.041) |
-| one converted explosive line (EXPLOSIVE 4.9 AND UP, a P2 line — PENDING R8 which) | equals Burt's row at the default size and the body's default foam |
+| EXPLOSIVE 4.9 AND UP (14.7 × 2.6 × 2.1), PU, double door — the converted lines 3940 / 3974 / 3996 / 4005 | opens **4G (body default)**; FRONT **R1 394.04**, DRD **R1 394.04**, SIDES **R16 854.14**, ROOF **R8 427.07** (= Burt's rows at 4G; before P they took 4G twice: R1 897.59 per door) |
 | FREEZER MEDIUM → **single door** | REAR FRAME & FLOOR PLATE reads **NOT SELECTED** (v1.59.2, unchanged) |
 | a 32D body (e.g. FREEZER LARGE), a new costing | opens on **32D** — unchanged |
 
-## Expected audit movement — PENDING R8 (the mirror rehearsal on the R8 export)
+## Expected audit movement (the mirror rehearsal on the R8 export — `docs/audit/rt2_2026-10/mirror/`)
 
-Table 1 (step 1, v1.59.2's golden + its list, prod's data with R7), table 2 (step 3), table 3 (after P), table 4
-(after D), each with per-pack UNVERIFIABLE / ACCEPTED / PASS / SKIP / FLAG and the exact moved-cell lists between
-steps, come from the mirror loaded from the R8 export:
-- step 1 runs v1.59.2's own CLI;
-- steps 3 to 5c run the release tree's CLI;
-- each step is checked page against CLI with `rt2_all_compare.py`, as on prod.
+Per pack UNVERIFIABLE / ACCEPTED / PASS / SKIP / **FLAG**. The page's **All** is chillers + freezers + icecream +
+explosive (smoke is a subset); every step on the mirror read **PAGE = CLI, 2 702 of 2 702 cells identical**.
 
-The mirror's page-against-CLI test on the 1 Oct 13:11 data already reads 2 702 of 2 702 cells identical (with a
-one-cell negative control).
+| pack | 1 · today (v1.59.2) | 3 · after the deploy | 5 · after P | 5c · after D |
+|---|---|---|---|---|
+| smoke | 9 / 15 / 171 / 39 | 9 / 15 / 165 / 45 | = 3 | = 3 |
+| chillers | 0 / 17 / 1 012 / 224 | 0 / 9 / 581 / 126 | = 3 | = 3 |
+| freezers | 27 / 24 / 495 / 117 / **27** | 27 / 24 / 522 / 117 | = 3 | = 3 |
+| icecream | 40 / 50 / 384 / 104 / **34** | 40 / 43 / 413 / 116 | = 3 | = 3 |
+| explosive | 36 / 153 / 375 / 117 / **3** | 36 / 105 / 423 / 117 / **3** | 36 / 132 / 396 / 117 / **3** | **36 / 99 / 432 / 117 / 0** |
+| the page (All) | flagged, **64 FLAG** | flagged, **3 FLAG** (1 939 PASS) | flagged, **3 FLAG** (1 912 PASS) | **passed, 0 FLAG** (1 948 PASS) |
+
+- **1:** the 64 FLAG cells are the `foam_4g` cells of the ratified F entry (freezers 27, icecream 34, explosive 3):
+  prod's deployed list (`1d9cb47`) predates #206, which added the entry. Expected: today's page.
+- **3:** the new golden, packs and list. "No change" is not the test (the chillers pack lost its PU scenarios). The
+  3 FLAG cells are EXPLOSIVE 4.9 AND UP `srd` · SRD (Excel R6 546.17, MES R5 891.17, `BOTH PU −R528.47`): Burt prices
+  the body at 4G, and the MES body still opens on 32D until D.
+- **5 (P):** **59 cells move, all P's** (`records/moves_step3_to_step5_P.txt`). 57 are on EXPLOSIVE 4.9 AND UP: its own
+  4G-baked prices go, so its non-4G variants drop below Burt (ACCEPTED) and its `foam_4g` cells stop taking 4G twice
+  (PASS). 2 are on ICECREAM BODY SMALL `srd` · SRD (5726's missing /2.98 × panel: −R1.58). The other P lines' own
+  prices already equalled the shared price at Burt's thickness: value-neutral.
+- **5c (D):** **48 cells move, all EXPLOSIVE 4.9 AND UP** (`records/moves_step5_to_step5c_D.txt`): it opens on 4G, so
+  FRONT / ROOF / SIDES are back to PASS and the 3 SRD FLAG become ACCEPTED (the held tapping-blocks entry).
+  **0 FLAG anywhere.**
+
+**Manifest P, line by line** (`mirror/P_TABLE_*.md`; each body's default size and default foam, through the
+calculator's own path):
+- **Like for like, 39 of 39 lines equal Burt's rows to the rand** (same size, foam and thickness): what P changes is
+  exact. 5210 prices **R999.73** (R7).
+- At the **template thicknesses**, 32 of 39 equal Burt. The 7 others are thickness DATA, not P:
+  - ICECREAM BODY MEDIUM ROOF / FLOOR PU: template 0.12, Burt 0.145, so −R1 336.60 each at 5.3 m (a Body Template
+    value, like R7; for Michael / the BA);
+  - 5 single-rear-door lines: Burt's sheets are saved on the double door (no single-door thickness of his); the
+    audit uses 0.06, and a new MES quote carries the double door's thickness.
+- **6229** (MEAT HANGER SMALL-MEDIUM FLOOR) = Burt's row at 0.076 (R6 047.90). RETURN_1's 0.08 was the thickness
+  baked into its old own price, not Burt's sheet.
 
 ## Rollback (decided before the run; the code and the data rollbacks are independent)
 
@@ -205,7 +237,9 @@ one-cell negative control).
   - D's revert puts the four rows back to `32D` byte for byte, and refuses if a body was renamed since.
   - P's revert puts every journaled line back column for column and deletes the `bom_override_history` rows the
     apply wrote. It refuses if a line moved since.
-  - P is proved byte-exact on the prod mirror (PENDING R8), and D in `backend/tests/test_rt2_manifest_d_defaults.py`.
+  - Both reverts are proved on the prod mirror (the real tools, 2 Oct): D's four rows back to `32D` byte for byte; P's
+    39 lines back to the export field for field, its 39 history rows deleted; D then refuses again (`P first: 11
+    PU foam lines`). D is also tested in `backend/tests/test_rt2_manifest_d_defaults.py`.
 - **Last resort:** the step-4 dump `icb_platform_pre-v1.59.3_<ts>.dump` (the whole database before the window).
 
 **After a STOP:**
@@ -280,7 +314,10 @@ folder, and the All kit stops on any pack exit other than 0 / 1.
 
 - **Snapshot = prod** with the CI guard green: the read-only export again after P and D; G1's PENDING-P allowance comes
   out with it.
-- **Re-judge entry #12** after P (R6.4; on the mirror it is down to 24 plywood cells, not 0: PENDING R8 / BA).
+- **Re-judge entry #12** (now the list's 8th) after P and D (R6.4). On the mirror it keeps **24 cells**, all its
+  OTHER half: the 6MM PF PLYWOOD on EXPLOSIVE 2.7 TO 4.8 ROOF / SIDES; its EXPLOSIVE 4.9 PU half covers 0. It cannot
+  prune to 0. Candidate: `docs/audit/rt2_2026-10/accepted/candidate_close_narrow8.yaml` (narrowed to the plywood):
+  after P + D it changes no cell's status; before them it would FLAG 12 cells, so it goes in at the close only.
 - The door report **14 OK** at close; the OUTCOME; the docs PR; **Michael removes the `/tmp` staging on the VM.**
 
 ## OUTCOME

@@ -1,0 +1,13 @@
+database icb_prodmirror (--target mirror); Manifest D: icb_costings.trailer_types.default_insulation_foam; tool sha256 97e2467f57a293b2…
+  APPLY body 12 MEAT HANGER LARGE: '32D' -> '4G'
+  APPLY body 36 MEAT HANGER SMALL-MEDIUM: '32D' -> '4G'
+  APPLY body 24 EXPLOSIVE 4.9 AND UP: '32D' -> '4G'
+  APPLY body 15 RHINORANGE TRAILER: '32D' -> '4G'
+   body  12 MEAT HANGER LARGE          default 4G
+   body  36 MEAT HANGER SMALL-MEDIUM   default 4G
+   body  24 EXPLOSIVE 4.9 AND UP       default 4G
+   body  15 RHINORANGE TRAILER         default 4G
+OTHERS_4G: 0 (every other body opens on 32D)
+   saved costings on these four bodies (not deleted): 0 — each keeps the grade it was saved with; D changes only what a NEW costing opens on
+APPLIED 4 change(s) (trailer_types ids [12, 36, 24, 15]). Journal: C:\Users\micge\AppData\Local\Temp\claude\C--Users-micge-Documents-icb-platform\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\scratchpad\rehearsal\D\rt2_defaults_journal_mirror_20261002T071303Z.json
+Undo: python rt2_defaults.py --target mirror --revert C:\Users\micge\AppData\Local\Temp\claude\C--Users-micge-Documents-icb-platform\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\scratchpad\rehearsal\D\rt2_defaults_journal_mirror_20261002T071303Z.json --out-dir <dir>

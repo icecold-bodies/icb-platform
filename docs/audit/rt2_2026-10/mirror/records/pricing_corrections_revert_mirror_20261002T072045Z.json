@@ -1,0 +1,8 @@
+{
+  "reverted_at": "2026-10-02T07:20:45.212401+00:00",
+  "journal_batch_at": "2026-10-02T07:10:43.627819+00:00",
+  "lines": 39,
+  "override_history_deleted": 39,
+  "journal": "pricing_corrections_journal_mirror_20261002T071043Z.json",
+  "database": "icb_prodmirror"
+}

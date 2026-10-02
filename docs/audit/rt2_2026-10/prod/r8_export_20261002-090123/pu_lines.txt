@@ -1,0 +1,58 @@
+active PU foam cost lines 86 · own price 57 · no thickness token 19
+   CHILLER 2.3 METER          bom  3692 FRONT  own 3090.0               | (1.22*2.44*{FRONT PU})
+   CHILLER 2.3 METER          bom  3699 SRD    own 3090.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)
+   CHILLER 2.3 METER          bom  3723 DRD    own 3090.0               | (1.22*2.44*{DRD PU})
+   CHILLER 2.3 METER          bom  3743 SIDES  own 3090.0               | (1.22*2.44*{SIDES PU})
+   CHILLER 2.3 METER          bom  3751 ROOF   own 3090.0               | (1.22*2.44*{ROOF PU})
+   CHILLER 2.3 METER          bom  3759 FLOOR  own 3090.0               | (1.22*2.44*{FLOOR PU})
+   CHILLER LARGE              bom  3310 FRONT  own 3090.0               | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+   CHILLER LARGE              bom  3319 SRD    own 3090.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   CHILLER LARGE              bom  3345 DRD    own 3090.0               | ((1.22*2.44*{DRD PU}))*2
+   CHILLER LARGE              bom  3367 SIDES  own 3090.0               | (1.22*2.44*{SIDES PU}*((length+{Waste})/1.22))
+   CHILLER LARGE              bom  3377 ROOF   own 3090.0               | ((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22)
+   CHILLER LARGE              bom  3385 FLOOR  own 3090.0               | ((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22)
+   CHILLER MEDIUM             bom  3170 FRONT  own 3090.0               | (1.22*2.44*{FRONT PU})*2
+   CHILLER MEDIUM             bom  3179 SRD    own 3090.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   CHILLER MEDIUM             bom  3205 DRD    own 3090.0               | (1.22*2.44*{DRD PU})*2
+   CHILLER MEDIUM             bom  3227 SIDES  own 3090.0               | ((1.22 * 2.44  * {SIDES PU}) * (length+{Waste})/1.22)
+   CHILLER MEDIUM             bom  3237 ROOF   own 3090.0               | ((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22)
+   CHILLER MEDIUM             bom  3245 FLOOR  own 3090.0               | ((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22)
+   EXPLOSIVE 2.7 TO 4.8       bom  6337 FRONT  own 167.9194899328859    | 2.44*1.22*2
+   EXPLOSIVE 2.7 TO 4.8       bom  6345 SRD    own 4100.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   EXPLOSIVE 2.7 TO 4.8       bom  6371 DRD    own 167.9194899328859    | 2.44*1.22*2
+   EXPLOSIVE 2.7 TO 4.8       bom  6393 SIDES  own 167.9194899328859    | 1.22*2.44*(length+{Waste})/1.22
+   EXPLOSIVE 2.7 TO 4.8       bom  6402 ROOF   own 167.9194899328859    | 1.22*2.44*(length+{Waste})/1.22
+   EXPLOSIVE 4.9 AND UP       bom  3940 FRONT  own 234.15               | 1.22*2.44*2
+   EXPLOSIVE 4.9 AND UP       bom  3948 SRD    own 4100.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   EXPLOSIVE 4.9 AND UP       bom  3974 DRD    own 234.15               | 1.22*2.44*2
+   EXPLOSIVE 4.9 AND UP       bom  3996 SIDES  own 234.15               | 1.22*2.44*(length+{Waste})/1.22
+   EXPLOSIVE 4.9 AND UP       bom  4005 ROOF   own 234.15               | 1.22*2.44*(length+{Waste})/1.22
+   EXPLOSIVE UP TO 2.7        bom  5176 FRONT  own 167.9194899328859    | 1.22*2.44*2
+   EXPLOSIVE UP TO 2.7        bom  5184 SRD    own 4100.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   EXPLOSIVE UP TO 2.7        bom  5210 DRD    own 167.9194899328859    | 1.22*2.44*2
+   EXPLOSIVE UP TO 2.7        bom  5232 SIDES  own 167.9194899328859    | 1.22*2.44*(length+{Waste})/1.22
+   EXPLOSIVE UP TO 2.7        bom  5241 ROOF   own 167.9194899328859    | 1.22*2.44*(length+{Waste})/1.22
+   FREEZER 2.3 METER          bom  3600 DRD    own 245.73583892617447   | 1.22*2.44*2
+   FREEZER LARGE              bom  2560 SRD    own 4100.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   ICECREAM BODY LARGE        bom  5298 FRONT  own 4100.0               | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+   ICECREAM BODY LARGE        bom  5306 SRD    own 4100.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   ICECREAM BODY LARGE        bom  5333 DRD    own 4100.0               | (1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2
+   ICECREAM BODY LARGE        bom  5356 SIDES  own 4100.0               | (1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   ICECREAM BODY LARGE        bom  5365 ROOF   own 4100.0               | (1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   ICECREAM BODY LARGE        bom  5372 FLOOR  own 4100.0               | (1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   ICECREAM BODY MEDIUM       bom  5577 FRONT  own 4100.0               | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+   ICECREAM BODY MEDIUM       bom  5635 SIDES  own 4100.0               | (1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   ICECREAM BODY MEDIUM       bom  5644 ROOF   own 4100.0               | (1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   ICECREAM BODY MEDIUM       bom  5651 FLOOR  own 4100.0               | (1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   ICECREAM BODY SMALL        bom  5720 FRONT  own 4100.0               | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+   ICECREAM BODY SMALL        bom  5726 SRD    own 4100.0               | ((2.44*1.22)*{SRD PU})*2
+   ICECREAM BODY SMALL        bom  5751 DRD    own 4100.0               | (1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2
+   ICECREAM BODY SMALL        bom  5772 SIDES  own 4100.0               | (1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   ICECREAM BODY SMALL        bom  5779 ROOF   own 4100.0               | (1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   ICECREAM BODY SMALL        bom  5786 FLOOR  own 4100.0               | (1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)
+   MEAT HANGER SMALL-MEDIUM   bom  6229 FLOOR  own 446.02               | 1.22*2.44*(length+{Waste})/1.22
+   RHINORANGE TRAILER         bom  1797 FRONT  own 585.8456375838927    | 1.22*2.65*2
+   RHINORANGE TRAILER         bom  1808 DRD    own 351.50738255033554   | 1.22*2.65*2
+   RHINORANGE TRAILER         bom  1830 SIDES  own 298.7812751677852    | 1.22*2.65*(length+{Waste})/1.22
+   RHINORANGE TRAILER         bom  1840 ROOF   own 585.8456375838927    | 1.22*(width+{Waste})*(length+{Waste})/1.22
+   RHINORANGE TRAILER         bom  1848 FLOOR  own 585.8456375838927    | 1.22*(width+{Waste})*(length+{Waste})/1.22

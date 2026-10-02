@@ -1,0 +1,33 @@
+{
+  "tool": "rt2_defaults",
+  "manifest": "D",
+  "reverted_journal": "rt2_defaults_journal_mirror_20261002T071303Z.json",
+  "rows": [
+    {
+      "id": 12,
+      "name": "MEAT HANGER LARGE",
+      "before": "32D",
+      "after": "4G"
+    },
+    {
+      "id": 36,
+      "name": "MEAT HANGER SMALL-MEDIUM",
+      "before": "32D",
+      "after": "4G"
+    },
+    {
+      "id": 24,
+      "name": "EXPLOSIVE 4.9 AND UP",
+      "before": "32D",
+      "after": "4G"
+    },
+    {
+      "id": 15,
+      "name": "RHINORANGE TRAILER",
+      "before": "32D",
+      "after": "4G"
+    }
+  ],
+  "already_reverted": [],
+  "reverted_at_utc": "2026-10-02T07:20:38+00:00"
+}

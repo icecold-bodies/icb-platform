@@ -1,0 +1,21 @@
+cells 2936; moved 59; unchanged 2877
+   explosive EXPLOSIVE 4.9 AND UP     DRD                        all_pu      ACCEPTED -> ACCEPTED   x3  MES 6640.28 -> 6270.35   Excel 6790.51
+   explosive EXPLOSIVE 4.9 AND UP     DRD                        as_sheet    ACCEPTED -> ACCEPTED   x3  MES 6640.28 -> 6270.35   Excel 6790.51
+   explosive EXPLOSIVE 4.9 AND UP     DRD                        drd         ACCEPTED -> ACCEPTED   x3  MES 6640.28 -> 6270.35   Excel 6790.51
+   explosive EXPLOSIVE 4.9 AND UP     DRD                        foam_4g     ACCEPTED -> ACCEPTED   x3  MES 7143.83 -> 6640.28   Excel 6790.51
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      all_pu          PASS -> ACCEPTED   x3  MES 5168.67 -> 4798.75   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      as_sheet        PASS -> ACCEPTED   x3  MES 5168.67 -> 4798.75   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      drd             PASS -> ACCEPTED   x3  MES 5168.67 -> 4798.75   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      foam_4g     ACCEPTED -> PASS       x3  MES 5672.22 -> 5168.67   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      srd             PASS -> ACCEPTED   x3  MES 5168.67 -> 4798.75   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       all_pu          PASS -> ACCEPTED   x3  MES [12196.16, 19774.37, 36153.08] -> [11445.69, 18553.91, 33916.85]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       as_sheet        PASS -> ACCEPTED   x3  MES [12196.16, 19774.37, 36153.08] -> [11445.69, 18553.91, 33916.85]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       drd             PASS -> ACCEPTED   x3  MES [12196.16, 19774.37, 36153.08] -> [11445.69, 18553.91, 33916.85]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       foam_4g     ACCEPTED -> PASS       x3  MES [13217.71, 21435.68, 39197.1] -> [12196.16, 19774.37, 36153.1]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       srd             PASS -> ACCEPTED   x3  MES [12196.16, 19774.37, 36153.08] -> [11445.69, 18553.91, 33916.85]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      all_pu          PASS -> ACCEPTED   x3  MES [20410.15, 33072.69, 60440.12] -> [18909.22, 30631.78, 55967.65]   Excel [20410.36, 33073.04, 60440.77]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      as_sheet        PASS -> ACCEPTED   x3  MES [20410.15, 33072.69, 60440.12] -> [18909.22, 30631.78, 55967.65]   Excel [20410.36, 33073.04, 60440.77]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      drd             PASS -> ACCEPTED   x3  MES [20410.15, 33072.69, 60440.12] -> [18909.22, 30631.78, 55967.65]   Excel [20410.36, 33073.04, 60440.77]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      foam_4g     ACCEPTED -> PASS       x3  MES [22453.25, 36395.32, 66528.16] -> [20410.16, 33072.7, 60440.15]   Excel [20410.36, 33073.04, 60440.77]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      srd             PASS -> ACCEPTED   x3  MES [20410.15, 33072.69, 60440.12] -> [18909.22, 30631.78, 55967.65]   Excel [20410.36, 33073.04, 60440.77]
+   icecream  ICECREAM BODY SMALL      SRD                        srd         ACCEPTED -> ACCEPTED   x2  MES 4613.06 -> 4611.48   Excel 4377.51

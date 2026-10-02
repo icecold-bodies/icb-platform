@@ -30,6 +30,7 @@ from ..services import insulation_foam as pu_foam   # v1.51 — 32D PU FOAM vs 4
 from ..services import quote_document           # v1.51 — print modes
 from ..services.quote_document import has_repair_quote_document  # v1.48
 from ..templates_config import templates
+from ..services import body_family
 from ..quote_numbering import (assign_quote_number, allocate_series_number,
                                SERIES_REPAIR_DOC)
 from app.formula_engine import calculate_bom, evaluate_formula
@@ -1673,6 +1674,8 @@ async def api_list_calculations(
             # keeps that body's name, exactly as before.
             "trailer":  (r.trailer_type.name if r.trailer_type
                          else ("REPAIRS" if bool(getattr(r, "is_repair", False)) else "—")),
+            # RT3 — the body's family {id, name, colour, ink, sort_order}; None without a body
+            "trailer_family": body_family.body_family(r.trailer_type) if r.trailer_type else None,
             "body_length": _dim_m(_len),
             "body_width":  _dim_m(_wid),
             "body_height": _dim_m(_hgt),

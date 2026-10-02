@@ -1,0 +1,72 @@
+== prod: db=icb_platform alembic=0050 code=0926193 staged=3aec484 2026-10-02T18:42:21+02:00
+database / read only: ('icb_platform', 'on')
+
+== report templates
+   #1   explosive_quote        EXPLOSIVE Body Quotation         active=True
+   #2   rhinorange_quote       RHINORANGE Body Quotation        active=True
+   #3   meathanger_quote       MEATHANGER Body Quotation        active=True
+   #4   freezer_quote          FREEZER Body Quotation           active=True
+
+== trailer groups (bodies per group, active / all)
+   #1   EXPLOSIVE      template explosive_quote #1           bodies 3 / 3
+   #2   RHINORANGE     template rhinorange_quote #2          bodies 1 / 1
+   #3   MEATHANGER     template meathanger_quote #3          bodies 2 / 3
+   #4   FREEZER        template freezer_quote #4             bodies 3 / 3
+   (no group)      bodies 7 / 31
+
+== every body (41: 16 active) — group today, resolved template today, PROPOSED family, resolved template under the proposal
+    id body                               act  group today  template today               family     under the proposal           costings
+    25 CHILLER 2.3 METER                  Y    -            (none: the default document) CHILLER    (none: the default document)     6
+    27 CHILLER LARGE                      Y    -            (none: the default document) CHILLER    (none: the default document)     7
+    26 CHILLER MEDIUM                     Y    -            (none: the default document) CHILLER    (none: the default document)     8
+    37 EXPLOSIVE 2.7 TO 4.8               Y    EXPLOSIVE    explosive_quote #1           EXPLOSIVE  explosive_quote #1               3
+    24 EXPLOSIVE 4.9 AND UP               Y    EXPLOSIVE    explosive_quote #1           EXPLOSIVE  explosive_quote #1               2
+    34 EXPLOSIVE UP TO 2.7                Y    EXPLOSIVE    explosive_quote #1           EXPLOSIVE  explosive_quote #1               0
+    19 FREEZER 2.3 METER                  Y    FREEZER      freezer_quote #4             FREEZER    freezer_quote #4                 6
+    21 FREEZER LARGE                      Y    FREEZER      freezer_quote #4             FREEZER    freezer_quote #4                 7
+    20 FREEZER MEDIUM                     Y    FREEZER      freezer_quote #4             FREEZER    freezer_quote #4                13
+    18 ICECREAM BODY LARGE                Y    -            (none: the default document) ICE CREAM  (none: the default document)     3
+    17 ICECREAM BODY MEDIUM               Y    -            (none: the default document) ICE CREAM  (none: the default document)     4
+    16 ICECREAM BODY SMALL                Y    -            (none: the default document) ICE CREAM  (none: the default document)     2
+    41 Manni RIGIDS CB                    Y    -            (none: the default document) OTHER      (none: the default document)     0
+    12 MEAT HANGER LARGE                  Y    MEATHANGER   meathanger_quote #3          MEAT       meathanger_quote #3              2
+    36 MEAT HANGER SMALL-MEDIUM           Y    MEATHANGER   meathanger_quote #3          MEAT       meathanger_quote #3              5
+    15 RHINORANGE TRAILER                 Y    RHINORANGE   rhinorange_quote #2          OTHER      (none: the default document)     0  !! keep with override rhinorange_quote #2
+     2 ADVANTICA BODY                     n    -            (none: the default document) OTHER      (none: the default document)     0
+     1 ADV VACUUM PANELS                  n    -            (none: the default document) OTHER      (none: the default document)     0
+    10 CHESTER SPEC MEAT BODY             n    MEATHANGER   meathanger_quote #3          MEAT       meathanger_quote #3              0
+    13 DRY FREIGHT TRAILER                n    -            (none: the default document) OTHER      (none: the default document)     0
+    23 EXPLOSIVE 2.7 TO 4.8 OLD [deleted- n    -            (none: the default document) EXPLOSIVE  explosive_quote #1               0
+    22 EXPLOSIVE UP TO 2.7 [deleted-22]   n    -            (none: the default document) EXPLOSIVE  explosive_quote #1               0
+    28 EXPLOSIVE UP TO 2.7 [deleted-28]   n    -            (none: the default document) EXPLOSIVE  explosive_quote #1               0
+    29 EXPLOSIVE UP TO 2.7 [deleted-29]   n    -            (none: the default document) EXPLOSIVE  explosive_quote #1               0
+    30 EXPLOSIVE UP TO 2.7 [deleted-30]   n    -            (none: the default document) EXPLOSIVE  explosive_quote #1               0
+    31 EXPLOSIVE UP TO 2.7 [deleted-31]   n    -            (none: the default document) EXPLOSIVE  explosive_quote #1               0
+    32 EXPLOSIVE UP TO 2.7 [deleted-32]   n    -            (none: the default document) EXPLOSIVE  explosive_quote #1               0
+    33 EXPLOSIVE UP TO 2.7 [deleted-33]   n    -            (none: the default document) EXPLOSIVE  explosive_quote #1               0
+    14 GRP TRAILERS                       n    -            (none: the default document) OTHER      (none: the default document)     0
+     4 MANNI BAKKI RIGIDS                 n    -            (none: the default document) OTHER      (none: the default document)     0
+     7 MANNI DF                           n    -            (none: the default document) OTHER      (none: the default document)     0
+     3 MANNI RIGIDS CB                    n    -            (none: the default document) OTHER      (none: the default document)     0
+     5 MANNI RIGIDS FB                    n    -            (none: the default document) OTHER      (none: the default document)     0
+     6 MANNI TRAILERS                     n    -            (none: the default document) OTHER      (none: the default document)     0
+    39 RIGID DRY FREIGHT                  n    -            (none: the default document) OTHER      (none: the default document)     0
+    38 RIGID DRY FREIGHT [deleted-38]     n    -            (none: the default document) OTHER      (none: the default document)     0
+     8 RIGID DRY FREIGHT [deleted-8]      n    -            (none: the default document) OTHER      (none: the default document)     0
+    11 SMALL MEAT BODY UP TO 5,2 [deleted n    -            (none: the default document) MEAT       meathanger_quote #3              0
+    35 SMALL MEAT BODY UP TO 5,2 [deleted n    -            (none: the default document) MEAT       meathanger_quote #3              0
+     9 TAUT LINER RIGID                   n    -            (none: the default document) OTHER      (none: the default document)     0
+    40 TESTING EVERYTHING                 n    -            (none: the default document) OTHER      (none: the default document)     2
+
+== the template guard under the proposal: 30 of 41 bodies keep their resolved template as is; 11 need an override to keep it: [15, 23, 22, 28, 29, 30, 31, 32, 33, 11, 35]
+
+== orphaned template assignments (by body name): 1
+   EXPLOSIVE 2.7 TO 4.8 OLD: group 1, override None
+
+== the proposed families
+   EXPLOSIVE  3 active / 11: EXPLOSIVE 2.7 TO 4.8, EXPLOSIVE 4.9 AND UP, EXPLOSIVE UP TO 2.7, EXPLOSIVE 2.7 TO 4.8 OLD [deleted-23] (inactive), EXPLOSIVE UP TO 2.7 [deleted-22] (inactive), EXPLOSIVE UP TO 2.7 [deleted-28] (inactive), EXPLOSIVE UP TO 2.7 [deleted-29] (inactive), EXPLOSIVE UP TO 2.7 [deleted-30] (inactive), EXPLOSIVE UP TO 2.7 [deleted-31] (inactive), EXPLOSIVE UP TO 2.7 [deleted-32] (inactive), EXPLOSIVE UP TO 2.7 [deleted-33] (inactive)
+   CHILLER    3 active / 3: CHILLER 2.3 METER, CHILLER LARGE, CHILLER MEDIUM
+   FREEZER    3 active / 3: FREEZER 2.3 METER, FREEZER LARGE, FREEZER MEDIUM
+   MEAT       2 active / 5: MEAT HANGER LARGE, MEAT HANGER SMALL-MEDIUM, CHESTER SPEC MEAT BODY (inactive), SMALL MEAT BODY UP TO 5,2 [deleted-11] (inactive), SMALL MEAT BODY UP TO 5,2 [deleted-35] (inactive)
+   ICE CREAM  3 active / 3: ICECREAM BODY LARGE, ICECREAM BODY MEDIUM, ICECREAM BODY SMALL
+   OTHER      2 active / 16: Manni RIGIDS CB, RHINORANGE TRAILER, ADVANTICA BODY (inactive), ADV VACUUM PANELS (inactive), DRY FREIGHT TRAILER (inactive), GRP TRAILERS (inactive), MANNI BAKKI RIGIDS (inactive), MANNI DF (inactive), MANNI RIGIDS CB (inactive), MANNI RIGIDS FB (inactive), MANNI TRAILERS (inactive), RIGID DRY FREIGHT (inactive), RIGID DRY FREIGHT [deleted-38] (inactive), RIGID DRY FREIGHT [deleted-8] (inactive), TAUT LINER RIGID (inactive), TESTING EVERYTHING (inactive)

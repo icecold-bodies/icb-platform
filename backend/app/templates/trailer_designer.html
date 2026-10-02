@@ -605,7 +605,20 @@
       </p>
       <div class="form-group">
         <label class="form-label">Body Type Name <span style="color:var(--red)">*</span></label>
-        <input class="form-control" id="setup-name" placeholder="e.g. STANDARD CHILLER 6.1M"/>
+        <input class="form-control" id="setup-name" placeholder="e.g. STANDARD CHILLER 6.1M" oninput="_guessSetupFamily()"/>
+      </div>
+      <!-- RT3 (RT3_RULING_1 Q8) — the new body's FAMILY, required: pre-selected from the typed name (the same
+           keywords as the startup bootstrap; else OTHER) until the admin picks one. -->
+      <div class="form-group">
+        <label class="form-label" for="setup-family">Family <span style="color:var(--red)">*</span></label>
+        <span class="fam-select-wrap">
+        <select class="form-control" id="setup-family" required onchange="this.dataset.picked = '1'">
+          <option value="">— Select a family —</option>
+          {% for f in families %}
+          <option value="{{ f.id }}" class="fam-ink" style="{{ family_vars(f) }}" data-fam-name="{{ f.name }}" data-fam-colour="{{ f.colour }}" data-fam-ink="{{ f.ink }}">{{ f.name }}</option>
+          {% endfor %}
+        </select>
+        </span>
       </div>
       <div class="form-group">
         <label class="form-label">Description</label>
@@ -991,6 +1004,14 @@ function openSetupModal() {
   document.getElementById('setup-wid').value  = state.dims.width;
   document.getElementById('setup-hgt').value  = state.dims.height;
   document.getElementById('setup-markup').value = state.markup || 0;
+  // RT3 — the family the body already has (editing), else a guess from its name
+  const famSel = document.getElementById('setup-family');
+  if (famSel) {
+    famSel.value = state.dims.groupId ? String(state.dims.groupId) : '';
+    famSel.dataset.picked = state.dims.groupId ? '1' : '';
+    if (!state.dims.groupId) _guessSetupFamily();
+    if (window.BodyFamily) BodyFamily.refresh(famSel);
+  }
   document.getElementById('setup-modal-title').textContent = _dimsConfirmed ? '✎ Edit Body Type Details' : '✦ Create Body Type';
   setSetupTab('new'); // always start on New tab
   updateSetupPreview();
@@ -1049,6 +1070,24 @@ function _renderDupList(list) {
           ${escH(t.name)}
         </option>`).join('')
     : `<option disabled>No body types found</option>`;
+  // RT3 — the same list in family optgroups, each option in its family's colour
+  if (list.length && window.BodyFamily) {
+    const sel = document.getElementById('dup-select');
+    const byId = {};
+    [...sel.options].forEach(o => { byId[o.value] = o; });
+    sel.innerHTML = '';
+    BodyFamily.group(list).forEach(([fam, rows]) => {
+      const og = document.createElement('optgroup');
+      og.label = fam.name;
+      rows.forEach(t => {
+        const o = byId[String(t.id)];
+        BodyFamily.paintOption(o, fam);
+        o.dataset.familyId = fam.id == null ? '' : String(fam.id);
+        og.appendChild(o);
+      });
+      sel.appendChild(og);
+    });
+  }
 }
 
 function onDupSelect() {
@@ -1056,11 +1095,30 @@ function onDupSelect() {
   if (!opt || opt.disabled) return;
   document.getElementById('setup-name').value = 'Copy of ' + opt.dataset.name;
   document.getElementById('setup-desc').value = opt.dataset.desc || '';
+  // RT3 — a copy starts in its source body's family
+  const famSel = document.getElementById('setup-family');
+  if (famSel && opt.dataset.familyId) { famSel.value = opt.dataset.familyId; famSel.dataset.picked = '1'; BodyFamily.refresh(famSel); }
   document.getElementById('setup-len').value  = opt.dataset.len;
   document.getElementById('setup-wid').value  = opt.dataset.wid;
   document.getElementById('setup-hgt').value  = opt.dataset.hgt;
   document.getElementById('setup-markup').value = opt.dataset.markup || 0;
   updateSetupPreview();
+}
+
+// RT3 — pre-select the new body's family from its typed name until the admin picks one by hand. The keywords
+// are the server's (services/body_family.FAMILY_KEYWORDS): first match wins, else OTHER.
+const FAMILY_KEYWORDS = {{ family_keywords | tojson }};
+const FAMILY_FALLBACK = {{ family_fallback | tojson }};
+function _guessSetupFamily() {
+  const sel = document.getElementById('setup-family');
+  if (!sel || sel.dataset.picked === '1') return;
+  const name = document.getElementById('setup-name').value || '';
+  const hit = FAMILY_KEYWORDS.find(k => new RegExp(k.pattern, 'i').test(name));
+  const want = (hit ? hit.family : FAMILY_FALLBACK).toUpperCase();
+  const opt = [...sel.options].find(o => (o.dataset.famName || '').toUpperCase() === want)
+           || [...sel.options].find(o => (o.dataset.famName || '').toUpperCase() === FAMILY_FALLBACK.toUpperCase());
+  sel.value = opt ? opt.value : '';
+  if (window.BodyFamily) BodyFamily.refresh(sel);
 }
 
 // Map a BOM row's section to a zone key.
@@ -1169,7 +1227,17 @@ async function confirmSetup() {
     btn.disabled = false; btn.textContent = 'Start Designing →';
   }
 
+  // RT3 — the Family is required (a new body never lands grey by accident)
+  const famSel = document.getElementById('setup-family');
+  if (famSel && !famSel.value) {
+    famSel.focus(); famSel.style.borderColor = 'var(--red)';
+    toast('Pick the body\'s family', 'error');
+    return;
+  }
+  if (famSel) famSel.style.borderColor = '';
+
   state.dims.name        = name;
+  state.dims.groupId     = famSel ? (+famSel.value || null) : null;
   state.dims.description = document.getElementById('setup-desc').value.trim();
   state.dims.length      = +document.getElementById('setup-len').value || 12;
   state.dims.width       = +document.getElementById('setup-wid').value || 2.45;
@@ -2223,6 +2291,7 @@ async function saveTrailer() {
     default_width:     d.width,
     default_height:    d.height,
     markup_percentage: markupPct / 100,
+    group_id:          d.groupId || null,   // RT3 — the body's family
     zones: {},
   };
   ZONES.forEach(z => {

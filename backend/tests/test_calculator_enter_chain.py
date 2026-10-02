@@ -156,5 +156,6 @@ def test_the_bundle_tag_moved_with_the_javascript():
     assert len(tags) == 1, f"expected exactly one calculator.js tag, found {len(tags)}"
     # v1.59.1 (NOT SELECTED header) moved it 182 -> 183; v1.59.2 (plain-English
     # rule badges) moved it 183 -> 184; RT2 v1.59.3 (a quote never writes the template,
-    # the per-body default foam) moved it 184 -> 185.
-    assert "calculator.js?v=185" in tags[0], tags[0]
+    # the per-body default foam) moved it 184 -> 185; RT3 v1.60.0 (body families: the
+    # closed box's family bar, the top-bar chip) moved it 185 -> 186.
+    assert "calculator.js?v=186" in tags[0], tags[0]

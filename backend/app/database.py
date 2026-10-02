@@ -753,6 +753,10 @@ class TrailerGroup(Base):
     description        = Column(String(500))
     report_template_id = Column(Integer, ForeignKey("report_templates.id"), nullable=True)
     created_at         = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    # RT3 (migration 0051) — the group is the body's FAMILY: its colour ('#RRGGBB'; NULL = the
+    # fallback grey) and its place in the BODY TYPE dropdown. services/body_family.py reads both.
+    colour             = Column(String(7), nullable=True)
+    sort_order         = Column(Integer, nullable=False, default=100, server_default="100")
     report_template = relationship("ReportTemplate", foreign_keys=[report_template_id])
     trailer_types   = relationship("TrailerType", back_populates="group", foreign_keys="TrailerType.group_id")
 
@@ -1230,49 +1234,66 @@ def _seed_defaults():
             session.rollback()
 
 
+# _bootstrap_report_templates' seeds: (slug, template_name, description, group_name, group_description,
+# name_match). Module-level since RT3 so the restart tests can run the bootstrap over synthetic seeds.
+REPORT_TEMPLATE_SEEDS = [
+    ("explosive_quote", "EXPLOSIVE Body Quotation",
+     "IceCold EXPLOSIVE-range quote (HTML+WeasyPrint).",
+     "EXPLOSIVE", "EXPLOSIVE-range trailer bodies (auto-created).",
+     "EXPLOSIVE"),
+    # Match on "ORANGE" so both RHINORANGE and RHEINORANGE spellings bind
+    # before the broader FREEZER seed claims them.
+    ("rhinorange_quote", "RHINORANGE Body Quotation",
+     "IceCold RHINORANGE Freezer-range quote (HTML+WeasyPrint).",
+     "RHINORANGE", "RHINORANGE Freezer trailer bodies (auto-created).",
+     "ORANGE"),
+    # Match on "MEAT" so meathanger trailers bind before the broader
+    # FREEZER seed claims them.
+    ("meathanger_quote", "MEATHANGER Body Quotation",
+     "IceCold MEATHANGER-range quote (HTML+WeasyPrint).",
+     "MEATHANGER", "MEATHANGER-range trailer bodies (auto-created).",
+     "MEAT"),
+    ("freezer_quote", "FREEZER Body Quotation",
+     "IceCold FREEZER-range quote (HTML+WeasyPrint).",
+     "FREEZER", "FREEZER-range trailer bodies (auto-created).",
+     "FREEZER"),
+]
+
+
 def _bootstrap_report_templates():
     """Seed developer-built ReportTemplates + TrailerGroups on first run, and
-    auto-bind matching trailers to their group by name keyword. Idempotent."""
-    # (slug, template_name, description, group_name, group_description, name_match)
-    SEEDS = [
-        ("explosive_quote", "EXPLOSIVE Body Quotation",
-         "IceCold EXPLOSIVE-range quote (HTML+WeasyPrint).",
-         "EXPLOSIVE", "EXPLOSIVE-range trailer bodies (auto-created).",
-         "EXPLOSIVE"),
-        # Match on "ORANGE" so both RHINORANGE and RHEINORANGE spellings bind
-        # before the broader FREEZER seed claims them.
-        ("rhinorange_quote", "RHINORANGE Body Quotation",
-         "IceCold RHINORANGE Freezer-range quote (HTML+WeasyPrint).",
-         "RHINORANGE", "RHINORANGE Freezer trailer bodies (auto-created).",
-         "ORANGE"),
-        # Match on "MEAT" so meathanger trailers bind before the broader
-        # FREEZER seed claims them.
-        ("meathanger_quote", "MEATHANGER Body Quotation",
-         "IceCold MEATHANGER-range quote (HTML+WeasyPrint).",
-         "MEATHANGER", "MEATHANGER-range trailer bodies (auto-created).",
-         "MEAT"),
-        ("freezer_quote", "FREEZER Body Quotation",
-         "IceCold FREEZER-range quote (HTML+WeasyPrint).",
-         "FREEZER", "FREEZER-range trailer bodies (auto-created).",
-         "FREEZER"),
-    ]
+    auto-bind matching trailers to their group by name keyword. Idempotent.
+
+    RT3 (RT3_RULING_1 Q3/G1) — a group is a body FAMILY that an admin renames, recolours,
+    reorders or deletes (MEATHANGER is MEAT on prod; the empty RHINORANGE group is gone,
+    RHINORANGE TRAILER is OTHER through its own override). So a seed's group is found by
+    its name OR by the seed's template, and is created ONLY together with the template,
+    i.e. on a fresh database. A group an admin renamed is found by its template; one an
+    admin deleted stays deleted, and its keyword binds nothing."""
     db = SessionLocal()
     try:
         from sqlalchemy import func as _fn
-        for slug, tname, tdesc, gname, gdesc, match in SEEDS:
+        for slug, tname, tdesc, gname, gdesc, match in REPORT_TEMPLATE_SEEDS:
             tmpl = db.query(ReportTemplate).filter_by(slug=slug).first()
-            if not tmpl:
+            fresh = tmpl is None
+            if fresh:
                 tmpl = ReportTemplate(name=tname, slug=slug, description=tdesc, is_active=True)
                 db.add(tmpl); db.flush()
                 print(f"Seeded ReportTemplate: {slug} (id={tmpl.id})")
 
             grp = db.query(TrailerGroup).filter_by(name=gname).first()
-            if not grp:
+            if grp is not None:
+                if grp.report_template_id is None:
+                    grp.report_template_id = tmpl.id
+            else:
+                grp = (db.query(TrailerGroup).filter_by(report_template_id=tmpl.id)
+                       .order_by(TrailerGroup.id).first())
+            if grp is None:
+                if not fresh:
+                    continue      # an admin renamed it away from this template or deleted it: never re-create
                 grp = TrailerGroup(name=gname, description=gdesc, report_template_id=tmpl.id)
                 db.add(grp); db.flush()
                 print(f"Seeded TrailerGroup: {gname} (id={grp.id})")
-            elif grp.report_template_id is None:
-                grp.report_template_id = tmpl.id
 
             unassigned = db.query(TrailerType).filter(
                 TrailerType.is_active == True,

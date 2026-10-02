@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db, PDFTemplate, TrailerType
 from ..deps import get_current_user
 from ..templates_config import templates
+from ..services import body_family
 
 router = APIRouter()
 
@@ -57,7 +58,8 @@ async def admin_pdf_templates(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login")
 
     trailers = db.query(TrailerType).filter_by(is_active=True).order_by(TrailerType.name).all()
-    trailer_list = [{"id": t.id, "name": t.name} for t in trailers]
+    # RT3 — each body carries its family: the select groups and colours by it
+    trailer_list = [{"id": t.id, "name": t.name, "family": body_family.body_family(t)} for t in trailers]
 
     pdf_tmpls = db.query(PDFTemplate).filter_by(is_active=True).all()
     template_configs = {}

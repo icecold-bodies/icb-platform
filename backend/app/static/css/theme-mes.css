@@ -322,3 +322,28 @@ tr.calc-grp-hdr:not(.collapsed):hover > td { box-shadow: inset 6px 0 0 var(--blu
   color: var(--blue-hi) !important;
   font-weight: 600;
 }
+
+/* ── RT3 — body families (built for THIS skin only: RT3_RULING_1a) ──────────────────────────
+   A body's family comes from the server (services/body_family.py) as two custom properties on the
+   element: --fam, the stored family colour (bars, dots, borders: >= 3:1 on #FFFFFF and #F5F7FB), and
+   --fam-ink, the family TEXT (>= 4.6:1 on both). The family NAME always travels with the colour: an
+   optgroup label, a chip's text, a tooltip. */
+.fam-ink { color: var(--fam-ink, inherit); }
+.fam-chip {
+  display: inline-flex; align-items: center; gap: 5px; vertical-align: middle;
+  padding: 1px 7px 1px 6px; border-radius: 999px; border: 1px solid var(--border);
+  background: #FFFFFF; color: var(--fam-ink, var(--text));
+  font-size: 10.5px; font-weight: 700; line-height: 1.5; letter-spacing: .02em; white-space: nowrap;
+}
+.fam-chip::before {
+  content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--fam, #7D858C);
+}
+/* The closed BODY TYPE box: a bar in the selected body's family colour, drawn by the wrapper (not the
+   select's own border) so every browser shows it. body_family.js sets --fam on the wrapper. */
+.fam-select-wrap { position: relative; display: block; min-width: 0; }
+.fam-select-wrap::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; pointer-events: none;
+  border-radius: 6px 0 0 6px; background: var(--fam, transparent);
+}
+.fam-select-wrap > select,
+.params-compact .fam-select-wrap > select { padding-left: 13px; }

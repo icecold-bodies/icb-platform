@@ -71,11 +71,18 @@
 
           <div class="form-group">
             <label class="form-label" for="trailer-select">Body Type</label>
+            <!-- RT3 — one optgroup per body FAMILY (its trailer group), in the families' order; each option
+                 in its family's colour; the wrapper draws the closed box's family bar (body_family.js). -->
+            <span class="fam-select-wrap">
             <select id="trailer-select" onchange="loadBOM()">
               <option value="">— Select —</option>
-              {% for t in trailers %}
-              {% set orig = original_template_name(t.name, t.description) %}
-              <option value="{{ t.id }}"{% if orig %} title="Previously: {{ orig }}"{% endif %}>{{ t.name }}</option>
+              {% for fam, bodies in family_groups(trailers) %}
+              <optgroup label="{{ fam.name }}" data-family-id="{{ fam.id if fam.id is not none else '' }}" data-sort-order="{{ fam.sort_order }}">
+                {% for t in bodies %}
+                {% set orig = original_template_name(t.name, t.description) %}
+                <option value="{{ t.id }}" class="fam-ink" style="{{ family_vars(fam) }}" data-fam-name="{{ fam.name }}" data-fam-colour="{{ fam.colour }}" data-fam-ink="{{ fam.ink }}"{% if orig %} title="Previously: {{ orig }}"{% endif %}>{{ t.name }}</option>
+                {% endfor %}
+              </optgroup>
               {% endfor %}
               <!-- v1.47 — REPAIRS is a MODE, not a trailer template: it has no BOM
                    and no body geometry. It sits under its own divider so it can
@@ -84,6 +91,7 @@
                 <option value="repair">REPAIRS</option>
               </optgroup>
             </select>
+            </span>
           </div>
 
           <!-- v1.47 REPAIRS surface — the repair's own identity. Shown only in
@@ -129,15 +137,22 @@
                 the costing stays a repair quote.</div>
               <div class="form-group stacked">
                 <label class="form-label" for="f-repair-vt">Body type</label>
+                <span class="fam-select-wrap">
                 <select id="f-repair-vt" onchange="onRepairVehicleTypeChange()">
                   <option value="">— Select —</option>
-                  {% for t in trailers %}
-                  <option value="{{ t.id }}" data-name="{{ t.name }}"
-                          data-l="{{ t.default_length if t.default_length is not none else '' }}"
-                          data-w="{{ t.default_width if t.default_width is not none else '' }}"
-                          data-h="{{ t.default_height if t.default_height is not none else '' }}">{{ t.name }}</option>
+                  {% for fam, bodies in family_groups(trailers) %}
+                  <optgroup label="{{ fam.name }}" data-family-id="{{ fam.id if fam.id is not none else '' }}" data-sort-order="{{ fam.sort_order }}">
+                    {% for t in bodies %}
+                    <option value="{{ t.id }}" data-name="{{ t.name }}"
+                            data-l="{{ t.default_length if t.default_length is not none else '' }}"
+                            data-w="{{ t.default_width if t.default_width is not none else '' }}"
+                            data-h="{{ t.default_height if t.default_height is not none else '' }}"
+                            class="fam-ink" style="{{ family_vars(fam) }}" data-fam-name="{{ fam.name }}" data-fam-colour="{{ fam.colour }}" data-fam-ink="{{ fam.ink }}">{{ t.name }}</option>
+                    {% endfor %}
+                  </optgroup>
                   {% endfor %}
                 </select>
+                </span>
               </div>
               <div style="display:flex;gap:6px">
                 <div class="form-group stacked" style="flex:1">
@@ -1668,7 +1683,7 @@ const canCaptureForUser = {{ 'true' if user_can(user, 'costings.capture_for_user
    v=172 rather than either of them: both 170 and 171 have already been
    served, so a fresh number is the only value guaranteed not to hit a
    stale cached copy of one lane's file. #}
-<script defer src="/static/js/calculator.js?v=185"></script>
+<script defer src="/static/js/calculator.js?v=186"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

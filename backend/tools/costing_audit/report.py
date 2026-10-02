@@ -163,6 +163,8 @@ h2{font-size:14px;margin:2px 0 4px}h3{font-size:13.5px;margin:2px 0 4px}
 .tri td.PRICE_DIFF,.tri td.QTY_DIFF,.tri td.BOTH,.tri td.GROUP_DIFF,.tri td.STALE_LINK{color:#8a5a00;font-weight:600}
 .pos{color:#a11a1a}.neg{color:#1e5bd6}
 details{margin-top:10px}pre{background:#fff;border:1px solid #d9dde3;padding:8px;font-size:11.5px;overflow:auto;max-height:240px}
+.fam-chip{display:inline-flex;align-items:center;gap:5px;margin-left:10px;padding:0 7px 0 6px;border-radius:999px;background:#fff;font-size:10.5px;font-weight:700;letter-spacing:.02em;vertical-align:middle;white-space:nowrap}
+.fam-chip i{width:8px;height:8px;border-radius:50%;display:inline-block}
 """
 
 _JS = r"""
@@ -197,6 +199,13 @@ function worst(cells){
   return w || {status:'SKIP'};
 }
 function kindOf(c){ return (c && c.accepted && c.accepted.kind) ? ' '+c.accepted.kind : ''; }
+// RT3 — a body's FAMILY chip on its heading (dot + name in the family's ink: the report is light).
+// window.__FAMILIES__ maps trailer_id -> family; the admin page passes it, an offline CLI report has none.
+const FAM = window.__FAMILIES__ || {};
+function famChip(cells){
+  const c = cells.find(x => x && x.trailer_id); const f = c ? FAM[String(c.trailer_id)] : null;
+  return f ? '<span class="fam-chip" data-family="'+esc(f.name)+'" title="Family: '+esc(f.name)+'" style="color:'+esc(f.ink)+'"><i style="background:'+esc(f.colour)+'"></i>'+esc(f.name)+'</span>' : '';
+}
 function tally(cells){
   const t = {}; for (const c of cells) t[c.status] = (t[c.status]||0)+1;
   return Object.entries(t).sort((a,b)=>(RANK[a[0]]??9)-(RANK[b[0]]??9)).map(([k,v])=>k+' '+v).join(' · ');
@@ -222,7 +231,7 @@ function renderGrid(){
   for (const b of bodies){
     const rows = Object.values(byBody[b]).sort((x,y)=>x.dims[0]-y.dims[0] || x.dims[1]-y.dims[1] || x.dims[2]-y.dims[2]);
     const all = rows.flatMap(r => Object.values(r.v).flatMap(sid => cellsBySid[sid]));
-    h += '<tbody><tr><th class="body" colspan="'+(variants.length+1)+'">'+esc(b.trim())+' <span class="small" style="opacity:.75;font-weight:400;margin-left:10px">'+esc(tally(all))+'</span></th></tr>';
+    h += '<tbody><tr><th class="body" colspan="'+(variants.length+1)+'">'+esc(b.trim())+famChip(all)+' <span class="small" style="opacity:.75;font-weight:400;margin-left:10px">'+esc(tally(all))+'</span></th></tr>';
     for (const r of rows){
       h += '<tr><td class="dims"><b>L</b>'+esc(r.dims[0])+' &nbsp; <b>W</b>'+esc(r.dims[1])+' &nbsp; <b>H</b>'+esc(r.dims[2])+'</td>';
       for (const v of variants){
@@ -348,9 +357,11 @@ if (start){
 """
 
 
-def render_html_doc(d: dict) -> str:
+def render_html_doc(d: dict, families: dict | None = None) -> str:
     """The self-contained HTML report from a report dict (RunReport.to_dict(), or the
-    JSON the admin page stores — the page renders it on request, never stores HTML)."""
+    JSON the admin page stores — the page renders it on request, never stores HTML).
+    RT3 — `families` ({trailer_id: family}, the bodies' CURRENT families from the database) puts a family
+    chip on each body heading; without it (an offline CLI report) the headings carry none."""
     m = d.get("golden_manifest") or {}
     fp = (m.get("workbook") or {}).get("files") or {}
     counts = " ".join(f'<span class="st {k}">{k} {v}</span>' for k, v in
@@ -360,6 +371,9 @@ def render_html_doc(d: dict) -> str:
     pack = str(d.get("pack", "?"))
     # the report data rides in a <script>; a "</" inside any string must not close it
     data = json.dumps(d, default=str).replace("</", "<\\/")
+    fam_js = ("" if not families else
+              "\n<script>window.__FAMILIES__ = " + json.dumps({str(k): v for k, v in families.items()}).replace("</", "<\\/")
+              + ";</script>")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Costing audit — {html.escape(pack)} — {verdict}</title>
 <style>{_CSS}</style></head><body>
@@ -378,7 +392,7 @@ def render_html_doc(d: dict) -> str:
 <div id="left" aria-label="Sections"><div class="placeholder">Click a result above to see its sections here.</div></div>
 <div id="right" aria-label="Lines"><div class="placeholder">Click a section on the left to see its lines here.</div></div>
 </section></div>
-<script>window.__AUDIT__ = {data};</script>
+<script>window.__AUDIT__ = {data};</script>{fam_js}
 <script>{_JS}</script></body></html>"""
 
 

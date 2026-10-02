@@ -255,6 +255,44 @@ function populateBodyFilter() {
         return `<option value="${escapeAttr(s.name)}">${escapeHtml(s.name)} (${s.linked_count} refs${tag})</option>`;
       })
       .join('');
+  _groupBodyFilterByFamily(sel);
+}
+
+// RT3 — the sheets in body-family optgroups. A sheet's body comes from its proposals' trailer_type_id; the
+// body's family from the bodies API. Sheets with no body in the database go last, under their own heading.
+let _famByTrailer = null;
+async function _groupBodyFilterByFamily(sel) {
+  if (!window.BodyFamily) return;
+  if (!_famByTrailer) {
+    try {
+      const rows = await (await fetch('/api/trailers?include_inactive=1', { credentials: 'same-origin' })).json();
+      _famByTrailer = {};
+      rows.forEach(r => { _famByTrailer[r.id] = r.family; });
+    } catch (_) { return; }
+  }
+  const tidBySheet = {};
+  _data.proposals.forEach(p => { if (p.trailer_type_id != null && !(p.body_type in tidBySheet)) tidBySheet[p.body_type] = p.trailer_type_id; });
+  const cur = sel.value;
+  const opts = [...sel.options].filter(o => o.value);
+  const matched = [], unmatched = [];
+  opts.forEach(o => {
+    const f = _famByTrailer[tidBySheet[o.value]];
+    (f ? matched : unmatched).push({ opt: o, family: f });
+  });
+  sel.innerHTML = '<option value="">all body types</option>';
+  BodyFamily.group(matched).forEach(([fam, items]) => {
+    const og = document.createElement('optgroup');
+    og.label = fam.name;
+    items.forEach(it => { BodyFamily.paintOption(it.opt, fam); og.appendChild(it.opt); });
+    sel.appendChild(og);
+  });
+  if (unmatched.length) {
+    const og = document.createElement('optgroup');
+    og.label = 'NO BODY IN THE DATABASE';
+    unmatched.forEach(it => og.appendChild(it.opt));
+    sel.appendChild(og);
+  }
+  sel.value = cur;
 }
 
 function showTab(name) {

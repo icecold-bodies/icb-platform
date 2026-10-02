@@ -19,6 +19,10 @@ const TT_INACTIVE_BADGE = '<span style="font-size:9px;font-weight:700;letter-spa
   + 'padding:1px 5px;margin-left:6px;white-space:nowrap;vertical-align:middle">Inactive</span>';
 const _ttInactive = t => t.is_active === false;
 
+// RT3 — a body's family chip (colour dot + family name) from the bodies API's `family`.
+function _famChip(t) { return window.BodyFamily ? ' ' + BodyFamily.chip(t && t.family) : ''; }
+function _famColour(t) { return (t && t.family && t.family.colour) || (window.BodyFamily ? BodyFamily.FALLBACK.colour : 'var(--blue)'); }
+
 function renderTrailerList(tts) {
   const list = document.getElementById('trailer-list');
   if (!tts.length) {
@@ -32,11 +36,12 @@ function renderTrailerList(tts) {
       tts.map(t => `
         <div class="tt-tile" id="tt-${t.id}" onclick="selectTrailer(${t.id})"
           style="padding:10px 6px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--bg-panel);text-align:center${_ttInactive(t) ? ';opacity:.5' : ''}">
-          <div style="width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;
+          <div style="width:34px;height:34px;border-radius:50%;background:${_famColour(t)};color:#fff;
             font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 6px">
             ${escHtml(t.name.trim()[0].toUpperCase())}
           </div>
           <div style="font-size:11px;font-weight:600;line-height:1.3;word-break:break-word">${escHtml(t.name)}${_ttInactive(t) ? TT_INACTIVE_BADGE : ''}</div>
+          <div style="margin-top:3px">${_famChip(t)}</div>
           ${t.markup_percentage != null ? `<div style="font-size:10px;color:var(--text-dim);margin-top:2px">${(t.markup_percentage*100).toFixed(0)}% markup</div>` : ''}
         </div>`).join('')
     }</div>`;
@@ -53,7 +58,7 @@ function renderTrailerList(tts) {
         tts.map(t => `
           <tr class="tt-details-row" id="tt-${t.id}" onclick="selectTrailer(${t.id})" style="cursor:pointer;border-bottom:1px solid var(--border)${_ttInactive(t) ? ';opacity:.5' : ''}">
             <td style="padding:8px 10px">
-              <div style="font-weight:600;font-size:12px">${escHtml(t.name)}${_ttInactive(t) ? TT_INACTIVE_BADGE : ''}</div>
+              <div style="font-weight:600;font-size:12px">${escHtml(t.name)}${_ttInactive(t) ? TT_INACTIVE_BADGE : ''}${_famChip(t)}</div>
               ${t.description ? `<div style="color:var(--text-dim);font-size:10px">${escHtml(t.description)}</div>` : ''}
             </td>
             <td style="padding:8px;text-align:right;color:var(--text-dim)">${
@@ -67,9 +72,9 @@ function renderTrailerList(tts) {
     list.style.padding = '8px';
     list.innerHTML = tts.map(t => `
       <div class="part-item" id="tt-${t.id}" onclick="selectTrailer(${t.id})"${_ttInactive(t) ? ' style="opacity:.5"' : ''}>
-        <span class="part-dot"></span>
+        <span class="part-dot" style="background:${_famColour(t)}"></span>
         <div>
-          <div style="font-size:13px">${escHtml(t.name)}${_ttInactive(t) ? TT_INACTIVE_BADGE : ''}</div>
+          <div style="font-size:13px">${escHtml(t.name)}${_ttInactive(t) ? TT_INACTIVE_BADGE : ''}${_famChip(t)}</div>
           <div style="font-size:10px;color:var(--text-dim)">${escHtml(t.description||'')}</div>
         </div>
       </div>`).join('');
@@ -122,6 +127,7 @@ function selectTrailer(id) {
   try { sessionStorage.setItem('focusedTrailerId', String(id)); } catch(_) {}
   const t = trailerMap[id];
   document.getElementById('bom-title').textContent = t ? t.name : 'Trailer';
+  if (t && window.BodyFamily) document.getElementById('bom-title').insertAdjacentHTML('beforeend', _famChip(t));
   ['btn-rename','btn-dup','btn-del','btn-add-bom','btn-bom-sort','btn-collapse-all','btn-toggle-active'].forEach(b =>
     document.getElementById(b).classList.remove('hidden'));
   _syncToggleActiveBtn(t);
@@ -1843,6 +1849,7 @@ async function renameTrailer() {
     toast('Renamed', 'success');
     await loadTrailers();
     document.getElementById('bom-title').textContent = name.trim();
+    if (trailerMap[currentTTId]) document.getElementById('bom-title').insertAdjacentHTML('beforeend', _famChip(trailerMap[currentTTId]));
   } catch(e) { toast(e.message, 'error'); }
 }
 
@@ -1860,7 +1867,8 @@ async function duplicateTrailer() {
 
 async function deleteTrailer() {
   if (!currentTTId) { toast('Select a trailer type first', 'error'); return; }
-  const title = document.getElementById('bom-title').textContent;
+  // RT3 — the title also carries the family chip: name the body from the map, not the heading's text
+  const title = (trailerMap[currentTTId] || {}).name || document.getElementById('bom-title').textContent;
   if (!await confirmModal(`Delete trailer type "${title}" and all its BOM items?`, { title: 'Delete trailer type', okText: 'Delete', danger: true })) return;
   try {
     await api('DELETE', `/api/trailers/${currentTTId}`);

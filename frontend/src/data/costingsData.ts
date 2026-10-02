@@ -1,4 +1,5 @@
 import raw from './icb_costings_data.json'
+import type { BodyFamily } from '../components/ui/FamilyChip'
 
 // MES status names (verbatim from icb_costings_data.json / icb_tooltips.json).
 // v1.40.3 — extended past 'Planning' with the floor-derived stages (Michael 6 Jul:
@@ -98,6 +99,7 @@ export interface Costing {
   end_user_company?: string        // v1.47 lane B — end-user snapshot (0040): the company the
                                    // body is FOR when the customer is a reseller/middleman
   body_type: string
+  body_family?: BodyFamily | null  // RT3 — the body's family (server data); null for a repair without a body
   body_length?: number | null      // v1.44 R6 — entered length (m) for "({length} m)" displays
   body_width?: number | null       // v1.56 — entered width (m), shown beside the body type
   body_height?: number | null      // v1.56 — entered height (m), shown beside the body type
@@ -351,6 +353,7 @@ export interface LiveCalculation {
   id: number
   quote_number: string | null
   trailer: string
+  trailer_family?: BodyFamily | null  // RT3 — the body's family {id, name, colour, ink, sort_order}
   body_length?: number | null      // v1.44 R6 — entered length (m)
   body_width?: number | null       // v1.56 — entered width (m)
   body_height?: number | null      // v1.56 — entered height (m)
@@ -433,6 +436,7 @@ export function liveToCosting(r: LiveCalculation): Costing {
     contact_name: r.contact_name ?? undefined,
     end_user_company: r.end_user_company ?? undefined,
     body_type: r.trailer || '—',
+    body_family: r.trailer_family ?? null,
     body_length: r.body_length ?? null,
     body_width: r.body_width ?? null,
     body_height: r.body_height ?? null,

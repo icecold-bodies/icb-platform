@@ -21,15 +21,6 @@
   owner: BA
   review_by: 2026-10-31
 
-- body: " UP TO 2,3 MTR FREEZER "
-  section: "REAR FRAME + FLOOR PLATE"
-  variant: "*"
-  cause: "3MM 3CR12 FLOOR PLATE"
-  kind: known_defect
-  reason: "[DATA] 3MM 3CR12 FLOOR PLATE priced R1 040.16 on prod vs R965.76 on Burt's sheet (+R63, 2.8 % of the section) on FREEZER 2.3 METER."
-  owner: BA
-  review_by: 2026-10-31
-
 - body: "icecream up to 4.8"
   section: FLOOR
   variant: "*"

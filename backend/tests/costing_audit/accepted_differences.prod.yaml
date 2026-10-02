@@ -113,3 +113,14 @@
   owner: BA
   review_by: 2026-10-31
 
+
+# ── RT2 (2 Oct 2026): surfaced by the golden rebuilt on Burt's own 21 Sep workbook (RT2_RETURN_2 §2) ──
+
+- body: "UP TO 5.5 CHILLER AND 2.3 WIDE"
+  section: "DRD DOOR FITTINGS"
+  variant: "*"
+  cause: "2317 DOOR RUBBER"
+  kind: known_defect
+  reason: "[BURT] Burt's UP TO 5.5 CHILLER sheet charges no 2317 DOOR RUBBER on its rear doors — the line's totals (F60 single, F97 double) are a literal 0 in every version of his file (25 Aug, 21 Sep) — while MES charges it (CHILLER MEDIUM bom 3216: 11.174 m x R60.18 = R672.45 on the double door). The golden this replaced was built on a local copy that charged it. Burt to confirm whether the CHILLER MEDIUM rear doors take the 2317 rubber."
+  owner: BA
+  review_by: 2026-10-31

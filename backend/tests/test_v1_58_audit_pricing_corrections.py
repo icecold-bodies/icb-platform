@@ -385,16 +385,16 @@ def test_manifest_a_is_the_prod_scope_and_one_rule_per_body():
 
 
 def test_manifest_a_names_real_lines_and_the_snapshot_is_wholly_before_or_after():
-    """The 12 audited bodies are in the committed prod snapshot: every entry there names its real line
-    (prod name first in `body:`), and the snapshot carries either NO rule on all of them (before the
-    prod apply) or exactly the manifest's rule on all of them (after the close-step regeneration)."""
+    """All 14 Manifest A bodies are in the committed prod snapshot (RT2 R8: it carries the 15 RT2 bodies, the two
+    MEAT HANGERs included): every entry names its real line (prod name first in `body:`), and the snapshot carries
+    either NO rule on all of them (before the prod apply) or exactly the manifest's rule on all of them (after)."""
     snap = json.loads(SNAPSHOT.read_text(encoding="utf-8"))["tables"]
     bom = {r["id"]: r for r in snap["bill_of_materials"]}
     tt = {r["id"]: r["name"] for r in snap["trailer_types"]}
     mat = {r["id"]: r["name"] for r in snap["materials"]}
     changes, _sha = PC.load_manifest(MANIFEST_A)
     in_snap = [c for c in changes if c.bom_id in bom]
-    assert len(in_snap) == 102                                                  # the 12 audited bodies
+    assert len(in_snap) == 120                     # every entry: 102 on the 12 audited bodies + 18 on the MEAT HANGERs
     before, after = [], []
     for c in in_snap:
         r = bom[c.bom_id]

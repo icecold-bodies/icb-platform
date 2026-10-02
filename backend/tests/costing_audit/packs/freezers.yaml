@@ -1,4 +1,5 @@
 # Costing audit — FREEZERS.
+# RT2 (RT2_RULING_1 R5): sizes pinned to the golden this replaces.
 name: freezers
 workbook_month: "2026-09"
 tolerance_pct: 1.0
@@ -6,10 +7,16 @@ gate_mode: as_sheet
 bodies:
   - sheet: " UP TO 2,3 MTR FREEZER "
     lengths: [1.8, 2.31]
+    widths: [1.68]
+    heights: [1.39]
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
   - sheet: " UP TO 4.8 MT FREEZER  (2"
     lengths: [3.0, 4.2, 4.8, 5.6]
+    widths: [2.5]
+    heights: [2.4]
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
   - sheet: " 4.9 & UP FREEZER BODY (2"
     lengths: [4.9, 6.5, 8.2]
+    widths: [2.6]
+    heights: [2.56]
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]

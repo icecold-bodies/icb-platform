@@ -1,0 +1,117 @@
+== 1. prove-then-trust on Burt's ORIGINAL set (null scenario = his saved inputs)
+   [prove] [oracle] workbook loaded in 4.3s; stale links: {3: 'PRICE 20.04.2004.xls'}
+   [prove] [oracle] 12 scenario copies written in 7.0s
+   [prove] [oracle] soffice recalculated 12 copies in 16.1s
+   prove-then-trust: OK on all 12 pack sheets
+   [original] [oracle] workbook loaded in 4.3s; stale links: {3: 'PRICE 20.04.2004.xls'}
+   [original] [oracle] 12 scenario copies written in 6.7s
+   [original] [oracle] soffice recalculated 12 copies in 15.9s
+   [c1] [oracle] workbook loaded in 4.3s; stale links: {3: 'PRICE 20.04.2004.xls'}
+   [c1] [oracle] 12 scenario copies written in 6.8s
+   [c1] [oracle] soffice recalculated 12 copies in 16.3s
+   [corrected] [oracle] workbook loaded in 4.6s; stale links: {3: 'PRICE 20.04.2004.xls'}
+   [corrected] [oracle] 12 scenario copies written in 6.7s
+   [corrected] [oracle] soffice recalculated 12 copies in 16.0s
+
+== correction 1 (PU!C17 4095 -> 4100): 40 line(s) moved, 40 section(s) moved; every other line and section of the 12 pack sheets moved 0
+   row  27 UP TO 2,3 MTR FREEZER            FRONT                      'PU': 1461.2287 -> 1463.0129  x 4100/4095
+   row  74 UP TO 2,3 MTR FREEZER            DRD                        'PU': 1461.2287 -> 1463.0129  x 4100/4095
+   row 105 UP TO 2,3 MTR FREEZER            SIDES                      'PU': 1407.3309 -> 1409.0493  x 4100/4095
+   row  33 UP TO 4.8 MT FREEZER  (2         FRONT                      'PU': 1461.2287 -> 1463.0129  x 4100/4095
+   row  84 UP TO 4.8 MT FREEZER  (2         DRD                        'PU': 1461.2287 -> 1463.0129  x 4100/4095
+   row 117 UP TO 4.8 MT FREEZER  (2         SIDES                      'PU': 3383.5829 -> 3387.7143  x 4100/4095
+   row 132 UP TO 4.8 MT FREEZER  (2         ROOF                       'PU': 4285.8717 -> 4291.1047  x 4100/4095
+   row 145 UP TO 4.8 MT FREEZER  (2         FLOOR                      'PU': 4285.8717 -> 4291.1047  x 4100/4095
+   row  32 4.9 & UP FREEZER BODY (2         FRONT                      'PU': 1461.2287 -> 1463.0129  x 4100/4095
+   row  84 4.9 & UP FREEZER BODY (2         DRD                        'PU': 1461.2287 -> 1463.0129  x 4100/4095
+   row 118 4.9 & UP FREEZER BODY (2         SIDES                      'PU': 4521.4250 -> 4526.9456  x 4100/4095
+   row 133 4.9 & UP FREEZER BODY (2         ROOF                       'PU': 7535.7083 -> 7544.9094  x 4100/4095
+   row 146 4.9 & UP FREEZER BODY (2         FLOOR                      'PU': 7535.7083 -> 7544.9094  x 4100/4095
+   row  27 icecream up to 3,2               FRONT                      'PU': 2435.3812 -> 2438.3548  x 4100/4095
+   row  74 icecream up to 3,2               DRD                        'PU': 2435.3812 -> 2438.3548  x 4100/4095
+   row 106 icecream up to 3,2               SIDES                      'PU': 3243.8479 -> 3247.8087  x 4100/4095
+   row 118 icecream up to 3,2               ROOF                       'PU': 3243.8479 -> 3247.8087  x 4100/4095
+   row 130 icecream up to 3,2               FLOOR                      'PU': 3243.8479 -> 3247.8087  x 4100/4095
+   row  27 icecream up to 4.8               FRONT                      'PU': 2922.4575 -> 2926.0258  x 4100/4095
+   row  40 icecream up to 4.8               SRD                        'PU': 2922.4575 -> 2926.0258  x 4100/4095
+   row 112 icecream up to 4.8               SIDES                      'PU': 6407.8473 -> 6415.6713  x 4100/4095
+   row 126 icecream up to 4.8               ROOF                       'PU': 7742.8155 -> 7752.2695  x 4100/4095
+   row 138 icecream up to 4.8               FLOOR                      'PU': 7742.8155 -> 7752.2695  x 4100/4095
+   row  27 icecream 4.9 up                  FRONT                      'PU': 2922.4575 -> 2926.0258  x 4100/4095
+   row  78 icecream 4.9 up                  DRD                        'PU': 2922.4575 -> 2926.0258  x 4100/4095
+   row 112 icecream 4.9 up                  SIDES                      'PU': 8084.6671 -> 8094.5385  x 4100/4095
+   row 126 icecream 4.9 up                  ROOF                       'PU': 8421.5283 -> 8431.8110  x 4100/4095
+   row 138 icecream 4.9 up                  FLOOR                      'PU': 6737.2226 -> 6745.4488  x 4100/4095
+   row  27 EXPLOSIVE UP TO 2.7              FRONT                      'PU': 998.5063 -> 999.7255  x 4100/4095
+   row  77 EXPLOSIVE UP TO 2.7              DRD                        'PU': 998.5063 -> 999.7255  x 4100/4095
+   row 110 EXPLOSIVE UP TO 2.7              SIDES                      'PU': 961.6761 -> 962.8504  x 4100/4095
+   row 124 EXPLOSIVE UP TO 2.7              ROOF                       'PU': 961.6761 -> 962.8504  x 4100/4095
+   row  27 EXPLOSIVE 2.7 TO 4.8             FRONT                      'PU': 998.5063 -> 999.7255  x 4100/4095
+   row  77 EXPLOSIVE 2.7 TO 4.8             DRD                        'PU': 998.5063 -> 999.7255  x 4100/4095
+   row 110 EXPLOSIVE 2.7 TO 4.8             SIDES                      'PU': 2271.1926 -> 2273.9657  x 4100/4095
+   row 124 EXPLOSIVE 2.7 TO 4.8             ROOF                       'PU': 2271.1926 -> 2273.9657  x 4100/4095
+   row  27 EXPLOSIVE 4.9 AND UP             FRONT                      'PU': 1022.8601 -> 1024.1090  x 4100/4095
+   row  77 EXPLOSIVE 4.9 AND UP             DRD                        'PU': 1022.8601 -> 1024.1090  x 4100/4095
+   row 110 EXPLOSIVE 4.9 AND UP             SIDES                      'PU': 6183.2732 -> 6190.8230  x 4100/4095
+   row 124 EXPLOSIVE 4.9 AND UP             ROOF                       'PU': 6183.2732 -> 6190.8230  x 4100/4095
+   section UP TO 2,3 MTR FREEZER            FRONT                         2979.6744 ->    2981.4585  (+1.7842)
+   section UP TO 2,3 MTR FREEZER            DRD                           3719.2671 ->    3721.0513  (+1.7842)
+   section UP TO 2,3 MTR FREEZER            SIDES                         6939.0655 ->    6942.5022  (+3.4367)
+   section UP TO 4.8 MT FREEZER  (2         FRONT                         5225.4573 ->    5227.2415  (+1.7842)
+   section UP TO 4.8 MT FREEZER  (2         DRD                           5992.4404 ->    5994.2246  (+1.7842)
+   section UP TO 4.8 MT FREEZER  (2         SIDES                        23816.3116 ->   23824.5743  (+8.2627)
+   section UP TO 4.8 MT FREEZER  (2         ROOF                         12004.3371 ->   12009.5702  (+5.2331)
+   section UP TO 4.8 MT FREEZER  (2         FLOOR                        45776.2876 ->   45781.5207  (+5.2331)
+   section 4.9 & UP FREEZER BODY (2         FRONT                         5649.1018 ->    5650.8860  (+1.7842)
+   section 4.9 & UP FREEZER BODY (2         DRD                           6414.0670 ->    6415.8512  (+1.7842)
+   section 4.9 & UP FREEZER BODY (2         SIDES                        33283.8007 ->   33294.8420  (+11.0413)
+   section 4.9 & UP FREEZER BODY (2         ROOF                         18213.6649 ->   18222.8660  (+9.2011)
+   section 4.9 & UP FREEZER BODY (2         FLOOR                        34462.4533 ->   34471.6544  (+9.2011)
+   section icecream up to 3,2               FRONT                         4310.1531 ->    4313.1267  (+2.9736)
+   section icecream up to 3,2               DRD                           5446.0203 ->    5448.9939  (+2.9736)
+   section icecream up to 3,2               SIDES                        13036.7802 ->   13044.7017  (+7.9215)
+   section icecream up to 3,2               ROOF                          6771.5911 ->    6775.5518  (+3.9607)
+   section icecream up to 3,2               FLOOR                        11631.5041 ->   11635.4649  (+3.9607)
+   section icecream up to 4.8               FRONT                         5349.3206 ->    5352.8889  (+3.5683)
+   section icecream up to 4.8               SRD                           6389.0456 ->    6392.6139  (+3.5683)
+   section icecream up to 4.8               SIDES                        25461.5911 ->   25477.2390  (+15.6480)
+   section icecream up to 4.8               ROOF                         14391.2207 ->   14400.6747  (+9.4540)
+   section icecream up to 4.8               FLOOR                        21846.3336 ->   21855.7876  (+9.4540)
+   section icecream 4.9 up                  FRONT                         6096.6456 ->    6100.2139  (+3.5683)
+   section icecream 4.9 up                  DRD                           7034.6964 ->    7038.2647  (+3.5683)
+   section icecream 4.9 up                  SIDES                        34338.3163 ->   34358.0591  (+19.7428)
+   section icecream 4.9 up                  ROOF                         17853.8763 ->   17864.1590  (+10.2827)
+   section icecream 4.9 up                  FLOOR                        27941.8291 ->   27950.0553  (+8.2262)
+   section EXPLOSIVE UP TO 2.7              FRONT                         3641.9390 ->    3643.1582  (+1.2192)
+   section EXPLOSIVE UP TO 2.7              DRD                           5226.1926 ->    5227.4118  (+1.2192)
+   section EXPLOSIVE UP TO 2.7              SIDES                        12235.9733 ->   12238.3217  (+2.3484)
+   section EXPLOSIVE UP TO 2.7              ROOF                          3972.4671 ->    3973.6413  (+1.1742)
+   section EXPLOSIVE 2.7 TO 4.8             FRONT                         4725.8512 ->    4727.0704  (+1.2192)
+   section EXPLOSIVE 2.7 TO 4.8             DRD                           6320.7599 ->    6321.9790  (+1.2192)
+   section EXPLOSIVE 2.7 TO 4.8             SIDES                        21343.3597 ->   21348.9059  (+5.5463)
+   section EXPLOSIVE 2.7 TO 4.8             ROOF                         11005.8454 ->   11008.6185  (+2.7731)
+   section EXPLOSIVE 4.9 AND UP             FRONT                         4797.5507 ->    4798.7997  (+1.2489)
+   section EXPLOSIVE 4.9 AND UP             DRD                           6419.3345 ->    6420.5834  (+1.2489)
+   section EXPLOSIVE 4.9 AND UP             SIDES                        55953.1760 ->   55968.2756  (+15.0996)
+   section EXPLOSIVE 4.9 AND UP             ROOF                         33555.4474 ->   33562.9971  (+7.5498)
+
+   MILD STEEL D27 (1.0 MM PLATE) = 478.0 · D28 (1.2 MM PLATE) = None (empty reads 0) · the line price moves (D27 - D28)/2.98 = 160.402685 per unit
+
+== correction 2 (SUB FRAME galv $D$28 -> $D$27): 7 line(s) moved, 7 section(s) moved; every other line and section of the 12 pack sheets moved 0
+   row 163 UP TO 2.3 CHILLER BODY           SUB FRAME + LIGHT BOX ASSY '1.2MM GALV PLATE': 0.0000 -> 156.5530  (D27 - D28)/2.98 x qty 0.488 x gate 2 = +156.5530
+   row 187 UP TO 5.5 CHILLER AND 2.3 WIDE   SUB FRAME + LIGHT BOX ASSY '1.2MM GALV PLATE': 0.0000 -> 239.7218  (D27 - D28)/2.98 x qty 0.74725 x gate 2 = +239.7218
+   row 185 4.9 & UP CHILLER AND 2.5 WIDE    SUB FRAME + LIGHT BOX ASSY '1.2MM GALV PLATE': 0.0000 -> 239.7218  (D27 - D28)/2.98 x qty 0.74725 x gate 2 = +239.7218
+   row 196 UP TO 4.8 MT FREEZER  (2         SUB FRAME + LIGHT BOX ASSY '1.2MM GALV PLATE': 0.0000 -> 239.7218  (D27 - D28)/2.98 x qty 0.74725 x gate 2 = +239.7218
+   row 165 EXPLOSIVE UP TO 2.7              SUB FRAME + LIGHT BOX ASSY '1.2MM GALV PLATE': 0.0000 -> 156.5530  (D27 - D28)/2.98 x qty 0.488 x gate 2 = +156.5530
+   row 175 EXPLOSIVE 2.7 TO 4.8             SUB FRAME + LIGHT BOX ASSY '1.2MM GALV PLATE': 0.0000 -> 239.7218  (D27 - D28)/2.98 x qty 0.74725 x gate 2 = +239.7218
+   row 175 EXPLOSIVE 4.9 AND UP             SUB FRAME + LIGHT BOX ASSY '1.2MM GALV PLATE': 0.0000 -> 239.7218  (D27 - D28)/2.98 x qty 0.74725 x gate 2 = +239.7218
+   section UP TO 2.3 CHILLER BODY           SUB FRAME + LIGHT BOX ASSY    3205.2972 ->    3361.8502  (+156.5530)
+   section UP TO 5.5 CHILLER AND 2.3 WIDE   SUB FRAME + LIGHT BOX ASSY    7866.5946 ->    8106.3164  (+239.7218)
+   section 4.9 & UP CHILLER AND 2.5 WIDE    SUB FRAME + LIGHT BOX ASSY    9023.5013 ->    9263.2231  (+239.7218)
+   section UP TO 4.8 MT FREEZER  (2         SUB FRAME + LIGHT BOX ASSY    8765.5270 ->    9005.2488  (+239.7218)
+   section EXPLOSIVE UP TO 2.7              SUB FRAME + LIGHT BOX ASSY    3134.3072 ->    3290.8602  (+156.5530)
+   section EXPLOSIVE 2.7 TO 4.8             SUB FRAME + LIGHT BOX ASSY    7804.2512 ->    8043.9730  (+239.7218)
+   section EXPLOSIVE 4.9 AND UP             SUB FRAME + LIGHT BOX ASSY   17284.4525 ->   17524.1743  (+239.7218)
+
+######## PROOF OK — the original set reproduces Burt's cached totals, and each correction moves exactly its own lines by exactly its own factor (0 other lines, 0 other sections)
+   recorded the proof in C:\Users\micge\AppData\Local\Temp\claude\C--Users-micge-Documents-icb-platform\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\scratchpad\rt2wb\corrections.json

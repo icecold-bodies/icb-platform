@@ -1,0 +1,7 @@
+# RT2 (RT2_RULING_1 R5) — Burt's 21 Sep workbook has no LENGTH label in ' icecream 4.9 up'!A4
+# (his August file has none either; the label in the September copy was a local addition, not
+# Burt's). The sheet is otherwise a standard body sheet — labels in column A, inputs in C
+# (LENGTH C4, WIDTH C5, HEIGHT C6) — so pinning the label column skips the row-4 label search.
+# Burt's file is never edited for this: this map is the audit tool's own configuration.
+sheet: " icecream 4.9 up"
+label_col: A

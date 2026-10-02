@@ -1,0 +1,14 @@
+database icb_platform (--target prod); Manifest D: icb_costings.trailer_types.default_insulation_foam; tool sha256 a2fea6413b36d30d…
+  APPLY body 12 MEAT HANGER LARGE: '32D' -> '4G'
+  APPLY body 36 MEAT HANGER SMALL-MEDIUM: '32D' -> '4G'
+  APPLY body 24 EXPLOSIVE 4.9 AND UP: '32D' -> '4G'
+  APPLY body 15 RHINORANGE TRAILER: '32D' -> '4G'
+   P first: 0 own-priced PU foam lines on these bodies
+   body  12 MEAT HANGER LARGE          default 32D
+   body  36 MEAT HANGER SMALL-MEDIUM   default 32D
+   body  24 EXPLOSIVE 4.9 AND UP       default 32D
+   body  15 RHINORANGE TRAILER         default 32D
+OTHERS_4G: 0 (every other body opens on 32D)
+   saved costings on these four bodies (not deleted): 9 — each keeps the grade it was saved with; D changes only what a NEW costing opens on
+4 to apply, 0 already applied.
+(DRY RUN — nothing written. Re-run with --apply.)

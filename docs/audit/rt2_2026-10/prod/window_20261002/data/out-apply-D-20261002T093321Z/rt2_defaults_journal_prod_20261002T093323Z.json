@@ -1,0 +1,36 @@
+{
+  "tool": "rt2_defaults",
+  "manifest": "D",
+  "tool_sha256": "a2fea6413b36d30d182d3382ed45a2cd73f94fcc9d83ea42d766eebfed315c28",
+  "target": "prod",
+  "database": "icb_platform",
+  "column": "icb_costings.trailer_types.default_insulation_foam",
+  "rows": [
+    {
+      "id": 12,
+      "name": "MEAT HANGER LARGE",
+      "before": "32D",
+      "after": "4G"
+    },
+    {
+      "id": 36,
+      "name": "MEAT HANGER SMALL-MEDIUM",
+      "before": "32D",
+      "after": "4G"
+    },
+    {
+      "id": 24,
+      "name": "EXPLOSIVE 4.9 AND UP",
+      "before": "32D",
+      "after": "4G"
+    },
+    {
+      "id": 15,
+      "name": "RHINORANGE TRAILER",
+      "before": "32D",
+      "after": "4G"
+    }
+  ],
+  "already_applied": [],
+  "applied_at_utc": "2026-10-02T09:33:23+00:00"
+}

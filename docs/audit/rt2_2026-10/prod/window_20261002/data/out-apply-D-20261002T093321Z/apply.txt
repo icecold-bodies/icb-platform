@@ -1,0 +1,13 @@
+database icb_platform (--target prod); Manifest D: icb_costings.trailer_types.default_insulation_foam; tool sha256 a2fea6413b36d30d…
+  APPLY body 12 MEAT HANGER LARGE: '32D' -> '4G'
+  APPLY body 36 MEAT HANGER SMALL-MEDIUM: '32D' -> '4G'
+  APPLY body 24 EXPLOSIVE 4.9 AND UP: '32D' -> '4G'
+  APPLY body 15 RHINORANGE TRAILER: '32D' -> '4G'
+   body  12 MEAT HANGER LARGE          default 4G
+   body  36 MEAT HANGER SMALL-MEDIUM   default 4G
+   body  24 EXPLOSIVE 4.9 AND UP       default 4G
+   body  15 RHINORANGE TRAILER         default 4G
+OTHERS_4G: 0 (every other body opens on 32D)
+   saved costings on these four bodies (not deleted): 9 — each keeps the grade it was saved with; D changes only what a NEW costing opens on
+APPLIED 4 change(s) (trailer_types ids [12, 36, 24, 15]). Journal: /tmp/icb-rt2-data/out-apply-D-20261002T093321Z/rt2_defaults_journal_prod_20261002T093323Z.json
+Undo: python rt2_defaults.py --target prod --revert /tmp/icb-rt2-data/out-apply-D-20261002T093321Z/rt2_defaults_journal_prod_20261002T093323Z.json --out-dir <dir>

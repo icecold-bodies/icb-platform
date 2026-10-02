@@ -1,0 +1,40 @@
+== prod: db=icb_platform alembic=0049 code=1d9cb47 mode=preflight target=0926193 (v1.59.3) 2026-10-02T11:10:15+02:00
+== anchors
+   PASS ALEMBIC = 0049
+   PASS HEAD = 1d9cb47b84a8f10a4be74f139b37671ec21f35bd
+   PASS TRACKED_CLEAN = 0
+   PASS COLUMN_ABSENT = 0
+== served bytes (the v1.59.2 bundles are what prod serves today)
+   PASS V_calculator = 184
+   PASS LOCAL_calculator = 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+   PASS LAN_calculator = 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+   PASS V_calculator2 = 126
+   PASS LOCAL_calculator2 = add4416017013f06adec9b990d1f8a3fc256108173f1801e5759da44e7e604ce
+   PASS LAN_calculator2 = add4416017013f06adec9b990d1f8a3fc256108173f1801e5759da44e7e604ce
+   PASS V_admin_templates = 18
+   PASS LOCAL_admin_templates = f22dab0cc9d42e6e93fb8c60e1980461fe9d79cf9d0e53457996b84823b25fe6
+   PASS LAN_admin_templates = f22dab0cc9d42e6e93fb8c60e1980461fe9d79cf9d0e53457996b84823b25fe6
+   PASS SPA_DISK_NAME = assets/index-Be8qL-PA.js
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   SPA bundle assets/index-Be8qL-PA.js sha256 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (frontend/ unchanged in the range: the deploy must leave it as is)
+   PASS HEALTH = 200
+== PyYAML (installed by v1.59.0; this release installs nothing)
+   PASS PYYAML = 6.0.2
+== the tag is on origin BEFORE the window (the footer reads it at startup)
+   PASS TAG_ON_ORIGIN = 4eb089427721fa976c284c3a85a191cd1639dd84
+== backup location (deploy takes a pg_dump before the migration)
+   PASS BACKUP_DIR = writable
+   free space: /dev/mapper/ubuntu--vg-ubuntu--lv   98G  9.8G   84G  11% /
+   latest backups:
+      total 43400
+      -rw------- 1 root     postgres 2090065 Oct  2 02:30 icb_platform_20261002-0230.dump.gz
+      -rw------- 1 root     postgres 1837061 Oct  1 02:30 icb_platform_20261001-0230.dump.gz
+      -rw------- 1 root     root     1944436 Sep 30 20:51 icb_platform_pre-v1.59.2_20260930-205115.dump
+== deploy tooling on prod
+   PASS DEPLOY_SCRIPT = 012d701097d2671c6f0468479d600368e7ae3e2b5dc533bd57f8a5e671d23317
+   PASS ICB_SUDO = nopasswd
+   deploy record: completed 1d9cb47b84a8f10a4be74f139b37671ec21f35bd (owner icb)
+   footer today: git describe -> v1.59.2 (the tag arrives with the deploy's fetch)
+
+######## PREFLIGHT PASSED — tell the CA: /tmp/icb-release-v1.59.3/out-preflight-20261002-111015

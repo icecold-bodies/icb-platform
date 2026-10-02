@@ -322,4 +322,72 @@ folder, and the All kit stops on any pack exit other than 0 / 1.
 
 ## OUTCOME
 
-(after the window)
+**Prod = v1.59.3 = `0926193`**: tag `v1.59.3` = tag object `4eb08942…` (local = origin, peels to the target), alembic
+**0050**. Deployed 2 Oct 2026 **11:11:22 → 11:12:07 SAST**. **Manifest P** (59 entries on 39 lines) went on at 11:16:22,
+and **Manifest D** (4 bodies → 4G) at 11:33:23.
+
+Michael ordered the window ahead of RT2_RULING_2 ("push to prod, the users are waiting"). RULING_2 C1 ratified it
+retrospectively. Records:
+- the window: `docs/audit/rt2_2026-10/prod/window_20261002/` — `release/`, `data/`, `all/` (logs, compares,
+  summaries; the full JSON reports' sha256 are in each `SHA256SUMS.out`), `doors/`, `cf_probe_after_deploy.txt`;
+- the close export: `docs/audit/rt2_2026-10/prod/close_export_20261002-173343/` (the CI snapshot is that export).
+
+| step | when (SAST) | result |
+|---|---|---|
+| R8 export | 09:01:23 | R7 `34\|DRD PU\|0.041`; 86 / 57 / 19; door report 13 OK (CHILLER MEDIUM drift) |
+| 1 · All pre | 10:56:16 | page #24 flagged 64 (the F entry; prod's list predated #206); **PAGE = CLI 3 239/3 239**; = table 1 |
+| preflight / verify | 11:10:15 / 11:10:34 | PASSED / exactly 15 failed |
+| **2 · deploy** | **11:11:22 → 11:12:07** | DEPLOYED `1d9cb47 → 0926193`; backup `icb_platform_pre-v1.59.3_20261002-111122.dump` (`aa64712a…`); 0049 → 0050; 4 workers, 0 bootstrap failures, 0 tracebacks; bundles 185 / 127 / 19 local = LAN |
+| 2+ · Cloudflare | ~11:13 | the three bundles and `/openapi.json` = the LAN door (calculator.js cached with the new bytes) |
+| 3 · All post | 11:13:52 | page #25, 3 FLAG (EXPLOSIVE 4.9 SRD, pre-D); PAGE = CLI 2 702/2 702; = table 2 |
+| 4 · P | 11:14:26 dry-run, **11:16:20 apply** | 59 / 0 → applied 59 changes on 39 lines (39 history rows); backup `pre_apply_P_20261002T091619Z.sql.gz` (`06db38db…`); journal `0b23c4b8…`; second dry-run 0 / 59 |
+| 5 · All afterP | 11:32:03 | page #26, 3 FLAG; PAGE = CLI 2 702/2 702; = table 3 |
+| 5b · D | 11:16:48 dry-run, **11:33:21 apply** | 4 / 0, `OTHERS_4G 0`, 9 saved costings keep their grade → applied 4; backup `pre_apply_D_…` (`e34773b0…`); journal `572bf3f4…`; second dry-run 0 / 4 |
+| 5c · All afterD | 11:33:36, 11:52:55, 14:26:07 | CLI 0 FLAG = table 4, but the page side compared page run #26 from before D (the 48 cells D moves), then STOP [PAGE] (too old). This is the defect C11 fixed |
+| **5c · All afterD (close)** | **17:20:03** | **page #31 passed, 0 FLAG; PAGE = CLI 2 702/2 702**; = table 4. C5 / C6 / C7 moved no cell (RULING_2 close step 2) |
+| 0 · CHILLER MEDIUM hand fix | before 11:54 | 3294 DRD EPS 0 → 0.06, 3296 SRD EPS 0.06 → 0 |
+| 6 · door report | 11:54:51; **17:20:44** | **14 OK; no exceptions** (both) |
+| close · C5 / C6 / C7 | Michael, 2 Oct afternoon | the values below, read from the close export |
+| close · export | 17:33:43 (re-run after C7's EPS zeros; the 17:21:58 run had them at 0.1) | 86 active PU foam lines · **own price 18** (= the 18 chiller exceptions) · **no thickness term 0**; the no-people gate passed; door report 14 OK; becomes the CI snapshot (sha `8e941e8e…`) |
+
+**RULING_2's Body Template fixes, read from the close export (read only):**
+
+| fix | body | master / field | before (R8, 09:01) | after |
+|---|---|---|---:|---:|
+| C5 | ICECREAM BODY MEDIUM (17) | 5710 ROOF PU / 5712 FLOOR PU | 0.12 / 0.12 | **0.145 / 0.145** |
+| C6 | EXPLOSIVE 2.7 TO 4.8 (37) | default length | 7.8 | **4.8** (Burt's sheet is saved at 5.5, also out of range: Michael chose the range's top) |
+| C6 | ICECREAM BODY MEDIUM (17) | default length | 5.3 | **4.8** (Burt's sheet is saved at 5.3) |
+| C7 | FREEZER LARGE (21) | 2689 ROOF PU / 2691 FLOOR PU | 0 / 0 | **0.1 / 0.1** |
+| C7 | FREEZER LARGE (21) | 2688 ROOF EPS / 2690 FLOOR EPS | 0.1 / 0.1 | **0 / 0** |
+| window | CHILLER MEDIUM (26) | 3294 DRD EPS / 3296 SRD EPS | 0 / 0.06 | **0.06 / 0** |
+| D | 12 / 36 / 24 / 15 | default foam | 32D | **4G** (every other body 32D) |
+
+Nothing else in the export moved since 09:01: no other BOM row, no material, no admin setting, no global variable.
+
+**C9, the single-rear-door lines (provisionally accepted; the BA puts it to Burt as a Y/N).** A new MES quote
+switched to the single door carries the double door's thickness. Burt's sheets, saved on the double door, carry none
+(the audit supplies 0.06). The 5 P lines this decides:
+- 6345 EXPLOSIVE 2.7 TO 4.8 SRD PU (MES 0.041);
+- 3948 EXPLOSIVE 4.9 AND UP SRD PU (0.042);
+- 5184 EXPLOSIVE UP TO 2.7 SRD PU (0.041);
+- 5306 ICECREAM BODY LARGE SRD PU (0.12);
+- 5726 ICECREAM BODY SMALL SRD PU (0.1).
+
+(FREEZER LARGE's 2560 carries 0.06 = equal.)
+
+**The door rubber (RULING_2's new finding).** CHILLER MEDIUM 2317 DOOR RUBBER, sheet `UP TO 5.5 CHILLER AND 2.3 WIDE`:
+- **F97** (the double door, 2317 OUTER RUBBER R60.18 × D97 = D94) and **F60** (the single door) are a **typed 0** in
+  Burt's August file (25 Aug) and in his sealed 21 Sep zip.
+- Only Michael's September working copy, as built into the old golden on 25 Sep (`d87a5731…`), charged F97
+  (R672.45 at 3 m). The same copy reads 0 again since 27 Sep 07:43 (`af64176d…`).
+- So Burt never charged it, and v1.58's F4 (the MES ×0 → charged) followed that local edit. The BURT entry stays
+  until Burt's Y/N.
+
+**The list at the close:** old #12 (the list's 8th) is narrowed to the plywood **price**:
+- `[DATA]`, owner Michael, review by 2026-10-31;
+- MES 6MM PF PLYWOOD at R95.64/m² against Burt's 4MM at R86.58/m²; +R58.51 to +R193.93 per cell, all of it the
+  plywood line;
+- the reaccept proof on prod's own after-D reports changes 0 statuses (`docs/audit/rt2_2026-10/accepted/proofs/s8_…`).
+
+**C11** is in the kit: `rt2_all.sh` refuses a page run that started before the newest Manifest P / D journal ("click
+All first"). It has 5 tests and a sim case (16/16).

@@ -1,0 +1,52 @@
+== prod: db=icb_platform alembic=0050 code=0926193 staged=0926193 mode=apply D  2026-10-02T11:33:21+02:00
+== order: Manifest P must already be fully on prod
+   ok   P: 0 to apply, 59 already applied.
+== dry-run D (READ ONLY)
+database icb_platform (--target prod); Manifest D: icb_costings.trailer_types.default_insulation_foam; tool sha256 a2fea6413b36d30d…
+  APPLY body 12 MEAT HANGER LARGE: '32D' -> '4G'
+  APPLY body 36 MEAT HANGER SMALL-MEDIUM: '32D' -> '4G'
+  APPLY body 24 EXPLOSIVE 4.9 AND UP: '32D' -> '4G'
+  APPLY body 15 RHINORANGE TRAILER: '32D' -> '4G'
+   P first: 0 own-priced PU foam lines on these bodies
+   body  12 MEAT HANGER LARGE          default 32D
+   body  36 MEAT HANGER SMALL-MEDIUM   default 32D
+   body  24 EXPLOSIVE 4.9 AND UP       default 32D
+   body  15 RHINORANGE TRAILER         default 32D
+OTHERS_4G: 0 (every other body opens on 32D)
+   saved costings on these four bodies (not deleted): 9 — each keeps the grade it was saved with; D changes only what a NEW costing opens on
+4 to apply, 0 already applied.
+(DRY RUN — nothing written. Re-run with --apply.)
+== pre-apply backup (data only): trailer_types
+   ok   /var/backups/icb-rt2-2026-10/pre_apply_D_20261002T093321Z.sql.gz 1716 bytes sha256 e34773b0f42ebaebd8ecd84f89a6fde2ff50a0774a0673cd816d27492b478766
+== apply D — one transaction
+database icb_platform (--target prod); Manifest D: icb_costings.trailer_types.default_insulation_foam; tool sha256 a2fea6413b36d30d…
+  APPLY body 12 MEAT HANGER LARGE: '32D' -> '4G'
+  APPLY body 36 MEAT HANGER SMALL-MEDIUM: '32D' -> '4G'
+  APPLY body 24 EXPLOSIVE 4.9 AND UP: '32D' -> '4G'
+  APPLY body 15 RHINORANGE TRAILER: '32D' -> '4G'
+   body  12 MEAT HANGER LARGE          default 4G
+   body  36 MEAT HANGER SMALL-MEDIUM   default 4G
+   body  24 EXPLOSIVE 4.9 AND UP       default 4G
+   body  15 RHINORANGE TRAILER         default 4G
+OTHERS_4G: 0 (every other body opens on 32D)
+   saved costings on these four bodies (not deleted): 9 — each keeps the grade it was saved with; D changes only what a NEW costing opens on
+APPLIED 4 change(s) (trailer_types ids [12, 36, 24, 15]). Journal: /tmp/icb-rt2-data/out-apply-D-20261002T093321Z/rt2_defaults_journal_prod_20261002T093323Z.json
+Undo: python rt2_defaults.py --target prod --revert /tmp/icb-rt2-data/out-apply-D-20261002T093321Z/rt2_defaults_journal_prod_20261002T093323Z.json --out-dir <dir>
+   ok   journal /var/backups/icb-rt2-2026-10/journal_D_rt2_defaults_journal_prod_20261002T093323Z.json  sha256 572bf3f4b49746e20f12f09452c0455f852602c1d8e5715783e034e2dd836dc1
+== second dry-run (must find nothing left to apply)
+database icb_platform (--target prod); Manifest D: icb_costings.trailer_types.default_insulation_foam; tool sha256 a2fea6413b36d30d…
+  done  body 12 MEAT HANGER LARGE: '4G'
+  done  body 36 MEAT HANGER SMALL-MEDIUM: '4G'
+  done  body 24 EXPLOSIVE 4.9 AND UP: '4G'
+  done  body 15 RHINORANGE TRAILER: '4G'
+   P first: 0 own-priced PU foam lines on these bodies
+   body  12 MEAT HANGER LARGE          default 4G
+   body  36 MEAT HANGER SMALL-MEDIUM   default 4G
+   body  24 EXPLOSIVE 4.9 AND UP       default 4G
+   body  15 RHINORANGE TRAILER         default 4G
+OTHERS_4G: 0 (every other body opens on 32D)
+   saved costings on these four bodies (not deleted): 9 — each keeps the grade it was saved with; D changes only what a NEW costing opens on
+0 to apply, 4 already applied.
+nothing to apply.
+
+######## DONE (apply D) — journal /var/backups/icb-rt2-2026-10/journal_D_rt2_defaults_journal_prod_20261002T093323Z.json — tell the CA: /tmp/icb-rt2-data/out-apply-D-20261002T093321Z

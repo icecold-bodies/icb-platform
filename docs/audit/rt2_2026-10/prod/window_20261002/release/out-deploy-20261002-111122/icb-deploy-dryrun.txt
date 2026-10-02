@@ -1,0 +1,23 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  1d9cb47b  release(v1.59.2): RT1 release train — prod kit, runbook, 1b re
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  0926193e1ee0102c210800c3912949d1df76fbe5 already present - no fetch needed
+[32m  ok[0m  0926193e1ee0102c210800c3912949d1df76fbe5 = 0926193e
+
+[1m== 2. plan[0m
+  1d9cb47b -> 0926193e   (5 commit(s), 296 file(s))
+    0926193 release(v1.59.3): RT2 — Manifest P + G1 + the 15-body CI snapshot; prod kit (0050), P/D data kit, All/door kits; runbook; VERSION -> v1.59.3 (#210)
+    caf6966 data(audit): RT2 Part 2 — golden on Burt's sealed 21 Sep set + 2 proven corrections; packs pinned; list re-judged (re-land of #208) (#209)
+    60f5d56 feat(costing): RT2 Part 1 + 1b + 1c — a quote never writes the Body Template; per-body default foam (0050) (#207)
+    dc7dd6f docs(release): v1.59.2 prod OUTCOME — RT1 close: prune #5, the ratified F entry, F2, CI snapshot = prod (#206)
+    1c8da39 data(rt1): Manifest M — MEAT HANGER PU lines to Burt's F1 shape; read-only sweep; window runbook addendum (#205)
+
+  DB migration     YES - 0050_trailer_default_insulation_foam.py 
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 24 Python file(s) changed
+
+[32m  ok[0m  dry run - nothing changed.

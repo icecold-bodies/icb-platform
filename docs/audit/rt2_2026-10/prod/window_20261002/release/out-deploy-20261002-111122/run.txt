@@ -1,0 +1,711 @@
+== prod: db=icb_platform alembic=0049 code=1d9cb47 mode=deploy target=0926193 (v1.59.3) 2026-10-02T11:11:23+02:00
+== 1. anchors
+   ok   fresh: code 1d9cb47, alembic 0049
+   ok   rollback anchor 1d9cb47 -> /tmp/icb-release-v1.59.3/out-deploy-20261002-111122/rollback-anchor.txt
+== 2. served-bytes baseline
+   PASS V_calculator = 184
+   PASS LOCAL_calculator = 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+   PASS LAN_calculator = 051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635
+   PASS V_calculator2 = 126
+   PASS LOCAL_calculator2 = add4416017013f06adec9b990d1f8a3fc256108173f1801e5759da44e7e604ce
+   PASS LAN_calculator2 = add4416017013f06adec9b990d1f8a3fc256108173f1801e5759da44e7e604ce
+   PASS V_admin_templates = 18
+   PASS LOCAL_admin_templates = f22dab0cc9d42e6e93fb8c60e1980461fe9d79cf9d0e53457996b84823b25fe6
+   PASS LAN_admin_templates = f22dab0cc9d42e6e93fb8c60e1980461fe9d79cf9d0e53457996b84823b25fe6
+   ok   SPA assets/index-Be8qL-PA.js 2a4f277f7127fe7d
+== 3. PyYAML 6.0.2 present (nothing is installed by this release)
+   ok   present (6.0.2)
+== 4. backup (the rollback for 0050, before the code, the schema and the data move)
+   ok   /var/backups/postgres/icb_platform_pre-v1.59.3_20261002-111122.dump  2505457 bytes  sha256 aa64712a047ecb386d1d61ffb6b7bccf07341e48ab471025ade154fc886f1da3  (101 table-data entries, incl. alembic_version, trailer_types, bill_of_materials)
+== 5. fetch (with tags) + tag and range guards
+   remote: Enumerating objects: 642, done.        
+   remote: Counting objects:   0% (1/125)        remote: Counting objects:   1% (2/125)        remote: Counting objects:   2% (3/125)        remote: Counting objects:   3% (4/125)        remote: Counting objects:   4% (5/125)        remote: Counting objects:   5% (7/125)        remote: Counting objects:   6% (8/125)        remote: Counting objects:   7% (9/125)        remote: Counting objects:   8% (10/125)        remote: Counting objects:   9% (12/125)        remote: Counting objects:  10% (13/125)        remote: Counting objects:  11% (14/125)        remote: Counting objects:  12% (15/125)        remote: Counting objects:  13% (17/125)        remote: Counting objects:  14% (18/125)        remote: Counting objects:  15% (19/125)        remote: Counting objects:  16% (20/125)        remote: Counting objects:  17% (22/125)        remote: Counting objects:  18% (23/125)        remote: Counting objects:  19% (24/125)        remote: Counting objects:  20% (25/125)        remote: Counting objects:  21% (27/125)        remote: Counting objects:  22% (28/125)        remote: Counting objects:  23% (29/125)        remote: Counting objects:  24% (30/125)        remote: Counting objects:  25% (32/125)        remote: Counting objects:  26% (33/125)        remote: Counting objects:  27% (34/125)        remote: Counting objects:  28% (35/125)        remote: Counting objects:  29% (37/125)        remote: Counting objects:  30% (38/125)        remote: Counting objects:  31% (39/125)        remote: Counting objects:  32% (40/125)        remote: Counting objects:  33% (42/125)        remote: Counting objects:  34% (43/125)        remote: Counting objects:  35% (44/125)        remote: Counting objects:  36% (45/125)        remote: Counting objects:  37% (47/125)        remote: Counting objects:  38% (48/125)        remote: Counting objects:  39% (49/125)        remote: Counting objects:  40% (50/125)        remote: Counting objects:  41% (52/125)        remote: Counting objects:  42% (53/125)        remote: Counting objects:  43% (54/125)        remote: Counting objects:  44% (55/125)        remote: Counting objects:  45% (57/125)        remote: Counting objects:  46% (58/125)        remote: Counting objects:  47% (59/125)        remote: Counting objects:  48% (60/125)        remote: Counting objects:  49% (62/125)        remote: Counting objects:  50% (63/125)        remote: Counting objects:  51% (64/125)        remote: Counting objects:  52% (65/125)        remote: Counting objects:  53% (67/125)        remote: Counting objects:  54% (68/125)        remote: Counting objects:  55% (69/125)        remote: Counting objects:  56% (70/125)        remote: Counting objects:  57% (72/125)        remote: Counting objects:  58% (73/125)        remote: Counting objects:  59% (74/125)        remote: Counting objects:  60% (75/125)        remote: Counting objects:  61% (77/125)        remote: Counting objects:  62% (78/125)        remote: Counting objects:  63% (79/125)        remote: Counting objects:  64% (80/125)        remote: Counting objects:  65% (82/125)        remote: Counting objects:  66% (83/125)        remote: Counting objects:  67% (84/125)        remote: Counting objects:  68% (85/125)        remote: Counting objects:  69% (87/125)        remote: Counting objects:  70% (88/125)        remote: Counting objects:  71% (89/125)        remote: Counting objects:  72% (90/125)        remote: Counting objects:  73% (92/125)        remote: Counting objects:  74% (93/125)        remote: Counting objects:  75% (94/125)        remote: Counting objects:  76% (95/125)        remote: Counting objects:  77% (97/125)        remote: Counting objects:  78% (98/125)        remote: Counting objects:  79% (99/125)        remote: Counting objects:  80% (100/125)        remote: Counting objects:  81% (102/125)        remote: Counting objects:  82% (103/125)        remote: Counting objects:  83% (104/125)        remote: Counting objects:  84% (105/125)        remote: Counting objects:  85% (107/125)        remote: Counting objects:  86% (108/125)        remote: Counting objects:  87% (109/125)        remote: Counting objects:  88% (110/125)        remote: Counting objects:  89% (112/125)        remote: Counting objects:  90% (113/125)        remote: Counting objects:  91% (114/125)        remote: Counting objects:  92% (115/125)        remote: Counting objects:  93% (117/125)        remote: Counting objects:  94% (118/125)        remote: Counting objects:  95% (119/125)        remote: Counting objects:  96% (120/125)        remote: Counting objects:  97% (122/125)        remote: Counting objects:  98% (123/125)        remote: Counting objects:  99% (124/125)        remote: Counting objects: 100% (125/125)        remote: Counting objects: 100% (125/125), done.        
+   remote: Compressing objects:   1% (1/60)        remote: Compressing objects:   3% (2/60)        remote: Compressing objects:   5% (3/60)        remote: Compressing objects:   6% (4/60)        remote: Compressing objects:   8% (5/60)        remote: Compressing objects:  10% (6/60)        remote: Compressing objects:  11% (7/60)        remote: Compressing objects:  13% (8/60)        remote: Compressing objects:  15% (9/60)        remote: Compressing objects:  16% (10/60)        remote: Compressing objects:  18% (11/60)        remote: Compressing objects:  20% (12/60)        remote: Compressing objects:  21% (13/60)        remote: Compressing objects:  23% (14/60)        remote: Compressing objects:  25% (15/60)        remote: Compressing objects:  26% (16/60)        remote: Compressing objects:  28% (17/60)        remote: Compressing objects:  30% (18/60)        remote: Compressing objects:  31% (19/60)        remote: Compressing objects:  33% (20/60)        remote: Compressing objects:  35% (21/60)        remote: Compressing objects:  36% (22/60)        remote: Compressing objects:  38% (23/60)        remote: Compressing objects:  40% (24/60)        remote: Compressing objects:  41% (25/60)        remote: Compressing objects:  43% (26/60)        remote: Compressing objects:  45% (27/60)        remote: Compressing objects:  46% (28/60)        remote: Compressing objects:  48% (29/60)        remote: Compressing objects:  50% (30/60)        remote: Compressing objects:  51% (31/60)        remote: Compressing objects:  53% (32/60)        remote: Compressing objects:  55% (33/60)        remote: Compressing objects:  56% (34/60)        remote: Compressing objects:  58% (35/60)        remote: Compressing objects:  60% (36/60)        remote: Compressing objects:  61% (37/60)        remote: Compressing objects:  63% (38/60)        remote: Compressing objects:  65% (39/60)        remote: Compressing objects:  66% (40/60)        remote: Compressing objects:  68% (41/60)        remote: Compressing objects:  70% (42/60)        remote: Compressing objects:  71% (43/60)        remote: Compressing objects:  73% (44/60)        remote: Compressing objects:  75% (45/60)        remote: Compressing objects:  76% (46/60)        remote: Compressing objects:  78% (47/60)        remote: Compressing objects:  80% (48/60)        remote: Compressing objects:  81% (49/60)        remote: Compressing objects:  83% (50/60)        remote: Compressing objects:  85% (51/60)        remote: Compressing objects:  86% (52/60)        remote: Compressing objects:  88% (53/60)        remote: Compressing objects:  90% (54/60)        remote: Compressing objects:  91% (55/60)        remote: Compressing objects:  93% (56/60)        remote: Compressing objects:  95% (57/60)        remote: Compressing objects:  96% (58/60)        remote: Compressing objects:  98% (59/60)        remote: Compressing objects: 100% (60/60)        remote: Compressing objects: 100% (60/60), done.        
+   Receiving objects:   0% (1/642)Receiving objects:   1% (7/642)Receiving objects:   2% (13/642)Receiving objects:   3% (20/642)Receiving objects:   4% (26/642)Receiving objects:   5% (33/642)Receiving objects:   6% (39/642)Receiving objects:   7% (45/642)Receiving objects:   8% (52/642)Receiving objects:   9% (58/642)Receiving objects:  10% (65/642)Receiving objects:  11% (71/642)Receiving objects:  12% (78/642)Receiving objects:  13% (84/642)Receiving objects:  14% (90/642)Receiving objects:  15% (97/642)Receiving objects:  16% (103/642)Receiving objects:  17% (110/642)Receiving objects:  18% (116/642)Receiving objects:  19% (122/642)Receiving objects:  20% (129/642)Receiving objects:  21% (135/642)Receiving objects:  22% (142/642)Receiving objects:  23% (148/642)Receiving objects:  24% (155/642)Receiving objects:  25% (161/642)Receiving objects:  26% (167/642)Receiving objects:  27% (174/642)Receiving objects:  28% (180/642)Receiving objects:  29% (187/642)Receiving objects:  30% (193/642)Receiving objects:  31% (200/642)Receiving objects:  32% (206/642)Receiving objects:  33% (212/642)Receiving objects:  34% (219/642)Receiving objects:  35% (225/642)Receiving objects:  36% (232/642)Receiving objects:  37% (238/642)Receiving objects:  38% (244/642)Receiving objects:  39% (251/642)Receiving objects:  40% (257/642)Receiving objects:  41% (264/642)Receiving objects:  42% (270/642)Receiving objects:  43% (277/642)Receiving objects:  44% (283/642)Receiving objects:  45% (289/642)Receiving objects:  46% (296/642)Receiving objects:  47% (302/642)Receiving objects:  48% (309/642)Receiving objects:  49% (315/642)Receiving objects:  50% (321/642)Receiving objects:  51% (328/642)Receiving objects:  52% (334/642)Receiving objects:  53% (341/642)Receiving objects:  54% (347/642)Receiving objects:  55% (354/642)Receiving objects:  56% (360/642)Receiving objects:  57% (366/642)Receiving objects:  58% (373/642)Receiving objects:  59% (379/642)Receiving objects:  60% (386/642)Receiving objects:  61% (392/642)Receiving objects:  62% (399/642)Receiving objects:  63% (405/642)Receiving objects:  64% (411/642)Receiving objects:  65% (418/642)Receiving objects:  66% (424/642)Receiving objects:  67% (431/642)Receiving objects:  68% (437/642)Receiving objects:  69% (443/642)Receiving objects:  70% (450/642)Receiving objects:  71% (456/642)Receiving objects:  72% (463/642)Receiving objects:  73% (469/642)Receiving objects:  74% (476/642)Receiving objects:  75% (482/642)Receiving objects:  76% (488/642)Receiving objects:  77% (495/642)Receiving objects:  78% (501/642)Receiving objects:  79% (508/642)Receiving objects:  80% (514/642)Receiving objects:  81% (521/642)Receiving objects:  82% (527/642)Receiving objects:  83% (533/642)Receiving objects:  84% (540/642)Receiving objects:  85% (546/642)Receiving objects:  86% (553/642)Receiving objects:  87% (559/642)Receiving objects:  88% (565/642)Receiving objects:  89% (572/642)Receiving objects:  90% (578/642)Receiving objects:  91% (585/642)Receiving objects:  92% (591/642)Receiving objects:  93% (598/642)remote: Total 642 (delta 74), reused 106 (delta 64), pack-reused 517 (from 1)        
+   Receiving objects:  94% (604/642)Receiving objects:  95% (610/642)Receiving objects:  96% (617/642)Receiving objects:  97% (623/642)Receiving objects:  98% (630/642)Receiving objects:  99% (636/642)Receiving objects: 100% (642/642)Receiving objects: 100% (642/642), 852.73 KiB | 7.61 MiB/s, done.
+   Resolving deltas:   0% (0/389)Resolving deltas:   1% (4/389)Resolving deltas:   2% (8/389)Resolving deltas:   3% (12/389)Resolving deltas:   4% (16/389)Resolving deltas:   5% (20/389)Resolving deltas:   6% (24/389)Resolving deltas:   7% (28/389)Resolving deltas:   8% (32/389)Resolving deltas:   9% (36/389)Resolving deltas:  10% (39/389)Resolving deltas:  11% (43/389)Resolving deltas:  12% (47/389)Resolving deltas:  13% (51/389)Resolving deltas:  14% (55/389)Resolving deltas:  15% (59/389)Resolving deltas:  16% (63/389)Resolving deltas:  17% (67/389)Resolving deltas:  18% (71/389)Resolving deltas:  19% (74/389)Resolving deltas:  20% (78/389)Resolving deltas:  21% (82/389)Resolving deltas:  22% (86/389)Resolving deltas:  23% (90/389)Resolving deltas:  24% (94/389)Resolving deltas:  25% (98/389)Resolving deltas:  26% (102/389)Resolving deltas:  27% (106/389)Resolving deltas:  28% (109/389)Resolving deltas:  29% (113/389)Resolving deltas:  30% (117/389)Resolving deltas:  31% (122/389)Resolving deltas:  32% (125/389)Resolving deltas:  33% (129/389)Resolving deltas:  34% (133/389)Resolving deltas:  35% (137/389)Resolving deltas:  36% (141/389)Resolving deltas:  37% (144/389)Resolving deltas:  38% (148/389)Resolving deltas:  39% (152/389)Resolving deltas:  40% (156/389)Resolving deltas:  41% (160/389)Resolving deltas:  42% (164/389)Resolving deltas:  43% (168/389)Resolving deltas:  44% (172/389)Resolving deltas:  45% (176/389)Resolving deltas:  46% (179/389)Resolving deltas:  47% (183/389)Resolving deltas:  48% (187/389)Resolving deltas:  49% (191/389)Resolving deltas:  50% (195/389)Resolving deltas:  51% (199/389)Resolving deltas:  52% (203/389)Resolving deltas:  53% (207/389)Resolving deltas:  54% (211/389)Resolving deltas:  55% (214/389)Resolving deltas:  56% (218/389)Resolving deltas:  57% (222/389)Resolving deltas:  58% (226/389)Resolving deltas:  59% (230/389)Resolving deltas:  60% (234/389)Resolving deltas:  61% (238/389)Resolving deltas:  62% (242/389)Resolving deltas:  63% (246/389)Resolving deltas:  64% (249/389)Resolving deltas:  65% (253/389)Resolving deltas:  66% (257/389)Resolving deltas:  67% (261/389)Resolving deltas:  68% (265/389)Resolving deltas:  69% (269/389)Resolving deltas:  70% (273/389)Resolving deltas:  71% (277/389)Resolving deltas:  72% (281/389)Resolving deltas:  73% (284/389)Resolving deltas:  74% (288/389)Resolving deltas:  75% (292/389)Resolving deltas:  76% (296/389)Resolving deltas:  77% (300/389)Resolving deltas:  78% (304/389)Resolving deltas:  79% (308/389)Resolving deltas:  80% (312/389)Resolving deltas:  81% (316/389)Resolving deltas:  82% (319/389)Resolving deltas:  83% (323/389)Resolving deltas:  84% (327/389)Resolving deltas:  85% (331/389)Resolving deltas:  86% (335/389)Resolving deltas:  87% (339/389)Resolving deltas:  88% (343/389)Resolving deltas:  89% (347/389)Resolving deltas:  90% (351/389)Resolving deltas:  91% (354/389)Resolving deltas:  92% (358/389)Resolving deltas:  93% (362/389)Resolving deltas:  94% (366/389)Resolving deltas:  95% (370/389)Resolving deltas:  96% (374/389)Resolving deltas:  97% (378/389)Resolving deltas:  98% (382/389)Resolving deltas:  99% (386/389)Resolving deltas: 100% (389/389)Resolving deltas: 100% (389/389), completed with 26 local objects.
+   From https://github.com/icecold-bodies/icb-platform
+      1d9cb47..0926193  backport/v1.39-base   -> origin/backport/v1.39-base
+      e913815..896fec1  data/rt1-manifest-m   -> origin/data/rt1-manifest-m
+    * [new branch]      docs/rt1-close        -> origin/docs/rt1-close
+    * [new branch]      rt2/part1-quote-state -> origin/rt2/part1-quote-state
+    * [new branch]      rt2/part2-golden      -> origin/rt2/part2-golden
+    * [new branch]      rt2/part2-reland      -> origin/rt2/part2-reland
+    * [new branch]      rt2/release-v1.59.3   -> origin/rt2/release-v1.59.3
+    ! [rejected]        v1.47.1               -> v1.47.1  (would clobber existing tag)
+    * [new tag]         v1.59.3               -> v1.59.3
+   ok   v1.59.3 = tag object 4eb089427721 -> 0926193; git describe at the target = v1.59.3
+   ok   296 files (C-sorted sha256 97416fa43578b2ba): one migration (0050_trailer_default_insulation_foam.py), no requirements, frontend/ and deploy/ untouched
+== 6. the repo's deploy script — dry run
+   | 
+   | == 0. preflight
+   |   repo      /opt/icb-platform (branch HEAD)
+   |   deployed  1d9cb47b  release(v1.59.2): RT1 release train — prod kit, runbook, 1b re
+   |   ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+   | 
+   | == 1. fetch
+   |   ok  0926193e1ee0102c210800c3912949d1df76fbe5 already present - no fetch needed
+   |   ok  0926193e1ee0102c210800c3912949d1df76fbe5 = 0926193e
+   | 
+   | == 2. plan
+   |   1d9cb47b -> 0926193e   (5 commit(s), 296 file(s))
+   |     0926193 release(v1.59.3): RT2 — Manifest P + G1 + the 15-body CI snapshot; prod kit (0050), P/D data kit, All/door kits; runbook; VERSION -> v1.59.3 (#210)
+   |     caf6966 data(audit): RT2 Part 2 — golden on Burt's sealed 21 Sep set + 2 proven corrections; packs pinned; list re-judged (re-land of #208) (#209)
+   |     60f5d56 feat(costing): RT2 Part 1 + 1b + 1c — a quote never writes the Body Template; per-body default foam (0050) (#207)
+   |     dc7dd6f docs(release): v1.59.2 prod OUTCOME — RT1 close: prune #5, the ratified F entry, F2, CI snapshot = prod (#206)
+   |     1c8da39 data(rt1): Manifest M — MEAT HANGER PU lines to Burt's F1 shape; read-only sweep; window runbook addendum (#205)
+   | 
+   |   DB migration     YES - 0050_trailer_default_insulation_foam.py 
+   |   SPA rebuild      no  (frontend/ untouched)
+   |   Service restart  YES - 24 Python file(s) changed
+   | 
+   |   ok  dry run - nothing changed.
+   ok   plan: migrate 0050_trailer_default_insulation_foam, no SPA rebuild, restart
+== 7. deploy (fast-forward, alembic upgrade head, restart, health, completion record)
+   | 
+   | == 0. preflight
+   |   repo      /opt/icb-platform (branch HEAD)
+   |   deployed  1d9cb47b  release(v1.59.2): RT1 release train — prod kit, runbook, 1b re
+   |   ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+   | 
+   | == 1. fetch
+   |   ok  0926193e1ee0102c210800c3912949d1df76fbe5 already present - no fetch needed
+   |   ok  0926193e1ee0102c210800c3912949d1df76fbe5 = 0926193e
+   | 
+   | == 2. plan
+   |   1d9cb47b -> 0926193e   (5 commit(s), 296 file(s))
+   |     0926193 release(v1.59.3): RT2 — Manifest P + G1 + the 15-body CI snapshot; prod kit (0050), P/D data kit, All/door kits; runbook; VERSION -> v1.59.3 (#210)
+   |     caf6966 data(audit): RT2 Part 2 — golden on Burt's sealed 21 Sep set + 2 proven corrections; packs pinned; list re-judged (re-land of #208) (#209)
+   |     60f5d56 feat(costing): RT2 Part 1 + 1b + 1c — a quote never writes the Body Template; per-body default foam (0050) (#207)
+   |     dc7dd6f docs(release): v1.59.2 prod OUTCOME — RT1 close: prune #5, the ratified F entry, F2, CI snapshot = prod (#206)
+   |     1c8da39 data(rt1): Manifest M — MEAT HANGER PU lines to Burt's F1 shape; read-only sweep; window runbook addendum (#205)
+   | 
+   |   DB migration     YES - 0050_trailer_default_insulation_foam.py 
+   |   SPA rebuild      no  (frontend/ untouched)
+   |   Service restart  YES - 24 Python file(s) changed
+   | 
+   |   rollback anchor 1d9cb47b saved to /tmp/icb-rollback-20261002-111127.txt
+   | 
+   | == 3. database backup (a migration is about to run)
+   | Oct 02 11:11:27 icb-mes-prod runuser[184881]: pam_unix(runuser:session): session closed for user postgres
+   | Oct 02 11:11:28 icb-mes-prod icb-pg-backup[184878]: Backup complete: /var/backups/postgres/icb_platform_20261002-1111.dump.gz (2199531 bytes)
+   | Oct 02 11:11:28 icb-mes-prod systemd[1]: icb-pg-backup.service: Deactivated successfully.
+   | Oct 02 11:11:28 icb-mes-prod systemd[1]: Finished icb-pg-backup.service - ICB MES Postgres nightly backup.
+   |   ok  schema before: 0049 (head)
+   | 
+   | == 4. fast-forward the code
+   | Updating 1d9cb47..0926193
+   | Fast-forward
+   |  backend/VERSION                                    |     2 +-
+   |  .../0050_trailer_default_insulation_foam.py        |    64 +
+   |  backend/app/database.py                            |     5 +
+   |  backend/app/routers/trailers.py                    |    34 +-
+   |  backend/app/static/js/admin_templates.js           |    24 +
+   |  backend/app/static/js/calculator.js                |   305 +-
+   |  backend/app/static/js/calculator2.js               |   112 +-
+   |  backend/app/templates/admin_templates.html         |    14 +-
+   |  backend/app/templates/calculator.html              |     2 +-
+   |  backend/app/templates/calculator2.html             |     2 +-
+   |  .../costing_audit/accepted_differences.prod.yaml   |    66 +-
+   |  .../chillers/4_9_up_chiller_and_2_5_wide.json      | 32840 +------
+   |  .../costing_audit/golden/chillers/_manifest.json   |   182 +-
+   |  .../golden/chillers/up_to_2_3_chiller_body.json    |  9306 +-
+   |  .../chillers/up_to_5_5_chiller_and_2_3_wide.json   | 11070 +--
+   |  .../costing_audit/golden/explosive/_manifest.json  |   162 +-
+   |  .../golden/explosive/explosive_2_7_to_4_8.json     |   202 +-
+   |  .../golden/explosive/explosive_4_9_and_up.json     |   670 +-
+   |  .../golden/explosive/explosive_up_to_2_7.json      |   202 +-
+   |  .../golden/freezers/4_9_up_freezer_body_2.json     |   204 +-
+   |  .../costing_audit/golden/freezers/_manifest.json   |   162 +-
+   |  .../golden/freezers/up_to_2_3_mtr_freezer.json     |   136 +-
+   |  .../golden/freezers/up_to_4_8_mt_freezer_2.json    |   300 +-
+   |  .../costing_audit/golden/icecream/_manifest.json   |   162 +-
+   |  .../golden/icecream/icecream_4_9_up.json           |   194 +-
+   |  .../golden/icecream/icecream_up_to_3_2.json        |   130 +-
+   |  .../golden/icecream/icecream_up_to_4_8.json        |  1404 +-
+   |  .../costing_audit/golden/smoke/_manifest.json      |   162 +-
+   |  .../golden/smoke/icecream_up_to_4_8.json           |   468 +-
+   |  .../golden/smoke/up_to_4_8_mt_freezer_2.json       |    42 +-
+   |  .../smoke/up_to_5_5_chiller_and_2_3_wide.json      |   834 +-
+   |  backend/tests/costing_audit/mes_snapshot/all.json  | 92630 +++++++++++++------
+   |  backend/tests/costing_audit/packs/chillers.yaml    |    33 +-
+   |  backend/tests/costing_audit/packs/explosive.yaml   |    11 +
+   |  backend/tests/costing_audit/packs/freezers.yaml    |     7 +
+   |  backend/tests/costing_audit/packs/icecream.yaml    |     8 +
+   |  backend/tests/costing_audit/packs/smoke.yaml       |    10 +-
+   |  .../costing_audit/sheet_maps/icecream_4_9_up.yaml  |     7 +
+   |  .../costing_audit/test_g1_pu_foam_shared_price.py  |   135 +
+   |  .../costing_audit/test_rt2_body_default_foam.py    |   154 +
+   |  backend/tests/journeys/_common.py                  |    19 +
+   |  .../journeys/test_body_options_panel_journey.py    |     8 +-
+   |  .../journeys/test_door_invariant_load_journey.py   |    69 +-
+   |  backend/tests/journeys/test_excel_paste_journey.py |     8 +-
+   |  .../test_excel_preview_active_flag_journey.py      |    29 +-
+   |  .../test_masterbound_flag_shadow_journey.py        |    43 +-
+   |  .../test_pair_align_thickness_ux_journey.py        |    32 +-
+   |  .../tests/journeys/test_rt2_quote_state_journey.py |   305 +
+   |  .../journeys/test_rule_display_tidy_journey.py     |    35 +-
+   |  backend/tests/test_calculator_enter_chain.py       |     5 +-
+   |  backend/tests/test_costing_audit_admin.py          |     5 +-
+   |  backend/tests/test_preview_formats.py              |    17 +-
+   |  backend/tests/test_rt2_manifest_d_defaults.py      |   159 +
+   |  .../tests/test_rt2_quote_never_writes_template.py  |   265 +
+   |  .../tests/test_v1_58_audit_pricing_corrections.py  |    25 +-
+   |  backend/tools/costing_audit/cli.py                 |    26 +-
+   |  backend/tools/costing_audit/excel_oracle.py        |     8 +-
+   |  backend/tools/costing_audit/mes_probe.py           |    18 +-
+   |  backend/tools/costing_audit/scenarios.py           |    46 +-
+   |  docs/audit/rt1_2026-09/f_linecheck.py              |   213 +
+   |  docs/audit/rt1_2026-09/make_manifest_m.py          |   107 +
+   |  docs/audit/rt1_2026-09/manifest_m.yaml             |   118 +
+   |  docs/audit/rt1_2026-09/meat_hanger_pu_before_m.py  |    56 +
+   |  .../F/accepted_differences.prod.candidateF.yaml    |   178 +
+   |  .../mirror/F/f_audit_afterM_vs_afterF.txt          |   108 +
+   |  .../rt1_2026-09/mirror/F/f_linecheck_compare.txt   |    11 +
+   |  .../F/final_list/afterF_final_list_chillers.md     |    26 +
+   |  .../F/final_list/afterF_final_list_explosive.md    |    57 +
+   |  .../F/final_list/afterF_final_list_freezers.md     |    43 +
+   |  .../F/final_list/afterF_final_list_icecream.md     |    65 +
+   |  .../mirror/F/final_list/afterF_final_list_smoke.md |    28 +
+   |  .../F/final_list/afterM_final_list_chillers.md     |    26 +
+   |  .../F/final_list/afterM_final_list_explosive.md    |    51 +
+   |  .../F/final_list/afterM_final_list_freezers.md     |    31 +
+   |  .../F/final_list/afterM_final_list_icecream.md     |    50 +
+   |  .../mirror/F/final_list/afterM_final_list_smoke.md |    28 +
+   |  .../mirror/F/final_list/scope_proof.txt            |     6 +
+   |  ...rt1_factor_journal_mirror_20260930T191442Z.json |    18 +
+   |  ...rt1_factor_journal_mirror_20260930T191939Z.json |    18 +
+   |  ...rt1_factor_journal_mirror_20260930T191944Z.json |    18 +
+   |  .../rt1_factor_revert_mirror_20260930T191917Z.json |    15 +
+   |  .../rt1_factor_revert_mirror_20260930T191943Z.json |    15 +
+   |  .../mirror/F/reports/mirror_afterF_chillers.md     |    25 +
+   |  .../mirror/F/reports/mirror_afterF_explosive.md    |    62 +
+   |  .../mirror/F/reports/mirror_afterF_freezers.md     |    62 +
+   |  .../mirror/F/reports/mirror_afterF_icecream.md     |    92 +
+   |  .../mirror/F/reports/mirror_afterF_smoke.md        |    27 +
+   |  .../mirror_afterF_withCandidate_chillers.md        |    26 +
+   |  .../mirror_afterF_withCandidate_explosive.md       |    57 +
+   |  .../mirror_afterF_withCandidate_freezers.md        |    43 +
+   |  .../mirror_afterF_withCandidate_icecream.md        |    65 +
+   |  .../F/reports/mirror_afterF_withCandidate_smoke.md |    28 +
+   |  docs/audit/rt1_2026-09/mirror/F/verify_f_after.txt |   146 +
+   |  .../mirror/F2/f2_audit_before_vs_after.txt         |    35 +
+   |  .../rt1_2026-09/mirror/F2/f2_linecheck_compare.txt |    11 +
+   |  ...rt1_factor_journal_mirror_20261001T083322Z.json |    18 +
+   |  ...rt1_factor_journal_mirror_20261001T083328Z.json |    18 +
+   |  ...rt1_factor_journal_mirror_20261001T083616Z.json |    18 +
+   |  .../rt1_factor_revert_mirror_20261001T083325Z.json |    15 +
+   |  .../rt1_factor_revert_mirror_20261001T083559Z.json |    15 +
+   |  .../mirror/F2/reports/mirror_afterF2_chillers.md   |    25 +
+   |  .../mirror/F2/reports/mirror_afterF2_explosive.md  |    55 +
+   |  .../mirror/F2/reports/mirror_afterF2_freezers.md   |    42 +
+   |  .../mirror/F2/reports/mirror_afterF2_icecream.md   |    63 +
+   |  .../mirror/F2/reports/mirror_afterF2_smoke.md      |    27 +
+   |  .../mirror/F2/reports/mirror_beforeF2_chillers.md  |    25 +
+   |  .../mirror/F2/reports/mirror_beforeF2_explosive.md |    56 +
+   |  .../mirror/F2/reports/mirror_beforeF2_freezers.md  |    43 +
+   |  .../mirror/F2/reports/mirror_beforeF2_icecream.md  |    64 +
+   |  .../mirror/F2/reports/mirror_beforeF2_smoke.md     |    27 +
+   |  .../rt1_2026-09/mirror/F2/verify_f2_after.txt      |   146 +
+   |  docs/audit/rt1_2026-09/mirror/MIRROR_PROOF.md      |   199 +-
+   |  .../rt1_2026-09/mirror/cmp_afterA_vs_afterM.txt    |     5 +
+   |  ...orrections_journal_mirror_20260930T174613Z.json |   519 +
+   |  ...orrections_journal_mirror_20260930T174735Z.json |   519 +
+   |  ...corrections_revert_mirror_20260930T145539Z.json |     8 +
+   |  ...corrections_revert_mirror_20260930T174733Z.json |     8 +
+   |  .../mirror/reports/mirror_afterM_chillers.md       |    25 +
+   |  .../mirror/reports/mirror_afterM_explosive.md      |    50 +
+   |  .../mirror/reports/mirror_afterM_freezers.md       |    30 +
+   |  .../mirror/reports/mirror_afterM_icecream.md       |    49 +
+   |  .../mirror/reports/mirror_afterM_smoke.md          |    27 +
+   |  docs/audit/rt1_2026-09/mirror/verify_m_after.txt   |   158 +
+   |  docs/audit/rt1_2026-09/mirror/verify_m_before.txt  |    52 +
+   |  .../prod/baseline_20261001-095729/MANIFEST.txt     |     9 +
+   |  .../prod/baseline_20261001-095729/SHA256SUMS.out   |     3 +
+   |  .../prod/baseline_20261001-095729/door_report.txt  |    20 +
+   |  .../baseline_20261001-095729/meat_hangers.json     | 27646 ++++++
+   |  .../prod_vs_mirror_cells.txt                       |    96 +
+   |  .../prod/baseline_20261001-095729/prune_check.txt  |     6 +
+   |  .../reports/prod_costing_audit_chillers.csv        |  1254 +
+   |  .../reports/prod_costing_audit_chillers.md         |    26 +
+   |  .../reports/prod_costing_audit_explosive.csv       |   685 +
+   |  .../reports/prod_costing_audit_explosive.md        |    56 +
+   |  .../reports/prod_costing_audit_freezers.csv        |   691 +
+   |  .../reports/prod_costing_audit_freezers.md         |    43 +
+   |  .../reports/prod_costing_audit_icecream.csv        |   613 +
+   |  .../reports/prod_costing_audit_icecream.md         |    64 +
+   |  .../reports/prod_costing_audit_smoke.csv           |   235 +
+   |  .../reports/prod_costing_audit_smoke.md            |    27 +
+   |  .../prod/baseline_20261001-095729/run.txt          |    52 +
+   |  .../snapshot_diff_1b_to_baseline.txt               |   148 +
+   |  .../prod/baseline_20261001-131134/MANIFEST.txt     |     9 +
+   |  .../prod/baseline_20261001-131134/SHA256SUMS.out   |     3 +
+   |  .../prod/baseline_20261001-131134/door_report.txt  |    20 +
+   |  .../final_scope_and_prune.txt                      |     6 +
+   |  .../baseline_20261001-131134/meat_hangers.json     | 27646 ++++++
+   |  .../reports/prod_costing_audit_chillers.csv        |  1254 +
+   |  .../reports/prod_costing_audit_chillers.md         |    26 +
+   |  .../reports/prod_costing_audit_explosive.csv       |   685 +
+   |  .../reports/prod_costing_audit_explosive.md        |    55 +
+   |  .../reports/prod_costing_audit_freezers.csv        |   691 +
+   |  .../reports/prod_costing_audit_freezers.md         |    42 +
+   |  .../reports/prod_costing_audit_icecream.csv        |   613 +
+   |  .../reports/prod_costing_audit_icecream.md         |    63 +
+   |  .../reports/prod_costing_audit_smoke.csv           |   235 +
+   |  .../reports/prod_costing_audit_smoke.md            |    27 +
+   |  .../prod/baseline_20261001-131134/run.txt          |    52 +
+   |  .../snapshot_diff_0957_to_1311.txt                 |     6 +
+   |  .../prod/check_20261001-104358/check.txt           |   172 +
+   |  .../chiller_diff_0957_to_1043.txt                  |     4 +
+   |  .../out-apply-A-20260930T195251Z/after.txt         |   365 +
+   |  .../out-apply-A-20260930T195251Z/apply.txt         |   366 +
+   |  .../out-apply-A-20260930T195251Z/dryrun.txt        |   365 +
+   |  ..._corrections_journal_prod_20260930T195254Z.json |  5533 ++
+   |  .../out-apply-A-20260930T195251Z/run.txt           |  1105 +
+   |  .../out-dryrun-A-20260930T195240Z/dryrun.txt       |   365 +
+   |  .../out-dryrun-A-20260930T195240Z/run.txt          |   369 +
+   |  .../out-apply-M-20260930T184756Z/after.txt         |    38 +
+   |  .../out-apply-M-20260930T184756Z/apply.txt         |    39 +
+   |  .../out-apply-M-20260930T184756Z/dryrun.txt        |    38 +
+   |  ..._corrections_journal_prod_20260930T184759Z.json |   519 +
+   |  .../out-apply-M-20260930T184756Z/run.txt           |   124 +
+   |  .../out-dryrun-M-20260930T184742Z/dryrun.txt       |    38 +
+   |  .../out-dryrun-M-20260930T184742Z/run.txt          |    42 +
+   |  .../doors_window/door_report_20260930-215355.txt   |    21 +
+   |  .../doors_window/door_report_20261001-055317.txt   |    21 +
+   |  .../doors_window/door_report_20261001-071257.txt   |    21 +
+   |  .../doors_window/door_report_20261001-072120.txt   |    21 +
+   |  .../doors_window/door_report_20261001-072225.txt   |    21 +
+   |  .../doors_window/door_report_20261001-072257.txt   |    21 +
+   |  .../doors_window/door_report_20261001-072454.txt   |    21 +
+   |  .../doors_window/door_report_20261001-072545.txt   |    21 +
+   |  .../doors_window/door_report_20261001-072803.txt   |    21 +
+   |  .../doors_window/door_report_20261001-081324.txt   |    21 +
+   |  .../doors_window/door_report_20261001-081451.txt   |    21 +
+   |  .../doors_window/door_report_20261001-130259.txt   |    21 +
+   |  .../doors_window/door_report_20261001-130549.txt   |    21 +
+   |  .../doors_window/door_report_20261001-130715.txt   |    21 +
+   |  .../doors_window/door_report_20261001-130942.txt   |    21 +
+   |  .../doors_window/door_report_20261001-131035.txt   |    21 +
+   |  .../out-apply-20261001T104435Z/after.txt           |    10 +
+   |  .../out-apply-20261001T104435Z/apply.txt           |     4 +
+   |  .../out-apply-20261001T104435Z/dryrun.txt          |    12 +
+   |  .../rt1_factor_journal_prod_20261001T104436Z.json  |    18 +
+   |  .../out-apply-20261001T104435Z/run.txt             |    37 +
+   |  .../out-dryrun-20261001T084416Z/dryrun.txt         |    12 +
+   |  .../out-dryrun-20261001T084416Z/run.txt            |    17 +
+   |  .../out-dryrun-20261001T104457Z/dryrun.txt         |    10 +
+   |  .../out-dryrun-20261001T104457Z/run.txt            |    16 +
+   |  .../out-apply-F-20261001T075628Z/after.txt         |    10 +
+   |  .../out-apply-F-20261001T075628Z/apply.txt         |     4 +
+   |  .../out-apply-F-20261001T075628Z/dryrun.txt        |    12 +
+   |  .../rt1_factor_journal_prod_20261001T075630Z.json  |    18 +
+   |  .../out-apply-F-20261001T075628Z/run.txt           |    37 +
+   |  .../out-dryrun-F-20261001T075618Z/dryrun.txt       |    12 +
+   |  .../out-dryrun-F-20261001T075618Z/run.txt          |    17 +
+   |  .../factor_F_dryrun_20260930T194310Z/dryrun.txt    |    12 +
+   |  .../prod/factor_F_dryrun_20260930T194310Z/run.txt  |    17 +
+   |  .../prod/sweep_20260930-202944/sweep.txt           |   103 +
+   |  .../prod/sweep_20260930-204931/sweep.txt           |    92 +
+   |  .../prod/sweep_20261001-100533/sweep.txt           |    92 +
+   |  docs/audit/rt1_2026-09/verify_manifest_f.py        |   144 +
+   |  docs/audit/rt1_2026-09/verify_manifest_m.py        |   141 +
+   |  .../accepted/candidate_close_narrow8.yaml          |   126 +
+   |  .../rt2_2026-10/accepted/proofs/s1_drop17_F.txt    |    11 +
+   |  .../accepted/proofs/s2_drop1_chiller_pu_rate.txt   |    11 +
+   |  .../proofs/s3_drop13_chiller23_allpu_drd.txt       |    11 +
+   |  .../proofs/s4_drop3_freezer23_roof_floor_pu.txt    |    11 +
+   |  .../accepted/proofs/s5_drop4_3cr12_floor_plate.txt |    11 +
+   |  .../proofs/s6_drop11_freezer_large_sides_skin.txt  |    11 +
+   |  .../proofs/s7_add_burt_chiller_medium_rubber.txt   |    35 +
+   |  docs/audit/rt2_2026-10/accepted/reaccept_diff.py   |    49 +
+   |  .../rt2_2026-10/golden/build_corrected_set.py      |   267 +
+   |  docs/audit/rt2_2026-10/golden/corrections.json     |   147 +
+   |  docs/audit/rt2_2026-10/golden/prove_corrections.py |   153 +
+   |  .../audit/rt2_2026-10/golden/prove_corrections.txt |   117 +
+   |  .../rt2_2026-10/manifest_p/make_manifest_p.py      |   178 +
+   |  docs/audit/rt2_2026-10/manifest_p/manifest_p.yaml  |   599 +
+   |  .../mirror/P_TABLE_at_template_defaults.md         |    43 +
+   |  .../rt2_2026-10/mirror/P_TABLE_like_for_like.md    |    43 +
+   |  docs/audit/rt2_2026-10/mirror/cell_moves.py        |    51 +
+   |  .../rt2_2026-10/mirror/clickthrough_values.py      |    49 +
+   |  docs/audit/rt2_2026-10/mirror/p_table.py           |   107 +
+   |  docs/audit/rt2_2026-10/mirror/p_table_join.py      |    71 +
+   |  docs/audit/rt2_2026-10/mirror/records/D_after.txt  |    14 +
+   |  docs/audit/rt2_2026-10/mirror/records/D_apply.txt  |    13 +
+   |  docs/audit/rt2_2026-10/mirror/records/D_dryrun.txt |    14 +
+   |  docs/audit/rt2_2026-10/mirror/records/P_after.txt  |   183 +
+   |  docs/audit/rt2_2026-10/mirror/records/P_apply.txt  |   184 +
+   |  docs/audit/rt2_2026-10/mirror/records/P_dryrun.txt |   183 +
+   |  .../mirror/records/moves_step3_to_step5_P.txt      |    21 +
+   |  .../mirror/records/moves_step5_to_step5c_D.txt     |    17 +
+   |  ...corrections_revert_mirror_20261002T072045Z.json |     8 +
+   |  ...t2_defaults_revert_mirror_20261002T072038Z.json |    33 +
+   |  .../prod/r8_export_20261002-090123/MANIFEST.txt    |     8 +
+   |  .../prod/r8_export_20261002-090123/SHA256SUMS.out  |     3 +
+   |  .../prod/r8_export_20261002-090123/door_report.txt |    20 +
+   |  .../prod/r8_export_20261002-090123/pu_lines.txt    |    58 +
+   |  docs/runbooks/prod-deploy-v1.59.2.md               |   270 +-
+   |  docs/runbooks/prod-deploy-v1.59.3.md               |   325 +
+   |  .../out/cf_probe_after_deploy.txt                  |     9 +
+   |  .../out/out-deploy-20260930-205115/OUTCOME.txt     |    11 +
+   |  .../icb-deploy-dryrun.txt                          |    24 +
+   |  .../out/out-deploy-20260930-205115/icb-deploy.txt  |   336 +
+   |  .../out-deploy-20260930-205115/rollback-anchor.txt |     1 +
+   |  .../out/out-deploy-20260930-205115/run.txt         |   432 +
+   |  .../out/out-preflight-20260930-203020/run.txt      |    33 +
+   |  .../out/out-verify-20260930-203043/run.txt         |    24 +
+   |  ops/prod-release-v1.59.2/sim/fake_factor_tool.py   |    72 +
+   |  ops/prod-release-v1.59.2/sim/fake_tool.py          |     2 +-
+   |  ops/prod-release-v1.59.2/sim/run_data_sim.sh       |    17 +-
+   |  ops/prod-release-v1.59.2/sim/run_doors_sim.sh      |    49 +
+   |  ops/prod-release-v1.59.2/sim/run_factor_sim.sh     |   121 +
+   |  ops/prod-release-v1.59.2/sim/run_sim.sh            |     2 +-
+   |  ops/prod-release-v1.59.3/mkstage.sh                |    95 +
+   |  ops/prod-release-v1.59.3/release.sh                |   330 +
+   |  ops/prod-release-v1.59.3/sim/run_all.sh            |     6 +
+   |  ops/prod-release-v1.59.3/sim/run_sim.sh            |   124 +
+   |  ops/prod-release-v1.59.3/sim/stubs.sh              |   115 +
+   |  ops/prod-rt1/mkstage_check.sh                      |    25 +
+   |  ops/prod-rt1/mkstage_data.sh                       |    46 +-
+   |  ops/prod-rt1/mkstage_doors.sh                      |    30 +
+   |  ops/prod-rt1/mkstage_factor.sh                     |    42 +
+   |  ops/prod-rt1/mkstage_sweep.sh                      |    27 +
+   |  ops/prod-rt1/rt1_check.py                          |   159 +
+   |  ops/prod-rt1/rt1_check.sh                          |    43 +
+   |  ops/prod-rt1/rt1_data.sh                           |    68 +-
+   |  ops/prod-rt1/rt1_doors.sh                          |    45 +
+   |  ops/prod-rt1/rt1_factor.py                         |   261 +
+   |  ops/prod-rt1/rt1_factor.sh                         |   149 +
+   |  ops/prod-rt1/rt1_sweep.py                          |   132 +
+   |  ops/prod-rt1/rt1_sweep.sh                          |    44 +
+   |  ops/prod-rt2/mkstage_all.sh                        |    51 +
+   |  ops/prod-rt2/mkstage_data.sh                       |    60 +
+   |  ops/prod-rt2/mkstage_export.sh                     |    45 +
+   |  ops/prod-rt2/rt2_all.sh                            |    78 +
+   |  ops/prod-rt2/rt2_all_compare.py                    |    96 +
+   |  ops/prod-rt2/rt2_data.sh                           |   186 +
+   |  ops/prod-rt2/rt2_defaults.py                       |   270 +
+   |  ops/prod-rt2/rt2_doors.sh                          |    46 +
+   |  ops/prod-rt2/rt2_export.sh                         |   146 +
+   |  ops/prod-rt2/sim/fake_tools.py                     |   104 +
+   |  ops/prod-rt2/sim/run_all_sim.sh                    |   104 +
+   |  ops/prod-rt2/sim/run_data_sim.sh                   |   117 +
+   |  ops/prod-rt2/sim/run_export_sim.sh                 |    80 +
+   |  296 files changed, 157077 insertions(+), 82257 deletions(-)
+   |  create mode 100644 backend/alembic/versions/0050_trailer_default_insulation_foam.py
+   |  create mode 100644 backend/tests/costing_audit/sheet_maps/icecream_4_9_up.yaml
+   |  create mode 100644 backend/tests/costing_audit/test_g1_pu_foam_shared_price.py
+   |  create mode 100644 backend/tests/costing_audit/test_rt2_body_default_foam.py
+   |  create mode 100644 backend/tests/journeys/test_rt2_quote_state_journey.py
+   |  create mode 100644 backend/tests/test_rt2_manifest_d_defaults.py
+   |  create mode 100644 backend/tests/test_rt2_quote_never_writes_template.py
+   |  create mode 100644 docs/audit/rt1_2026-09/f_linecheck.py
+   |  create mode 100644 docs/audit/rt1_2026-09/make_manifest_m.py
+   |  create mode 100644 docs/audit/rt1_2026-09/manifest_m.yaml
+   |  create mode 100644 docs/audit/rt1_2026-09/meat_hanger_pu_before_m.py
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/accepted_differences.prod.candidateF.yaml
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/f_audit_afterM_vs_afterF.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/f_linecheck_compare.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterF_final_list_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterF_final_list_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterF_final_list_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterF_final_list_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterF_final_list_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterM_final_list_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterM_final_list_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterM_final_list_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterM_final_list_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/afterM_final_list_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/final_list/scope_proof.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/journals/rt1_factor_journal_mirror_20260930T191442Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/journals/rt1_factor_journal_mirror_20260930T191939Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/journals/rt1_factor_journal_mirror_20260930T191944Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/journals/rt1_factor_revert_mirror_20260930T191917Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/journals/rt1_factor_revert_mirror_20260930T191943Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_withCandidate_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_withCandidate_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_withCandidate_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_withCandidate_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/reports/mirror_afterF_withCandidate_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F/verify_f_after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/f2_audit_before_vs_after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/f2_linecheck_compare.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/journals/rt1_factor_journal_mirror_20261001T083322Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/journals/rt1_factor_journal_mirror_20261001T083328Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/journals/rt1_factor_journal_mirror_20261001T083616Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/journals/rt1_factor_revert_mirror_20261001T083325Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/journals/rt1_factor_revert_mirror_20261001T083559Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_afterF2_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_afterF2_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_afterF2_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_afterF2_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_afterF2_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_beforeF2_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_beforeF2_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_beforeF2_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_beforeF2_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/reports/mirror_beforeF2_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/F2/verify_f2_after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/cmp_afterA_vs_afterM.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T174613Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_journal_mirror_20260930T174735Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T145539Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/journals/pricing_corrections_revert_mirror_20260930T174733Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterM_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterM_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterM_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterM_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/reports/mirror_afterM_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/verify_m_after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/mirror/verify_m_before.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/MANIFEST.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/door_report.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/meat_hangers.json
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/prod_vs_mirror_cells.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/prune_check.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_chillers.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_explosive.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_freezers.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_icecream.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_smoke.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/reports/prod_costing_audit_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-095729/snapshot_diff_1b_to_baseline.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/MANIFEST.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/door_report.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/final_scope_and_prune.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/meat_hangers.json
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_chillers.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_chillers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_explosive.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_explosive.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_freezers.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_freezers.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_icecream.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_icecream.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_smoke.csv
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/reports/prod_costing_audit_smoke.md
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/baseline_20261001-131134/snapshot_diff_0957_to_1311.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/check_20261001-104358/check.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/check_20261001-104358/chiller_diff_0957_to_1043.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_A_20260930/out-apply-A-20260930T195251Z/after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_A_20260930/out-apply-A-20260930T195251Z/apply.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_A_20260930/out-apply-A-20260930T195251Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_A_20260930/out-apply-A-20260930T195251Z/pricing_corrections_journal_prod_20260930T195254Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_A_20260930/out-apply-A-20260930T195251Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_A_20260930/out-dryrun-A-20260930T195240Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_A_20260930/out-dryrun-A-20260930T195240Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_M_20260930/out-apply-M-20260930T184756Z/after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_M_20260930/out-apply-M-20260930T184756Z/apply.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_M_20260930/out-apply-M-20260930T184756Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_M_20260930/out-apply-M-20260930T184756Z/pricing_corrections_journal_prod_20260930T184759Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_M_20260930/out-apply-M-20260930T184756Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_M_20260930/out-dryrun-M-20260930T184742Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/data_M_20260930/out-dryrun-M-20260930T184742Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20260930-215355.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-055317.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-071257.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-072120.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-072225.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-072257.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-072454.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-072545.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-072803.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-081324.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-081451.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-130259.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-130549.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-130715.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-130942.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/doors_window/door_report_20261001-131035.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-apply-20261001T104435Z/after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-apply-20261001T104435Z/apply.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-apply-20261001T104435Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-apply-20261001T104435Z/rt1_factor_journal_prod_20261001T104436Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-apply-20261001T104435Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-dryrun-20261001T084416Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-dryrun-20261001T084416Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-dryrun-20261001T104457Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F2_20261001/out-dryrun-20261001T104457Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_20261001/out-apply-F-20261001T075628Z/after.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_20261001/out-apply-F-20261001T075628Z/apply.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_20261001/out-apply-F-20261001T075628Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_20261001/out-apply-F-20261001T075628Z/rt1_factor_journal_prod_20261001T075630Z.json
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_20261001/out-apply-F-20261001T075628Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_20261001/out-dryrun-F-20261001T075618Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_20261001/out-dryrun-F-20261001T075618Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_dryrun_20260930T194310Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/factor_F_dryrun_20260930T194310Z/run.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/sweep_20260930-202944/sweep.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/sweep_20260930-204931/sweep.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/prod/sweep_20261001-100533/sweep.txt
+   |  create mode 100644 docs/audit/rt1_2026-09/verify_manifest_f.py
+   |  create mode 100644 docs/audit/rt1_2026-09/verify_manifest_m.py
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/candidate_close_narrow8.yaml
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/proofs/s1_drop17_F.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/proofs/s2_drop1_chiller_pu_rate.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/proofs/s3_drop13_chiller23_allpu_drd.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/proofs/s4_drop3_freezer23_roof_floor_pu.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/proofs/s5_drop4_3cr12_floor_plate.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/proofs/s6_drop11_freezer_large_sides_skin.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/proofs/s7_add_burt_chiller_medium_rubber.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/accepted/reaccept_diff.py
+   |  create mode 100644 docs/audit/rt2_2026-10/golden/build_corrected_set.py
+   |  create mode 100644 docs/audit/rt2_2026-10/golden/corrections.json
+   |  create mode 100644 docs/audit/rt2_2026-10/golden/prove_corrections.py
+   |  create mode 100644 docs/audit/rt2_2026-10/golden/prove_corrections.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/manifest_p/make_manifest_p.py
+   |  create mode 100644 docs/audit/rt2_2026-10/manifest_p/manifest_p.yaml
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/P_TABLE_at_template_defaults.md
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/P_TABLE_like_for_like.md
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/cell_moves.py
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/clickthrough_values.py
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/p_table.py
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/p_table_join.py
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/D_after.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/D_apply.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/D_dryrun.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/P_after.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/P_apply.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/P_dryrun.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/moves_step3_to_step5_P.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/moves_step5_to_step5c_D.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/pricing_corrections_revert_mirror_20261002T072045Z.json
+   |  create mode 100644 docs/audit/rt2_2026-10/mirror/records/rt2_defaults_revert_mirror_20261002T072038Z.json
+   |  create mode 100644 docs/audit/rt2_2026-10/prod/r8_export_20261002-090123/MANIFEST.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/prod/r8_export_20261002-090123/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt2_2026-10/prod/r8_export_20261002-090123/door_report.txt
+   |  create mode 100644 docs/audit/rt2_2026-10/prod/r8_export_20261002-090123/pu_lines.txt
+   |  create mode 100644 docs/runbooks/prod-deploy-v1.59.3.md
+   |  create mode 100644 ops/prod-release-v1.59.2/out/cf_probe_after_deploy.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/out/out-deploy-20260930-205115/OUTCOME.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/out/out-deploy-20260930-205115/icb-deploy-dryrun.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/out/out-deploy-20260930-205115/icb-deploy.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/out/out-deploy-20260930-205115/rollback-anchor.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/out/out-deploy-20260930-205115/run.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/out/out-preflight-20260930-203020/run.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/out/out-verify-20260930-203043/run.txt
+   |  create mode 100644 ops/prod-release-v1.59.2/sim/fake_factor_tool.py
+   |  create mode 100644 ops/prod-release-v1.59.2/sim/run_doors_sim.sh
+   |  create mode 100644 ops/prod-release-v1.59.2/sim/run_factor_sim.sh
+   |  create mode 100644 ops/prod-release-v1.59.3/mkstage.sh
+   |  create mode 100644 ops/prod-release-v1.59.3/release.sh
+   |  create mode 100644 ops/prod-release-v1.59.3/sim/run_all.sh
+   |  create mode 100644 ops/prod-release-v1.59.3/sim/run_sim.sh
+   |  create mode 100644 ops/prod-release-v1.59.3/sim/stubs.sh
+   |  create mode 100644 ops/prod-rt1/mkstage_check.sh
+   |  create mode 100644 ops/prod-rt1/mkstage_doors.sh
+   |  create mode 100644 ops/prod-rt1/mkstage_factor.sh
+   |  create mode 100644 ops/prod-rt1/mkstage_sweep.sh
+   |  create mode 100644 ops/prod-rt1/rt1_check.py
+   |  create mode 100644 ops/prod-rt1/rt1_check.sh
+   |  create mode 100644 ops/prod-rt1/rt1_doors.sh
+   |  create mode 100644 ops/prod-rt1/rt1_factor.py
+   |  create mode 100644 ops/prod-rt1/rt1_factor.sh
+   |  create mode 100644 ops/prod-rt1/rt1_sweep.py
+   |  create mode 100644 ops/prod-rt1/rt1_sweep.sh
+   |  create mode 100644 ops/prod-rt2/mkstage_all.sh
+   |  create mode 100644 ops/prod-rt2/mkstage_data.sh
+   |  create mode 100644 ops/prod-rt2/mkstage_export.sh
+   |  create mode 100644 ops/prod-rt2/rt2_all.sh
+   |  create mode 100644 ops/prod-rt2/rt2_all_compare.py
+   |  create mode 100644 ops/prod-rt2/rt2_data.sh
+   |  create mode 100644 ops/prod-rt2/rt2_defaults.py
+   |  create mode 100644 ops/prod-rt2/rt2_doors.sh
+   |  create mode 100644 ops/prod-rt2/rt2_export.sh
+   |  create mode 100644 ops/prod-rt2/sim/fake_tools.py
+   |  create mode 100644 ops/prod-rt2/sim/run_all_sim.sh
+   |  create mode 100644 ops/prod-rt2/sim/run_data_sim.sh
+   |  create mode 100644 ops/prod-rt2/sim/run_export_sim.sh
+   |   ok  at 0926193e (verified by SHA, not by git describe)
+   | 
+   | == 5. alembic upgrade head
+   | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+   | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+   | INFO  [alembic.runtime.migration] Running upgrade 0049 -> 0050, Per-body default PU foam grade (Migration 0050).
+   |   ok  schema after: 0050 (head)
+   | 
+   | == 6. SPA build - skipped (frontend/ untouched in this range)
+   | 
+   | == 7. restart icb-backend
+   |   active since (before): Wed 2026-09-30 20:51:20 SAST
+   |   active since (after):  Fri 2026-10-02 11:11:37 SAST
+   |   ok  restarted
+   | 
+   | == 8. verify
+   |   workers started      4 (expected 4)
+   |   BOOTSTRAP FAILED     0 (expected 0)
+   |   https://127.0.0.1/health -> 200
+   |   ok  healthy
+   | 
+   | DEPLOYED  1d9cb47b -> 0926193e  (0926193e1ee0102c210800c3912949d1df76fbe5)
+   | 
+   | Rollback (code-only - additive migrations are left in place deliberately):
+   |     /opt/icb-platform/deploy/prod/icb-rollback.sh 1d9cb47b
+   | 
+   |   or, without the script:
+   |     sudo -u icb git -C /opt/icb-platform reset --hard 1d9cb47b
+   |     sudo systemctl restart icb-backend
+   | 
+   ok   restart: Wed 2026-09-30 20:51:20 SAST -> Fri 2026-10-02 11:11:37 SAST (pid 167288 -> 184932)
+   ok   deploy record: completed 0926193
+== 8. post-deploy asserts (waiting 20 s for all workers to log startup)
+== code + tag + schema (0050: the column and its CHECK)
+   PASS HEAD = 0926193e1ee0102c210800c3912949d1df76fbe5
+   PASS TAG_LOCAL = 4eb089427721fa976c284c3a85a191cd1639dd84
+   PASS DESCRIBE = v1.59.3
+   PASS ALEMBIC = 0050
+   PASS COLUMN = character varying|8|NO|'32D'::character varying
+   PASS CHECK_CONSTRAINT = 1
+   body defaults: 32D=41   (after the deploy every body reads 32D; Manifest D sets four to 4G after P)
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   PASS TOOL_IMPORT = ok
+   PASS OPENAPI_DOORS_EQUAL = yes
+== served bytes: each page loads the target ?v=, and both doors serve the target blob under it
+   PASS V_calculator = 185
+   PASS LOCAL_calculator = 15427f7e3616353bd397cb832331dcdbd9b1719c081acaa87caf8802309c778d
+   PASS LAN_calculator = 15427f7e3616353bd397cb832331dcdbd9b1719c081acaa87caf8802309c778d
+   PASS V_calculator2 = 127
+   PASS LOCAL_calculator2 = 94b27e6d8d2e04f07f68851534b7d5b415a54862c4b0d0e89999272c6eb1e4e0
+   PASS LAN_calculator2 = 94b27e6d8d2e04f07f68851534b7d5b415a54862c4b0d0e89999272c6eb1e4e0
+   PASS V_admin_templates = 19
+   PASS LOCAL_admin_templates = e3a28270f021e6411c0f9e922bf6b76bed43140e00f5c8d1297fd8ea13b167df
+   PASS LAN_admin_templates = e3a28270f021e6411c0f9e922bf6b76bed43140e00f5c8d1297fd8ea13b167df
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS DEFAULTS_ALL_32D = 0
+
+deployed      1d9cb47 -> 0926193 (0926193e1ee0102c210800c3912949d1df76fbe5)
+tag           v1.59.3 = 4eb089427721fa976c284c3a85a191cd1639dd84 (local = origin, peels to the target); git describe = v1.59.3
+alembic       0049 -> 0050 (0050_trailer_default_insulation_foam.py)
+column        trailer_types.default_insulation_foam character varying|8|NO|'32D'::character varying, CHECK present: 1; bodies 32D=41
+backup        /var/backups/postgres/icb_platform_pre-v1.59.3_20261002-111122.dump  2505457 bytes  sha256 aa64712a047ecb386d1d61ffb6b7bccf07341e48ab471025ade154fc886f1da3
+restart       Wed 2026-09-30 20:51:20 SAST -> Fri 2026-10-02 11:11:37 SAST (pid 167288 -> 184932), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+static        calculator.js ?v=185 15427f7e3616353b  calculator2.js ?v=127 94b27e6d8d2e04f0  admin_templates.js ?v=19 e3a28270f021e641  (local = lan = the target blobs)
+spa           assets/index-Be8qL-PA.js 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (local = lan = disk; unchanged, no rebuild)
+openapi       local = lan
+finished      2026-10-02T11:12:07+02:00
+
+######## DEPLOYED — tell the CA: /tmp/icb-release-v1.59.3/out-deploy-20261002-111122  (Cloudflare is probed by the CA from outside, now that the disk matches)

@@ -1,0 +1,61 @@
+== prod: db=icb_platform alembic=0049 code=1d9cb47 staged=091f426  2026-10-02T09:01:24+02:00
+== 1. R7 — bom 5284 (EXPLOSIVE UP TO 2.7 / DRD PU)
+   bom 5284: 34|DRD PU|0.041   (body | master | thickness)
+== 2. the 15 bodies
+   session read-only: on
+    12 MEAT HANGER LARGE          active=True
+    15 RHINORANGE TRAILER         active=True
+    16 ICECREAM BODY SMALL        active=True
+    17 ICECREAM BODY MEDIUM       active=True
+    18 ICECREAM BODY LARGE        active=True
+    19 FREEZER 2.3 METER          active=True
+    20 FREEZER MEDIUM             active=True
+    21 FREEZER LARGE              active=True
+    24 EXPLOSIVE 4.9 AND UP       active=True
+    25 CHILLER 2.3 METER          active=True
+    26 CHILLER MEDIUM             active=True
+    27 CHILLER LARGE              active=True
+    34 EXPLOSIVE UP TO 2.7        active=True
+    36 MEAT HANGER SMALL-MEDIUM   active=True
+    37 EXPLOSIVE 2.7 TO 4.8       active=True
+== 3. snapshot export of the 15 bodies (read-only session)
+[snapshot] all.json: admin_settings 1, bill_of_materials 4084, body_option_groups 9, body_option_subgroups 18, bom_sections 44, floor_plates 7, global_variables 1, material_categories 21, mounting_cleats 7, report_templates 4, sap_item_codes 29, skin_formulas 4, taping_blocks 2, trailer_groups 4, trailer_types 15, floor_plate_items 22, materials 480, mounting_cleat_items 30, skin_formula_ingredients 9, taping_block_items 10, skin_formula_items 16
+== 4. no-people gate
+   gate ok: test_the_gates_catch_a_known_hit
+   gate ok: test_snapshot_tables_are_pricing_definitions_only
+   gate ok: test_snapshot_has_no_personal_columns
+   gate ok: test_snapshot_has_no_email_addresses
+== 5. PU foam cost lines on the 15 bodies
+   active PU foam cost lines 86 · own price 57 · no thickness token 19
+== 6. rear-door thickness report
+then = committed snapshot all.json generated 2026-10-01T11:11:53+00:00
+read_only session: on
+
+body | draft saved | opens with | template door | DRD EPS / DRD PU / SRD EPS / SRD PU (then -> now) | verdict
+ 25 CHILLER 2.3 METER          | 2026-10-01 13:06 | DRD [door folder (folderValue 1)] | DRD | 3795:0.06 / 3796:0.0 / 3797:0.0 / 3798:0.0 | OK
+ 27 CHILLER LARGE              | 2026-10-01 10:07 | DRD [door folder (folderValue 1)] | DRD | 3433:0.06 / 3434:0.0 / 3435:0.0 / 3436:0.0 | OK  (DOOR TYPE masters ['7232:DRD*', '7233:SRD'])
+ 26 CHILLER MEDIUM             | 2026-10-01 10:12 | DRD [door folder (folderValue 1)] | SRD | 3294:0.06->0.0 / 3295:0.0 / 3296:0.0->0.06 / 3297:0.0 | !! WRONG DOOR — thickness on SRD, the calculator opens with DRD
+ 37 EXPLOSIVE 2.7 TO 4.8       | 2026-08-05 08:22 | DRD [door folder (folderValue 1)] | DRD | 6452:0.0 / 6453:0.041 / 6454:0.0 / 6455:0.0 | OK
+ 24 EXPLOSIVE 4.9 AND UP       | 2026-07-20 13:26 | DRD [door folder (no folder marked: the first in draft order)] | DRD | 4055:0.0 / 4056:0.042 / 4057:0.0 / 4058:0.0 | OK
+ 34 EXPLOSIVE UP TO 2.7        | 2026-08-05 08:21 | DRD [door folder (folderValue 1)] | DRD | 5283:0.0 / 5284:0.06->0.041 / 5285:0.0 / 5286:0.0 | OK
+ 19 FREEZER 2.3 METER          | 2026-09-29 12:37 | DRD [door folder (folderValue 1)] | DRD | 3675:0.0 / 3676:0.06 / 3677:0.0 / 3678:0.0 | OK
+ 21 FREEZER LARGE              | 2026-09-29 14:00 | DRD [door folder (folderValue 1)] | DRD | 2682:0.0 / 2683:0.06 / 2684:0.0 / 2685:0.0 | OK
+ 20 FREEZER MEDIUM             | 2026-09-29 12:39 | DRD [door folder (no folder marked: the first in draft order)] | DRD | 2534:0.0 / 2535:0.06 / 2536:0.0 / 2537:0.0 | OK
+ 18 ICECREAM BODY LARGE        | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5425:0.0 / 5426:0.12 / 5427:0.0 / 5428:0.0 | OK
+ 17 ICECREAM BODY MEDIUM       | 2026-09-29 12:33 | DRD [door folder (folderValue 1)] | DRD | 5703:0.0 / 5704:0.12 / 5705:0.0 / 5706:0.0 | OK
+ 16 ICECREAM BODY SMALL        | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5825:0.0 / 5826:0.1 / 5827:0.0 / 5828:0.0 | OK
+ 12 MEAT HANGER LARGE          | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5978:0.0 / 5979:0.062 / 5980:0.0 / 5981:0.0 | OK
+ 36 MEAT HANGER SMALL-MEDIUM   | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 6286:0.06 / 6287:0.0 / 6288:0.0 / 6289:0.0 | OK
+
+SUMMARY: 13 OK; 26 CHILLER MEDIUM: !! WRONG DOOR — thickness on SRD, the calculator opens with DRD
+
+database     icb_platform
+alembic      0049
+prod_code    1d9cb47b84a8f10a4be74f139b37671ec21f35bd
+staged_from  091f426859f19e78e8b3aba258f599639856b6d4
+r7_bom_5284  34|DRD PU|0.041
+pu_lines     active PU foam cost lines 86 · own price 57 · no thickness token 19
+all.json     f04254901e9aa4d6e84658de3e74ef90215d1bf92c4e7d141fecc6e75f279e47  3964797 bytes
+finished     2026-10-02T09:01:28+02:00
+
+######## DONE — tell the CA: /tmp/icb-rt2-export/out-20261002-090123

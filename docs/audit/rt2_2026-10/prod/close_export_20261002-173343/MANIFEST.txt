@@ -1,0 +1,8 @@
+database     icb_platform
+alembic      0050
+prod_code    0926193e1ee0102c210800c3912949d1df76fbe5
+staged_from  0926193e1ee0102c210800c3912949d1df76fbe5
+r7_bom_5284  34|DRD PU|0.041
+pu_lines     active PU foam cost lines 86 · own price 18 · no thickness token 0
+all.json     8e941e8eef93fb87463552821f2dba7c922b7b93844d49539a8af800b48ff432  3965700 bytes
+finished     2026-10-02T17:33:48+02:00

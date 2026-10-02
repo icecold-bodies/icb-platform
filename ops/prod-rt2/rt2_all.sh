@@ -21,6 +21,7 @@ PACKS="smoke chillers freezers icecream explosive"
 TS=$(date +%Y%m%d-%H%M%S)
 OUT=$BASE/out-$LABEL-$TS
 MAX_AGE_MIN=45
+KEEP=/var/backups/icb-rt2-2026-10        # the data kit's journals: a page run must START after the newest one (C11)
 
 [ -e "$OUT" ] && { echo "STOP: $OUT already exists (two runs in one second?): run again"; exit 1; }
 mkdir -p "$OUT/reports" || { echo "STOP: cannot create $OUT"; exit 1; }
@@ -67,7 +68,10 @@ done
 [ -z "$(find "$REPO" -name __pycache__ -newer "$OUT/run.log" 2>/dev/null | head -n1)" ] || echo "   !! a __pycache__ appeared in the repo — tell the CA"
 
 say "2. the page's newest All against the CLI"
-"$PY" "$BASE/rt2_all_compare.py" "$URL" "$OUT/reports" "$MAX_AGE_MIN" > "$OUT/compare.txt" 2>&1; rc=$?
+NOT_BEFORE=$(stat -c %Y "$KEEP"/journal_*.json "$KEEP"/*revert*.json 2>/dev/null | sort -n | tail -n1 || true)
+NOT_BEFORE=${NOT_BEFORE:-0}
+echo "   last data change on prod (a P / D apply or revert journal): $( [ "$NOT_BEFORE" = 0 ] && echo none || date -d "@$NOT_BEFORE" -Is)"
+"$PY" "$BASE/rt2_all_compare.py" "$URL" "$OUT/reports" "$MAX_AGE_MIN" "$NOT_BEFORE" > "$OUT/compare.txt" 2>&1; rc=$?
 cat "$OUT/compare.txt"
 ( cd "$OUT" && sha256sum reports/*.json compare.txt > SHA256SUMS.out )
 chmod -R a+rX "$OUT"

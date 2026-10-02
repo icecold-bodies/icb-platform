@@ -75,15 +75,6 @@
   owner: BA
   review_by: 2026-10-31
 
-- body: " 4.9 & UP FREEZER BODY (2"
-  section: SIDES
-  variant: "*"
-  cause: ["Rhinotex", "GLUE LINE", "PLYWOOD", "PICTURE FRAME"]
-  kind: known_defect
-  reason: "[MES] FREEZER LARGE SIDES skin formulas take the panel height from WIDTH where Burt uses HEIGHT; +1.2 % at W 2.6 / H 2.56 and growing with the W-H gap (prod too)."
-  owner: BA
-  review_by: 2026-10-31
-
 - body: ["EXPLOSIVE 2.7 TO 4.8", "EXPLOSIVE 4.9 AND UP"]
   section: ["ROOF", "SIDES", "FRONT", "DRD"]
   variant: "*"

@@ -65,9 +65,13 @@ sudo prompt; do not pipe it.)
   - health 200; PyYAML 6.0.2; npm present for icb and `frontend/node_modules` present (the build needs both);
   - **the `v1.60.0` tag object is on origin**; the backup directory is writable;
   - `deploy/prod/icb-deploy.sh` is the expected blob, and icb's sudo is NOPASSWD.
-- `verify` before the deploy **must fail on exactly the not-yet-deployed checks** (the simulation lists them:
-  `HEAD`, `TAG_LOCAL`, `DESCRIBE`, `ALEMBIC`, `COLUMNS`, `CHECK_CONSTRAINT`, the four moved files' `V_` / `LOCAL_` /
-  `LAN_`, `V_body_family`, and `SPA_HAS_FAMILY_LOCAL` / `_LAN`) and pass the rest.
+- `verify` before the deploy **must fail on exactly 23 checks** (the simulation's list) and pass the rest:
+  - `HEAD`, `TAG_LOCAL`, `DESCRIBE` (`v1.59.3` today), `ALEMBIC` (0050), `COLUMNS`, `CHECK_CONSTRAINT`;
+  - `V_` / `LOCAL_` / `LAN_` for each of the five files (calculator, calculator2, admin_templates, theme-mes: the old
+    `?v=` and blob; body_family: not loaded yet, and not served under `?v=1`);
+  - `SPA_HAS_FAMILY_LOCAL` / `_LAN` (the v1.59.3 bundle has no family chip);
+  - `TRACEBACKS` counts since the current service start (2 Oct 11:11). If prod has logged an error since, it fails too
+    and prints the excerpt: pre-existing, report it, it does not block.
 
 **3. The window** (RT3_RULING_1 addition 2, in this order).
 

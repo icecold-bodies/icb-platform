@@ -337,7 +337,11 @@ check GROUPS_UNCHANGED "$(q "$GROUPS_SQL")" "$G_BEFORE"
 check BINDINGS_UNCHANGED "$(q "$BINDINGS_SQL")" "$B_BEFORE"
 check FAMILIES_NOT_YET "$(q "$FAMILIES_SQL")" 0
 S_SPA_NAME=$(spa_bundle)
-[ "$S_SPA_NAME" != "$B_SPA_NAME" ] || stop SPA_REBUILT "the SPA bundle is still $B_SPA_NAME: the build did not run"
+# A fresh run must see the bundle renamed. A RESUME may follow a run whose build already ran (it stopped later, at
+# the restart): there the name moved before this run's baseline, and SPA_HAS_FAMILY above is the proof.
+if [ "$RESUME" = 0 ]; then
+  [ "$S_SPA_NAME" != "$B_SPA_NAME" ] || stop SPA_REBUILT "the SPA bundle is still $B_SPA_NAME: the build did not run"
+fi
 TB=$(tb_since "@$T0")
 
 cat > "$OUT/OUTCOME.txt" <<EOF

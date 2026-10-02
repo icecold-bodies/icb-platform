@@ -5,16 +5,14 @@ line's formula works out the volume from the panel's thickness (his row term for
 foam grade applies 4G. A line with its OWN price ignores the shared one (RT1 found 57); a line with no thickness
 term counts sheets at a per-m3 price (how the MEAT HANGERs reached R343k). Either is a pricing defect.
 
-This guard reads the COMMITTED prod snapshot (tests/costing_audit/mes_snapshot/all.json — RT2 R8: the 15 bodies
-that carry PU foam lines, all 86 active ones). It fails when an active PU foam line (material named PU / PU
-FOAM, not a body option, on an active body) carries its own price or has no {SEC PU} term — unless it is:
+This guard reads the COMMITTED prod snapshot (tests/costing_audit/mes_snapshot/all.json — prod after the v1.59.3
+window, 2 Oct 2026: the 15 bodies that carry PU foam lines, all 86 active ones). It fails when an active PU foam line
+(material named PU / PU FOAM, not a body option, on an active body) carries its own price or has no {SEC PU} term —
+unless it is a NAMED EXCEPTION, ratified by the BA (RT2_RULING_1 R8): the 18 chiller PU lines — PU is not offered on
+chillers (Burt, 1 Oct); the drafts no longer show it, so the lines are unreachable and left as they are.
 
-  * a NAMED EXCEPTION, ratified by the BA (RT2_RULING_1 R8): the 18 chiller PU lines — PU is not offered on
-    chillers (Burt, 1 Oct); the drafts no longer show it, so the lines are unreachable and left as they are;
-  * PENDING Manifest P: until the snapshot is re-taken after the v1.59.3 window, P's lines may still sit at
-    EXACTLY P's guard values (manifest_p.yaml `current`). A line half-way (formula moved, own price not, or
-    the other way round) fails, and so does any line P does not name. The allowance is removed with the
-    post-window snapshot (RT2 close).
+Manifest P is ON prod (applied 2 Oct 2026 11:16 SAST): the snapshot carries every P line at P's new values. The
+window's PENDING-P allowance is gone (RT2_RULING_2, the close).
 """
 from __future__ import annotations
 
@@ -22,7 +20,6 @@ import json
 import re
 from pathlib import Path
 
-import pytest
 import yaml
 
 HERE = Path(__file__).resolve().parent
@@ -78,11 +75,6 @@ def _manifest_p() -> dict[int, dict[str, tuple]]:
     return out
 
 
-def _pending(r: dict, p: dict[str, tuple]) -> bool:
-    """The line sits at EXACTLY Manifest P's guard values — every field P names, none moved."""
-    return bool(p) and all(r[f] == cur for f, (cur, _new) in p.items())
-
-
 def test_the_snapshot_covers_every_body_with_pu_foam_lines():
     """R8 — the committed snapshot carries the 15 bodies, so G1 sees all 86 active PU foam lines."""
     doc = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
@@ -91,20 +83,15 @@ def test_the_snapshot_covers_every_body_with_pu_foam_lines():
 
 
 def test_every_active_pu_foam_line_follows_the_shared_price():
-    lines, p = _pu_foam_lines(_tables()), _manifest_p()
-    failures = []
-    for bid, r in sorted(lines.items()):
-        why = _violates(r)
-        if not why or bid in EXCEPTIONS:
-            continue
-        if bid in p and _pending(r, p[bid]):
-            continue                                  # Manifest P pending — exactly at its guard
-        failures.append(f"bom {bid} {r['_body']} {r['bom_section']}: " + "; ".join(why))
+    lines = _pu_foam_lines(_tables())
+    failures = [f"bom {bid} {r['_body']} {r['bom_section']}: " + "; ".join(_violates(r))
+                for bid, r in sorted(lines.items()) if _violates(r) and bid not in EXCEPTIONS]
     assert not failures, "active PU foam lines off the shared price:\n  " + "\n  ".join(failures)
 
 
 def test_the_exceptions_are_exactly_the_ratified_chiller_lines():
-    """The list can never quietly cover another line: each exception is that chiller's PU foam line."""
+    """The list can never quietly cover another line: each exception is that chiller's PU foam line, still off the
+    shared price (an exception that came onto it would belong off the list), and none is a Manifest P line."""
     lines = _pu_foam_lines(_tables())
     for bid, body in EXCEPTIONS.items():
         assert bid in lines, f"exception bom {bid} is not an active PU foam line in the snapshot"
@@ -112,24 +99,18 @@ def test_the_exceptions_are_exactly_the_ratified_chiller_lines():
     assert not set(EXCEPTIONS) & set(_manifest_p()), "an exception is also a Manifest P line"
 
 
-def test_manifest_p_leaves_only_the_exceptions():
-    """P is complete: with P's new values applied in memory, the only violators are the 18 chillers."""
+def test_manifest_p_is_on_prod():
+    """The snapshot is prod after the window: every Manifest P line sits at exactly P's new values (59 entries)."""
     lines, p = _pu_foam_lines(_tables()), _manifest_p()
-    for bid, fields in p.items():
-        assert bid in lines, f"Manifest P names bom {bid}, not an active PU foam line in the snapshot"
-        for f, (_cur, new) in fields.items():
-            lines[bid][f] = new
-        assert "unit_price_override" in fields, f"bom {bid}: P must remove the own price, every time"
-    left = {bid for bid, r in lines.items() if _violates(r)}
-    assert left == set(EXCEPTIONS), sorted(left ^ set(EXCEPTIONS))
+    assert sum(len(f) for f in p.values()) == 59 and len(p) == 39
+    off = [(bid, f, lines[bid][f], new) for bid, fields in p.items() for f, (_cur, new) in fields.items()
+           if lines[bid][f] != new]
+    assert not off, f"Manifest P lines not at P's new values: {off}"
 
 
 def test_the_guard_catches_a_known_hit():
     """Negative control: an own price on a shared-price line, and a sheet-count formula, both fail."""
     lines = _pu_foam_lines(_tables())
-    bid = next(b for b, r in lines.items() if b not in EXCEPTIONS and not _violates(r)
-               and b not in _manifest_p())
-    r = dict(lines[bid], unit_price_override=4100.0)
-    assert _violates(r) and not _pending(r, _manifest_p().get(bid, {}))
-    r = dict(lines[bid], formula_expression="1.22*2.44*2")
-    assert any("no thickness term" in w for w in _violates(r))
+    bid = next(b for b, r in lines.items() if b not in EXCEPTIONS and not _violates(r))
+    assert _violates(dict(lines[bid], unit_price_override=4100.0))
+    assert any("no thickness term" in w for w in _violates(dict(lines[bid], formula_expression="1.22*2.44*2")))

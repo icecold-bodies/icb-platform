@@ -6,7 +6,7 @@
 # + a sim commit carrying the given manifest_p.yaml, tagged v1.59.3.
 set -u
 MP_SRC=${1:?usage: bash run_data_sim.sh <manifest_p.yaml> [part-branch] [kit-branch]}
-PART=${2:-rt2/part2-reland}
+PART=${2:-refs/remotes/origin/backport/v1.39-base}
 KIT=${3:-rt2/release-v1.59.3}
 WIN=/mnt/c/Users/micge/Documents
 HERE=$(cd "$(dirname "$0")" && pwd)

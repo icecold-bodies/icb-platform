@@ -5,7 +5,7 @@
 # compare is proven page = CLI on the mirror, 2 702 of 2 702 cells, with a one-cell negative control); psql and the
 # venv python are stubs; git is real. Covers both codes (v1.59.2 before the deploy, v1.59.3 after) and the stops.
 set -u
-PART=${1:-rt2/part2-reland}
+PART=${1:-refs/remotes/origin/backport/v1.39-base}
 KIT=${2:-rt2/release-v1.59.3}
 WIN=/mnt/c/Users/micge/Documents
 SIM=/root/rt2simA-$(date +%s)

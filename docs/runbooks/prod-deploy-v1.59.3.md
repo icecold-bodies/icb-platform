@@ -10,8 +10,8 @@ Target: **`https://192.168.0.251/mes-app/`** and **`https://mes.icecoldgrp.onlin
 | | |
 |---|---|
 | Prod is at | **v1.59.2 `1d9cb47`** (30 Sep 20:51 SAST), alembic **0049**, `calculator.js?v=184`, `calculator2.js?v=126`, `admin_templates.js?v=18`. Data on prod: Manifests M, A, F, F2; the PU materials at Burt's corrected 32D R4 100; the stored 4G factor 5 581 / 4 100. The header reads `v1.59.2` |
-| Deploy to | **the merge commit of the release PR**, the last of #207, #208 and the release PR. The annotated tag **`v1.59.3`** goes on that commit **before** the deploy; `mkstage.sh` records both in `expected.env` |
-| Range | `1d9cb47..<target>`: #206 (the RT1 close: OUTCOME, CI snapshot = prod 1 Oct 13:11, prune #5, the F entry), #207 (Part 1 + 1c: a quote never writes the Body Template; the per-body default foam), #208 (Part 2: the golden on Burt's 21 Sep set + 2 proven corrections, pinned packs, the prod list; Manifest P; G1; the 15-body CI snapshot), the release PR (this runbook, the kits, `backend/VERSION`) |
+| Deploy to | **the merge commit of the release PR**. #207 is on the base (`60f5d56`, 2 Oct 07:36 SAST). #208 merged into its stacked branch, not the base, so **#209 re-lands its identical tree**; then the release PR. The annotated tag **`v1.59.3`** goes on the release PR's merge commit **before** the deploy; `mkstage.sh` records both in `expected.env` |
+| Range | `1d9cb47..<target>`: #206 (the RT1 close: OUTCOME, CI snapshot = prod 1 Oct 13:11, prune #5, the F entry), #207 (Part 1 + 1c: a quote never writes the Body Template; the per-body default foam), #209 = #208 (Part 2: the golden on Burt's 21 Sep set + 2 proven corrections, pinned packs, the prod list), the release PR (Manifest P, G1, the 15-body CI snapshot, this runbook, the kits, `backend/VERSION`) |
 | DB migration | **0050** `0050_trailer_default_insulation_foam.py`: `trailer_types.default_insulation_foam` VARCHAR(8) NOT NULL DEFAULT `'32D'` + CHECK `IN ('32D','4G')`. Additive, inspector-guarded, no backfill: every body reads `32D` after it. **The kit takes a full `pg_dump` before it** (step 4, RT2_RULING_1 R6.1); `icb-deploy.sh` also runs its own `icb-pg-backup` |
 | Frontend rebuild | **none** — `frontend/` untouched (asserted); the SPA bundle must stay byte-identical |
 | Service restart | **YES** — `app/database.py`, `app/routers/trailers.py` (+ `tools/costing_audit/*`, which the audit page imports in-process) |
@@ -86,8 +86,9 @@ workers; the migration adds one column to a 40-row table (instant). Nadie's and 
 constraint. Nothing changes on prod before the window except the R8 export (read only).
 
 **1. Merge, tag, stage (before the window, after RT2_RULING_2).**
-- CI green on each PR's exact head → Michael's merge word → merge #207, #208, then the release PR. The release PR's
-  merge commit is the target; its tree must equal the CI-tested tree.
+- CI green on each PR's exact head → Michael's merge word → merge #209 (the #208 re-land), then the release PR
+  (#207 is merged). **Retarget a stacked PR to `backport/v1.39-base` before merging it** (#208 merged into its parent
+  branch). The release PR's merge commit is the target; its tree must equal the CI-tested tree.
 - The CA tags it: `git tag -a v1.59.3 <merge-sha> -m "…"`, `git push origin v1.59.3`, and proves the **tag object** on
   origin equals the local one (`git ls-remote --tags origin v1.59.3`), peeled = the merge commit.
 - The CA stages the kits from the merge commit:

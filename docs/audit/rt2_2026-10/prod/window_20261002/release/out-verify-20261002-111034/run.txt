@@ -1,0 +1,33 @@
+== prod: db=icb_platform alembic=0049 code=1d9cb47 mode=verify target=0926193 (v1.59.3) 2026-10-02T11:10:35+02:00
+== code + tag + schema (0050: the column and its CHECK)
+   FAIL HEAD = '1d9cb47b84a8f10a4be74f139b37671ec21f35bd' (want 0926193e1ee0102c210800c3912949d1df76fbe5)
+   FAIL TAG_LOCAL = 'missing' (want 4eb089427721fa976c284c3a85a191cd1639dd84)
+   FAIL DESCRIBE = 'v1.59.2' (want v1.59.3)
+   FAIL ALEMBIC = '0049' (want 0050)
+   FAIL COLUMN = '' (want character varying|8|NO|'32D'::character varying)
+   FAIL CHECK_CONSTRAINT = '0' (want 1)
+   body defaults: (no column yet)   (after the deploy every body reads 32D; Manifest D sets four to 4G after P)
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   PASS TOOL_IMPORT = ok
+   PASS OPENAPI_DOORS_EQUAL = yes
+== served bytes: each page loads the target ?v=, and both doors serve the target blob under it
+   FAIL V_calculator = '184' (want 185)
+   FAIL LOCAL_calculator = '051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635' (want 15427f7e3616353bd397cb832331dcdbd9b1719c081acaa87caf8802309c778d)
+   FAIL LAN_calculator = '051f276225c3fc3cd54f74915d4e2b7fce9c6051eff54fafa9623c9fec9f9635' (want 15427f7e3616353bd397cb832331dcdbd9b1719c081acaa87caf8802309c778d)
+   FAIL V_calculator2 = '126' (want 127)
+   FAIL LOCAL_calculator2 = 'add4416017013f06adec9b990d1f8a3fc256108173f1801e5759da44e7e604ce' (want 94b27e6d8d2e04f07f68851534b7d5b415a54862c4b0d0e89999272c6eb1e4e0)
+   FAIL LAN_calculator2 = 'add4416017013f06adec9b990d1f8a3fc256108173f1801e5759da44e7e604ce' (want 94b27e6d8d2e04f07f68851534b7d5b415a54862c4b0d0e89999272c6eb1e4e0)
+   FAIL V_admin_templates = '18' (want 19)
+   FAIL LOCAL_admin_templates = 'f22dab0cc9d42e6e93fb8c60e1980461fe9d79cf9d0e53457996b84823b25fe6' (want e3a28270f021e6411c0f9e922bf6b76bed43140e00f5c8d1297fd8ea13b167df)
+   FAIL LAN_admin_templates = 'f22dab0cc9d42e6e93fb8c60e1980461fe9d79cf9d0e53457996b84823b25fe6' (want e3a28270f021e6411c0f9e922bf6b76bed43140e00f5c8d1297fd8ea13b167df)
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+
+######## VERIFY: 15 check(s) failed — tell the CA: /tmp/icb-release-v1.59.3/out-verify-20261002-111034

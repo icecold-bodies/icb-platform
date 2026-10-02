@@ -1,6 +1,6 @@
 """RT2 window — the page's "All" against the CLI at the same moment (dispatch Part 4, steps 1, 3 and 5). READ ONLY.
 
-    python rt2_all_compare.py <DATABASE_URL> <cli-report-dir> <max-age-minutes>
+    python rt2_all_compare.py <DATABASE_URL> <cli-report-dir> <max-age-minutes> [<not-before epoch>]
 
 Reads the newest FINISHED Admin -> Costing audit run with pack 'all' (costing_audit_runs: id, times, status, counts,
 golden fingerprint, accepted list and the gzipped report — never started_by / started_by_user_id) and the CLI's
@@ -8,6 +8,8 @@ reports for the same four packs (chillers, freezers, icecream, explosive: servic
 smoke is a subset of them, so All skips it), and compares them cell by cell on (status, base_status, excel_total,
 mes_total to the cent). Prints the per-pack counts (the window's expected-count tables) and PAGE_EQUALS_CLI.
 Exit 0 = equal, 1 = they differ, 2 = no usable page run. Writes nothing; the page's report is never written out.
+A usable page run finished within <max-age-minutes> AND started after <not-before> — the last data change on prod (a
+Manifest P / D apply or revert journal, RT2_RULING_2 C11): a run from before it priced the data as it was then.
 """
 from __future__ import annotations
 
@@ -15,12 +17,23 @@ import gzip
 import json
 import sys
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 
 import psycopg
 
 ALL_PACKS = ("chillers", "freezers", "icecream", "explosive")
 STATUSES = ("PASS", "ACCEPTED", "SKIP", "UNVERIFIABLE", "EXPIRED", "FLAG", "PRESENCE", "UNMAPPED", "NO_GOLDEN")
+
+
+def page_run_problem(age_min: float, max_age_min: float, started_epoch: float, not_before: float) -> str | None:
+    """Why the newest finished page run cannot be compared with the CLI now, or None."""
+    if not_before and started_epoch < not_before:
+        when = datetime.fromtimestamp(not_before, timezone.utc).astimezone().isoformat(timespec="seconds")
+        return f"the newest page run started before the last data change ({when}): click All first, then run again"
+    if age_min > max_age_min:
+        return f"the newest page run finished {age_min:.0f} min ago (> {max_age_min:g}): click All again, then re-run"
+    return None
 
 
 def key(c: dict) -> tuple:
@@ -36,25 +49,26 @@ def counts_line(cnt: Counter) -> str:
     return "  ".join(f"{s} {cnt[s]}" for s in STATUSES if cnt.get(s)) + f"  (cells {sum(cnt.values())})"
 
 
-def main(url: str, cli_dir: str, max_age_min: str) -> int:
+def main(url: str, cli_dir: str, max_age_min: str, not_before: str = "0") -> int:
     url = url.replace("postgresql+psycopg://", "postgresql://")
     with psycopg.connect(url, options="-c default_transaction_read_only=on") as cx:
         row = cx.execute("""select id, started_at::text, finished_at::text, status, environment, db_name, accepted_list,
                                    golden_fingerprint, count_pass, count_flag, count_accepted, count_expired,
                                    count_unverifiable, report_json_gz,
-                                   extract(epoch from (now() - finished_at)) / 60.0
+                                   extract(epoch from (now() - finished_at)) / 60.0, extract(epoch from started_at)
                             from costing_audit_runs
                             where pack = 'all' and finished_at is not null and status in ('passed', 'flagged')
                             order by finished_at desc limit 1""").fetchone()
     if row is None:
         print("PAGE_EQUALS_CLI: no — no finished 'All' run on the page. Click Admin -> Costing audit -> All first.")
         return 2
-    (rid, started, finished, status, env, db, acc, gfp, cp, cf, ca, ce, cu, blob, age) = row
+    (rid, started, finished, status, env, db, acc, gfp, cp, cf, ca, ce, cu, blob, age, started_epoch) = row
     print(f"page run #{rid}: All, {status}, started {started}, finished {finished} ({age:.0f} min ago)")
     print(f"   environment {env} · database {db} · accepted list {acc} · golden {(gfp or '-')[:16]}")
     print(f"   stored counts: PASS {cp}  FLAG {cf}  ACCEPTED {ca}  EXPIRED {ce}  UNVERIFIABLE {cu}")
-    if age > float(max_age_min):
-        print(f"PAGE_EQUALS_CLI: no — the newest page run finished {age:.0f} min ago (> {max_age_min}): click All again, then re-run")
+    problem = page_run_problem(float(age), float(max_age_min), float(started_epoch), float(not_before or 0))
+    if problem:
+        print(f"PAGE_EQUALS_CLI: no — {problem}")
         return 2
     page = json.loads(gzip.decompress(blob).decode("utf-8"))
     pcells = {key(c): c for c in page["cells"]}
@@ -93,4 +107,4 @@ def main(url: str, cli_dir: str, max_age_min: str) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(*sys.argv[1:4]))
+    sys.exit(main(*sys.argv[1:5]))

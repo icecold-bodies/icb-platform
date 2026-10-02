@@ -75,13 +75,13 @@
   owner: BA
   review_by: 2026-10-31
 
-- body: ["EXPLOSIVE 2.7 TO 4.8", "EXPLOSIVE 4.9 AND UP"]
-  section: ["ROOF", "SIDES", "FRONT", "DRD"]
+- body: "EXPLOSIVE 2.7 TO 4.8"
+  section: ["ROOF", "SIDES"]
   variant: "*"
-  cause: ["6MM PF PLYWOOD", "4MM PF PLYWOOD", "BOTH PU", "DIFF PU"]
+  cause: ["6MM PF PLYWOOD", "4MM PF PLYWOOD"]
   kind: known_defect
-  reason: "[DATA] PROD explosive bodies carry a 6MM PF PLYWOOD line on ROOF/SIDES where Burt has 4MM PF PLYWOOD (+R60 to +R1.3k), and EXPLOSIVE 4.9 AND UP prices PU as 12.08 x R234.15 per panel where Burt has 2.98 x R172 (+R370 front, +R1.5k sides, +R750 roof, +R487 double rear door)."
-  owner: BA
+  reason: "[DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its ROOF/SIDES plywood as 6MM PF PLYWOOD at R95.64/m2 where Burt has 4MM PF PLYWOOD at R86.58/m2 (+R58.51 to +R193.93 per cell, all of it the plywood line). On Michael's hand-fix list. (RT2 close: the entry's EXPLOSIVE 4.9 AND UP PU half went with Manifest P + the 4G body default.)"
+  owner: Michael
   review_by: 2026-10-31
 
 # ── v1.57.2: mechanisms surfaced when an entry had to EXPLAIN the whole difference ──

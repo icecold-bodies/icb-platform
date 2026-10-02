@@ -1,0 +1,19 @@
+active PU foam cost lines 86 · own price 18 · no thickness token 0
+   CHILLER 2.3 METER          bom  3692 FRONT  own 3090.0               | (1.22*2.44*{FRONT PU})
+   CHILLER 2.3 METER          bom  3699 SRD    own 3090.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)
+   CHILLER 2.3 METER          bom  3723 DRD    own 3090.0               | (1.22*2.44*{DRD PU})
+   CHILLER 2.3 METER          bom  3743 SIDES  own 3090.0               | (1.22*2.44*{SIDES PU})
+   CHILLER 2.3 METER          bom  3751 ROOF   own 3090.0               | (1.22*2.44*{ROOF PU})
+   CHILLER 2.3 METER          bom  3759 FLOOR  own 3090.0               | (1.22*2.44*{FLOOR PU})
+   CHILLER LARGE              bom  3310 FRONT  own 3090.0               | (1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2
+   CHILLER LARGE              bom  3319 SRD    own 3090.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   CHILLER LARGE              bom  3345 DRD    own 3090.0               | ((1.22*2.44*{DRD PU}))*2
+   CHILLER LARGE              bom  3367 SIDES  own 3090.0               | (1.22*2.44*{SIDES PU}*((length+{Waste})/1.22))
+   CHILLER LARGE              bom  3377 ROOF   own 3090.0               | ((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22)
+   CHILLER LARGE              bom  3385 FLOOR  own 3090.0               | ((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22)
+   CHILLER MEDIUM             bom  3170 FRONT  own 3090.0               | (1.22*2.44*{FRONT PU})*2
+   CHILLER MEDIUM             bom  3179 SRD    own 3090.0               | (1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2
+   CHILLER MEDIUM             bom  3205 DRD    own 3090.0               | (1.22*2.44*{DRD PU})*2
+   CHILLER MEDIUM             bom  3227 SIDES  own 3090.0               | ((1.22 * 2.44  * {SIDES PU}) * (length+{Waste})/1.22)
+   CHILLER MEDIUM             bom  3237 ROOF   own 3090.0               | ((1.22 * 2.44  * {ROOF PU}) * (length+{Waste})/1.22)
+   CHILLER MEDIUM             bom  3245 FLOOR  own 3090.0               | ((1.22 * 2.44  * {FLOOR PU}) * (length+{Waste})/1.22)

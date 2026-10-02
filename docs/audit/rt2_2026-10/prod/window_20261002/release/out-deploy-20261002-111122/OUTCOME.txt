@@ -1,0 +1,12 @@
+deployed      1d9cb47 -> 0926193 (0926193e1ee0102c210800c3912949d1df76fbe5)
+tag           v1.59.3 = 4eb089427721fa976c284c3a85a191cd1639dd84 (local = origin, peels to the target); git describe = v1.59.3
+alembic       0049 -> 0050 (0050_trailer_default_insulation_foam.py)
+column        trailer_types.default_insulation_foam character varying|8|NO|'32D'::character varying, CHECK present: 1; bodies 32D=41
+backup        /var/backups/postgres/icb_platform_pre-v1.59.3_20261002-111122.dump  2505457 bytes  sha256 aa64712a047ecb386d1d61ffb6b7bccf07341e48ab471025ade154fc886f1da3
+restart       Wed 2026-09-30 20:51:20 SAST -> Fri 2026-10-02 11:11:37 SAST (pid 167288 -> 184932), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+static        calculator.js ?v=185 15427f7e3616353b  calculator2.js ?v=127 94b27e6d8d2e04f0  admin_templates.js ?v=19 e3a28270f021e641  (local = lan = the target blobs)
+spa           assets/index-Be8qL-PA.js 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (local = lan = disk; unchanged, no rebuild)
+openapi       local = lan
+finished      2026-10-02T11:12:07+02:00

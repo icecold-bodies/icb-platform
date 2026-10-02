@@ -1,0 +1,16 @@
+== prod: db=icb_platform alembic=0049 code=1d9cb47 label=pre staged=81bf268  2026-10-02T10:53:42+02:00
+== 1. the five packs, --env prod (the deployed code, read-only sessions)
+   smoke exit=0  - Cells: UNVERIFIABLE 9, ACCEPTED 15, PASS 171, SKIP 39
+   chillers exit=0  - Cells: ACCEPTED 17, PASS 1012, SKIP 224
+   freezers exit=1  - Cells: FLAG 27, UNVERIFIABLE 27, ACCEPTED 24, PASS 495, SKIP 117
+   icecream exit=1  - Cells: FLAG 34, UNVERIFIABLE 40, ACCEPTED 50, PASS 384, SKIP 104
+   explosive exit=1  - Cells: FLAG 3, UNVERIFIABLE 36, ACCEPTED 153, PASS 375, SKIP 117
+== NOTE: unaccepted cells in: freezers icecream explosive (reported, not a stop: the window table says which are expected)
+== 2. the page's newest All against the CLI
+page run #14: All, passed, started 2026-09-30 21:53:29.495413+02, finished 2026-09-30 21:53:35.956549+02 (2220 min ago)
+   environment prod · database icb_platform · accepted list accepted_differences.prod.yaml · golden d87a573177dc8da2
+   stored counts: PASS 2332  FLAG 0  ACCEPTED 242  EXPIRED 0  UNVERIFIABLE 103
+PAGE_EQUALS_CLI: no — the newest page run finished 2220 min ago (> 45): click All again, then re-run
+
+######## STOP [PAGE]: no usable page run (see above) — click All, wait for it to finish, run again
+######## tell the CA: /tmp/icb-rt2-all/out-pre-20261002-105342

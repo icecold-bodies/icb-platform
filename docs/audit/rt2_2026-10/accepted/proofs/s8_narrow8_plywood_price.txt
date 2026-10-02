@@ -1,0 +1,30 @@
+   prod_chillers.json           cells   716  changed 0
+   prod_explosive.json          cells   684  changed 24
+   prod_freezers.json           cells   690  changed 0
+   prod_icecream.json           cells   612  changed 0
+   prod_smoke.json              cells   234  changed 0
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~all_pu | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~all_pu | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~as_sheet | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~as_sheet | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~drd | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~drd | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~srd | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~srd | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~all_pu | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~all_pu | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~as_sheet | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~as_sheet | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~drd | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~drd | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~srd | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~srd | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~all_pu | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~all_pu | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~as_sheet | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~as_sheet | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~drd | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~drd | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~srd | ROOF: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+      prod_explosive.json: EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~srd | SIDES: ACCEPTED -> ACCEPTED  ([DATA] A PRICE, not only a label: PROD EXPLOSIVE 2.7 TO 4.8 prices its)
+== 24 cell(s) changed: {'ACCEPTED -> ACCEPTED': 24}

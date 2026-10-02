@@ -334,6 +334,13 @@ def test_the_committed_manifest_substitutions_hold_at_6_7_m():
 LATER_PROD = {
     ("F1", 3576, "unit_price_override"): None,   # FREEZER 2.3 METER / SRD / PU
     ("F1", 2415, "unit_price_override"): None,   # FREEZER MEDIUM / SRD / PU
+    # RT2 Manifest P (2 Oct 2026, ratified RT2_RULING_1 Part 3 + RULING_2) moved F1's other own-priced SRD PU lines
+    # onto the shared PU price the same way (P1: the formula was already Burt's row).
+    ("F1", 2560, "unit_price_override"): None,   # FREEZER LARGE / SRD / PU
+    ("F1", 5306, "unit_price_override"): None,   # ICECREAM BODY LARGE / SRD / PU
+    ("F1", 5184, "unit_price_override"): None,   # EXPLOSIVE UP TO 2.7 / SRD / PU
+    ("F1", 6345, "unit_price_override"): None,   # EXPLOSIVE 2.7 TO 4.8 / SRD / PU
+    ("F1", 3948, "unit_price_override"): None,   # EXPLOSIVE 4.9 AND UP / SRD / PU
 }
 
 

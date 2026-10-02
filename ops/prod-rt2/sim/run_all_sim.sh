@@ -10,11 +10,13 @@ KIT=${2:-rt2/release-v1.59.3}
 WIN=/mnt/c/Users/micge/Documents
 SIM=/root/rt2simA-$(date +%s)
 G="git -c safe.directory=*"
-mkdir -p "$SIM"/{bin,opt,tmp,stageout,state}
+mkdir -p "$SIM"/{bin,opt,tmp,stageout,state,varbackups/icb-rt2-2026-10}
 export SIMSTATE=$SIM/state
 $G clone -q --bare --single-branch --branch backport/v1.39-base "$WIN/icb-platform" "$SIM/origin.git" || exit 1
 $G -C "$SIM/origin.git" fetch -q "$WIN/icb-platform" "+refs/remotes/origin/backport/v1.39-base:refs/heads/backport/v1.39-base" || exit 1
 git clone -q "$SIM/origin.git" "$SIM/work" && cd "$SIM/work" || exit 1
+# phase 1 is "before the tag": the real v1.59.3 exists now, so the sim's own origin and clone drop it (phase 3 re-tags)
+git tag -d v1.59.3 > /dev/null 2>&1; git -C "$SIM/origin.git" tag -d v1.59.3 > /dev/null 2>&1 || true
 git -c advice.detachedHead=false checkout -q -B backport/v1.39-base origin/backport/v1.39-base
 $G fetch -q "$WIN/icb-platform" "$PART" && git merge -q --ff-only FETCH_HEAD || exit 1
 $G fetch -q "$WIN/icb-platform" "$KIT" && git -c user.email=sim@x -c user.name=sim merge -q --no-edit FETCH_HEAD || exit 1
@@ -41,7 +43,10 @@ if [ "${1:-}" = -m ] && [ "${2:-}" = tools.costing_audit ] && [ "${3:-}" = run ]
   [ -f "$S/red_$pack" ] && exit 1; exit 0
 fi
 case "${1:-}" in
-  */rt2_all_compare.py) echo "page run #7: All, passed (stub)"; echo "PAGE_EQUALS_CLI: $(cat "$S/cmp_word")"; exit "$(cat "$S/cmp_rc")" ;;
+  */rt2_all_compare.py) [ -n "${5:-}" ] || { echo "stub: rt2_all.sh passed no not-before time"; exit 3; }
+    if [ -f "$S/page_started" ] && [ "$(cat "$S/page_started")" -lt "$5" ]; then   # the real rule (C11), tested in pytest
+      echo "PAGE_EQUALS_CLI: no — the newest page run started before the last data change: click All first, then run again"; exit 2; fi
+    echo "page run #7: All, passed (stub)"; echo "PAGE_EQUALS_CLI: $(cat "$S/cmp_word")"; exit "$(cat "$S/cmp_rc")" ;;
   */rt1_door_report.py) [ -s "${3:-}" ] || { echo "no snapshot"; exit 1; }; echo "SUMMARY: 14 OK; no exceptions (stub)"; exit 0 ;;
 esac
 exec python3 "$@"
@@ -60,6 +65,7 @@ run() { # $1 = all|doors, rest = args
   sleep 1; local k=$1; shift
   local cmd="bash /tmp/icb-rt2-all/rt2_all.sh $*"; [ "$k" = doors ] && cmd="bash /tmp/icb-rt2-doors/rt2_doors.sh"
   unshare -m bash -c "mount --bind '$SIM/opt' /opt && mount --bind '$SIM/etc' /etc && mount --bind '$SIM/tmp' /tmp &&
+    mount --bind '$SIM/varbackups' /var/backups &&
     export PATH='$SIM/bin':\$PATH SIMSTATE='$SIMSTATE' && $cmd" > "$SIM/last.log" 2>&1
   grep -E '^######## ' "$SIM/last.log" | head -n 1; }
 P=0; F=0
@@ -93,6 +99,15 @@ tar -xf "$SIM/stageout2/icb-rt2-all.tar" -C "$SIM/tmp" && tar -xf "$SIM/stageout
 expect "all post over v1.59.3"           'DONE \(post\): PAGE = CLI'               all post
 expect "doors over v1.59.3"              'DONE'                                    doors
 grep -q "SUMMARY: 14 OK" "$SIM/last.log" && echo "        the report's summary is printed"
+echo "== C11: a page run older than the last data apply is refused (RT2_RULING_2)"
+touch "$SIM/varbackups/icb-rt2-2026-10/journal_D_rt2_defaults_journal_prod_sim.json"
+echo $(( $(date +%s) - 600 )) > "$SIMSTATE/page_started"
+expect "page run before the last apply"  'STOP \[PAGE\]'                           all afterD
+grep -q 'click All first' "$SIM/last.log" && echo "        it says: click All first"
+grep -q 'last data change on prod (a P / D apply or revert journal): 20' "$SIM/last.log" && echo "        it names the journal's time"
+echo $(( $(date +%s) + 5 )) > "$SIMSTATE/page_started"
+expect "page run after the last apply"   'DONE \(afterD\): PAGE = CLI'               all afterD
+rm -f "$SIMSTATE/page_started"
 git -C "$SIM/opt/icb-platform" -c user.email=x@x -c user.name=x commit -q --allow-empty -m "hand edit"
 expect "all: code moved"                 'STOP \[CODE\]'                           all afterP
 expect "doors: code moved"               'STOP \[CODE\]'                           doors

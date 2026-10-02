@@ -1,0 +1,4 @@
+page run #26: All, flagged, started 2026-10-02 11:31:43.548406+02, finished 2026-10-02 11:31:49.057849+02 (175 min ago)
+   environment prod · database icb_platform · accepted list accepted_differences.prod.yaml · golden 04c774e2a7de6314
+   stored counts: PASS 1912  FLAG 3  ACCEPTED 208  EXPIRED 0  UNVERIFIABLE 103
+PAGE_EQUALS_CLI: no — the newest page run finished 175 min ago (> 45): click All again, then re-run

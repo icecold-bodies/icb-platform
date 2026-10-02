@@ -9,7 +9,7 @@
 # since v1.59.0) runs, migration step included; systemd, postgres, alembic, curl, sudo, npm and the venv are stubs.
 set -u
 SCEN=${1:-happy}
-PART=${2:-rt2/part2-golden}         # the code + golden (stacked on Part 1)
+PART=${2:-rt2/part2-reland}         # Part 2 on the base (#209; #207 is merged)
 KIT=${3:-rt2/release-v1.59.3}       # the kit
 WIN=/mnt/c/Users/micge/Documents
 HERE=$(cd "$(dirname "$0")" && pwd)

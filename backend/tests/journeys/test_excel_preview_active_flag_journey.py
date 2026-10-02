@@ -95,6 +95,32 @@ def _record_count() -> int:
         return db.query(CalculationRecord).count()
 
 
+def _open_until_the_calculator_answers(page: Page, btn, tries: int = 15) -> int:
+    """RT2 1b — open the Preview dialog until the CALCULATOR answers it.
+
+    The MES header asks the calculator iframe for the dialog state over postMessage
+    and, when nothing answers within 600 ms (a stale cached calculator.js), opens a
+    fallback dialog with no state: "export-confirm" ENABLED and no "Nothing calculated
+    yet" note. Right after the embed mounts on a slow runner the question can arrive
+    before the deferred calculator.js has registered its message listener — it is
+    lost, the fallback opens, and the old one-shot assert read it as a defect (the
+    ubuntu-only red). The calculator's own note is the proof it answered; until it
+    shows, close the fallback and ask again. The product is unchanged.
+    (Repro: MES_JOURNEY_LATE_MESSAGE_LISTENER_MS=3000, see _common.py.)"""
+    note = page.get_by_text("Nothing calculated yet")
+    for attempt in range(tries):
+        btn.click()
+        expect(page.get_by_test_id("export-confirm")).to_be_visible(timeout=T)
+        try:
+            expect(note).to_be_visible(timeout=2_000)
+            return attempt
+        except AssertionError:
+            page.get_by_role("button", name="Cancel").click()     # the fallback: close, ask again
+            expect(page.get_by_test_id("export-confirm")).to_be_hidden(timeout=T)
+            page.wait_for_timeout(500)
+    raise AssertionError(f"the calculator never answered the Preview dialog's request ({tries} tries)")
+
+
 def test_preview_dialog_excel_download(page: Page, live_server: str, staged, tmp_path) -> None:
     ids = staged
     admin_session(page, base=live_server)   # base= matters under MES_BASE (banked)
@@ -107,8 +133,7 @@ def test_preview_dialog_excel_download(page: Page, live_server: str, staged, tmp
     shot(page, "01-button-in-header", journey=JOURNEY)
 
     # ── Nothing calculated yet → dialog opens with confirm DISABLED ──────────
-    btn.click()
-    expect(page.get_by_test_id("export-confirm")).to_be_visible(timeout=T)
+    _open_until_the_calculator_answers(page, btn)
     expect(page.get_by_test_id("export-confirm")).to_be_disabled()
     expect(page.get_by_text("Nothing calculated yet")).to_be_visible()
     shot(page, "02-calculate-first-note", journey=JOURNEY)

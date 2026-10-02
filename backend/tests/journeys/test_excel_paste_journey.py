@@ -120,9 +120,9 @@ def _tsv(ids) -> str:
     ])
 
 
-def test_excel_paste_preview_and_apply(page: Page, staged) -> None:
+def test_excel_paste_preview_and_apply(page: Page, live_server: str, staged) -> None:
     ids = staged
-    admin_session(page)
+    admin_session(page, base=live_server)   # RT2: base-aware, so it also runs on a side port
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     page.select_option("#trailer-select", str(ids["trailer"]))
@@ -188,12 +188,12 @@ def test_excel_paste_preview_and_apply(page: Page, staged) -> None:
     shot(page, "02-applied", journey=JOURNEY)
 
 
-def test_excel_paste_garbage_is_inert(page: Page, staged) -> None:
+def test_excel_paste_garbage_is_inert(page: Page, live_server: str, staged) -> None:
     # Runs after the apply test mutated the fixture trailer's template — that is
     # deliberate: this test only asserts preview inertness on unrecognised text
     # (no state assertions), so template state cannot affect it.
     ids = staged
-    admin_session(page)
+    admin_session(page, base=live_server)   # RT2: base-aware, so it also runs on a side port
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
     page.select_option("#trailer-select", str(ids["trailer"]))

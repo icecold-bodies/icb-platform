@@ -21,6 +21,13 @@ the wire (request payload, not just the response).
 Assertions ride the real /api/calculate wire (request post_data_json + response)
 — CSP forbids page-JS evaluation in journeys. JXMB markers; purge at setup AND
 teardown; admin_session gets base=live_server.
+
+RT2 Part 1: a radio flip no longer writes the shared template — the copy-zero lands
+on the QUOTE, whose overlay rides body_variable_overrides under the master names.
+So after a flip the master names ARE on the wire, carrying the quote's REAL values
+(the engine's body_variables equal them): that is the opposite of a shadow. Before
+any flip (the settled load) nothing master-named is sent, and the template is checked
+UNCHANGED after every flip.
 """
 from __future__ import annotations
 
@@ -67,8 +74,10 @@ def _cat(nid, label, children) -> dict:
             "parentId": None, "childIds": children}
 
 
-# Template thicknesses each test starts from (a radio flip PUTs variable_value
-# onto the shared template, so _reset_masters re-seeds before every test).
+# Template thicknesses each test starts from. Until RT2 a radio flip PUT
+# variable_value onto the shared template; now it never does, and every flip is
+# followed by a check that the template still reads exactly these values
+# (_reset_masters still re-seeds before every test, as a guard).
 BOUND_START = {"eps": 0.0, "pu": 0.062}     # PU is the quoted side
 STALE_START = {"eps": 0.062, "pu": 0.0}     # EPS quoted; the HEALED PU flag is the one clicked
 
@@ -268,18 +277,13 @@ def _chip(page: Page, kind: str, name: str):
             .filter(has_text="{" + name + "}"))
 
 
-def _db_pair(eps_id: int, pu_id: int, want_eps: float, want_pu: float) -> tuple[float, float]:
-    """Poll the template until the async copy-zero PUTs land."""
+def _db_pair(eps_id: int, pu_id: int) -> tuple[float, float]:
+    """The TEMPLATE pair, read after a pause long enough for any (wrong) write to land."""
     from app.database import BillOfMaterial, SessionLocal
-    e = p = None
-    for _ in range(40):
-        with SessionLocal() as db:
-            e = float(db.get(BillOfMaterial, eps_id).variable_value or 0)
-            p = float(db.get(BillOfMaterial, pu_id).variable_value or 0)
-        if abs(e - want_eps) < 1e-9 and abs(p - want_pu) < 1e-9:
-            break
-        time.sleep(0.5)
-    return e, p
+    time.sleep(2)
+    with SessionLocal() as db:
+        return (float(db.get(BillOfMaterial, eps_id).variable_value or 0),
+                float(db.get(BillOfMaterial, pu_id).variable_value or 0))
 
 
 # ── 1. master-bound body: no shadow — editor, payload, radio flip ───────────
@@ -336,12 +340,13 @@ def test_masterbound_flags_do_not_shadow_master_values(page: Page, live_server: 
     shot(page, "01-editor-single-blue-chip-real-value", journey=JOURNEY)
     _close_formula_editor(page)
 
-    # Radio flip PU → EPS: copy-zero writes the template AND the totals move.
+    # Radio flip PU → EPS: copy-zero moves THIS QUOTE's pair (RT2: never the template)
+    # AND the totals move. The master names ride the wire with the quote's real values.
     with page.expect_response(_calc_where(
             lambda p: (p.get("body_option_selections") or {}).get(str(b["eps_m"])) is True), timeout=T) as r2:
         eps_in.check()
     req2, res2 = r2.value.request.post_data_json, r2.value.json()
-    assert PU not in _bvo(req2) and EPS not in _bvo(req2), _bvo(req2)
+    assert (_bvo(req2).get(EPS), _bvo(req2).get(PU)) == (0.062, 0.0), _bvo(req2)
     bv2 = res2.get("body_variables") or {}
     assert bv2.get(EPS) == 0.062 and bv2.get(PU) == 0.0, bv2
     assert abs(_qty(res2, b["eps_board"]) - 2.48) < 1e-6
@@ -351,8 +356,7 @@ def test_masterbound_flags_do_not_shadow_master_values(page: Page, live_server: 
     assert abs((res1["grand_total"] - res2["grand_total"]) - 7.44) < 0.01, (res1["grand_total"], res2["grand_total"])
     expect(page.locator(f"span.bv-edit[data-bom-id='{b['eps_m']}']")).to_have_text("(0.062 m)", timeout=T)
     expect(page.locator(f"span.bv-edit[data-bom-id='{b['pu_m']}']")).to_have_text("(0.000 m)")
-    e, p = _db_pair(b["eps_m"], b["pu_m"], 0.062, 0.0)
-    assert abs(e - 0.062) < 1e-9 and p == 0, (e, p)
+    assert _db_pair(b["eps_m"], b["pu_m"]) == (BOUND_START["eps"], BOUND_START["pu"])   # template untouched
     shot(page, "02-radio-flip-moves-quantities-and-total", journey=JOURNEY)
 
     # Excel paste: a squash-drift label misses the exact master match and lands
@@ -400,7 +404,7 @@ def test_stale_binding_falls_back_by_name(page: Page, live_server: str, staged) 
             lambda p: (p.get("body_option_selections") or {}).get(str(s["pu_m"])) is True), timeout=T) as r2:
         healed.check()
     req2, res2 = r2.value.request.post_data_json, r2.value.json()
-    assert PU not in _bvo(req2) and EPS not in _bvo(req2), _bvo(req2)
+    assert (_bvo(req2).get(PU), _bvo(req2).get(EPS)) == (0.062, 0.0), _bvo(req2)   # the quote's own pair
     bv2 = res2.get("body_variables") or {}
     assert bv2.get(PU) == 0.062 and bv2.get(EPS) == 0.0, bv2
     assert abs(_qty(res2, s["pu_board"]) - 2.48) < 1e-6
@@ -408,8 +412,7 @@ def test_stale_binding_falls_back_by_name(page: Page, live_server: str, staged) 
     assert not _item(res2, s["pu_board"]).get("formula_error")
     assert abs((res2["grand_total"] - res1["grand_total"]) - 7.44) < 0.01, (res1["grand_total"], res2["grand_total"])
     expect(page.locator(f"span.bv-edit[data-bom-id='{s['pu_m']}']")).to_have_text("(0.062 m)", timeout=T)
-    e, p = _db_pair(s["eps_m"], s["pu_m"], 0.0, 0.062)
-    assert e == 0 and abs(p - 0.062) < 1e-9, (e, p)
+    assert _db_pair(s["eps_m"], s["pu_m"]) == (STALE_START["eps"], STALE_START["pu"])   # template untouched
     shot(page, "05-healed-flag-flip-moves-total", journey=JOURNEY)
 
 

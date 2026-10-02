@@ -1,10 +1,14 @@
-"""v1.44.1 — rear-door insulation invariant enforced on LOAD.
+"""v1.44.1 — rear-door insulation invariant enforced on LOAD; RT2 Part 1 — on the QUOTE only.
 
 A body opens with DRD as the (default) door while its SRD pair still carries
 non-zero thickness in the template (the pre-invariant dirt Michael reported).
-Opening the body in the calculator must: show the SRD pair at (0.000 m), toast
-the heal, and PERSIST the zeros to the body template — while leaving the
-active DRD pair's thickness untouched. Second load: nothing left to heal.
+Opening the body in the calculator must price the quote with the inactive SRD pair
+at 0 / 0 — while leaving the active DRD pair's thickness untouched.
+
+Until RT2 the heal PERSISTED those zeros to the Body Template on mere open, from the
+door the opening browser remembered: that is how one user's last door became the next
+user's template (RT2_RETURN_1 §1.2). Now the heal is the quote's own state: the calc's
+body_variables carry it, and the template stays exactly as staged — on every open.
 
 Marker J1441; purge at setup AND teardown. admin_session gets base=live_server
 (banked MES_BASE trap).
@@ -71,7 +75,9 @@ def staged():
         _purge(db)
 
 
-HEALED = {"drd_eps": 0.06, "drd_pu": 0.0, "srd_eps": 0.0, "srd_pu": 0.0}
+STAGED = {"drd_eps": 0.06, "drd_pu": 0.0, "srd_eps": 0.05, "srd_pu": 0.02}   # the template, as staged
+HEALED = {"drd_eps": 0.06, "drd_pu": 0.0, "srd_eps": 0.0, "srd_pu": 0.0}     # the QUOTE after the heal
+NAMES = {k: f"{MARK} {k.replace('_', ' ').upper()}" for k in STAGED}
 
 
 def _db_vals(ids) -> dict:
@@ -81,46 +87,49 @@ def _db_vals(ids) -> dict:
                 for k in ("drd_eps", "drd_pu", "srd_eps", "srd_pu")}
 
 
-def _wait_for_heal(ids, tries: int = 40) -> dict:
-    """The heal's PUTs land asynchronously after the panel renders — poll the DB."""
-    for _ in range(tries):
-        vals = _db_vals(ids)
-        if vals == HEALED:
-            return vals
-        time.sleep(0.5)
-    return _db_vals(ids)
+def _is_healed_calc(resp) -> bool:
+    if "/api/calculate" not in resp.url or resp.request.method != "POST" or resp.status != 200:
+        return False
+    bv = resp.json().get("body_variables") or {}
+    return all(bv.get(NAMES[k]) == v for k, v in HEALED.items())
 
 
-def test_load_zeroes_inactive_door_and_persists(page: Page, live_server: str, staged) -> None:
-    ids = staged
-    assert _db_vals(ids)["srd_eps"] == 0.05          # fixture sanity: dirty before
-
+def _open_body(page: Page, live_server: str, ids) -> dict:
     admin_session(page, base=live_server)
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
-    page.select_option("#trailer-select", str(ids["trailer"]))
+    with page.expect_response(_is_healed_calc, timeout=30_000) as calc:
+        page.select_option("#trailer-select", str(ids["trailer"]))
+    return calc.value.json()
 
+
+def test_load_zeroes_inactive_door_on_the_quote_only(page: Page, live_server: str, staged) -> None:
+    ids = staged
+    assert _db_vals(ids) == STAGED                    # fixture sanity: dirty before
+
+    res = _open_body(page, live_server, ids)          # waits for a calc that priced the heal
+    bv = res["body_variables"]
+    assert {k: bv[NAMES[k]] for k in HEALED} == HEALED
     # Active door renders with its thickness intact. The INACTIVE door's rows
-    # deliberately do NOT render (children unrender when the gate is off), so
-    # the heal is asserted where it matters: the persisted template values.
+    # deliberately do NOT render (children unrender when the gate is off).
     expect(page.locator(f"span.bv-edit[data-bom-id='{ids['drd_eps']}']")).to_have_text(
         "(0.060 m)", timeout=30_000)
     expect(page.locator(f"span.bv-edit[data-bom-id='{ids['srd_eps']}']")).to_have_count(0)
 
-    vals = _wait_for_heal(ids)
-    assert vals == HEALED, vals                       # persist-to-template semantics
+    time.sleep(2)                                     # give any (wrong) template write time to land
+    assert _db_vals(ids) == STAGED                    # RT2: the template is untouched
     shot(page, "01-healed-panel", journey=JOURNEY)
 
 
-def test_second_load_is_clean_noop(page: Page, live_server: str, staged) -> None:
+def test_every_load_heals_the_quote_again(page: Page, live_server: str, staged) -> None:
+    """Nothing was persisted, so a second open heals its OWN quote again — and still
+    writes nothing."""
     ids = staged
-    assert _db_vals(ids) == HEALED                    # already healed by test 1
-    admin_session(page, base=live_server)
-    page.goto("/calculator")
-    expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
-    page.select_option("#trailer-select", str(ids["trailer"]))
+    assert _db_vals(ids) == STAGED
+    res = _open_body(page, live_server, ids)
+    assert {k: res["body_variables"][NAMES[k]] for k in HEALED} == HEALED
     expect(page.locator(f"span.bv-edit[data-bom-id='{ids['drd_eps']}']")).to_have_text(
         "(0.060 m)", timeout=30_000)
-    time.sleep(2)                                     # give any (wrong) writes time to land
-    assert _db_vals(ids) == HEALED                    # unchanged — heal is idempotent
+    time.sleep(2)
+    assert _db_vals(ids) == STAGED
     shot(page, "02-second-load-clean", journey=JOURNEY)

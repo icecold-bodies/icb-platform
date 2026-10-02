@@ -173,8 +173,27 @@ def browser(playwright_instance) -> "Browser":  # type: ignore[valid-type]
 @pytest.fixture()
 def browser_context(browser: "Browser", live_server: str) -> "BrowserContext":  # type: ignore[valid-type]
     context = browser.new_context(base_url=live_server, viewport={"width": 1440, "height": 900})
+    if _LATE_MESSAGE_LISTENER_MS > 0:
+        context.add_init_script(_LATE_LISTENER_JS % int(_LATE_MESSAGE_LISTENER_MS))
     yield context
     context.close()
+
+
+# Local repro knob (RT2 1b) for the embed's postMessage race on a slow runner: the
+# MES header asks the calculator iframe for the dialog state before the deferred
+# calculator.js has registered its 'message' listener, so the question is lost.
+# MES_JOURNEY_LATE_MESSAGE_LISTENER_MS=3000 makes every calculator frame register its
+# message listeners that much later — the race, on demand. Off (0) by default, so CI
+# behaviour is unchanged. Init scripts run via CDP, outside the page's CSP.
+_LATE_MESSAGE_LISTENER_MS = float(os.environ.get("MES_JOURNEY_LATE_MESSAGE_LISTENER_MS", "0") or 0)
+_LATE_LISTENER_JS = """(() => {
+  if (!/calculator/.test(location.pathname)) return;
+  const add = window.addEventListener;
+  window.addEventListener = function (type, fn, opts) {
+    if (type === 'message') { setTimeout(() => add.call(window, type, fn, opts), %d); return; }
+    return add.call(this, type, fn, opts);
+  };
+})();"""
 
 
 # Local repro knob for CI-only reds. The journey suite has now produced several

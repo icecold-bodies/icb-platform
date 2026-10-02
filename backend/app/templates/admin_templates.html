@@ -102,6 +102,18 @@
           style="width:72px;padding:4px 8px;font-size:12px" placeholder="0"
           onchange="saveDimensions()"/>
       </div>
+      <!-- RT2 Part 1c — the PU foam grade a NEW costing on this body opens on.
+           Saved costings keep their own grade; sales can still change it on a quote. -->
+      <div style="display:flex;align-items:center;gap:6px;margin-left:8px;
+        padding-left:12px;border-left:1px solid var(--border)"
+        title="The PU foam grade a NEW costing on this body opens on. Saved costings keep their own grade; the quote can still change it.">
+        <label for="tt-foam" style="font-size:11px;color:var(--text-dim);white-space:nowrap">Default PU foam</label>
+        <select id="tt-foam" class="form-control" style="width:auto;padding:3px 6px;font-size:12px"
+          onchange="saveDefaultFoam()">
+          <option value="32D">32D PU FOAM</option>
+          <option value="4G">4G FOAM</option>
+        </select>
+      </div>
       <span id="dims-saved" style="font-size:11px;color:var(--green);opacity:0;
         transition:opacity .4s">✓ Saved</span>
       <!-- Phase 3 per-trailer opt-in for the Configurator's new gating logic. -->
@@ -707,7 +719,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/admin_templates.js?v=18"></script>
+<script src="/static/js/admin_templates.js?v=19"></script>
 <script src="/static/js/driver.js.iife.js"></script>
 <script>
 (function () {

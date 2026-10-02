@@ -18,12 +18,14 @@ A pack is a small YAML document the user edits (tests/costing_audit/packs/):
             panels: {FRONT: pu:0.05, DRD: pu:0.05, SIDES: pu:0.05, ROOF: pu:0.06, FLOOR: pu:0.06}
         flags: {"RICE GRAIN FLOOR": N}               # optional other-flag overrides (else as saved)
         section_map: {"EXCEL LABEL": "MES NAME"}     # optional
+        foam_default: 4G                             # optional (RT2): the grade Burt's sheet
+                                                     # prices this body at; default 32D
     thickness_defaults:                              # used when the sheet's own block reads 0
       eps: {FRONT: 0.06, DRD: 0.06, SRD: 0.06, SIDES: 0.06, ROOF: 0.076, FLOOR: 0.076}
       pu:  {FRONT: 0.06, DRD: 0.06, SRD: 0.06, SIDES: 0.06, ROOF: 0.076, FLOOR: 0.076}
 
-Every (body x length x width x height x variant) is one Scenario. The six
-named variants (ratified default 4):
+Every (body x length x width x height x variant) is one Scenario. The named
+variants (ratified default 4):
 
     as_sheet  Burt's own flag/thickness block exactly as saved
     all_eps   every panel EPS at the sheet's EPS thickness (else defaults)
@@ -31,6 +33,13 @@ named variants (ratified default 4):
     srd       as_sheet insulation, rear door = SRD
     drd       as_sheet insulation, rear door = DRD
     foam_4g   as_sheet, PU foam graded 4G
+    foam_32d  as_sheet, PU foam graded 32D (RT2: the other grade on a 4G-default body)
+
+The foam grade (RT2 Part 1c, RT2_RULING_1 R6). foam_4g / foam_32d — and a custom
+variant with `foam:` — SET the grade. Every other variant takes the BODY's default,
+the way a new quote opens: on the golden side the pack's `foam_default` (Burt's
+sheet), on the MES side the body's own default_insulation_foam (Body Templates).
+When those two disagree the PU cells say so — that is a real quoting difference.
 """
 from __future__ import annotations
 
@@ -48,7 +57,9 @@ from .mapping import PANELS, DOOR_PANELS, SHEET_TO_TRAILER, norm_name
 if TYPE_CHECKING:        # annotations only — sheet_map imports openpyxl, the run path must not
     from .sheet_map import SheetMap
 
-NAMED_VARIANTS = ("as_sheet", "all_eps", "all_pu", "srd", "drd", "foam_4g")
+NAMED_VARIANTS = ("as_sheet", "all_eps", "all_pu", "srd", "drd", "foam_4g", "foam_32d")
+FOAM_VARIANTS = {"foam_4g": "4G", "foam_32d": "32D"}     # the named variants that SET the grade
+FOAM_GRADES = ("32D", "4G")
 # as_sheet: Burt's own gate rows decide (every sheet has an EPS-gated and a
 #           PU-gated row per door section, so honest flags price PU doors);
 # force:    the door's gate cells are written 1/0 by door type (for sheets whose
@@ -84,6 +95,15 @@ class Scenario:
     flags: dict[str, str]                  # other flag label -> Y/N (as sheet unless overridden)
     gate_mode: str = "as_sheet"
     section_map: dict[str, str] = field(default_factory=dict)
+    # RT2 Part 1c — True when the variant sets the grade itself (foam_4g / foam_32d,
+    # or a custom variant with `foam:`); False = the body's default grade. None — a
+    # golden written before RT2 — is derived from the variant name.
+    foam_explicit: bool | None = None
+
+    @property
+    def sets_foam(self) -> bool:
+        """Does this scenario name its foam grade, or open on the body's default?"""
+        return bool(self.foam_explicit) if self.foam_explicit is not None else self.variant in FOAM_VARIANTS
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -124,6 +144,13 @@ def load_pack(path: Path) -> Pack:
         for v in b.get("variants") or []:
             if v not in NAMED_VARIANTS and v not in (b.get("custom_variants") or {}):
                 raise ValueError(f"{path.name}: unknown variant {v!r} for {b['sheet']!r}")
+        fd = str(b.get("foam_default") or "32D").upper()
+        if fd not in FOAM_GRADES:
+            raise ValueError(f"{path.name}: foam_default {b.get('foam_default')!r} for {b['sheet']!r} "
+                             f"must be one of {FOAM_GRADES}")
+        for cv, spec in (b.get("custom_variants") or {}).items():
+            if "foam" in (spec or {}) and str(spec["foam"]).upper() not in FOAM_GRADES:
+                raise ValueError(f"{path.name}: custom variant {cv!r} foam {spec['foam']!r} must be one of {FOAM_GRADES}")
     td = raw.get("thickness_defaults") or {}
     thickness_defaults = {
         "eps": {**DEFAULT_THICKNESS["eps"], **{k.upper(): float(v) for k, v in (td.get("eps") or {}).items()}},
@@ -215,12 +242,13 @@ def expand_pack(pack: Pack, maps: dict[str, SheetMap]) -> list[Scenario]:
         heights = [float(x) for x in (body.get("heights") or [sm_input_value(sm, "HEIGHT")])]
         variants = list(body.get("variants") or ["as_sheet"])
         custom = body.get("custom_variants") or {}
+        foam_default = str(body.get("foam_default") or "32D").upper()   # RT2 Part 1c
         for L in lengths:
             for W in widths:
                 for H in heights:
                     for var in variants:
                         panels = {p: PanelSpec(s.insulation, s.thickness) for p, s in base_panels.items()}
-                        door, foam = base_door, "32D"
+                        door, foam, foam_explicit = base_door, foam_default, False
                         if var == "all_eps" or var == "all_pu":
                             kind = "eps" if var == "all_eps" else "pu"
                             for p in panels:
@@ -240,14 +268,15 @@ def expand_pack(pack: Pack, maps: dict[str, SheetMap]) -> list[Scenario]:
                                     panels[var.upper()] = PanelSpec(kind, _panel_thickness(kind, var.upper(), sm, pack.thickness_defaults))
                             if other in panels:
                                 panels[other] = PanelSpec("none", 0.0)
-                        elif var == "foam_4g":
-                            foam = "4G"
+                        elif var in FOAM_VARIANTS:
+                            foam, foam_explicit = FOAM_VARIANTS[var], True
                         elif var == "as_sheet":
                             pass
                         else:
                             spec = custom[var]
                             door = str(spec.get("door") or door).lower()
-                            foam = str(spec.get("foam") or "32D").upper()
+                            if spec.get("foam"):
+                                foam, foam_explicit = str(spec["foam"]).upper(), True
                             for p, txt in (spec.get("panels") or {}).items():
                                 panels[p.upper()] = _parse_panel_spec(txt)
                             for p in DOOR_PANELS:
@@ -257,7 +286,8 @@ def expand_pack(pack: Pack, maps: dict[str, SheetMap]) -> list[Scenario]:
                         out.append(Scenario(
                             id=sid, pack=pack.name, sheet=sheet, trailer_id=SHEET_TO_TRAILER[sheet],
                             variant=var, length=L, width=W, height=H, door=door, foam=foam,
-                            panels=panels, flags=flags, gate_mode=gate_mode, section_map=section_map))
+                            panels=panels, flags=flags, gate_mode=gate_mode, section_map=section_map,
+                            foam_explicit=foam_explicit))
     return out
 
 

@@ -121,8 +121,8 @@ def _goto_costing(page: Page, quote_number: str) -> None:
     expect(page.get_by_test_id("top-nav")).to_be_visible(timeout=T)
 
 
-def test_populated_panel_on_snapshot_record(page: Page, staged) -> None:
-    admin_session(page)
+def test_populated_panel_on_snapshot_record(page: Page, live_server: str, staged) -> None:
+    admin_session(page, base=live_server)   # RT2: base-aware, so it also runs on a side port
     _goto_costing(page, staged["quote_number"])
     panel = page.get_by_test_id("body-options-panel")
     expect(panel).to_be_visible(timeout=T)
@@ -132,8 +132,8 @@ def test_populated_panel_on_snapshot_record(page: Page, staged) -> None:
     shot(page, "01-populated-panel", journey=JOURNEY)
 
 
-def test_muted_fallback_on_seeded_costing(page: Page, seeded_costing: str) -> None:
-    admin_session(page)
+def test_muted_fallback_on_seeded_costing(page: Page, live_server: str, seeded_costing: str) -> None:
+    admin_session(page, base=live_server)   # RT2: base-aware, so it also runs on a side port
     _goto_costing(page, seeded_costing)
     panel = page.get_by_test_id("body-options-panel")
     expect(panel).to_be_visible(timeout=T)

@@ -133,6 +133,8 @@ function selectTrailer(id) {
   document.getElementById('tt-width').value   = t && t.default_width     != null ? t.default_width     : '';
   document.getElementById('tt-height').value  = t && t.default_height    != null ? t.default_height    : '';
   document.getElementById('tt-markup').value  = t && t.markup_percentage != null ? (t.markup_percentage * 100).toFixed(1) : '';
+  const foam = document.getElementById('tt-foam');   // RT2 Part 1c
+  if (foam) foam.value = (t && t.default_insulation_foam === '4G') ? '4G' : '32D';
   const cfgv2 = document.getElementById('tt-cfgv2');
   if (cfgv2) cfgv2.checked = !!(t && t.configurator_v2);
   const cfgv2Label = document.getElementById('tt-cfgv2-label');
@@ -206,6 +208,28 @@ async function saveConfiguratorV2() {
   } catch (e) {
     // Revert UI if the save failed
     document.getElementById('tt-cfgv2').checked = !next;
+  }
+}
+
+// RT2 Part 1c (RT2_RULING_1 R6) — the PU foam grade a NEW costing on this body
+// opens on (32D, or 4G for the bodies Burt prices at 4G FOAM). Admin-only, like
+// every PUT /api/trailers; the server accepts exactly '32D' or '4G'.
+async function saveDefaultFoam() {
+  if (!currentTTId) return;
+  const sel = document.getElementById('tt-foam');
+  const t = trailerMap[currentTTId];
+  const before = (t && t.default_insulation_foam === '4G') ? '4G' : '32D';
+  const next = sel.value === '4G' ? '4G' : '32D';
+  try {
+    await api('PUT', `/api/trailers/${currentTTId}`, { default_insulation_foam: next });
+    if (t) t.default_insulation_foam = next;
+    const saved = document.getElementById('dims-saved');
+    saved.style.opacity = '1';
+    setTimeout(() => { saved.style.opacity = '0'; }, 2000);
+    toast(`New costings on “${t ? t.name : 'this body'}” open on ${next === '4G' ? '4G FOAM' : '32D PU FOAM'}`, 'success');
+  } catch (e) {
+    sel.value = before;   // revert the control when the save failed
+    toast(e.message, 'error');
   }
 }
 

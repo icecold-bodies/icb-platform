@@ -22,15 +22,6 @@
   review_by: 2026-10-31
 
 - body: " UP TO 2,3 MTR FREEZER "
-  section: ["ROOF", "FLOOR"]
-  variant: all_pu
-  cause: ["BOTH PU", "DIFF PU"]
-  kind: known_defect
-  reason: "[DATA] PROD FREEZER 2.3 METER ROOF/FLOOR PU: 4.51 sheets x R557.50 (R2.5k) where Burt has 2.98 x R311.27 (R1.4k): +R1.1k per panel under PU."
-  owner: BA
-  review_by: 2026-10-31
-
-- body: " UP TO 2,3 MTR FREEZER "
   section: "REAR FRAME + FLOOR PLATE"
   variant: "*"
   cause: "3MM 3CR12 FLOOR PLATE"

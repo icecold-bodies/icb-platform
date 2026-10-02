@@ -1,14 +1,11 @@
-# Costing audit — CHILLERS. Three size classes, each swept across its length
-# band and the six named variants. Add lengths/widths/heights freely; every
-# combination becomes a scenario. Then: audit golden --pack chillers ...
+# Costing audit — CHILLERS. Three size classes, each swept across its length band.
+# Add lengths/widths/heights freely; every combination becomes a scenario. Then:
+# audit golden --pack chillers ...
 #
-# v1.58 — `srd_pu`: a single rear door insulated with PU. The named `srd`
-# variant keeps the sheet's own insulation, which is EPS on every chiller, so
-# the chillers' SRD PU line was never priced by the audit (it sat at R24.4k on
-# prod unseen). Its panels are pinned to the committed `srd` scenarios' states
-# (golden of 25 Sep) so only the rear door differs. Its 14 golden scenarios were
-# ADDED on 28 Sep from a later save of the September workbook — see
-# golden/chillers/_manifest.json "additions" for the source file and the check.
+# RT2 (RT2_RULING_1 R1/R5, RT2_DISPATCH Part 2.3): NO PU on any section of any chiller, any size
+# (Burt, 1 Oct) — the all_pu, foam_4g and srd_pu variants are gone, and Burt's 21 Sep chiller sheets
+# already carry every PU flag at N, so as_sheet / srd / drd are all-EPS. Sizes are pinned to the
+# golden this replaces (widths/heights used to follow each sheet's last-used state).
 name: chillers
 workbook_month: "2026-09"
 tolerance_pct: 1.0
@@ -16,18 +13,16 @@ gate_mode: as_sheet
 bodies:
   - sheet: "UP TO 2.3 CHILLER BODY"
     lengths: [1.8, 2.3, 2.7]
-    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g, srd_pu]
-    custom_variants:
-      srd_pu: {door: srd, panels: {FRONT: "eps:0.06", SRD: "pu:0.06", SIDES: "eps:0.06", ROOF: "eps:0.076", FLOOR: "eps:0.076"}}
+    widths: [1.8]
+    heights: [1.8]
+    variants: [as_sheet, all_eps, srd, drd]
   - sheet: "UP TO 5.5 CHILLER AND 2.3 WIDE"
     lengths: [3.0, 4.2, 5.5]
     widths: [2.3]
-    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g, srd_pu]
-    custom_variants:
-      srd_pu: {door: srd, panels: {FRONT: "eps:0.06", SRD: "pu:0.06", SIDES: "eps:0.06", ROOF: "eps:0.076", FLOOR: "eps:0.076"}}
+    heights: [2.3]
+    variants: [as_sheet, all_eps, srd, drd]
   - sheet: " 4.9 & UP CHILLER AND 2.5 WIDE "
     lengths: [4.9, 5.8, 7.5, 8.5]
     widths: [2.5, 2.6]
-    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g, srd_pu]
-    custom_variants:
-      srd_pu: {door: srd, panels: {FRONT: "eps:0.06", SRD: "pu:0.06", SIDES: "eps:0.06", ROOF: "eps:0.1", FLOOR: "eps:0.1"}}
+    heights: [2.56]
+    variants: [as_sheet, all_eps, srd, drd]

@@ -395,7 +395,8 @@ class ExcelOracle:
 # ── golden files ────────────────────────────────────────────────────────
 
 def write_golden(pack: Pack, oracle: ExcelOracle, results: dict[str, GoldenScenario],
-                 scenarios: list[Scenario], golden_dir: Path | None = None) -> Path:
+                 scenarios: list[Scenario], golden_dir: Path | None = None,
+                 provenance: dict | None = None, prove: str | None = None) -> Path:
     out_dir = Path(golden_dir or GOLDEN_DIR) / pack.name
     out_dir.mkdir(parents=True, exist_ok=True)
     for old in out_dir.glob("*.json"):
@@ -433,6 +434,11 @@ def write_golden(pack: Pack, oracle: ExcelOracle, results: dict[str, GoldenScena
         "scenario_count": len(scenarios),
         "sheets": {s: f"{sheet_slug(s)}.json" for s in by_sheet},
     }
+    if prove is not None:
+        manifest["prove_then_trust"] = prove
+    if provenance is not None:
+        # RT2 — a corrected set: where it came from, every correction with its authority, the proof
+        manifest["workbook"]["provenance"] = provenance
     (out_dir / "_manifest.json").write_text(json.dumps(manifest, indent=1, default=str), encoding="utf-8")
     return out_dir
 

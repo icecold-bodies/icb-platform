@@ -92,7 +92,7 @@
       ]
      }
     ],
-    "cached_total": 4727.070378,
+    "cached_total": 4725.851201,
     "unverifiable": null
    },
    {
@@ -200,7 +200,7 @@
       ]
      }
     ],
-    "cached_total": 6321.979038,
+    "cached_total": 6320.759861,
     "unverifiable": null
    },
    {
@@ -255,7 +255,7 @@
       ]
      }
     ],
-    "cached_total": 21348.905938,
+    "cached_total": 21343.35968,
     "unverifiable": null
    },
    {
@@ -282,7 +282,7 @@
       ]
      }
     ],
-    "cached_total": 11008.618502,
+    "cached_total": 11005.845373,
     "unverifiable": null
    },
    {
@@ -324,7 +324,7 @@
      "J179"
     ],
     "gates": [],
-    "cached_total": 8043.97299,
+    "cached_total": 7804.251178,
     "unverifiable": null
    },
    {
@@ -423,7 +423,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 66229.6361635511,
    "findings": [],
@@ -1265,7 +1266,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -1415,7 +1416,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 60644.5564194261,
    "findings": [],
@@ -2257,7 +2259,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -2407,7 +2409,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 66229.6361635511,
    "findings": [],
@@ -3249,7 +3252,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -3399,7 +3402,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 64652.1758728527,
    "findings": [],
@@ -4241,7 +4245,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -4391,7 +4395,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 66229.6361635511,
    "findings": [],
@@ -5233,7 +5238,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -5383,14 +5388,15 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 67935.3852776343,
+   "grand_total": 68172.8780389028,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 5044.056505,
-     "raw_total": 5044.05650466631,
+     "total": 5088.190727,
+     "raw_total": 5088.19072686701,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5422,8 +5428,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 1316.71160156779,
+       "price": 228.575286174497,
+       "total": 1360.84582376848,
        "stale": false
       },
       {
@@ -5668,8 +5674,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6638.965165,
-     "raw_total": 6638.96516473114,
+     "total": 6683.099387,
+     "raw_total": 6683.09938693184,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5703,8 +5709,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 1316.71160156779,
+       "price": 228.575286174497,
+       "total": 1360.84582376848,
        "stale": false
       },
       {
@@ -5850,8 +5856,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 11356.293162,
-     "raw_total": 5678.14658115213,
+     "total": 11455.77604,
+     "raw_total": 5727.88802010783,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5883,8 +5889,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 1483.99873127517,
+       "price": 228.575286174497,
+       "total": 1533.74017023087,
        "stale": false
       },
       {
@@ -5926,8 +5932,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 5860.141515,
-     "raw_total": 5860.14151483222,
+     "total": 5909.882954,
+     "raw_total": 5909.88295378792,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5959,8 +5965,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 1483.99873127517,
+       "price": 228.575286174497,
+       "total": 1533.74017023087,
        "stale": false
       },
       {
@@ -6225,7 +6231,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -6375,7 +6381,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 86697.5794373053,
    "findings": [],
@@ -7217,7 +7224,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -7367,7 +7374,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 79228.2727896904,
    "findings": [],
@@ -8209,7 +8217,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -8359,7 +8367,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 86697.5794373053,
    "findings": [],
@@ -9201,7 +9210,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -9351,7 +9360,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 85120.1191466069,
    "findings": [],
@@ -10193,7 +10203,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -10343,7 +10353,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 86697.5794373053,
    "findings": [],
@@ -11185,7 +11196,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -11335,14 +11346,15 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 88987.9341121939,
+   "grand_total": 89306.8219553899,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 5044.056505,
-     "raw_total": 5044.05650466631,
+     "total": 5088.190727,
+     "raw_total": 5088.19072686701,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11374,8 +11386,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 1316.71160156779,
+       "price": 228.575286174497,
+       "total": 1360.84582376848,
        "stale": false
       },
       {
@@ -11620,8 +11632,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6638.965165,
-     "raw_total": 6638.96516473114,
+     "total": 6683.099387,
+     "raw_total": 6683.09938693184,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11655,8 +11667,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 1316.71160156779,
+       "price": 228.575286174497,
+       "total": 1360.84582376848,
        "stale": false
       },
       {
@@ -11802,8 +11814,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 17481.993069,
-     "raw_total": 8740.99653450783,
+     "total": 17635.739335,
+     "raw_total": 8817.86966743937,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11835,8 +11847,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 2293.45258469799,
+       "price": 228.575286174497,
+       "total": 2370.32571762953,
        "stale": false
       },
       {
@@ -11878,8 +11890,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 9004.511432,
-     "raw_total": 9004.51143201342,
+     "total": 9081.384565,
+     "raw_total": 9081.38456494497,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -11911,8 +11923,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 2293.45258469799,
+       "price": 228.575286174497,
+       "total": 2370.32571762953,
        "stale": false
       },
       {
@@ -12177,7 +12189,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -12327,7 +12339,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 94884.756746807,
    "findings": [],
@@ -13169,7 +13182,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -13319,7 +13332,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 86661.7593377961,
    "findings": [],
@@ -14161,7 +14175,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -14311,7 +14325,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 94884.756746807,
    "findings": [],
@@ -15153,7 +15168,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -15303,7 +15318,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 93307.2964561086,
    "findings": [],
@@ -16145,7 +16161,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -16295,7 +16311,8 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 94884.756746807,
    "findings": [],
@@ -17137,7 +17154,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,
@@ -17287,14 +17304,15 @@
     },
     "flags": {},
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 97408.9536460177,
+   "grand_total": 97760.3995219847,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 5044.056505,
-     "raw_total": 5044.05650466631,
+     "total": 5088.190727,
+     "raw_total": 5088.19072686701,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -17326,8 +17344,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 1316.71160156779,
+       "price": 228.575286174497,
+       "total": 1360.84582376848,
        "stale": false
       },
       {
@@ -17572,8 +17590,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6638.965165,
-     "raw_total": 6638.96516473114,
+     "total": 6683.099387,
+     "raw_total": 6683.09938693184,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -17607,8 +17625,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 1316.71160156779,
+       "price": 228.575286174497,
+       "total": 1360.84582376848,
        "stale": false
       },
       {
@@ -17754,8 +17772,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 19932.273032,
-     "raw_total": 9966.13651585011,
+     "total": 20107.724653,
+     "raw_total": 10053.862326372,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -17787,8 +17805,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 2617.23412606711,
+       "price": 228.575286174497,
+       "total": 2704.95993658899,
        "stale": false
       },
       {
@@ -17830,8 +17848,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 10262.259399,
-     "raw_total": 10262.2593988859,
+     "total": 10349.985209,
+     "raw_total": 10349.9852094078,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -17863,8 +17881,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 221.162255033557,
-       "total": 2617.23412606711,
+       "price": 228.575286174497,
+       "total": 2704.95993658899,
        "stale": false
       },
       {
@@ -18129,7 +18147,7 @@
        "stale": false
       },
       {
-       "desc": "1MM GALV PLATE",
+       "desc": "1.2MM GALV PLATE",
        "qty": 0.74725,
        "price": 160.402684563758,
        "total": 239.721812080537,

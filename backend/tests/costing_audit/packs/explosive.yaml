@@ -1,6 +1,10 @@
 # Costing audit — EXPLOSIVE bodies. Note: the explosive sheets carry no FLOOR EPS/PU
 # rows (rows 18-19 empty) and MES explosive bodies have no rear doors — the door and
 # floor variants surface that as findings rather than pricing them.
+# RT2 (RT2_RULING_1 R5/R6): sizes pinned to the golden this replaces. Burt prices EXPLOSIVE 4.9 AND
+# UP's PU at 4G FOAM (PU!C19), and the MES body now opens on 4G (its Body Templates default), so its
+# variants that name no grade compare 4G to 4G (foam_default); foam_4g stays, so the cell set is
+# unchanged.
 name: explosive
 workbook_month: "2026-09"
 tolerance_pct: 1.0
@@ -8,10 +12,17 @@ gate_mode: as_sheet
 bodies:
   - sheet: "EXPLOSIVE UP TO 2.7"
     lengths: [1.8, 2.3, 2.7]
+    widths: [1.2]
+    heights: [1.6]
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
   - sheet: "EXPLOSIVE 2.7 TO 4.8"
     lengths: [2.7, 4.2, 4.8]
+    widths: [2.3]
+    heights: [2.2]
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
   - sheet: "EXPLOSIVE 4.9 AND UP"
     lengths: [4.9, 8.0, 14.7]
+    widths: [2.6]
+    heights: [2.1]
+    foam_default: 4G
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]

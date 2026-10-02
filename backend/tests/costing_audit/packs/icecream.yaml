@@ -1,4 +1,6 @@
 # Costing audit — ICE CREAM bodies.
+# RT2 (RT2_RULING_1 R5): sizes pinned to the golden this replaces; ' icecream 4.9 up' needs the
+# sheet map sheet_maps/icecream_4_9_up.yaml on Burt's 21 Sep workbook (no LENGTH label in A4).
 name: icecream
 workbook_month: "2026-09"
 tolerance_pct: 1.0
@@ -6,10 +8,16 @@ gate_mode: as_sheet
 bodies:
   - sheet: "icecream up to 3,2"
     lengths: [2.4, 3.2]
+    widths: [2.1]
+    heights: [2.0]
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
   - sheet: "icecream up to 4.8"
     lengths: [3.6, 4.2, 4.8]
+    widths: [2.3]
+    heights: [2.26]
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
   - sheet: " icecream 4.9 up"
     lengths: [4.9, 6.7, 8.0]
+    widths: [2.6]
+    heights: [2.6]
     variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]

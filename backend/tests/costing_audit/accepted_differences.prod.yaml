@@ -158,15 +158,3 @@
   owner: BA
   review_by: 2026-10-31
 
-# ── RT1 ruling 3 (1 Oct 2026): Manifest F — the golden's 4G price is older than prod's ──
-# A stop-gap until the golden is rebuilt from Burt's 21 Sep workbooks. It absorbs only a 4G-variant PU foam
-# difference: the 32D variants of the same lines still guard every formula and quantity.
-
-- body: "*"
-  section: "*"
-  variant: foam_4g
-  cause: ["DIFF PU", "BOTH PU"]
-  kind: tolerated
-  reason: "[RULING] Manifests F + F2 (RT1 ruling 3 and addendum): prod prices 4G PU foam at Burt's 21 Sep 4G, R5 581 = the PU material's R4 100 (Burt's corrected 32D) x 5581/4100; the golden is his September workbook (4G R5 400), so every costed 4G PU foam line reads +3.35 % against it (32D matches the golden: both R4 100). A stop-gap: rebuild the golden from the 21 Sep workbooks, then remove this entry. EXPIRED means the golden refresh has not shipped."
-  owner: BA
-  review_by: 2026-10-15

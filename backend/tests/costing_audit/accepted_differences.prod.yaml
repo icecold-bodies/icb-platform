@@ -113,15 +113,6 @@
 
 # ── v1.57.2: mechanisms surfaced when an entry had to EXPLAIN the whole difference ──
 
-- body: "UP TO 2.3 CHILLER BODY"
-  section: DRD
-  variant: all_pu
-  cause: "MISSING_IN_MES EPS"
-  kind: known_defect
-  reason: "[RULING] Burt's UP TO 2.3 CHILLER sheet charges the double rear door's EPS line (R432) even when the door is PU — the line carries no insulation gate, so the sheet prices EPS and PU together. MES charges PU only. Burt to confirm which is right."
-  owner: BA
-  review_by: 2026-10-31
-
 - body: "*"
   section: SRD
   variant: [srd, srd_pu]

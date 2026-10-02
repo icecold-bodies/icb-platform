@@ -9,9 +9,9 @@
    "HEIGHT": "C6"
   },
   "input_values": {
-   "LENGTH": 8.2,
+   "LENGTH": 7.5,
    "WIDTH": 2.6,
-   "HEIGHT": 2.56
+   "HEIGHT": 2.6
   },
   "control_panel": false,
   "selfcheck_ok": true,
@@ -122,7 +122,7 @@
       ]
      }
     ],
-    "cached_total": 5588.153405,
+    "cached_total": 5649.101848,
     "unverifiable": null
    },
    {
@@ -230,7 +230,7 @@
       ]
      }
     ],
-    "cached_total": 6352.841946,
+    "cached_total": 6414.067012,
     "unverifiable": null
    },
    {
@@ -258,7 +258,7 @@
       ]
      }
     ],
-    "cached_total": 6438.75928,
+    "cached_total": 6472.80008,
     "unverifiable": null
    },
    {
@@ -285,7 +285,7 @@
       ]
      }
     ],
-    "cached_total": 35953.793562,
+    "cached_total": 33283.800667,
     "unverifiable": null
    },
    {
@@ -312,7 +312,7 @@
       ]
      }
     ],
-    "cached_total": 19899.147084,
+    "cached_total": 18213.664864,
     "unverifiable": null
    },
    {
@@ -363,7 +363,7 @@
       ]
      }
     ],
-    "cached_total": 37642.592617,
+    "cached_total": 34462.453291,
     "unverifiable": null
    },
    {
@@ -377,7 +377,7 @@
      "J169"
     ],
     "gates": [],
-    "cached_total": 12802.708,
+    "cached_total": 11951.394,
     "unverifiable": null
    },
    {
@@ -391,7 +391,7 @@
      "J199"
     ],
     "gates": [],
-    "cached_total": 9920.504025,
+    "cached_total": 9580.304025,
     "unverifiable": null
    },
    {
@@ -419,7 +419,7 @@
       ]
      }
     ],
-    "cached_total": 5432.105904,
+    "cached_total": 5452.96632,
     "unverifiable": null
    },
    {
@@ -447,7 +447,7 @@
      "J224"
     ],
     "gates": [],
-    "cached_total": 344.7,
+    "cached_total": 319.5,
     "unverifiable": null
    }
   ],
@@ -499,7 +499,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 98212.423446322,
    "findings": [],
@@ -1640,7 +1641,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 84345.94857883,
    "findings": [],
@@ -2781,7 +2783,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 98212.423446322,
    "findings": [],
@@ -3922,7 +3925,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 92757.1027296508,
    "findings": [],
@@ -5063,7 +5067,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 98212.423446322,
    "findings": [],
@@ -6204,14 +6209,15 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 104159.240338027,
+   "grand_total": 104987.220228333,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 6052.035541,
-     "raw_total": 6052.03554069498,
+     "total": 6116.622207,
+     "raw_total": 6116.62220733015,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6243,8 +6249,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 1926.89502668456,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -6503,8 +6509,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6816.724082,
-     "raw_total": 6816.724082,
+     "total": 6881.310749,
+     "raw_total": 6881.31074863517,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6538,8 +6544,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 1926.89502668456,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -6692,8 +6698,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 23605.662751,
-     "raw_total": 11802.831375504,
+     "total": 23867.71521,
+     "raw_total": 11933.8576049483,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6725,8 +6731,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 3909.06982872483,
+       "price": 334.500418791946,
+       "total": 4040.09605816913,
        "stale": false
       },
       {
@@ -6775,8 +6781,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 13565.132934,
-     "raw_total": 13565.1329340101,
+     "total": 13783.509983,
+     "raw_total": 13783.5099830839,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6808,8 +6814,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 6515.11638120805,
+       "price": 557.500697986577,
+       "total": 6733.49343028188,
        "stale": false
       },
       {
@@ -6844,8 +6850,8 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 24262.337821,
-     "raw_total": 24262.3378209198,
+     "total": 24480.71487,
+     "raw_total": 24480.7148699937,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6881,8 +6887,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 6515.11638120805,
+       "price": 557.500697986577,
+       "total": 6733.49343028188,
        "stale": false
       },
       {
@@ -7345,7 +7351,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 119018.669447687,
    "findings": [],
@@ -8486,7 +8493,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 101684.282218101,
    "findings": [],
@@ -9627,7 +9635,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 119018.669447687,
    "findings": [],
@@ -10768,7 +10777,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 113563.348731016,
    "findings": [],
@@ -11909,7 +11919,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 119018.669447687,
    "findings": [],
@@ -13050,14 +13061,15 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 126587.80637805,
+   "grand_total": 127641.663135277,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 6052.035541,
-     "raw_total": 6052.03554069498,
+     "total": 6116.622207,
+     "raw_total": 6116.62220733015,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -13089,8 +13101,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 1926.89502668456,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -13349,8 +13361,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6816.724082,
-     "raw_total": 6816.724082,
+     "total": 6881.310749,
+     "raw_total": 6881.31074863517,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -13384,8 +13396,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 1926.89502668456,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -13538,8 +13550,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 31113.560302,
-     "raw_total": 15556.7801509201,
+     "total": 31460.316586,
+     "raw_total": 15730.1582929121,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -13571,8 +13583,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 5172.60755114094,
+       "price": 334.500418791946,
+       "total": 5345.98569313289,
        "stale": false
       },
       {
@@ -13621,8 +13633,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 17903.607628,
-     "raw_total": 17903.6076279945,
+     "total": 18192.571198,
+     "raw_total": 18192.571197981,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -13654,8 +13666,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 8621.0125852349,
+       "price": 557.500697986577,
+       "total": 8909.97615522148,
        "stale": false
       },
       {
@@ -13690,8 +13702,8 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 32017.171616,
-     "raw_total": 32017.1716161262,
+     "total": 32306.135186,
+     "raw_total": 32306.1351861128,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -13727,8 +13739,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 8621.0125852349,
+       "price": 557.500697986577,
+       "total": 8909.97615522148,
        "stale": false
       },
       {
@@ -14191,7 +14203,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 141125.305824138,
    "findings": [],
@@ -15332,7 +15345,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 120106.261709827,
    "findings": [],
@@ -16473,7 +16487,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 141125.305824138,
    "findings": [],
@@ -17614,7 +17629,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 135669.985107467,
    "findings": [],
@@ -18755,7 +18771,8 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": false
    },
    "grand_total": 141125.305824138,
    "findings": [],
@@ -19896,14 +19913,15 @@
      "2ND ROW ALU KICK PLATE": "N"
     },
     "gate_mode": "as_sheet",
-    "section_map": {}
+    "section_map": {},
+    "foam_explicit": true
    },
-   "grand_total": 150418.157795574,
+   "grand_total": 151712.008723905,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 6052.035541,
-     "raw_total": 6052.03554069498,
+     "total": 6116.622207,
+     "raw_total": 6116.62220733015,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -19935,8 +19953,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 1926.89502668456,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -20195,8 +20213,8 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 6816.724082,
-     "raw_total": 6816.724082,
+     "total": 6881.310749,
+     "raw_total": 6881.31074863517,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -20230,8 +20248,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 1926.89502668456,
+       "price": 334.500418791946,
+       "total": 1991.48169331973,
        "stale": false
       },
       {
@@ -20384,8 +20402,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 39090.70145,
-     "raw_total": 19545.3507247997,
+     "total": 39527.455548,
+     "raw_total": 19763.7277738736,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -20417,8 +20435,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 323.652080536913,
-       "total": 6515.11638120805,
+       "price": 334.500418791946,
+       "total": 6733.49343028188,
        "stale": false
       },
       {
@@ -20467,8 +20485,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 22513.23699,
-     "raw_total": 22513.2369903528,
+     "total": 22877.198739,
+     "raw_total": 22877.1987388092,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -20500,8 +20518,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 10858.5273020134,
+       "price": 557.500697986577,
+       "total": 11222.4890504698,
        "stale": false
       },
       {
@@ -20536,8 +20554,8 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 40256.682524,
-     "raw_total": 40256.6825235331,
+     "total": 40620.644272,
+     "raw_total": 40620.6442719894,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -20573,8 +20591,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 539.420134228188,
-       "total": 10858.5273020134,
+       "price": 557.500697986577,
+       "total": 11222.4890504698,
        "stale": false
       },
       {

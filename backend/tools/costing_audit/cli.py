@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 import tempfile
@@ -51,12 +52,27 @@ def cmd_discover(a) -> int:
 
 # ── golden ──────────────────────────────────────────────────────────────
 
-def _golden(pack_arg: str, workbook_dir: str, *, golden_dir, work_dir, soffice, sheet_maps, prove: bool) -> Path:
+def _golden(pack_arg: str, workbook_dir: str, *, golden_dir, work_dir, soffice, sheet_maps, prove: bool,
+            provenance: str | None = None) -> Path:
     from .excel_oracle import ExcelOracle, write_golden
     from .scenarios import load_pack, expand_pack
+    prov = None
+    if provenance:
+        # RT2 — a CORRECTED workbook set (Burt-authorised corrections made on a copy) carries its
+        # provenance into the manifest: the source, each correction, its authority, and the proof
+        # that replaces prove-then-trust (Burt's cached results predate the corrections).
+        prov = json.loads(Path(provenance).read_text(encoding="utf-8"))
+        files = {k.split()[0]: v for k, v in (prov.get("files", {}).get("corrected") or {}).items()}
+        if not files:
+            raise SystemExit(f"{provenance}: no 'files.corrected' block — not a build_corrected_set.py provenance")
     pack = load_pack(_pack_path(pack_arg))
     work = Path(work_dir) if work_dir else Path(tempfile.mkdtemp(prefix=f"costing_audit_{pack.name}_"))
     o = ExcelOracle(Path(workbook_dir), work_dir=work, soffice=soffice, sheet_maps_dir=sheet_maps, log=_log)
+    if prov is not None:
+        want = {k.split()[0]: v for k, v in prov["files"]["corrected"].items()}
+        have = {k.split()[0]: v for k, v in o.fingerprint.items()}
+        if want != have:
+            raise SystemExit(f"--provenance names files {want}, but {workbook_dir} holds {have}")
     for s in pack.sheets:
         sm = o.discover(s)
         if not sm.selfcheck_ok:
@@ -70,14 +86,15 @@ def _golden(pack_arg: str, workbook_dir: str, *, golden_dir, work_dir, soffice, 
     scenarios = expand_pack(pack, o.maps)
     _log(f"[golden] {len(scenarios)} scenarios in pack {pack.name}")
     results = o.run(scenarios)
-    out = write_golden(pack, o, results, scenarios, golden_dir=golden_dir)
+    out = write_golden(pack, o, results, scenarios, golden_dir=golden_dir, provenance=prov,
+                       prove="ran" if prove else ("replaced by the corrections proof" if prov else "skipped"))
     _log(f"[golden] wrote {out}")
     return out
 
 
 def cmd_golden(a) -> int:
     _golden(a.pack, a.workbook_dir, golden_dir=a.golden_dir, work_dir=a.work_dir, soffice=a.soffice,
-            sheet_maps=a.sheet_maps, prove=not a.no_prove)
+            sheet_maps=a.sheet_maps, prove=not a.no_prove, provenance=a.provenance)
     return 0
 
 
@@ -200,6 +217,9 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--pack", required=True, help="pack name (tests/costing_audit/packs/<name>.yaml) or path")
     g.add_argument("--golden-dir", default=None, help=f"default {GOLDEN_DIR}")
     g.add_argument("--no-prove", action="store_true", help="skip the null-scenario prove-then-trust check")
+    g.add_argument("--provenance", default=None,
+                   help="corrections.json of a corrected workbook set (build_corrected_set.py): recorded in the "
+                        "manifest; the workbook dir must hold exactly its 'corrected' files")
     g.set_defaults(fn=cmd_golden)
 
     r = sub.add_parser("run", help="MES probe + compare vs golden -> HTML/CSV/JSON/MD; exit 1 on unaccepted FLAG")

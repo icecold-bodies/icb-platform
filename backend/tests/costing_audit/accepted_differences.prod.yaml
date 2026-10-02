@@ -12,39 +12,12 @@
 # them. F2 narrowed to the ICECREAM 4.8 plywood draft choice. The held single-door rulings
 # (rear frame, SRD plywood/glue) also cover the chillers' new `srd_pu` scenarios.
 
-- body: ["UP TO 2.3 CHILLER BODY", "UP TO 5.5 CHILLER AND 2.3 WIDE", " 4.9 & UP CHILLER AND 2.5 WIDE "]
-  section: ["FRONT", "SIDES", "ROOF", "FLOOR", "DRD"]
-  variant: all_pu
-  cause: ["DIFF PU", "BOTH PU", "Rhinotex", "TAPPING BLOCKS", "GLUE LINE", "PLYWOOD", "PICTURE FRAME"]
-  kind: known_defect
-  reason: "[RULING] PROD prices chiller PU at R334.50/sheet (the September 32D rate) where Burt's chiller sheets hard-code a 2018 rate (3090 -> R185.20/sheet): MES +R890 (front) to +R4k (sides) per PU panel. Prod is likely the current one; Burt's sheets need the [1]PU! link."
-  owner: BA
-  review_by: 2026-10-31
-
 - body: ["UP TO 2.3 CHILLER BODY", " 4.9 & UP CHILLER AND 2.5 WIDE "]
   section: SRD
   variant: srd
   cause: ["DIFF EPS", "BOTH EPS"]
   kind: known_defect
   reason: "[DATA] PROD SRD EPS line priced differently from Burt on CHILLER 2.3 / CHILLER LARGE (-R127 to -R148)."
-  owner: BA
-  review_by: 2026-10-31
-
-- body: " UP TO 2,3 MTR FREEZER "
-  section: ["ROOF", "FLOOR"]
-  variant: all_pu
-  cause: ["BOTH PU", "DIFF PU"]
-  kind: known_defect
-  reason: "[DATA] PROD FREEZER 2.3 METER ROOF/FLOOR PU: 4.51 sheets x R557.50 (R2.5k) where Burt has 2.98 x R311.27 (R1.4k): +R1.1k per panel under PU."
-  owner: BA
-  review_by: 2026-10-31
-
-- body: " UP TO 2,3 MTR FREEZER "
-  section: "REAR FRAME + FLOOR PLATE"
-  variant: "*"
-  cause: "3MM 3CR12 FLOOR PLATE"
-  kind: known_defect
-  reason: "[DATA] 3MM 3CR12 FLOOR PLATE priced R1 040.16 on prod vs R965.76 on Burt's sheet (+R63, 2.8 % of the section) on FREEZER 2.3 METER."
   owner: BA
   review_by: 2026-10-31
 
@@ -102,15 +75,6 @@
   owner: BA
   review_by: 2026-10-31
 
-- body: " 4.9 & UP FREEZER BODY (2"
-  section: SIDES
-  variant: "*"
-  cause: ["Rhinotex", "GLUE LINE", "PLYWOOD", "PICTURE FRAME"]
-  kind: known_defect
-  reason: "[MES] FREEZER LARGE SIDES skin formulas take the panel height from WIDTH where Burt uses HEIGHT; +1.2 % at W 2.6 / H 2.56 and growing with the W-H gap (prod too)."
-  owner: BA
-  review_by: 2026-10-31
-
 - body: ["EXPLOSIVE 2.7 TO 4.8", "EXPLOSIVE 4.9 AND UP"]
   section: ["ROOF", "SIDES", "FRONT", "DRD"]
   variant: "*"
@@ -121,15 +85,6 @@
   review_by: 2026-10-31
 
 # ── v1.57.2: mechanisms surfaced when an entry had to EXPLAIN the whole difference ──
-
-- body: "UP TO 2.3 CHILLER BODY"
-  section: DRD
-  variant: all_pu
-  cause: "MISSING_IN_MES EPS"
-  kind: known_defect
-  reason: "[RULING] Burt's UP TO 2.3 CHILLER sheet charges the double rear door's EPS line (R432) even when the door is PU — the line carries no insulation gate, so the sheet prices EPS and PU together. MES charges PU only. Burt to confirm which is right."
-  owner: BA
-  review_by: 2026-10-31
 
 - body: "*"
   section: SRD
@@ -158,15 +113,14 @@
   owner: BA
   review_by: 2026-10-31
 
-# ── RT1 ruling 3 (1 Oct 2026): Manifest F — the golden's 4G price is older than prod's ──
-# A stop-gap until the golden is rebuilt from Burt's 21 Sep workbooks. It absorbs only a 4G-variant PU foam
-# difference: the 32D variants of the same lines still guard every formula and quantity.
 
-- body: "*"
-  section: "*"
-  variant: foam_4g
-  cause: ["DIFF PU", "BOTH PU"]
-  kind: tolerated
-  reason: "[RULING] Manifests F + F2 (RT1 ruling 3 and addendum): prod prices 4G PU foam at Burt's 21 Sep 4G, R5 581 = the PU material's R4 100 (Burt's corrected 32D) x 5581/4100; the golden is his September workbook (4G R5 400), so every costed 4G PU foam line reads +3.35 % against it (32D matches the golden: both R4 100). A stop-gap: rebuild the golden from the 21 Sep workbooks, then remove this entry. EXPIRED means the golden refresh has not shipped."
+# ── RT2 (2 Oct 2026): surfaced by the golden rebuilt on Burt's own 21 Sep workbook (RT2_RETURN_2 §2) ──
+
+- body: "UP TO 5.5 CHILLER AND 2.3 WIDE"
+  section: "DRD DOOR FITTINGS"
+  variant: "*"
+  cause: "2317 DOOR RUBBER"
+  kind: known_defect
+  reason: "[BURT] Burt's UP TO 5.5 CHILLER sheet charges no 2317 DOOR RUBBER on its rear doors — the line's totals (F60 single, F97 double) are a literal 0 in every version of his file (25 Aug, 21 Sep) — while MES charges it (CHILLER MEDIUM bom 3216: 11.174 m x R60.18 = R672.45 on the double door). The golden this replaced was built on a local copy that charged it. Burt to confirm whether the CHILLER MEDIUM rear doors take the 2317 rubber."
   owner: BA
-  review_by: 2026-10-15
+  review_by: 2026-10-31

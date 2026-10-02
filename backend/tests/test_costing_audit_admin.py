@@ -336,8 +336,9 @@ def test_a_full_run_changes_no_pricing_data(svc, loaded, people, run_ids):
 
     r = _row(rid)
     assert r.status in ("passed", "flagged"), r.error
-    # All = chillers 98 (84 + the v1.58 single-door PU scenarios) + freezers + icecream + explosive
-    assert r.progress_done == r.progress_total == 254
+    # All = chillers 56 + freezers 54 + icecream 48 + explosive 54. RT2 (Burt, 1 Oct: no PU on chillers) took the
+    # 42 chiller PU scenarios out of the chillers pack (98 -> 56), so 254 -> 212.
+    assert r.progress_done == r.progress_total == 212
     assert r.count_pass > 0 and r.finished_at is not None
     d = svc.decode_report(r.report_json_gz)
     assert d["pack"] == "all" and set(d["golden_manifest"]["packs"]) == set(svc.ALL_PACKS)

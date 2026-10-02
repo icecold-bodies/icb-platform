@@ -11,7 +11,7 @@ set -u
 SCEN=${1:-happy}
 KIT=${2:-rt3/families}
 WIN=/mnt/c/Users/micge/Documents
-REPO=$WIN/icb-platform-rt3
+REPO=$WIN/icb-platform          # the main checkout: WSL git cannot follow a worktree's Windows .git path; same refs
 HERE=$(cd "$(dirname "$0")" && pwd)
 SIM=/root/relsim4-$SCEN-$(date +%s)
 G="git -c safe.directory=*"

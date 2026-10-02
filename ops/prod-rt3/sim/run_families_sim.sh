@@ -7,7 +7,7 @@
 set -u
 KIT=${1:-rt3/families}
 WIN=/mnt/c/Users/micge/Documents
-REPO=$WIN/icb-platform-rt3
+REPO=$WIN/icb-platform          # the main checkout: WSL git cannot follow a worktree's Windows .git path; same refs
 HERE=$(cd "$(dirname "$0")" && pwd)
 SIM=/root/rt3simF-$(date +%s)
 G="git -c safe.directory=*"
@@ -24,7 +24,8 @@ $G fetch -q "$REPO" "$KIT" && git -c user.email=sim@x -c user.name=sim merge -q 
 git push -q origin backport/v1.39-base && git fetch -q origin
 TARGET=$(git rev-parse HEAD)
 git -c user.email=sim@x -c user.name=sim tag -f -a v1.60.0 -m sim "$TARGET" > /dev/null && git push -q -f origin v1.60.0
-bash ops/prod-rt3/mkstage_window.sh "$SIM/stageout" "$TARGET" | head -n 1 || exit 1
+bash ops/prod-rt3/mkstage_window.sh "$SIM/stageout" "$TARGET" > "$SIM/mkstage.log" 2>&1 || { cat "$SIM/mkstage.log"; exit 1; }
+head -n 1 "$SIM/mkstage.log"
 [ -f "$SIM/stageout/icb-rt3-families.tar" ] || { echo "SIM: mkstage_window produced no families tar"; exit 1; }
 tar -xf "$SIM/stageout/icb-rt3-families.tar" -C "$SIM/tmp" || exit 1
 

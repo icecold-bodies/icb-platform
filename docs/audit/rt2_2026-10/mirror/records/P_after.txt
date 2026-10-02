@@ -1,0 +1,183 @@
+database icb_prodmirror (--target mirror); manifest manifest_p.yaml sha256 c96b1839a8093eb0…, 59 entries
+── P1
+  done  bom=2560   FREEZER LARGE / SRD / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=3948   EXPLOSIVE 4.9 AND UP / SRD / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5184   EXPLOSIVE UP TO 2.7 / SRD / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5298   ICECREAM BODY LARGE / FRONT / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5306   ICECREAM BODY LARGE / SRD / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5333   ICECREAM BODY LARGE / DRD / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5356   ICECREAM BODY LARGE / SIDES / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5365   ICECREAM BODY LARGE / ROOF / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5372   ICECREAM BODY LARGE / FLOOR / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5577   ICECREAM BODY MEDIUM / FRONT / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5635   ICECREAM BODY MEDIUM / SIDES / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5644   ICECREAM BODY MEDIUM / ROOF / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5651   ICECREAM BODY MEDIUM / FLOOR / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5720   ICECREAM BODY SMALL / FRONT / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5751   ICECREAM BODY SMALL / DRD / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5772   ICECREAM BODY SMALL / SIDES / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5779   ICECREAM BODY SMALL / ROOF / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=5786   ICECREAM BODY SMALL / FLOOR / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=6345   EXPLOSIVE 2.7 TO 4.8 / SRD / PU  .unit_price_override
+          4100.0
+       -> null
+── P2
+  done  bom=1797   RHINORANGE TRAILER / FRONT / PU  .formula_expression
+          '1.22*2.65*2'
+       -> '(1.22*2.65*{FRONT PU}/2.98)*(1.22*2.65)*2'
+  done  bom=1797   RHINORANGE TRAILER / FRONT / PU  .unit_price_override
+          585.8456375838927
+       -> null
+  done  bom=1808   RHINORANGE TRAILER / DRD / PU  .formula_expression
+          '1.22*2.65*2'
+       -> '(1.22*2.65*{DRD PU}/2.98)*(1.22*2.65)*2'
+  done  bom=1808   RHINORANGE TRAILER / DRD / PU  .unit_price_override
+          351.50738255033554
+       -> null
+  done  bom=1830   RHINORANGE TRAILER / SIDES / PU  .formula_expression
+          '1.22*2.65*(length+{Waste})/1.22'
+       -> '(1.22*2.65*{SIDES PU}/2.98)*(1.22*2.65)*((length+{Waste})/1.22)'
+  done  bom=1830   RHINORANGE TRAILER / SIDES / PU  .unit_price_override
+          298.7812751677852
+       -> null
+  done  bom=1840   RHINORANGE TRAILER / ROOF / PU  .formula_expression
+          '1.22*(width+{Waste})*(length+{Waste})/1.22'
+       -> '(1.22*2.65*{ROOF PU}/2.98)*(1.22*2.65)*((length+{Waste})/1.22)'
+  done  bom=1840   RHINORANGE TRAILER / ROOF / PU  .unit_price_override
+          585.8456375838927
+       -> null
+  done  bom=1848   RHINORANGE TRAILER / FLOOR / PU  .formula_expression
+          '1.22*(width+{Waste})*(length+{Waste})/1.22'
+       -> '(1.22*2.65*{FLOOR PU}/2.98)*(1.22*2.65)*((length+{Waste})/1.22)'
+  done  bom=1848   RHINORANGE TRAILER / FLOOR / PU  .unit_price_override
+          585.8456375838927
+       -> null
+  done  bom=3600   FREEZER 2.3 METER / DRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=3600   FREEZER 2.3 METER / DRD / PU  .unit_price_override
+          245.73583892617447
+       -> null
+  done  bom=3940   EXPLOSIVE 4.9 AND UP / FRONT / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'
+  done  bom=3940   EXPLOSIVE 4.9 AND UP / FRONT / PU  .unit_price_override
+          234.15
+       -> null
+  done  bom=3974   EXPLOSIVE 4.9 AND UP / DRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=3974   EXPLOSIVE 4.9 AND UP / DRD / PU  .unit_price_override
+          234.15
+       -> null
+  done  bom=3996   EXPLOSIVE 4.9 AND UP / SIDES / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  done  bom=3996   EXPLOSIVE 4.9 AND UP / SIDES / PU  .unit_price_override
+          234.15
+       -> null
+  done  bom=4005   EXPLOSIVE 4.9 AND UP / ROOF / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  done  bom=4005   EXPLOSIVE 4.9 AND UP / ROOF / PU  .unit_price_override
+          234.15
+       -> null
+  done  bom=5176   EXPLOSIVE UP TO 2.7 / FRONT / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'
+  done  bom=5176   EXPLOSIVE UP TO 2.7 / FRONT / PU  .unit_price_override
+          167.9194899328859
+       -> null
+  done  bom=5210   EXPLOSIVE UP TO 2.7 / DRD / PU  .formula_expression
+          '1.22*2.44*2'
+       -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=5210   EXPLOSIVE UP TO 2.7 / DRD / PU  .unit_price_override
+          167.9194899328859
+       -> null
+  done  bom=5232   EXPLOSIVE UP TO 2.7 / SIDES / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  done  bom=5232   EXPLOSIVE UP TO 2.7 / SIDES / PU  .unit_price_override
+          167.9194899328859
+       -> null
+  done  bom=5241   EXPLOSIVE UP TO 2.7 / ROOF / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  done  bom=5241   EXPLOSIVE UP TO 2.7 / ROOF / PU  .unit_price_override
+          167.9194899328859
+       -> null
+  done  bom=5726   ICECREAM BODY SMALL / SRD / PU  .formula_expression
+          '((2.44*1.22)*{SRD PU})*2'
+       -> '(1.22*2.44*{SRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=5726   ICECREAM BODY SMALL / SRD / PU  .unit_price_override
+          4100.0
+       -> null
+  done  bom=6229   MEAT HANGER SMALL-MEDIUM / FLOOR / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{FLOOR PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  done  bom=6229   MEAT HANGER SMALL-MEDIUM / FLOOR / PU  .unit_price_override
+          446.02
+       -> null
+  done  bom=6337   EXPLOSIVE 2.7 TO 4.8 / FRONT / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{FRONT PU}/2.98)*(1.22*2.44)*2'
+  done  bom=6337   EXPLOSIVE 2.7 TO 4.8 / FRONT / PU  .unit_price_override
+          167.9194899328859
+       -> null
+  done  bom=6371   EXPLOSIVE 2.7 TO 4.8 / DRD / PU  .formula_expression
+          '2.44*1.22*2'
+       -> '(1.22*2.44*{DRD PU}/2.98)*(1.22*2.44)*2'
+  done  bom=6371   EXPLOSIVE 2.7 TO 4.8 / DRD / PU  .unit_price_override
+          167.9194899328859
+       -> null
+  done  bom=6393   EXPLOSIVE 2.7 TO 4.8 / SIDES / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{SIDES PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  done  bom=6393   EXPLOSIVE 2.7 TO 4.8 / SIDES / PU  .unit_price_override
+          167.9194899328859
+       -> null
+  done  bom=6402   EXPLOSIVE 2.7 TO 4.8 / ROOF / PU  .formula_expression
+          '1.22*2.44*(length+{Waste})/1.22'
+       -> '(1.22*2.44*{ROOF PU}/2.98)*(1.22*2.44)*((length+{Waste})/1.22)'
+  done  bom=6402   EXPLOSIVE 2.7 TO 4.8 / ROOF / PU  .unit_price_override
+          167.9194899328859
+       -> null
+
+0 to apply, 59 already applied.
+nothing to apply.

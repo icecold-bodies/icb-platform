@@ -1,0 +1,17 @@
+cells 2936; moved 48; unchanged 2888
+   explosive EXPLOSIVE 4.9 AND UP     DRD                        all_pu      ACCEPTED -> ACCEPTED   x3  MES 6270.35 -> 6640.28   Excel 6790.51
+   explosive EXPLOSIVE 4.9 AND UP     DRD                        as_sheet    ACCEPTED -> ACCEPTED   x3  MES 6270.35 -> 6640.28   Excel 6790.51
+   explosive EXPLOSIVE 4.9 AND UP     DRD                        drd         ACCEPTED -> ACCEPTED   x3  MES 6270.35 -> 6640.28   Excel 6790.51
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      all_pu      ACCEPTED -> PASS       x3  MES 4798.75 -> 5168.67   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      as_sheet    ACCEPTED -> PASS       x3  MES 4798.75 -> 5168.67   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      drd         ACCEPTED -> PASS       x3  MES 4798.75 -> 5168.67   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     FRONT                      srd         ACCEPTED -> PASS       x3  MES 4798.75 -> 5168.67   Excel 5168.73
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       all_pu      ACCEPTED -> PASS       x3  MES [11445.69, 18553.91, 33916.85] -> [12196.16, 19774.37, 36153.1]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       as_sheet    ACCEPTED -> PASS       x3  MES [11445.69, 18553.91, 33916.85] -> [12196.16, 19774.37, 36153.1]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       drd         ACCEPTED -> PASS       x3  MES [11445.69, 18553.91, 33916.85] -> [12196.16, 19774.37, 36153.1]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     ROOF                       srd         ACCEPTED -> PASS       x3  MES [11445.69, 18553.91, 33916.85] -> [12196.16, 19774.37, 36153.1]   Excel [12077.41, 19581.26, 35799.24]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      all_pu      ACCEPTED -> PASS       x3  MES [18909.22, 30631.78, 55967.65] -> [20410.16, 33072.7, 60440.15]   Excel [20410.36, 33073.04, 60440.77]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      as_sheet    ACCEPTED -> PASS       x3  MES [18909.22, 30631.78, 55967.65] -> [20410.16, 33072.7, 60440.15]   Excel [20410.36, 33073.04, 60440.77]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      drd         ACCEPTED -> PASS       x3  MES [18909.22, 30631.78, 55967.65] -> [20410.16, 33072.7, 60440.15]   Excel [20410.36, 33073.04, 60440.77]
+   explosive EXPLOSIVE 4.9 AND UP     SIDES                      srd         ACCEPTED -> PASS       x3  MES [18909.22, 30631.78, 55967.65] -> [20410.16, 33072.7, 60440.15]   Excel [20410.36, 33073.04, 60440.77]
+   explosive EXPLOSIVE 4.9 AND UP     SRD                        srd             FLAG -> ACCEPTED   x3  MES 5891.17 -> 6419.64   Excel 6546.17

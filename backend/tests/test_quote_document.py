@@ -767,3 +767,23 @@ def test_the_line_marker_is_drawn_not_typed():
     assert "class _Arrow" in src and "beginPath" in src
     for glyph in ("▶", "►", "➤", "→"):
         assert glyph not in src, f"{glyph} will not render in Helvetica"
+
+
+def test_the_quotation_response_forbids_caching(client, admin_headers, saved_repair):
+    """v1.51 (26 Aug) — no-store on the PDF response is load-bearing.
+
+    The endpoint's URL ends in ".pdf". Prod's public hostname rides a
+    Cloudflare tunnel whose zone caches BY EXTENSION and stamps a 4-hour
+    browser TTL onto responses that carry no Cache-Control — so without this
+    header an AUTHENTICATED customer quotation is parked on a public CDN edge
+    (servable without reaching auth again), and a re-download after a fix
+    keeps returning the OLD document. That is precisely how the footer-overlap
+    fix read as "not working" on prod while the direct-IP route was fine.
+    """
+    rec_id, _ = saved_repair
+    r = client.get(f"/api/calculations/{rec_id}/repair-quote.pdf",
+                   headers=admin_headers)
+    assert r.status_code == 200
+    cc = r.headers.get("cache-control", "")
+    assert "no-store" in cc, f"Cache-Control is {cc!r} — cacheable by extension at the CDN"
+    assert "private" in cc

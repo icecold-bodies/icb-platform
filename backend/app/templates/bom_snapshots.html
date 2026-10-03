@@ -49,13 +49,17 @@
         </div>
       </div>
       <div style="max-height:180px;overflow-y:auto;border:1px solid #30363d;border-radius:6px;padding:6px 8px;background:#0d1117;margin-bottom:16px">
-        {% for tt in trailer_types %}
+        {# RT3 — grouped by body family, each family headed by its chip #}
+        {% for fam, bodies in family_groups(trailer_types) %}
+        <div style="margin:6px 0 2px"><span class="fam-chip" style="{{ family_vars(fam) }}" title="Family: {{ fam.name }}">{{ fam.name }}</span></div>
+        {% for tt in bodies %}
         <label style="display:flex;align-items:center;gap:8px;padding:4px 6px;cursor:pointer;font-size:.87rem;border-radius:4px"
                onmouseover="this.style.background='#161b22'" onmouseout="this.style.background=''">
           <input type="checkbox" class="cap-tt-cb" value="{{ tt.id }}" data-name="{{ tt.name }}"
                  style="accent-color:#238636;cursor:pointer;flex-shrink:0">
           {{ tt.name }}
         </label>
+        {% endfor %}
         {% endfor %}
       </div>
 

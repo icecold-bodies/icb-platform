@@ -21,6 +21,7 @@ from ..services import (
     restore_orphan_for_trailer, resolve_report_template,
 )
 from ..templates_config import templates
+from ..services import body_family
 
 router = APIRouter()
 
@@ -274,6 +275,9 @@ async def import_execute(request: Request, db: Session = Depends(get_db)):
     db.flush()
 
     restored_orphan = restore_orphan_for_trailer(tt, db)
+    if tt.group_id is None:   # RT3 — a new body lands in the family its name suggests, else OTHER
+        _g = body_family.default_group(db, tt.name)
+        tt.group_id = _g.id if _g is not None else None
     items_created = 0
 
     for sort_idx, sect in enumerate(sections_data):
@@ -780,6 +784,9 @@ async def api_import_grp_commit(request: Request, db: Session = Depends(get_db))
     db.add(tt)
     db.flush()
     restored_orphan = restore_orphan_for_trailer(tt, db)
+    if tt.group_id is None:   # RT3 — a new body lands in the family its name suggests, else OTHER
+        _g = body_family.default_group(db, tt.name)
+        tt.group_id = _g.id if _g is not None else None
 
     # ── Body options first (linked items reference them by name) ──
     body_opt_section_id = _resolve_bom_section(db, "BODY OPTIONS")

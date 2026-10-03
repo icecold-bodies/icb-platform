@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Body Family Swatches</title>
+<style>
+  body { margin: 0; background: #F5F7FB; color: #23303A; font: 13px/1.45 Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 18px 16px 28px; }
+  h1 { font-size: 17px; color: #0F172A; margin: 0 0 4px; }
+  .sub { color: #6B7280; margin: 0 0 16px; max-width: 760px; }
+  .lbl { color: #6B7280; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 6px; }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .card { background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 8px; padding: 12px 14px; }
+  select { font: inherit; color: #23303A; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 6px; padding: 6px 8px; }
+  .field { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .wrap { position: relative; display: inline-block; }
+  .wrap::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; border-radius: 6px 0 0 6px; background: var(--fam); }
+  .wrap select { width: 220px; padding-left: 13px; }
+  .list select { width: 250px; }
+  optgroup { font-style: normal; font-weight: 700; color: #23303A; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; margin: 0 8px 6px 0; padding: 1px 7px 1px 6px; border-radius: 999px;
+          background: #FFFFFF; border: 1px solid #E5E7EB; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; background: #FFFFFF; }
+  th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid #E5E7EB; white-space: nowrap; }
+  th { color: #6B7280; font-weight: 600; font-size: 12px; }
+  .sw { display: inline-block; width: 26px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 6px; }
+  .dim { color: #6B7280; font-size: 11px; }
+  .note { color: #6B7280; font-size: 12px; margin-top: 12px; max-width: 760px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Body families: the six approved colours on the MES screens</h1>
+<p class="sub">One stored colour per family colours the bars, dots and borders. The family-name text uses one ink
+derived from it, at least 4.6:1 on both MES backgrounds. Built for the light MES skin only (RT3_RULING_1a). The
+selects below are real native &lt;select&gt;s drawn by this browser.</p>
+<div class="row">
+  <div class="card"><div class="lbl">The closed BODY TYPE box (one per family)</div><div class="field"><span class="wrap" style="--fam:#E03131"><select title="Family: EXPLOSIVE"><option>EXPLOSIVE 2.7 TO 4.8</option></select></span><span class="chip" style="color:#CA2C2C"><i style="background:#E03131"></i>EXPLOSIVE</span></div><div class="field"><span class="wrap" style="--fam:#168ED9"><select title="Family: CHILLER"><option>CHILLER 2.3 METER</option></select></span><span class="chip" style="color:#1272AE"><i style="background:#168ED9"></i>CHILLER</span></div><div class="field"><span class="wrap" style="--fam:#4263EB"><select title="Family: FREEZER"><option>FREEZER 2.3 METER</option></select></span><span class="chip" style="color:#4263EB"><i style="background:#4263EB"></i>FREEZER</span></div><div class="field"><span class="wrap" style="--fam:#D66A0B"><select title="Family: MEAT"><option>MEAT HANGER LARGE</option></select></span><span class="chip" style="color:#AB5509"><i style="background:#D66A0B"></i>MEAT</span></div><div class="field"><span class="wrap" style="--fam:#D63384"><select title="Family: ICE CREAM"><option>ICECREAM BODY LARGE</option></select></span><span class="chip" style="color:#C12E77"><i style="background:#D63384"></i>ICE CREAM</span></div><div class="field"><span class="wrap" style="--fam:#7D858C"><select title="Family: OTHER"><option>Manni RIGIDS CB</option></select></span><span class="chip" style="color:#6A7177"><i style="background:#7D858C"></i>OTHER</span></div></div>
+  <div class="card list"><div class="lbl">The open list (optgroups + coloured options)</div>
+    <select size="22" aria-label="Body type, open"><optgroup label="EXPLOSIVE"><option style="color:#CA2C2C">EXPLOSIVE 2.7 TO 4.8</option><option style="color:#CA2C2C">EXPLOSIVE 4.9 AND UP</option><option style="color:#CA2C2C">EXPLOSIVE UP TO 2.7</option></optgroup><optgroup label="CHILLER"><option style="color:#1272AE">CHILLER 2.3 METER</option><option style="color:#1272AE">CHILLER LARGE</option><option style="color:#1272AE">CHILLER MEDIUM</option></optgroup><optgroup label="FREEZER"><option style="color:#4263EB">FREEZER 2.3 METER</option><option style="color:#4263EB">FREEZER LARGE</option><option style="color:#4263EB">FREEZER MEDIUM</option></optgroup><optgroup label="MEAT"><option style="color:#AB5509">MEAT HANGER LARGE</option><option style="color:#AB5509">MEAT HANGER SMALL-MEDIUM</option></optgroup><optgroup label="ICE CREAM"><option style="color:#C12E77">ICECREAM BODY LARGE</option><option style="color:#C12E77">ICECREAM BODY MEDIUM</option><option style="color:#C12E77">ICECREAM BODY SMALL</option></optgroup><optgroup label="OTHER"><option style="color:#6A7177">Manni RIGIDS CB</option><option style="color:#6A7177">RHINORANGE TRAILER</option></optgroup></select></div>
+</div>
+<div class="lbl">Chips (lists and headers): colour dot + family name</div>
+<div class="card"><span class="chip" style="color:#CA2C2C"><i style="background:#E03131"></i>EXPLOSIVE</span><span class="chip" style="color:#1272AE"><i style="background:#168ED9"></i>CHILLER</span><span class="chip" style="color:#4263EB"><i style="background:#4263EB"></i>FREEZER</span><span class="chip" style="color:#AB5509"><i style="background:#D66A0B"></i>MEAT</span><span class="chip" style="color:#C12E77"><i style="background:#D63384"></i>ICE CREAM</span><span class="chip" style="color:#6A7177"><i style="background:#7D858C"></i>OTHER</span></div>
+<div class="lbl">Contrast (WCAG): bar at least 3:1, text ink at least 4.6:1</div>
+<div class="tbl"><table>
+<tr><th>family</th><th>stored colour</th><th>bar on #FFFFFF</th><th>bar on #F5F7FB</th><th>text ink</th>
+<th>ink on #FFFFFF</th><th>ink on #F5F7FB</th><th>check</th></tr>
+<tr><td>EXPLOSIVE <span class="dim">(red)</span></td><td><span class="sw" style="background:#E03131"></span>#E03131</td><td>4.51</td><td>4.21</td><td style="color:#CA2C2C;font-weight:700">#CA2C2C</td><td>5.37</td><td>5.01</td><td>pass</td></tr><tr><td>CHILLER <span class="dim">(light blue)</span></td><td><span class="sw" style="background:#168ED9"></span>#168ED9</td><td>3.56</td><td>3.32</td><td style="color:#1272AE;font-weight:700">#1272AE</td><td>5.19</td><td>4.84</td><td>pass</td></tr><tr><td>FREEZER <span class="dim">(dark blue)</span></td><td><span class="sw" style="background:#4263EB"></span>#4263EB</td><td>4.98</td><td>4.64</td><td style="color:#4263EB;font-weight:700">#4263EB</td><td>4.98</td><td>4.64</td><td>pass</td></tr><tr><td>MEAT <span class="dim">(orange)</span></td><td><span class="sw" style="background:#D66A0B"></span>#D66A0B</td><td>3.54</td><td>3.30</td><td style="color:#AB5509;font-weight:700">#AB5509</td><td>5.20</td><td>4.85</td><td>pass</td></tr><tr><td>ICE CREAM <span class="dim">(dark pink)</span></td><td><span class="sw" style="background:#D63384"></span>#D63384</td><td>4.50</td><td>4.20</td><td style="color:#C12E77;font-weight:700">#C12E77</td><td>5.35</td><td>4.99</td><td>pass</td></tr><tr><td>OTHER <span class="dim">(grey)</span></td><td><span class="sw" style="background:#7D858C"></span>#7D858C</td><td>3.75</td><td>3.49</td><td style="color:#6A7177;font-weight:700">#6A7177</td><td>4.95</td><td>4.62</td><td>pass</td></tr>
+</table></div>
+<p class="note">Coloured options in the open list render in Chrome, Edge and Firefox on Windows. On a Mac and on phones the
+system list ignores option colours; the family headings still group the list. The closed box's bar and the chips render in
+every browser.</p>
+</main>
+</body>
+</html>

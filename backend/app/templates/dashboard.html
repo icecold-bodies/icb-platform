@@ -693,7 +693,7 @@ async function filterRecent(filter, clickedCard) {
 
 const dashTrailers = [
   {% for t in trailers %}
-  { id: {{ t.id }}, name: {{ t.name | tojson }}, description: {{ (t.description or '') | tojson }}, markup_percentage: {{ t.markup_percentage if t.markup_percentage is not none else 'null' }} }{% if not loop.last %},{% endif %}
+  { id: {{ t.id }}, name: {{ t.name | tojson }}, description: {{ (t.description or '') | tojson }}, markup_percentage: {{ t.markup_percentage if t.markup_percentage is not none else 'null' }}, family: {{ body_family(t) | tojson }} }{% if not loop.last %},{% endif %}
   {% endfor %}
 ];
 let dashTTView = localStorage.getItem('tt-view') || 'tiles';
@@ -703,26 +703,23 @@ function escH(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-const trailerAccentPalette = [
-  { accent: '#96d0ff', deep: '#5caeff', soft: 'rgba(150,208,255,.20)', border: 'rgba(150,208,255,.34)' },
-  { accent: '#6ebcff', deep: '#388bfd', soft: 'rgba(110,188,255,.19)', border: 'rgba(110,188,255,.34)' },
-  { accent: '#529eff', deep: '#2463eb', soft: 'rgba(82,158,255,.18)', border: 'rgba(82,158,255,.34)' },
-  { accent: '#427ee8', deep: '#1d4ed8', soft: 'rgba(66,126,232,.18)', border: 'rgba(66,126,232,.34)' },
-  { accent: '#315fc7', deep: '#183a9e', soft: 'rgba(49,95,199,.18)', border: 'rgba(49,95,199,.34)' }
-];
+// RT3 — a body's accent IS its family colour (services/body_family.py via body_family(t) above). It replaces
+// the five-blue palette keyed on the name's first letter, which said nothing about the body.
+function _famRgba(hex, a) {
+  const h = String(hex || '#7D858C').replace('#', '');
+  return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
+}
 
 function getTrailerInitial(name) {
   const trimmed = String(name || '').trim();
   return (trimmed[0] || '?').toUpperCase();
 }
 
-function getTrailerAccent(name) {
-  const initial = getTrailerInitial(name);
-  const code = initial.charCodeAt(0);
-  const normalized = Number.isFinite(code) ? Math.max(65, Math.min(90, code)) : 65;
-  const groupIndex = Math.floor((normalized - 65) / 5.2);
-  return trailerAccentPalette[Math.min(groupIndex, trailerAccentPalette.length - 1)];
+function getTrailerAccent(t) {
+  const f = (t && t.family) || (window.BodyFamily ? BodyFamily.FALLBACK : { colour: '#7D858C' });
+  return { accent: f.colour, deep: f.colour, soft: _famRgba(f.colour, .18), border: _famRgba(f.colour, .34) };
 }
+function famChipOf(t) { return window.BodyFamily ? BodyFamily.chip(t.family) : ''; }
 
 function setDashTTView(view) {
   dashTTView = view;
@@ -752,7 +749,7 @@ function renderDashTrailers() {
   if (dashTTView === 'icons') {
     body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px">
       ${trailers.map(t => {
-        const accent = getTrailerAccent(t.name);
+        const accent = getTrailerAccent(t);
         const initial = getTrailerInitial(t.name);
         return `
         <a href="/calculator?trailer=${t.id}" class="tt-dash-icon-link"
@@ -769,6 +766,7 @@ function renderDashTrailers() {
             width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
             ${escH(t.name)}
           </div>
+          ${famChipOf(t)}
         </a>`;
       }).join('')}
     </div>`;
@@ -778,9 +776,9 @@ function renderDashTrailers() {
       <a href="/calculator?trailer=${t.id}" style="text-decoration:none;display:flex;align-items:center;gap:10px;
         padding:10px 12px;border-bottom:1px solid var(--border);color:inherit;transition:background .12s"
         onmouseover="this.style.background='var(--bg-panel)'" onmouseout="this.style.background=''">
-        <span style="width:8px;height:8px;border-radius:50%;background:${getTrailerAccent(t.name).accent};flex-shrink:0;display:inline-block"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:${getTrailerAccent(t).accent};flex-shrink:0;display:inline-block"></span>
         <div>
-          <div style="font-size:13px;font-weight:600">${escH(t.name)}</div>
+          <div style="font-size:13px;font-weight:600">${escH(t.name)} ${famChipOf(t)}</div>
           ${t.description ? `<div style="font-size:11px;color:var(--text-dim)">${escH(t.description)}</div>` : ''}
         </div>
       </a>`).join('');
@@ -798,7 +796,7 @@ function renderDashTrailers() {
       <tbody>${trailers.map(t => `
         <tr class="tt-dash-details-row" onclick="location.href='/calculator?trailer=${t.id}'"
           style="border-bottom:1px solid var(--border)">
-          <td style="padding:9px 12px;font-weight:600">${escH(t.name)}</td>
+          <td style="padding:9px 12px;font-weight:600">${escH(t.name)} ${famChipOf(t)}</td>
           <td style="padding:9px 12px;color:var(--text-dim)">${escH(t.description || '—')}</td>
           <td style="padding:9px 12px;text-align:right;color:var(--text-dim)">${
             t.markup_percentage != null ? (t.markup_percentage * 100).toFixed(0) + '%' : '—'
@@ -814,7 +812,7 @@ function renderDashTrailers() {
     // Tiles (default)
     body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
       ${trailers.map(t => {
-        const accent = getTrailerAccent(t.name);
+        const accent = getTrailerAccent(t);
         return `
         <a href="/calculator?trailer=${t.id}" style="text-decoration:none" class="tt-dash-tile">
           <div style="background:var(--bg-panel);border:1px solid var(--border);
@@ -824,6 +822,7 @@ function renderDashTrailers() {
               ${escH(getTrailerInitial(t.name))}
             </div>
             <div style="font-size:13px;font-weight:600;color:var(--text-head);margin-bottom:4px">${escH(t.name)}</div>
+            <div style="margin-bottom:4px">${famChipOf(t)}</div>
             <div style="font-size:11px;color:var(--text-dim)">${escH(t.description || 'Click to calculate')}</div>
           </div>
         </a>`;

@@ -38,7 +38,7 @@
      per-wrapper {% block head %} approach could not reach. _mes_sidebar_links.html keeps in-iframe
      navigation light by appending ?skin=mes to legacy sidebar links. #}
   {% if mes %}
-  <link rel="stylesheet" href="/static/css/theme-mes.css?v=6"/>
+  <link rel="stylesheet" href="/static/css/theme-mes.css?v=7"/>
   {% include "_mes_sidebar_links.html" %}
   {% endif %}
   {# v1.50 — show/hide password toggle. Loaded LAST of the stylesheets so its
@@ -449,6 +449,7 @@
 
 <script src="/static/js/app.js?v=6"></script>
 <script src="/static/js/password_toggle.js?v=1"></script>
+<script src="/static/js/body_family.js?v=1"></script>
 {% if user %}<script src="/static/js/help_chat.js?v=12"></script>{% endif %}
 {% if user %}<script src="/static/js/help_audit.js?v=7"></script>{% endif %}
 {% if is_dev_mode() and is_admin %}

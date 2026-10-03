@@ -4,7 +4,7 @@ from datetime import datetime, timezone, date
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import func
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from ..database import (
     get_db,
@@ -23,6 +23,7 @@ from ..services import (
     get_section_snapshot, section_effective_optional,
 )
 from ..services import insulation_foam as pu_foam   # RT2 Part 1c — the per-body default grade
+from ..services import body_family                  # RT3 — the body's family (trailer group) + colour
 from ..templates_config import templates
 
 router = APIRouter()
@@ -44,7 +45,26 @@ def _trailer_row(t: TrailerType) -> dict:
             "configurator_v2":   bool(t.configurator_v2),
             # RT2 Part 1c — the foam grade a NEW costing on this body opens on
             "default_insulation_foam": pu_foam.normalise(t.default_insulation_foam),
-            "is_active":         bool(t.is_active)}
+            "is_active":         bool(t.is_active),
+            # RT3 — {id, name, colour, ink, sort_order}: every page that lists bodies
+            # groups and colours them from this, never from a colour of its own
+            "family":            body_family.body_family(t)}
+
+
+def _new_body_group_id(db: Session, name: str, group_id) -> int | None:
+    """RT3 (RT3_RULING_1 Q8) — a NEW body's family: the group the admin picked, else the one its name
+    suggests (services/body_family.default_group), else OTHER."""
+    from ..database import TrailerGroup
+    if group_id not in (None, ""):
+        try:
+            gid = int(group_id)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="group_id must be an integer")
+        if not db.query(TrailerGroup).filter_by(id=gid).first():
+            raise HTTPException(status_code=400, detail=f"No family (trailer group) {gid}")
+        return gid
+    g = body_family.default_group(db, name)
+    return g.id if g is not None else None
 
 
 @router.get("/api/trailers")
@@ -55,7 +75,7 @@ async def get_trailers(request: Request, db: Session = Depends(get_db),
     include_inactive=1 (admin only — Admin / Trailer Templates) every template
     is returned EXCEPT soft-deleted ones, which DELETE marks by renaming to
     "… [deleted-{id}]" on top of is_active=False."""
-    q = db.query(TrailerType)
+    q = db.query(TrailerType).options(joinedload(TrailerType.group))
     if include_inactive:
         require_admin(request, db)
         q = q.filter(~TrailerType.name.like("%[deleted-%"))
@@ -95,10 +115,11 @@ async def create_trailer(request: Request, db: Session = Depends(get_db)):
                   f'A trailer type named "{name}" already exists')
         raise HTTPException(status_code=400, detail=detail)
     tt = TrailerType(name=name, description=body.get("description", ""))
+    tt.group_id = _new_body_group_id(db, name, body.get("group_id"))   # RT3 — never lands grey by accident
     db.add(tt)
     db.commit()
     db.refresh(tt)
-    return {"id": tt.id, "name": tt.name}
+    return {"id": tt.id, "name": tt.name, "family": body_family.body_family(tt)}
 
 
 @router.put("/api/trailers/{tt_id}")

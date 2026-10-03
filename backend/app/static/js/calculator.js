@@ -3069,10 +3069,15 @@ async function editCalculation(recordId) {
     if (_selEl && ![..._selEl.options].some(o => String(o.value) === String(payload.trailer_type_id))) {
       try {
         const tRow = await api('GET', `/api/trailers/${payload.trailer_type_id}`);
-        const opt = document.createElement('option');
-        opt.value = String(tRow.id);
-        opt.textContent = tRow.is_active ? tRow.name : `${tRow.name} (inactive)`;
-        _selEl.appendChild(opt);
+        const label = tRow.is_active ? tRow.name : `${tRow.name} (inactive)`;
+        if (window.BodyFamily) {
+          BodyFamily.addOption(_selEl, tRow, label);   // RT3 — inside its own family's optgroup
+        } else {
+          const opt = document.createElement('option');
+          opt.value = String(tRow.id);
+          opt.textContent = label;
+          _selEl.appendChild(opt);
+        }
         trailerDefaults[tRow.id] = tRow;
       } catch (_) { /* option stays missing — unchanged failure surface */ }
     }
@@ -3568,7 +3573,11 @@ function updateTopbarTitle(bodyName) {
     // append the (stale) length still sitting in the now-hidden dimension input.
     const lenTxt = (!repairMode && !isNaN(len) && len > 0)
       ? ` (${Math.round(len * 10) / 10} m)` : '';
-    el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName + lenTxt)}</span>`;
+    // RT3 — the selected body's family chip beside its name (the family name always travels with the colour)
+    const famChip = (!repairMode && window.BodyFamily)
+      ? BodyFamily.selectedChip(document.getElementById('trailer-select')) : '';
+    el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName + lenTxt)}</span>`
+      + (famChip ? ` ${famChip}` : '');
   } else {
     delete el.dataset.bodyName;
     el.textContent = def;
@@ -3583,6 +3592,7 @@ async function loadBOM(options = {}) {
   const counter = document.getElementById('bom-count');
   // v1.47 — REPAIRS is a MODE, not a body type: there is no BOM to load. Hand
   // over to the repair surface before any of the trailer machinery runs.
+  if (window.BodyFamily) BodyFamily.refresh(sel);   // RT3 — the closed box's family bar + tooltip
   if (tid === 'repair') { enterRepairMode(); return; }
   if (repairMode) exitRepairMode();
   updateTopbarTitle(tid ? sel.selectedOptions[0]?.text : null);
@@ -10428,6 +10438,7 @@ function _setRepairVehicleInputs(v) {
     if (el) el.value = val == null ? '' : val;
   };
   set('f-repair-vt', v && v.trailer_type_id ? v.trailer_type_id : '');
+  if (window.BodyFamily) BodyFamily.refresh(_repairVehicleEl('f-repair-vt'));
   set('f-repair-len', v ? v.length : null);
   set('f-repair-wid', v ? v.width : null);
   set('f-repair-hei', v ? v.height : null);

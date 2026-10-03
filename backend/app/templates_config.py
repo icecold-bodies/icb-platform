@@ -36,3 +36,18 @@ def original_template_name(name, description):
 
 
 templates.env.globals["original_template_name"] = original_template_name
+
+
+# RT3 — body families. `family_groups(trailers)` -> [(family, [bodies])] in the families' order (each family
+# {id, name, colour, ink, sort_order}); `family_vars(family)` -> the two custom properties the family CSS
+# reads (theme-mes.css "RT3 — body families"); `body_family(tt)` -> one body's family.
+from .services import body_family as _body_family  # noqa: E402
+
+
+def family_vars(fam) -> str:
+    return f"--fam:{fam['colour']};--fam-ink:{fam['ink']}"
+
+
+templates.env.globals["family_groups"] = _body_family.group_bodies
+templates.env.globals["body_family"] = _body_family.body_family
+templates.env.globals["family_vars"] = family_vars

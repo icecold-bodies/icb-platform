@@ -23,6 +23,7 @@ import { Toast } from '../../components/ui/overlays'
 import { apiDelete, apiGet, apiPost } from '../../lib/api'
 import { ALL_STATUSES, isMyCosting, liveToCosting, type Costing, type LiveCalculation, type StatusName } from '../../data/costingsData'
 import { Tooltip } from '../../components/ui/Tooltip'
+import { FamilyChip } from '../../components/ui/FamilyChip'
 import { QuoteNumberCell, quoteSearchText } from './quoteIdentity'
 import { Card } from '../../components/ui/primitives'
 import { STATUS_STYLES, StatusPillCosting, statusFilterTooltipKey } from './statusPalette'
@@ -478,6 +479,7 @@ export function CostingsDashboard() {
                   </td>
                   <td className="px-3 py-2">
                     <span>{c.body_type.replace(/\s*\(REPAIR\)$/i, '')}{lengthSuffix(c.body_length)}</span>
+                    <FamilyChip family={c.body_family} />
                     {c.requires_chassis && (
                       <Tooltip text="Requires chassis">
                         <span className="ml-1 inline-flex">

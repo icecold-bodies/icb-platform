@@ -9,6 +9,8 @@ from ..database import (
 from ..deps import get_current_user, require_admin
 from ..services import _resolve_bom_section, _resolve_body_option_group, _resolve_body_option_subgroup
 from ..templates_config import templates
+from ..services import body_family
+from .trailers import _new_body_group_id
 
 router = APIRouter()
 
@@ -63,12 +65,19 @@ async def admin_trailer_designer(request: Request, db: Session = Depends(get_db)
                 .order_by(BOMSection.sort_order, BOMSection.name).all())
     sec_list = [{"id": s.id, "name": s.name} for s in sec_rows]
 
+    # RT3 (RT3_RULING_1 Q8) — the new body's required Family select: every family, and the name keywords
+    # that pre-select one (services/body_family.FAMILY_KEYWORDS, first match wins; else OTHER)
+    family_keywords = [{"pattern": rx.pattern, "family": fam} for rx, fam in body_family.FAMILY_KEYWORDS]
+
     return templates.TemplateResponse("trailer_designer.html", {
         "request": request, "user": user,
         "materials": mat_list, "categories": cat_list,
         "body_opt_mats": body_opt_list,
         "body_opt_groups": bog_list,
         "bom_sections": sec_list,
+        "families": body_family.all_families(db),
+        "family_keywords": family_keywords,
+        "family_fallback": body_family.FALLBACK_NAME,
     })
 
 
@@ -93,6 +102,9 @@ async def trailer_designer_save(request: Request, db: Session = Depends(get_db))
         markup_percentage=markup_pct,
         is_active=True,
     )
+    # RT3 (RT3_RULING_1 Q8) — the new body's family: the Family select (required in the form); a caller that
+    # sends none gets the family its name suggests, else OTHER
+    tt.group_id = _new_body_group_id(db, name, body.get("group_id"))
     db.add(tt)
     db.flush()
 

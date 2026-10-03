@@ -153,10 +153,12 @@
 <div id="pane-overrides" style="display:none">
 
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  <span class="fam-select-wrap" style="display:inline-block">
   <select id="ovr-bt-filter" onchange="loadOverrides()"
-    style="font-size:13px;padding:7px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);min-width:220px">
+    style="font-size:13px;padding:7px 10px 7px 13px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);min-width:220px">
     <option value="">All Body Types</option>
   </select>
+  </span>
   <input id="ovr-search" style="flex:1;min-width:200px;padding:7px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px"
     placeholder="Search material name…" oninput="renderOverrides()" autocomplete="off"/>
   <span id="ovr-count" style="font-size:12px;color:var(--text-dim);white-space:nowrap"></span>
@@ -1328,9 +1330,15 @@ async function _ensureBtList() {
     _btList = data;
     const sel = document.getElementById('ovr-bt-filter');
     const cur = sel.value;
-    sel.innerHTML = '<option value="">All Body Types</option>'
-      + data.map(tt => `<option value="${tt.id}">${escHtml(tt.name)}</option>`).join('');
+    // RT3 — one optgroup per body family, each body in its family's colour
+    if (window.BodyFamily) {
+      BodyFamily.fillSelect(sel, data, { head: '<option value="">All Body Types</option>' });
+    } else {
+      sel.innerHTML = '<option value="">All Body Types</option>'
+        + data.map(tt => `<option value="${tt.id}">${escHtml(tt.name)}</option>`).join('');
+    }
     if (cur) sel.value = cur;
+    if (window.BodyFamily) BodyFamily.refresh(sel);
   } catch(e) { /* non-fatal */ }
 }
 

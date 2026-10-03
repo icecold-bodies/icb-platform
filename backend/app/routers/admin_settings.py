@@ -17,6 +17,7 @@ from ..quote_numbering import (
     SERIES_QUOTE, SERIES_REPAIR_DOC,
 )
 from ..services import resolve_report_template
+from ..services import body_family
 from ..templates_config import templates
 
 router = APIRouter()
@@ -322,7 +323,7 @@ async def admin_quote_templates(request: Request, db: Session = Depends(get_db))
         raise HTTPException(status_code=403, detail="Not authorized")
 
     templates_list = db.query(ReportTemplate).order_by(ReportTemplate.name).all()
-    groups         = db.query(TrailerGroup).order_by(TrailerGroup.name).all()
+    groups         = db.query(TrailerGroup).order_by(TrailerGroup.sort_order, TrailerGroup.name).all()
     trailers       = db.query(TrailerType).filter_by(is_active=True).order_by(TrailerType.name).all()
     orphans        = db.query(OrphanedTemplateAssignment).order_by(OrphanedTemplateAssignment.archived_at.desc()).all()
 
@@ -357,7 +358,43 @@ async def admin_quote_templates(request: Request, db: Session = Depends(get_db))
         "resolved_map": resolved_map,
         "orphan_group_name": orphan_group_name,
         "orphan_override_name": orphan_override_name,
+        # RT3 — each group IS a body family: its colour, inks and dropdown order
+        "families": {g.id: body_family.group_family(g) for g in groups},
     })
+
+
+def _family_fields(colour: Optional[str], sort_order: Optional[str]) -> tuple[Optional[str], int]:
+    """RT3 — a family's colour ('' = none: the fallback grey) and order, validated. 400 on a bad value;
+    the contrast WARNING is the page's (it asks, never blocks: RT3_RULING_1 addition 1)."""
+    c = None
+    if colour is not None and colour.strip():
+        c = body_family.normalise(colour)
+        if c is None:
+            raise HTTPException(status_code=400, detail=f"Colour must be #RRGGBB, not {colour!r}.")
+    try:
+        order = int(sort_order) if sort_order not in (None, "") else 100
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Order must be a whole number, not {sort_order!r}.")
+    return c, order
+
+
+@router.get("/api/admin/body-families")
+async def admin_body_families(request: Request, db: Session = Depends(get_db)):
+    """RT3 — every family (trailer group) in dropdown order, with its colour, inks and active-body count."""
+    require_admin(request, db)
+    return body_family.all_families(db)
+
+
+@router.get("/api/admin/body-families/colour-check")
+async def admin_body_family_colour_check(request: Request, colour: str, db: Session = Depends(get_db)):
+    """RT3 — the admin colour warning's numbers, on the light MES skin only (RT3_RULING_1a): the colour's worst
+    bar contrast on #FFFFFF / #F5F7FB (>= 3:1) and its family ink's (>= 4.6:1) — services/body_family.colour_check,
+    the same rule that derives the ink."""
+    require_admin(request, db)
+    try:
+        return body_family.colour_check(colour)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/admin/quote-templates/groups/new")
@@ -365,6 +402,8 @@ async def admin_quote_group_new(request: Request,
                                 name: str = Form(...),
                                 description: str = Form(""),
                                 report_template_id: Optional[str] = Form(None),
+                                colour: Optional[str] = Form(None),
+                                sort_order: Optional[str] = Form(None),
                                 db: Session = Depends(get_db)):
     require_admin(request, db)
     name = name.strip()
@@ -372,10 +411,12 @@ async def admin_quote_group_new(request: Request,
         raise HTTPException(status_code=400, detail="Group name required.")
     if db.query(TrailerGroup).filter_by(name=name).first():
         raise HTTPException(status_code=400, detail=f"Group '{name}' already exists.")
+    c, order = _family_fields(colour, sort_order)
     g = TrailerGroup(
         name=name,
         description=description.strip(),
         report_template_id=int(report_template_id) if report_template_id else None,
+        colour=c, sort_order=order,
     )
     db.add(g); db.commit()
     return RedirectResponse(url="/admin/quote-templates", status_code=303)
@@ -386,14 +427,28 @@ async def admin_quote_group_edit(group_id: int, request: Request,
                                  name: str = Form(...),
                                  description: str = Form(""),
                                  report_template_id: Optional[str] = Form(None),
+                                 colour: Optional[str] = Form(None),
+                                 sort_order: Optional[str] = Form(None),
                                  db: Session = Depends(get_db)):
     require_admin(request, db)
     g = db.query(TrailerGroup).filter_by(id=group_id).first()
     if not g:
         raise HTTPException(status_code=404)
-    g.name = name.strip()
+    new_name = name.strip()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Group name required.")
+    clash = db.query(TrailerGroup).filter(TrailerGroup.name == new_name, TrailerGroup.id != group_id).first()
+    if clash:
+        raise HTTPException(status_code=400, detail=f"Group '{new_name}' already exists.")
+    g.name = new_name
     g.description = description.strip()
     g.report_template_id = int(report_template_id) if report_template_id else None
+    # RT3 — an older form without the family fields leaves colour and order as they are
+    if colour is not None or sort_order is not None:
+        c, order = _family_fields(colour, sort_order if sort_order is not None else str(g.sort_order))
+        if colour is not None:
+            g.colour = c
+        g.sort_order = order
     db.commit()
     return RedirectResponse(url="/admin/quote-templates", status_code=303)
 

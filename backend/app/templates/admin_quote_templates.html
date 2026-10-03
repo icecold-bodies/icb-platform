@@ -18,6 +18,12 @@
   .qt-pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; background:#eef; color:#225; }
   .qt-pill.muted { background:#eee; color:#666; }
   .qt-restore { background:#fff8e1; }
+  /* RT3 — body families: colour picker + hex, order */
+  .qt-colour { display:flex; gap:6px; align-items:center; }
+  .qt-colour input[type=color] { width:34px; height:28px; padding:0 2px; border:1px solid #ddd; border-radius:4px; background:#fff; cursor:pointer; }
+  .qt-colour input[type=text] { width:84px !important; font-family:var(--font-mono, monospace); text-transform:uppercase; }
+  .qt-table input[type=number] { width:64px; padding:4px 6px; }
+  .qt-form-row.qt-fam { grid-template-columns:1fr 1fr 1fr auto auto auto; }
 </style>
 
 <div class="qt-help">
@@ -26,6 +32,9 @@
   trailer types use which template — via <b>groups</b> (one template per group
   of trailers) and per-trailer <b>overrides</b> (one trailer in a group can
   use a different template). Need a new template? Ask the developer.
+  <br><b>Body families:</b> each group is also a body <b>family</b>. Its <b>colour</b> and <b>order</b>
+  group and colour the bodies in every BODY TYPE dropdown, the costings list and everywhere else a
+  body appears. A body with no group shows as OTHER grey.
 </div>
 
 <!-- ── Templates (read-only list) ────────────────────────────────────── -->
@@ -55,15 +64,26 @@
 
 <!-- ── Groups ─────────────────────────────────────────────────────────── -->
 <div class="qt-section">
-  <h2>🗂 Trailer Groups</h2>
+  <h2>🗂 Trailer Groups = Body Families</h2>
   <table class="qt-table">
-    <thead><tr><th>Name</th><th>Description</th><th>Default Template</th><th>Trailer Types</th><th class="qt-actions"></th></tr></thead>
+    <thead><tr><th>Name</th><th>Colour</th><th>Order</th><th>Description</th><th>Default Template</th><th>Trailer Types</th><th class="qt-actions"></th></tr></thead>
     <tbody>
       {% for g in groups %}
       <tr>
-        <form method="post" action="/admin/quote-templates/groups/{{ g.id }}/edit" style="display:contents">
+        <form method="post" action="/admin/quote-templates/groups/{{ g.id }}/edit" style="display:contents"
+              class="qt-family-form" data-family-id="{{ g.id }}">
           <input type="hidden" name="csrf_token" value="{{ request.state.csrf_token }}">
           <td><input type="text" name="name" value="{{ g.name }}" required></td>
+          {% set fam = families[g.id] %}
+          <td>
+            <div class="qt-colour">
+              <input type="color" value="{{ fam.colour }}" aria-label="Colour of {{ g.name }}" data-colour-picker>
+              <input type="text" name="colour" value="{{ g.colour or '' }}" placeholder="{{ fam.colour }}"
+                     maxlength="7" pattern="#[0-9A-Fa-f]{6}" title="#RRGGBB (blank = the fallback grey)" data-colour-hex>
+              <span class="fam-chip" style="{{ family_vars(fam) }}" data-colour-chip>{{ g.name }}</span>
+            </div>
+          </td>
+          <td><input type="number" name="sort_order" value="{{ g.sort_order }}" step="1" title="Lower comes first in the BODY TYPE dropdown"></td>
           <td><input type="text" name="description" value="{{ g.description or '' }}"></td>
           <td>
             <select name="report_template_id">
@@ -76,7 +96,7 @@
           <td>
             {% set members = group_members[g.id] %}
             {% if members %}
-              {% for tt in members %}<span class="qt-pill">{{ tt.name }}</span> {% endfor %}
+              {% for tt in members %}<span class="qt-pill" style="box-shadow:inset 3px 0 0 {{ fam.colour }}">{{ tt.name }}</span> {% endfor %}
             {% else %}
               <span class="qt-pill muted">no trailers</span>
             {% endif %}
@@ -95,9 +115,17 @@
   </table>
 
   <h3 style="margin-top:18px;font-size:14px">+ Add Group</h3>
-  <form method="post" action="/admin/quote-templates/groups/new" class="qt-form-row">
+  <form method="post" action="/admin/quote-templates/groups/new" class="qt-form-row qt-fam qt-family-form">
     <input type="hidden" name="csrf_token" value="{{ request.state.csrf_token }}">
     <div><label>Name</label><input type="text" name="name" placeholder="e.g. TIPPER" required></div>
+    <div><label>Colour</label>
+      <div class="qt-colour">
+        <input type="color" value="#7D858C" aria-label="Colour of the new family" data-colour-picker>
+        <input type="text" name="colour" value="" placeholder="#7D858C" maxlength="7" pattern="#[0-9A-Fa-f]{6}"
+               title="#RRGGBB (blank = the fallback grey)" data-colour-hex>
+      </div>
+    </div>
+    <div><label>Order</label><input type="number" name="sort_order" value="100" step="1"></div>
     <div><label>Description</label><input type="text" name="description"></div>
     <div>
       <label>Default Template</label>
@@ -121,14 +149,18 @@
       <tr>
         <form method="post" action="/admin/quote-templates/trailer/{{ tt.id }}/assign" style="display:contents">
           <input type="hidden" name="csrf_token" value="{{ request.state.csrf_token }}">
-          <td>{{ tt.name }}</td>
+          {% set bf = body_family(tt) %}
+          <td>{{ tt.name }} <span class="fam-chip" style="{{ family_vars(bf) }}" title="Family: {{ bf.name }}">{{ bf.name }}</span></td>
           <td>
-            <select name="group_id">
-              <option value="">— none —</option>
+            <span class="fam-select-wrap">
+            <select name="group_id" title="Family (trailer group)">
+              <option value="">— none (shows as OTHER) —</option>
               {% for g in groups %}
-                <option value="{{ g.id }}" {% if tt.group_id == g.id %}selected{% endif %}>{{ g.name }}</option>
+                {% set gf = families[g.id] %}
+                <option value="{{ g.id }}" class="fam-ink" style="{{ family_vars(gf) }}" data-fam-name="{{ gf.name }}" data-fam-colour="{{ gf.colour }}" data-fam-ink="{{ gf.ink }}" {% if tt.group_id == g.id %}selected{% endif %}>{{ g.name }}</option>
               {% endfor %}
             </select>
+            </span>
           </td>
           <td>
             <select name="override_report_template_id">
@@ -196,5 +228,44 @@ async function confirmAndSubmit(btn, message) {
   if (!await confirmModal(message, { danger: true, okText: 'Delete' })) return;
   btn.closest('form').submit();
 }
+
+// RT3 — body family colours. The picker and the hex box stay in step; on Save a colour below 3:1 as a bar, or
+// whose family ink falls below 4.6:1, on the light MES skin WARNS and asks (never blocks — RT3_RULING_1
+// addition 1, 1a). The numbers come from the server's own rule (/api/admin/body-families/colour-check).
+(function () {
+  document.querySelectorAll('.qt-colour').forEach(function (box) {
+    var pick = box.querySelector('[data-colour-picker]'), hex = box.querySelector('[data-colour-hex]');
+    var chip = box.querySelector('[data-colour-chip]');
+    function show(c) { if (chip && /^#[0-9A-Fa-f]{6}$/.test(c)) chip.style.setProperty('--fam', c); }
+    pick.addEventListener('input', function () { hex.value = pick.value.toUpperCase(); show(hex.value); });
+    hex.addEventListener('input', function () {
+      var v = hex.value.trim();
+      if (/^#[0-9A-Fa-f]{6}$/.test(v)) { pick.value = v.toLowerCase(); show(v); }
+    });
+  });
+  document.querySelectorAll('form.qt-family-form').forEach(function (form) {
+    form.addEventListener('submit', async function (ev) {
+      if (form.dataset.colourOk === '1') return;          // already confirmed
+      var hex = form.elements['colour'];                   // a table-row form OWNS its inputs; they are not its children
+      var v = hex ? hex.value.trim() : '';
+      if (!v) return;                                      // blank = the fallback grey
+      ev.preventDefault();
+      var r;
+      try {
+        r = await fetch('/api/admin/body-families/colour-check?colour=' + encodeURIComponent(v), { credentials: 'same-origin' });
+      } catch (_) { r = null; }
+      if (!r || !r.ok) { form.dataset.colourOk = '1'; form.submit(); return; }   // the server validates on save
+      var k = await r.json();
+      if (!k.ok) {
+        var msg = 'On the MES screens this colour is ' + k.bar + ':1 as a bar or dot (needs ' + k.bar_minimum + ':1) ' +
+                  'and its family-name text is ' + k.ink_contrast + ':1 (needs ' + k.ink_minimum + ':1), ' +
+                  'so it may be hard to see.\n\nSave it anyway?';
+        if (!await confirmModal(msg, { okText: 'Save anyway' })) return;
+      }
+      form.dataset.colourOk = '1';
+      form.submit();
+    });
+  });
+})();
 </script>
 {% endblock %}

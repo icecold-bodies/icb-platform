@@ -46,13 +46,20 @@
 
           <div class="form-group">
             <label class="form-label">Body Type</label>
+            <!-- RT3 — one optgroup per body family, in the families' order (see calculator.html) -->
+            <span class="fam-select-wrap">
             <select id="trailer-select" onchange="loadBOM()">
               <option value="">— Select —</option>
-              {% for t in trailers %}
-              {% set orig = original_template_name(t.name, t.description) %}
-              <option value="{{ t.id }}"{% if orig %} title="Previously: {{ orig }}"{% endif %}>{{ t.name }}</option>
+              {% for fam, bodies in family_groups(trailers) %}
+              <optgroup label="{{ fam.name }}" data-family-id="{{ fam.id if fam.id is not none else '' }}" data-sort-order="{{ fam.sort_order }}">
+                {% for t in bodies %}
+                {% set orig = original_template_name(t.name, t.description) %}
+                <option value="{{ t.id }}" class="fam-ink" style="{{ family_vars(fam) }}" data-fam-name="{{ fam.name }}" data-fam-colour="{{ fam.colour }}" data-fam-ink="{{ fam.ink }}"{% if orig %} title="Previously: {{ orig }}"{% endif %}>{{ t.name }}</option>
+                {% endfor %}
+              </optgroup>
               {% endfor %}
             </select>
+            </span>
           </div>
 
           <div class="form-group">
@@ -1078,7 +1085,7 @@ const canEditRecipes    = {{ 'true' if user_can(user, 'recipes.edit_inline') els
 const CURRENT_USER_ID   = {{ user.id }};
 </script>
 <script defer src="/static/js/optional_sections.js?v=4"></script>
-<script defer src="/static/js/calculator2.js?v=127"></script>
+<script defer src="/static/js/calculator2.js?v=128"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

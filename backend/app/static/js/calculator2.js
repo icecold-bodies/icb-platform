@@ -2190,7 +2190,10 @@ function updateTopbarTitle(bodyName) {
     el.dataset.bodyName = bodyName;
     const len = parseFloat(document.getElementById('f-length')?.value);
     const lenTxt = (!isNaN(len) && len > 0) ? ` (${Math.round(len * 10) / 10} m)` : '';
-    el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName + lenTxt)}</span>`;
+    // RT3 — the selected body's family chip beside its name
+    const famChip = window.BodyFamily ? BodyFamily.selectedChip(document.getElementById('trailer-select')) : '';
+    el.innerHTML = `Now costing body type : <span style="color:#f0a500;font-weight:800;font-size:14px;letter-spacing:.5px">${escHtml(bodyName + lenTxt)}</span>`
+      + (famChip ? ` ${famChip}` : '');
   } else {
     delete el.dataset.bodyName;
     el.textContent = def;
@@ -2211,6 +2214,7 @@ async function loadBOM(options = {}) {
   const tid = sel.value;
   const area = document.getElementById('bom-area');
   const counter = document.getElementById('bom-count');
+  if (window.BodyFamily) BodyFamily.refresh(sel);   // RT3 — the closed box's family bar + tooltip
   updateTopbarTitle(tid ? sel.selectedOptions[0]?.text : null);
   if (!tid) {
     area.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;text-align:center">Select a body type</div>';

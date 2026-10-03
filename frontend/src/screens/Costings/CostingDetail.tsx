@@ -44,6 +44,7 @@ import { BottleneckIndicator } from './BottleneckIndicator'
 import { RepairQuoteModeModal, type RepairQuoteMode } from './RepairQuoteModeModal'
 import { liveToCosting, type Costing, type LiveCalculation, type PrejobCardSummary } from '../../data/costingsData'
 import type { Status } from '../../data/types'
+import { FamilyChip } from '../../components/ui/FamilyChip'
 
 // v1.45 — a validated reference is a POINTER at a saved costing (label +
 // fingerprint), never a copy of it. Unrelated to the admin "BOM Snapshots".
@@ -250,7 +251,7 @@ export function CostingDetail() {
               />
             )}
           </h1>
-          <p className="text-sm text-muted">{c.customer_name} · {c.body_type}{lengthSuffix(c.body_length)}</p>
+          <p className="text-sm text-muted">{c.customer_name} · {c.body_type}{lengthSuffix(c.body_length)}<FamilyChip family={c.body_family} testId="detail-header-family-chip" /></p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {canPreJob && c.status === 'Accepted' && (
@@ -395,7 +396,8 @@ export function CostingDetail() {
           <div className="grid gap-x-6 gap-y-5 px-5 py-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-0">
             <div className="space-y-4 lg:pr-6">
               <InfoField icon={<User size={13} strokeWidth={2.5} />} label="Customer" value={c.customer_name} />
-              <InfoField icon={<Truck size={13} strokeWidth={2.5} />} label="Body type" value={`${c.body_type}${lengthSuffix(c.body_length)}`} />
+              <InfoField icon={<Truck size={13} strokeWidth={2.5} />} label="Body type"
+                value={<>{`${c.body_type}${lengthSuffix(c.body_length)}`}<FamilyChip family={c.body_family} testId="detail-family-chip" /></>} />
               {parameters.length > 0 && (
                 <div data-testid="costing-parameters">
                   <InfoField

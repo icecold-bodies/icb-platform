@@ -479,7 +479,20 @@ def changes_since_previous(s: Session, r: CostingAuditRun) -> dict:
 
 
 def render_html(r: CostingAuditRun) -> str:
-    return _tools().render_html_doc(report_of(r))
+    d = report_of(r)
+    return _tools().render_html_doc(d, families=_families_of(d))
+
+
+def _families_of(d: dict) -> dict:
+    """RT3 — the CURRENT family of every body the report names ({trailer_id: family}), for the body headings'
+    chips. Read-only; a body that no longer exists simply gets no chip."""
+    from ..database import SessionLocal, TrailerType
+    from . import body_family
+    ids = sorted({int(c["trailer_id"]) for c in (d.get("cells") or []) if c.get("trailer_id")})
+    if not ids:
+        return {}
+    with SessionLocal() as db:
+        return {t.id: body_family.body_family(t) for t in db.query(TrailerType).filter(TrailerType.id.in_(ids)).all()}
 
 
 def render_csv(r: CostingAuditRun) -> str:

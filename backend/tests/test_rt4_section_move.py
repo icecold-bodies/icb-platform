@@ -27,16 +27,16 @@ _MARK = "RT4SM"
 def _purge(db) -> None:
     m = {"m": f"{_MARK}%"}
     db.execute(text("DELETE FROM icb_costings.configurator_draft_snapshots WHERE trailer_type_id IN "
-                    "(SELECT id FROM icb_costings.trailer_types WHERE name LIKE :m)"), m)
+                    "(SELECT id FROM icb_costings.trailer_types WHERE name ILIKE :m)"), m)
     db.execute(text("DELETE FROM icb_costings.configurator_drafts WHERE trailer_type_id IN "
-                    "(SELECT id FROM icb_costings.trailer_types WHERE name LIKE :m)"), m)
+                    "(SELECT id FROM icb_costings.trailer_types WHERE name ILIKE :m)"), m)
     db.execute(text("DELETE FROM icb_costings.bill_of_materials WHERE material_id IN "
-                    "(SELECT id FROM icb_costings.materials WHERE name LIKE :m)"), m)
-    db.execute(text("DELETE FROM icb_costings.materials WHERE name LIKE :m"), m)
-    db.execute(text("DELETE FROM icb_costings.trailer_types WHERE name LIKE :m"), m)
-    db.execute(text("DELETE FROM icb_costings.bom_sections WHERE name LIKE :m"), m)
+                    "(SELECT id FROM icb_costings.materials WHERE name ILIKE :m)"), m)
+    db.execute(text("DELETE FROM icb_costings.materials WHERE name ILIKE :m"), m)
+    db.execute(text("DELETE FROM icb_costings.trailer_types WHERE name ILIKE :m"), m)
+    db.execute(text("DELETE FROM icb_costings.bom_sections WHERE name ILIKE :m"), m)
     db.execute(text("DELETE FROM icb_costings.user_sessions WHERE id LIKE 'rt4sm-%'"))
-    db.execute(text("DELETE FROM icb_costings.users WHERE username LIKE 'rt4sm_%'"))
+    db.execute(text("DELETE FROM icb_costings.users WHERE username ILIKE 'rt4sm_%'"))
     db.commit()
 
 
@@ -304,10 +304,14 @@ def test_the_configurator_rename_rekeys_the_drafts_too(client, world):
     assert keys == [target]
 
 
-def test_a_taken_name_is_refused_honestly(client, world):
+def test_a_taken_name_is_refused_honestly_in_any_case(client, world):
     w = world
-    r = client.put(f"/api/bom-sections/{w['old']}", json={"name": w["new_name"]}, headers=w["admin"])
-    assert r.status_code == 400 and "shared" in r.json()["detail"]
+    for name in (w["new_name"], w["new_name"].lower()):          # never a near-twin that differs by case
+        r = client.put(f"/api/bom-sections/{w['old']}", json={"name": name}, headers=w["admin"])
+        assert r.status_code == 400 and "shared" in r.json()["detail"], (name, r.text)
+        p = client.patch(f"/api/configurator/sections/{w['old']}", json={"name": name}, headers=w["admin"])
+        assert p.status_code == 409, (name, p.text)
+    assert _row(w["rows"]["a_id1"]) == {"bom_section_id": w["old"], "bom_section": w["old_name"]}
 
 
 def test_move_items_uses_the_shared_move(client, world):

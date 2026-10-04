@@ -842,11 +842,13 @@ async def update_bom_section(section_id: int, request: Request, db: Session = De
         if not new_name:
             raise HTTPException(status_code=400, detail="Name cannot be empty")
         if new_name != row.name:
-            existing = db.query(BOMSection).filter(BOMSection.name == new_name, BOMSection.id != section_id).first()
+            # RT4 — any case: 'srd door fittings' must never become a near-twin of 'SRD DOOR FITTINGS'
+            existing = (db.query(BOMSection)
+                        .filter(func.upper(BOMSection.name) == new_name.upper(), BOMSection.id != section_id).first())
             if existing:
                 # RT4 — honest: the name belongs to a SHARED section; Body Templates offers to move this body's
                 # lines into it instead (POST /api/bom-sections/{id}/move-body-lines)
-                raise HTTPException(status_code=400, detail=f"A section named '{new_name}' already exists — "
+                raise HTTPException(status_code=400, detail=f"A section named '{existing.name}' already exists — "
                                                             f"it is shared, used by other bodies")
             old_name = row.name
             row.name = new_name
@@ -2643,9 +2645,9 @@ async def configurator_rename_section(
     if sec.name == new_name:
         return {"id": sec.id, "name": sec.name}
 
-    conflict = (
+    conflict = (                     # RT4 — any case: never a near-twin of an existing section
         db.query(BOMSection)
-        .filter(BOMSection.name == new_name, BOMSection.id != section_id)
+        .filter(func.upper(BOMSection.name) == new_name.upper(), BOMSection.id != section_id)
         .first()
     )
     if conflict:

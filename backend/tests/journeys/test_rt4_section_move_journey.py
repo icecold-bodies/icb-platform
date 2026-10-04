@@ -33,10 +33,10 @@ def _base() -> str:
 def _purge(db) -> None:
     from sqlalchemy import text
     db.execute(text("DELETE FROM icb_costings.bill_of_materials WHERE trailer_type_id IN "
-                    "(SELECT id FROM icb_costings.trailer_types WHERE name LIKE 'RT4J%')"))
-    db.execute(text("DELETE FROM icb_costings.trailer_types WHERE name LIKE 'RT4J%'"))
-    db.execute(text("DELETE FROM icb_costings.bom_sections WHERE name LIKE 'RT4J%'"))
-    db.execute(text("DELETE FROM icb_costings.materials WHERE name LIKE 'RT4J%'"))
+                    "(SELECT id FROM icb_costings.trailer_types WHERE name ILIKE 'RT4J%')"))
+    db.execute(text("DELETE FROM icb_costings.trailer_types WHERE name ILIKE 'RT4J%'"))
+    db.execute(text("DELETE FROM icb_costings.bom_sections WHERE name ILIKE 'RT4J%'"))
+    db.execute(text("DELETE FROM icb_costings.materials WHERE name ILIKE 'RT4J%'"))
     db.commit()
 
 
@@ -88,7 +88,6 @@ def test_rename_to_an_existing_name_offers_the_move_then_the_delete(page: Page, 
     admin_session(page, base=_base())
     _open_body(page, bodies["a"])
     _edit_section(page, OLD)
-    expect(page.locator("#es-usage")).to_contain_text("used by 1 body", timeout=T)
     page.fill("#es-name", NEW.lower())                       # any case: it IS the shared section
     page.click("#modal-edit-section button.btn-primary")
 
@@ -121,6 +120,8 @@ def test_a_plain_rename_of_a_shared_section_warns_and_names_the_bodies(page: Pag
     admin_session(page, base=_base())
     _open_body(page, bodies["a"])
     _edit_section(page, NEW)
+    expect(page.locator("#es-usage")).to_have_text(
+        f"Shared: used by 2 bodies ({MARK} BODY A, {MARK} BODY B) — 3 lines in all.", timeout=T)
     page.fill("#es-name", f"{MARK} RENAMED")
     page.click("#modal-edit-section button.btn-primary")
     expect(page.locator("#confirm-title")).to_have_text("Rename a shared section", timeout=T)

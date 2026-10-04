@@ -743,8 +743,9 @@ async function saveSectionFromModal() {
   const body = { is_optional: !!tick.checked };
   if (name !== _editingSectionName) {
     // A name that is already a section (any case) is that SHARED section: offer the move, never a near-twin.
-    const target = Object.values(bomSectionMap).find(
-      s => s.id !== sec.id && s.name.toUpperCase() === name.toUpperCase());
+    const others = Object.values(bomSectionMap).filter(s => s.id !== sec.id);
+    const target = others.find(s => s.name === name)
+                || others.find(s => s.name.toUpperCase() === name.toUpperCase());
     if (target) {
       if (!_editingFromBody) {
         return toast(`'${target.name}' already exists and is shared. To move a body's lines into it, `

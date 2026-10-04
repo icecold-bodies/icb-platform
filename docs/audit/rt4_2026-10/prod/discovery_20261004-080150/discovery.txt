@@ -1,0 +1,291 @@
+database / read only / schema: icb_platform / on / icb_costings
+
+== 1 · bodies named MANNI (and id 41)
+   #3   MANNI RIGIDS CB                    active=False v2=False family=OTHER      size=7.5x2.6x2.6 foam=32D
+   #4   MANNI BAKKI RIGIDS                 active=False v2=False family=OTHER      size=2.3x1.8x1.6 foam=32D
+   #5   MANNI RIGIDS FB                    active=False v2=False family=OTHER      size=7.5x2.6x2.6 foam=32D
+   #6   MANNI TRAILERS                     active=False v2=False family=OTHER      size=15.5x2.6x2.85 foam=32D
+   #7   MANNI DF                           active=False v2=False family=OTHER      size=12.2x2.6x3.0 foam=32D
+   #41  Manni RIGIDS CB [deleted-41]       active=False v2=True  family=-          size=7.5x2.6x2.6 foam=32D
+   standard 14: 14 found, active 14: 12 MEAT HANGER LARGE, 16 ICECREAM BODY SMALL, 17 ICECREAM BODY MEDIUM, 18 ICECREAM BODY LARGE, 19 FREEZER 2.3 METER, 20 FREEZER MEDIUM, 21 FREEZER LARGE, 24 EXPLOSIVE 4.9 AND UP, 25 CHILLER 2.3 METER, 26 CHILLER MEDIUM, 27 CHILLER LARGE, 34 EXPLOSIVE UP TO 2.7, 36 MEAT HANGER SMALL-MEDIUM, 37 EXPLOSIVE 2.7 TO 4.8
+
+== 2 · per Manni: sections (line counts; id = FK section, str = legacy string)
+   #3 MANNI RIGIDS CB — 256 lines, 15 section keys, drift 0
+         5  id 19    ALUMINIUM                          str ALUMINIUM
+        18  id 36    BODY OPTIONS                       str BODY OPTIONS
+         4  id 14    DRD                                str DRD
+        13  id 15    DRD DOOR FITTINGS                  str DRD DOOR FITTINGS
+        13  id 18    FLOOR                              str FLOOR
+         5  id 13    FRONT                              str FRONT
+       134  id 79    OPTIONAL EXTRAS                    str OPTIONAL EXTRAS
+         9  id 21    REAR FRAME & FLOOR PLATE           str REAR FRAME & FLOOR PLATE
+         1  id 23    REFLEXITE TAPE                     str REFLEXITE TAPE
+         4  id 17    ROOF                               str ROOF
+         5  id 16    SIDES                              str SIDES
+         1  id 22    SPRAY PAINTING                     str SPRAY PAINTING
+         4  id 25    SRD                                str SRD
+        17  id 26    SRD DOOR FITTINGS                  str SRD DOOR FITTINGS
+        23  id 20    SUB FRAME + LIGHT BOX ASSY         str SUB FRAME + LIGHT BOX ASSY
+      masters (18):
+         bom    347 FRONT EPS                      group=FRONT        sub=INSULATION   default=False thick=0.0
+         bom    348 FRONT PU                       group=FRONT        sub=INSULATION   default=True  thick=0.062
+         bom    349 DRD EPS                        group=DRD          sub=INSULATION   default=False thick=0.0
+         bom    350 DRD PU                         group=DRD          sub=INSULATION   default=True  thick=0.062
+         bom    351 SRD EPS                        group=SRD          sub=INSULATION   default=False thick=0.0
+         bom    352 SRD PU                         group=SRD          sub=INSULATION   default=False thick=0.0
+         bom    353 SIDES EPS                      group=SIDES        sub=INSULATION   default=False thick=0.0
+         bom    354 SIDES PU                       group=SIDES        sub=INSULATION   default=True  thick=0.062
+         bom    355 ROOF EPS                       group=ROOF         sub=INSULATION   default=False thick=0.0
+         bom    356 ROOF PU                        group=ROOF         sub=INSULATION   default=True  thick=0.062
+         bom    357 FLOOR EPS                      group=FLOOR        sub=INSULATION   default=False thick=0.0
+         bom    358 FLOOR PU                       group=FLOOR        sub=INSULATION   default=True  thick=0.076
+         bom    359 18MM PHENO PLY                 group=FLOOR        sub=PLYWOOD      default=False thick=None
+         bom    360 18MM FINN PLY FLOOR            group=FLOOR        sub=-            default=True  thick=None
+         bom    361 12MM FINN PLYWOOD              group=FLOOR        sub=PLYWOOD      default=False thick=None
+         bom    362 RICE GRAIN FLOOR               group=FLOOR        sub=SURFACE      default=False thick=None
+         bom    363 ALU KICKPLATES                 group=FLOOR        sub=KICK - ALU KICKPLATES default=False thick=None
+         bom    364 2ND ROW ALU KICKPLATES         group=FLOOR        sub=KICK - 2ND ROW ALU KICKPLATES default=False thick=None
+   #4 MANNI BAKKI RIGIDS — 255 lines, 15 section keys, drift 0
+         5  id 19    ALUMINIUM                          str ALUMINIUM
+        18  id 36    BODY OPTIONS                       str BODY OPTIONS
+         4  id 14    DRD                                str DRD
+        13  id 15    DRD DOOR FITTINGS                  str DRD DOOR FITTINGS
+        12  id 18    FLOOR                              str FLOOR
+         5  id 13    FRONT                              str FRONT
+       134  id 79    OPTIONAL EXTRAS                    str OPTIONAL EXTRAS
+         9  id 21    REAR FRAME & FLOOR PLATE           str REAR FRAME & FLOOR PLATE
+         1  id 23    REFLEXITE TAPE                     str REFLEXITE TAPE
+         4  id 17    ROOF                               str ROOF
+         5  id 16    SIDES                              str SIDES
+         1  id 22    SPRAY PAINTING                     str SPRAY PAINTING
+         4  id 25    SRD                                str SRD
+        17  id 26    SRD DOOR FITTINGS                  str SRD DOOR FITTINGS
+        23  id 20    SUB FRAME + LIGHT BOX ASSY         str SUB FRAME + LIGHT BOX ASSY
+      masters (18):
+         bom    468 FRONT EPS                      group=FRONT        sub=INSULATION   default=False thick=0.0
+         bom    469 FRONT PU                       group=FRONT        sub=INSULATION   default=True  thick=0.062
+         bom    470 DRD EPS                        group=DRD          sub=INSULATION   default=False thick=0.0
+         bom    471 DRD PU                         group=DRD          sub=INSULATION   default=True  thick=0.062
+         bom    472 SRD EPS                        group=SRD          sub=INSULATION   default=False thick=0.0
+         bom    473 SRD PU                         group=SRD          sub=INSULATION   default=False thick=0.0
+         bom    474 SIDES EPS                      group=SIDES        sub=INSULATION   default=False thick=0.0
+         bom    475 SIDES PU                       group=SIDES        sub=INSULATION   default=True  thick=0.062
+         bom    476 ROOF EPS                       group=ROOF         sub=INSULATION   default=False thick=0.0
+         bom    477 ROOF PU                        group=ROOF         sub=INSULATION   default=True  thick=0.062
+         bom    478 FLOOR EPS                      group=FLOOR        sub=INSULATION   default=False thick=0.0
+         bom    479 FLOOR PU                       group=FLOOR        sub=INSULATION   default=True  thick=0.05
+         bom    480 6mm PHONOL PLY                 group=FLOOR        sub=-            default=False thick=None
+         bom    481 6MM BIRCH PLY                  group=FLOOR        sub=PLYWOOD      default=True  thick=None
+         bom    482 12MM FINN PLYWOOD              group=FLOOR        sub=PLYWOOD      default=False thick=None
+         bom    483 RICE GRAIN FLOOR               group=FLOOR        sub=SURFACE      default=True  thick=None
+         bom    484 ALU KICKPLATES                 group=FLOOR        sub=KICK - ALU KICKPLATES default=True  thick=None
+         bom    485 2ND ROW ALU KICKPLATES         group=FLOOR        sub=KICK - 2ND ROW ALU KICKPLATES default=False thick=None
+   #5 MANNI RIGIDS FB — 255 lines, 15 section keys, drift 0
+         5  id 19    ALUMINIUM                          str ALUMINIUM
+        18  id 36    BODY OPTIONS                       str BODY OPTIONS
+         4  id 14    DRD                                str DRD
+        13  id 15    DRD DOOR FITTINGS                  str DRD DOOR FITTINGS
+        13  id 18    FLOOR                              str FLOOR
+         4  id 13    FRONT                              str FRONT
+       134  id 79    OPTIONAL EXTRAS                    str OPTIONAL EXTRAS
+         9  id 21    REAR FRAME & FLOOR PLATE           str REAR FRAME & FLOOR PLATE
+         1  id 23    REFLEXITE TAPE                     str REFLEXITE TAPE
+         4  id 17    ROOF                               str ROOF
+         5  id 16    SIDES                              str SIDES
+         1  id 22    SPRAY PAINTING                     str SPRAY PAINTING
+         4  id 25    SRD                                str SRD
+        17  id 26    SRD DOOR FITTINGS                  str SRD DOOR FITTINGS
+        23  id 20    SUB FRAME + LIGHT BOX ASSY         str SUB FRAME + LIGHT BOX ASSY
+      masters (18):
+         bom    589 FRONT EPS                      group=FRONT        sub=INSULATION   default=False thick=0.0
+         bom    590 FRONT PU                       group=FRONT        sub=INSULATION   default=True  thick=0.062
+         bom    591 DRD EPS                        group=DRD          sub=INSULATION   default=False thick=0.0
+         bom    592 DRD PU                         group=DRD          sub=INSULATION   default=True  thick=0.062
+         bom    593 SRD EPS                        group=SRD          sub=INSULATION   default=False thick=0.0
+         bom    594 SRD PU                         group=SRD          sub=INSULATION   default=False thick=0.0
+         bom    595 SIDES EPS                      group=SIDES        sub=INSULATION   default=False thick=0.0
+         bom    596 SIDES PU                       group=SIDES        sub=INSULATION   default=True  thick=0.062
+         bom    597 ROOF EPS                       group=ROOF         sub=INSULATION   default=False thick=0.0
+         bom    598 ROOF PU                        group=ROOF         sub=INSULATION   default=True  thick=0.076
+         bom    599 FLOOR EPS                      group=FLOOR        sub=INSULATION   default=False thick=0.0
+         bom    600 FLOOR PU                       group=FLOOR        sub=INSULATION   default=True  thick=0.076
+         bom    601 18MM PHENO PLY                 group=FLOOR        sub=PLYWOOD      default=False thick=None
+         bom    602 18MM FINN PLY FLOOR            group=FLOOR        sub=-            default=True  thick=None
+         bom    603 12MM FINN PLYWOOD              group=FLOOR        sub=PLYWOOD      default=False thick=None
+         bom    604 RICE GRAIN FLOOR               group=FLOOR        sub=SURFACE      default=False thick=None
+         bom    605 ALU KICKPLATES                 group=FLOOR        sub=KICK - ALU KICKPLATES default=False thick=None
+         bom    606 2ND ROW ALU KICKPLATES         group=FLOOR        sub=KICK - 2ND ROW ALU KICKPLATES default=False thick=None
+   #6 MANNI TRAILERS — 260 lines, 16 section keys, drift 0
+         5  id 19    ALUMINIUM                          str ALUMINIUM
+        20  id 36    BODY OPTIONS                       str BODY OPTIONS
+         4  id 14    DRD                                str DRD
+        13  id 15    DRD DOOR FITTINGS                  str DRD DOOR FITTINGS
+        13  id 18    FLOOR                              str FLOOR
+         5  id 13    FRONT                              str FRONT
+         2  id 24    INT FALSE BULKHEAD                 str INT FALSE BULKHEAD
+       134  id 79    OPTIONAL EXTRAS                    str OPTIONAL EXTRAS
+         9  id 21    REAR FRAME & FLOOR PLATE           str REAR FRAME & FLOOR PLATE
+         1  id 23    REFLEXITE TAPE                     str REFLEXITE TAPE
+         4  id 17    ROOF                               str ROOF
+         5  id 16    SIDES                              str SIDES
+         1  id 22    SPRAY PAINTING                     str SPRAY PAINTING
+         4  id 25    SRD                                str SRD
+        17  id 26    SRD DOOR FITTINGS                  str SRD DOOR FITTINGS
+        23  id 20    SUB FRAME + LIGHT BOX ASSY         str SUB FRAME + LIGHT BOX ASSY
+      masters (20):
+         bom    713 FRONT EPS                      group=FRONT        sub=INSULATION   default=False thick=0.0
+         bom    714 FRONT PU                       group=FRONT        sub=INSULATION   default=True  thick=0.097
+         bom    715 DRD EPS                        group=DRD          sub=INSULATION   default=False thick=0.0
+         bom    716 DRD PU                         group=DRD          sub=INSULATION   default=True  thick=0.097
+         bom    717 SRD EPS                        group=SRD          sub=INSULATION   default=False thick=0.0
+         bom    718 SRD PU                         group=SRD          sub=INSULATION   default=False thick=0.0
+         bom    719 SIDES EPS                      group=SIDES        sub=INSULATION   default=False thick=0.0
+         bom    720 SIDES PU                       group=SIDES        sub=INSULATION   default=True  thick=0.062
+         bom    721 ROOF EPS                       group=ROOF         sub=INSULATION   default=False thick=0.0
+         bom    722 ROOF PU                        group=ROOF         sub=INSULATION   default=True  thick=0.097
+         bom    723 FLOOR EPS                      group=FLOOR        sub=INSULATION   default=False thick=0.0
+         bom    724 FLOOR PU                       group=FLOOR        sub=INSULATION   default=True  thick=0.076
+         bom    725 18MM PHENO PLY                 group=FLOOR        sub=PLYWOOD      default=False thick=None
+         bom    726 21MM FINN PLY FLOOR            group=FLOOR        sub=-            default=True  thick=None
+         bom    727 12MM FINN PLYWOOD              group=FLOOR        sub=PLYWOOD      default=False thick=None
+         bom    728 RICE GRAIN FLOOR               group=FLOOR        sub=SURFACE      default=True  thick=None
+         bom    729 ALU KICKPLATES                 group=FLOOR        sub=KICK - ALU KICKPLATES default=True  thick=None
+         bom    730 2ND ROW ALU KICKPLATES         group=FLOOR        sub=KICK - 2ND ROW ALU KICKPLATES default=False thick=None
+         bom    731 RIGID                          group=FLOOR        sub=-            default=False thick=None
+         bom    732 TRAILER FALSE BULKHEAD         group=FLOOR        sub=-            default=True  thick=None
+   #7 MANNI DF — 275 lines, 23 section keys, drift 7
+         9  id 34    24MM WISA TRANS FLOOR              str 24MM WISA TRANS FLOOR
+         4  id 37    2MM 3CR12 S/STEEL FLOOR            str 2MM 3CR12 S/STEEL FLOOR
+         4  id 38    3MM 3CR12 S/STEEL FLOOR            str 3MM 3CR12 S/STEEL FLOOR
+         4  id 33    5MM 300 WA PLATE                   str 5MM 300 WA PLATE
+         7  id 19    ALUMINIUM                          str ALUMINIUM
+         4  id 39    ALUMINIUM (post-snapshot)          str 3MM MILD STEEL FLOOR   ⚠ id/string differ
+        22  id 36    BODY OPTIONS                       str BODY OPTIONS
+         4  id 14    DRD                                str DRD
+        14  id 15    DRD DOOR FITTINGS                  str DRD DOOR FITTINGS
+         1  id 42    ESCAPE HATCH                       str ESCAPE HATCH
+         3  id 40    FLOOR THICKNESS                    str LOAD LOCK RAILS   ⚠ id/string differ
+         4  id 13    FRONT                              str FRONT
+         3  id 43    NOSE CONE                          str NOSE CONE
+       134  id 79    OPTIONAL EXTRAS                    str OPTIONAL EXTRAS
+         6  id 21    REAR FRAME & FLOOR PLATE           str REAR FRAME & FLOOR PLATE
+         1  id 23    REFLEXITE TAPE                     str REFLEXITE TAPE
+         3  id 17    ROOF                               str ROOF
+         4  id 16    SIDES                              str SIDES
+         1  id 22    SPRAY PAINTING                     str SPRAY PAINTING
+         4  id 25    SRD                                str SRD
+        19  id 26    SRD DOOR FITTINGS                  str SRD DOOR FITTINGS
+        18  id 20    SUB FRAME + LIGHT BOX ASSY         str SUB FRAME + LIGHT BOX ASSY
+         2  id 41    TOPHAT SECTON                      str TOPHAT SECTON
+      masters (22):
+         bom    852 DRD                            group=DRD          sub=-            default=False thick=None
+         bom    853 SRD                            group=SRD          sub=-            default=False thick=None
+         bom    854 2MM3CR12 FLOOR                 group=SRD          sub=KICK - 2MM3CR12 FLOOR default=False thick=None
+         bom    855 3MM3CR12 FLOOR                 group=SRD          sub=KICK - 3MM3CR12 FLOOR default=False thick=None
+         bom    856 3MM MILD STEEL FLOOR           group=SRD          sub=-            default=False thick=None
+         bom    857 5MM MILD STEEL FLOOR           group=SRD          sub=-            default=False thick=None
+         bom    858 24MM WISA TRANS FLOOR          group=SRD          sub=-            default=False thick=None
+         bom    859 REFLEXITE TAPE                 group=SRD          sub=-            default=False thick=None
+         bom    860 DRY FREIGHT                    group=SRD          sub=-            default=False thick=None
+         bom    861 19MM PLYWOOD PANELS            group=FLOOR        sub=PLYWOOD      default=False thick=None
+         bom    862 BAKERY BODY                    group=FLOOR        sub=-            default=False thick=None
+         bom    863 RICE GRAIN FLOOR               group=FLOOR        sub=SURFACE      default=False thick=None
+         bom    864 1ST ROW ALU KICK PLATE         group=FLOOR        sub=KICK - 1ST ROW ALU KICK PLATE default=False thick=None
+         bom    865 2ND ROW ALU KICK PLATE         group=FLOOR        sub=KICK - 2ND ROW ALU KICK PLATE default=False thick=None
+         bom    866 80 DV COMPOSITE PANELS         group=FLOOR        sub=-            default=False thick=None
+         bom    867 LOAD LOCK RAIL                 group=FLOOR        sub=-            default=False thick=None
+         bom    868 TOP HAT SECTION                group=FLOOR        sub=-            default=False thick=None
+         bom    869 ESCAPE HATCH                   group=FLOOR        sub=-            default=False thick=None
+         bom    870 INTERIOR LIGHTS                group=FLOOR        sub=-            default=False thick=None
+         bom    871 DRAIN HOLES                    group=FLOOR        sub=-            default=False thick=None
+         bom    872 NOSE CONE                      group=FLOOR        sub=-            default=False thick=None
+         bom    873 2MM3CR12 KICK PLATES           group=FLOOR        sub=KICK - 2MM3CR12 KICK PLATES default=False thick=None
+   #41 Manni RIGIDS CB [deleted-41] — 99 lines, 13 section keys, drift 0
+         5  id 19    ALUMINIUM                          str ALUMINIUM
+        13  id 84    DOOR FITTINGS DRD                  str DOOR FITTINGS DRD
+        17  id 83    DOOR FITTINGS SRD                  str DOOR FITTINGS SRD
+         4  id 14    DRD                                str DRD
+         8  id 18    FLOOR                              str FLOOR
+         5  id 13    FRONT                              str FRONT
+         9  id 85    REAR FRAME + FLOOR PLATE           str REAR FRAME + FLOOR PLATE
+         1  id 23    REFLEXITE TAPE                     str REFLEXITE TAPE
+         4  id 17    ROOF                               str ROOF
+         5  id 16    SIDES                              str SIDES
+         1  id 22    SPRAY PAINTING                     str SPRAY PAINTING
+         4  id 25    SRD                                str SRD
+        23  id 20    SUB FRAME + LIGHT BOX ASSY         str SUB FRAME + LIGHT BOX ASSY
+      masters (0):
+
+== 4 · Trailer Designer drafts (category nodes: section key · label · folder path)
+   #3 MANNI RIGIDS CB: draft=no snapshots=0
+   #4 MANNI BAKKI RIGIDS: draft=no snapshots=0
+   #5 MANNI RIGIDS FB: draft=no snapshots=0
+   #6 MANNI TRAILERS: draft=no snapshots=0
+   #7 MANNI DF: draft=no snapshots=0
+   #41 Manni RIGIDS CB [deleted-41]: draft=yes snapshots=1 nodes={'folder': 6, 'category': 12, 'flag': 17}
+      key ALUMINIUM                          label ALUMINIUM                      under (root)
+      key FRONT                              label FRONT                          under (root)
+      key REFLEXITE TAPE                     label REFLEXITE TAPE                 under (root)
+      key ROOF                               label ROOF                           under (root)
+      key SIDES                              label SIDES                          under (root)
+      key SPRAY PAINTING                     label SPRAY PAINTING                 under (root)
+      key SUB FRAME + LIGHT BOX ASSY         label SUB FRAME + LIGHT BOX ASSY     under (root)
+      key DOOR FITTINGS DRD                  label DOOR FITTINGS DRD              under folder:DOOR TYPE / folder:DRD DOORS
+      key DRD                                label DRD                            under folder:DOOR TYPE / folder:DRD DOORS
+      key DOOR FITTINGS SRD                  label DOOR FITTINGS SRD              under folder:DOOR TYPE / folder:SRD DOORS
+      key SRD                                label SRD                            under folder:DOOR TYPE / folder:SRD DOORS
+      key FLOOR                              label FLOOR                          under folder:FLOOR
+
+== 5 · saved costings per body (counts only)
+   #3   MANNI RIGIDS CB                    costings all=0 live=0
+   #4   MANNI BAKKI RIGIDS                 costings all=0 live=0
+   #5   MANNI RIGIDS FB                    costings all=0 live=0
+   #6   MANNI TRAILERS                     costings all=0 live=0
+   #7   MANNI DF                           costings all=0 live=0
+   #41  Manni RIGIDS CB [deleted-41]       costings all=0 live=0
+
+== 6 · E3 sweep — every section name the five Mannis use vs the 14 standard bodies
+   the 14 standard bodies use 18 section names; the five Mannis use 25
+   ok   ALUMINIUM                          (27 Manni lines) — a standard name
+   ok   BODY OPTIONS                       (96 Manni lines) — a standard name
+   ok   DRD                                (20 Manni lines) — a standard name
+   ok   DRD DOOR FITTINGS                  (66 Manni lines) — a standard name
+   ok   FLOOR                              (51 Manni lines) — a standard name
+   ok   FRONT                              (23 Manni lines) — a standard name
+   ok   OPTIONAL EXTRAS                    (670 Manni lines) — a standard name
+   ok   REAR FRAME & FLOOR PLATE           (42 Manni lines) — a standard name
+   ok   REFLEXITE TAPE                     (5 Manni lines) — a standard name
+   ok   ROOF                               (19 Manni lines) — a standard name
+   ok   SIDES                              (24 Manni lines) — a standard name
+   ok   SPRAY PAINTING                     (5 Manni lines) — a standard name
+   ok   SRD                                (20 Manni lines) — a standard name
+   ok   SRD DOOR FITTINGS                  (87 Manni lines) — a standard name
+   ok   SUB FRAME + LIGHT BOX ASSY         (110 Manni lines) — a standard name
+   NON  24MM WISA TRANS FLOOR              (9 Manni lines) -> ?  [none]
+   NON  2MM 3CR12 S/STEEL FLOOR            (4 Manni lines) -> ?  [none]
+   NON  3MM 3CR12 S/STEEL FLOOR            (4 Manni lines) -> ?  [none]
+   NON  5MM 300 WA PLATE                   (4 Manni lines) -> ?  [none]
+   NON  ALUMINIUM (post-snapshot)          (4 Manni lines) -> ?  [none]
+   NON  ESCAPE HATCH                       (1 Manni lines) -> ?  [none]
+   NON  FLOOR THICKNESS                    (3 Manni lines) -> ?  [none]
+   NON  INT FALSE BULKHEAD                 (2 Manni lines) -> ?  [none]
+   NON  NOSE CONE                          (3 Manni lines) -> ?  [none]
+   NON  TOPHAT SECTON                      (2 Manni lines) -> ?  [none]
+
+== 7 · every body using a non-standard Manni section (by id or by string), and draft keys naming it
+   24MM WISA TRANS FLOOR (section 34): #7 MANNI DF ×9, #38 RIGID DRY FREIGHT [deleted-38] ×4, #39 RIGID DRY FREIGHT ×11, #51 None ×13 · no draft names it
+   2MM 3CR12 S/STEEL FLOOR (section 37): #7 MANNI DF ×4, #38 RIGID DRY FREIGHT [deleted-38] ×4, #39 RIGID DRY FREIGHT ×4, #51 None ×4 · no draft names it
+   3MM 3CR12 S/STEEL FLOOR (section 38): #7 MANNI DF ×4, #9 TAUT LINER RIGID ×4, #38 RIGID DRY FREIGHT [deleted-38] ×4, #39 RIGID DRY FREIGHT ×4, #51 None ×17 · no draft names it
+   5MM 300 WA PLATE (section 33): #7 MANNI DF ×4, #9 TAUT LINER RIGID ×4, #38 RIGID DRY FREIGHT [deleted-38] ×4, #39 RIGID DRY FREIGHT ×4, #51 None ×7 · no draft names it
+   ALUMINIUM (post-snapshot) (section 39): #7 MANNI DF ×4, #9 TAUT LINER RIGID ×4, #38 RIGID DRY FREIGHT [deleted-38] ×4, #39 RIGID DRY FREIGHT ×4 · no draft names it
+   ESCAPE HATCH (section 42): #7 MANNI DF ×1, #38 RIGID DRY FREIGHT [deleted-38] ×1, #39 RIGID DRY FREIGHT ×1, #51 None ×1 · no draft names it
+   FLOOR THICKNESS (section 40): #7 MANNI DF ×3, #38 RIGID DRY FREIGHT [deleted-38] ×4, #39 RIGID DRY FREIGHT ×4 · no draft names it
+   INT FALSE BULKHEAD (section 24): #2 ADVANTICA BODY ×2, #6 MANNI TRAILERS ×2, #14 GRP TRAILERS ×2, #15 RHINORANGE TRAILER ×2 · drafts naming it: #15
+   NOSE CONE (section 43): #7 MANNI DF ×3 · no draft names it
+   TOPHAT SECTON (section 41): #7 MANNI DF ×2, #38 RIGID DRY FREIGHT [deleted-38] ×2, #39 RIGID DRY FREIGHT ×2, #51 None ×2 · no draft names it
+
+== 8 · deleted id 41: what is left
+   row: Manni RIGIDS CB [deleted-41] · active=False · v2=True
+   rows left (every FK / trailer_type_id column): {'bill_of_materials.trailer_type_id': 99, 'configurator_draft_snapshots.trailer_type_id': 1, 'configurator_drafts.trailer_type_id': 1, 'trailer_ratios.trailer_type_id': 10}
+   sections whose owning master is on #41: none
+   orphaned template assignments naming a Manni: [{'trailer_name': 'Manni RIGIDS CB', 'group_id': 7, 'override_report_template_id': None}]

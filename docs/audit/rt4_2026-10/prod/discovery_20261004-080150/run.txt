@@ -1,0 +1,74 @@
+== prod: db=icb_platform alembic=0051 code=682a6cc staged=0d83b56 2026-10-04T08:01:50+02:00
+== 1. discovery (read-only session)
+== 1 · bodies named MANNI (and id 41)
+   #3   MANNI RIGIDS CB                    active=False v2=False family=OTHER      size=7.5x2.6x2.6 foam=32D
+   #4   MANNI BAKKI RIGIDS                 active=False v2=False family=OTHER      size=2.3x1.8x1.6 foam=32D
+   #5   MANNI RIGIDS FB                    active=False v2=False family=OTHER      size=7.5x2.6x2.6 foam=32D
+   #6   MANNI TRAILERS                     active=False v2=False family=OTHER      size=15.5x2.6x2.85 foam=32D
+   #7   MANNI DF                           active=False v2=False family=OTHER      size=12.2x2.6x3.0 foam=32D
+   #41  Manni RIGIDS CB [deleted-41]       active=False v2=True  family=-          size=7.5x2.6x2.6 foam=32D
+   standard 14: 14 found, active 14: 12 MEAT HANGER LARGE, 16 ICECREAM BODY SMALL, 17 ICECREAM BODY MEDIUM, 18 ICECREAM BODY LARGE, 19 FREEZER 2.3 METER, 20 FREEZER MEDIUM, 21 FREEZER LARGE, 24 EXPLOSIVE 4.9 AND UP, 25 CHILLER 2.3 METER, 26 CHILLER MEDIUM, 27 CHILLER LARGE, 34 EXPLOSIVE UP TO 2.7, 36 MEAT HANGER SMALL-MEDIUM, 37 EXPLOSIVE 2.7 TO 4.8
+== 2 · per Manni: sections (line counts; id = FK section, str = legacy string)
+   #3 MANNI RIGIDS CB — 256 lines, 15 section keys, drift 0
+   #4 MANNI BAKKI RIGIDS — 255 lines, 15 section keys, drift 0
+   #5 MANNI RIGIDS FB — 255 lines, 15 section keys, drift 0
+   #6 MANNI TRAILERS — 260 lines, 16 section keys, drift 0
+   #7 MANNI DF — 275 lines, 23 section keys, drift 7
+         4  id 39    ALUMINIUM (post-snapshot)          str 3MM MILD STEEL FLOOR   ⚠ id/string differ
+         3  id 40    FLOOR THICKNESS                    str LOAD LOCK RAILS   ⚠ id/string differ
+   #41 Manni RIGIDS CB [deleted-41] — 99 lines, 13 section keys, drift 0
+== 4 · Trailer Designer drafts (category nodes: section key · label · folder path)
+   #3 MANNI RIGIDS CB: draft=no snapshots=0
+   #4 MANNI BAKKI RIGIDS: draft=no snapshots=0
+   #5 MANNI RIGIDS FB: draft=no snapshots=0
+   #6 MANNI TRAILERS: draft=no snapshots=0
+   #7 MANNI DF: draft=no snapshots=0
+   #41 Manni RIGIDS CB [deleted-41]: draft=yes snapshots=1 nodes={'folder': 6, 'category': 12, 'flag': 17}
+== 5 · saved costings per body (counts only)
+   #3   MANNI RIGIDS CB                    costings all=0 live=0
+   #4   MANNI BAKKI RIGIDS                 costings all=0 live=0
+   #5   MANNI RIGIDS FB                    costings all=0 live=0
+   #6   MANNI TRAILERS                     costings all=0 live=0
+   #7   MANNI DF                           costings all=0 live=0
+   #41  Manni RIGIDS CB [deleted-41]       costings all=0 live=0
+== 6 · E3 sweep — every section name the five Mannis use vs the 14 standard bodies
+   ok   ALUMINIUM                          (27 Manni lines) — a standard name
+   ok   BODY OPTIONS                       (96 Manni lines) — a standard name
+   ok   DRD                                (20 Manni lines) — a standard name
+   ok   DRD DOOR FITTINGS                  (66 Manni lines) — a standard name
+   ok   FLOOR                              (51 Manni lines) — a standard name
+   ok   FRONT                              (23 Manni lines) — a standard name
+   ok   OPTIONAL EXTRAS                    (670 Manni lines) — a standard name
+   ok   REAR FRAME & FLOOR PLATE           (42 Manni lines) — a standard name
+   ok   REFLEXITE TAPE                     (5 Manni lines) — a standard name
+   ok   ROOF                               (19 Manni lines) — a standard name
+   ok   SIDES                              (24 Manni lines) — a standard name
+   ok   SPRAY PAINTING                     (5 Manni lines) — a standard name
+   ok   SRD                                (20 Manni lines) — a standard name
+   ok   SRD DOOR FITTINGS                  (87 Manni lines) — a standard name
+   ok   SUB FRAME + LIGHT BOX ASSY         (110 Manni lines) — a standard name
+   NON  24MM WISA TRANS FLOOR              (9 Manni lines) -> ?  [none]
+   NON  2MM 3CR12 S/STEEL FLOOR            (4 Manni lines) -> ?  [none]
+   NON  3MM 3CR12 S/STEEL FLOOR            (4 Manni lines) -> ?  [none]
+   NON  5MM 300 WA PLATE                   (4 Manni lines) -> ?  [none]
+   NON  ALUMINIUM (post-snapshot)          (4 Manni lines) -> ?  [none]
+   NON  ESCAPE HATCH                       (1 Manni lines) -> ?  [none]
+   NON  FLOOR THICKNESS                    (3 Manni lines) -> ?  [none]
+   NON  INT FALSE BULKHEAD                 (2 Manni lines) -> ?  [none]
+   NON  NOSE CONE                          (3 Manni lines) -> ?  [none]
+   NON  TOPHAT SECTON                      (2 Manni lines) -> ?  [none]
+== 7 · every body using a non-standard Manni section (by id or by string), and draft keys naming it
+== 8 · deleted id 41: what is left
+   rows left (every FK / trailer_type_id column): {'bill_of_materials.trailer_type_id': 99, 'configurator_draft_snapshots.trailer_type_id': 1, 'configurator_drafts.trailer_type_id': 1, 'trailer_ratios.trailer_type_id': 10}
+   gate ok: no email-shaped value in discovery.json
+== 2. export of the five Mannis' pricing rows (read-only session)
+   ids: 4,7,3,5,6
+[snapshot] manni_snapshot.json: admin_settings 1, bill_of_materials 1307, body_option_groups 9, body_option_subgroups 16, bom_sections 44, floor_plates 4, global_variables 1, material_categories 26, mounting_cleats 4, sap_item_codes 25, skin_formulas 2, taping_blocks 1, trailer_groups 2, trailer_types 6, floor_plate_items 13, materials 375, mounting_cleat_items 20, skin_formula_ingredients 5, taping_block_items 5, skin_formula_items 7
+   gate ok: test_the_gates_catch_a_known_hit
+   gate ok: test_snapshot_tables_are_pricing_definitions_only
+   gate ok: test_snapshot_has_no_personal_columns
+   gate ok: test_snapshot_has_no_email_addresses
+== 3. GET with no session — door · local answer · status · bytes · type · cf-cache · location
+   https://127.0.0.1 same-as-local: 43
+   https://192.168.0.251 same-as-local: 43
+   https://mes.icecoldgrp.online same-as-local: 43

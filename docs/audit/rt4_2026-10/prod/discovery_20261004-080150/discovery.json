@@ -1,0 +1,2591 @@
+{
+ "session": {
+  "database": "icb_platform",
+  "read_only": "on",
+  "schema": "icb_costings"
+ },
+ "bodies": [
+  {
+   "id": 3,
+   "name": "MANNI RIGIDS CB",
+   "is_active": false,
+   "configurator_v2": false,
+   "default_length": 7.5,
+   "default_width": 2.6,
+   "default_height": 2.6,
+   "default_insulation_foam": "32D",
+   "family": "OTHER"
+  },
+  {
+   "id": 4,
+   "name": "MANNI BAKKI RIGIDS",
+   "is_active": false,
+   "configurator_v2": false,
+   "default_length": 2.3,
+   "default_width": 1.8,
+   "default_height": 1.6,
+   "default_insulation_foam": "32D",
+   "family": "OTHER"
+  },
+  {
+   "id": 5,
+   "name": "MANNI RIGIDS FB",
+   "is_active": false,
+   "configurator_v2": false,
+   "default_length": 7.5,
+   "default_width": 2.6,
+   "default_height": 2.6,
+   "default_insulation_foam": "32D",
+   "family": "OTHER"
+  },
+  {
+   "id": 6,
+   "name": "MANNI TRAILERS",
+   "is_active": false,
+   "configurator_v2": false,
+   "default_length": 15.5,
+   "default_width": 2.6,
+   "default_height": 2.85,
+   "default_insulation_foam": "32D",
+   "family": "OTHER"
+  },
+  {
+   "id": 7,
+   "name": "MANNI DF",
+   "is_active": false,
+   "configurator_v2": false,
+   "default_length": 12.2,
+   "default_width": 2.6,
+   "default_height": 3.0,
+   "default_insulation_foam": "32D",
+   "family": "OTHER"
+  },
+  {
+   "id": 41,
+   "name": "Manni RIGIDS CB [deleted-41]",
+   "is_active": false,
+   "configurator_v2": true,
+   "default_length": 7.5,
+   "default_width": 2.6,
+   "default_height": 2.6,
+   "default_insulation_foam": "32D",
+   "family": null
+  }
+ ],
+ "standard_bodies": [
+  {
+   "id": 12,
+   "name": "MEAT HANGER LARGE",
+   "is_active": true
+  },
+  {
+   "id": 16,
+   "name": "ICECREAM BODY SMALL",
+   "is_active": true
+  },
+  {
+   "id": 17,
+   "name": "ICECREAM BODY MEDIUM",
+   "is_active": true
+  },
+  {
+   "id": 18,
+   "name": "ICECREAM BODY LARGE",
+   "is_active": true
+  },
+  {
+   "id": 19,
+   "name": "FREEZER 2.3 METER",
+   "is_active": true
+  },
+  {
+   "id": 20,
+   "name": "FREEZER MEDIUM",
+   "is_active": true
+  },
+  {
+   "id": 21,
+   "name": "FREEZER LARGE",
+   "is_active": true
+  },
+  {
+   "id": 24,
+   "name": "EXPLOSIVE 4.9 AND UP",
+   "is_active": true
+  },
+  {
+   "id": 25,
+   "name": "CHILLER 2.3 METER",
+   "is_active": true
+  },
+  {
+   "id": 26,
+   "name": "CHILLER MEDIUM",
+   "is_active": true
+  },
+  {
+   "id": 27,
+   "name": "CHILLER LARGE",
+   "is_active": true
+  },
+  {
+   "id": 34,
+   "name": "EXPLOSIVE UP TO 2.7",
+   "is_active": true
+  },
+  {
+   "id": 36,
+   "name": "MEAT HANGER SMALL-MEDIUM",
+   "is_active": true
+  },
+  {
+   "id": 37,
+   "name": "EXPLOSIVE 2.7 TO 4.8",
+   "is_active": true
+  }
+ ],
+ "sections": [
+  {
+   "id": 13,
+   "name": "FRONT",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 0,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 14,
+   "name": "DRD",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 1,
+   "owner_id": 7232,
+   "owner_body": 27,
+   "owner_master": "DRD"
+  },
+  {
+   "id": 15,
+   "name": "DRD DOOR FITTINGS",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 2,
+   "owner_id": 7232,
+   "owner_body": 27,
+   "owner_master": "DRD"
+  },
+  {
+   "id": 16,
+   "name": "SIDES",
+   "multiplier": 2.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 3,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 17,
+   "name": "ROOF",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 4,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 18,
+   "name": "FLOOR",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 5,
+   "owner_id": 7238,
+   "owner_body": 51,
+   "owner_master": "3MM MILD STEEL FLOOR"
+  },
+  {
+   "id": 19,
+   "name": "ALUMINIUM",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 6,
+   "owner_id": 7418,
+   "owner_body": 51,
+   "owner_master": "5MM 300 WA PLATE"
+  },
+  {
+   "id": 20,
+   "name": "SUB FRAME + LIGHT BOX ASSY",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 7,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 21,
+   "name": "REAR FRAME & FLOOR PLATE",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 8,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 22,
+   "name": "SPRAY PAINTING",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 9,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 23,
+   "name": "REFLEXITE TAPE",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 10,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 24,
+   "name": "INT FALSE BULKHEAD",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 1,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 25,
+   "name": "SRD",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 1,
+   "owner_id": 7233,
+   "owner_body": 27,
+   "owner_master": "SRD"
+  },
+  {
+   "id": 26,
+   "name": "SRD DOOR FITTINGS",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 2,
+   "owner_id": 7233,
+   "owner_body": 27,
+   "owner_master": "SRD"
+  },
+  {
+   "id": 27,
+   "name": "TRAILER FITTINGS",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 8,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 30,
+   "name": "MEAT RAILS",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 10,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 31,
+   "name": "HEAD BOARD",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 0,
+   "owner_id": 7239,
+   "owner_body": 51,
+   "owner_master": "4MM MILD STEEL FLOOR"
+  },
+  {
+   "id": 32,
+   "name": "CURTAINS",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 3,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 33,
+   "name": "5MM 300 WA PLATE",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 5,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 34,
+   "name": "24MM WISA TRANS FLOOR",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 5,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 36,
+   "name": "BODY OPTIONS",
+   "multiplier": null,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 0,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 37,
+   "name": "2MM 3CR12 S/STEEL FLOOR",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 7,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 38,
+   "name": "3MM 3CR12 S/STEEL FLOOR",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 8,
+   "owner_id": 7362,
+   "owner_body": 51,
+   "owner_master": "24MM WISA TRANS FLOOR"
+  },
+  {
+   "id": 39,
+   "name": "ALUMINIUM (post-snapshot)",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 9,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 40,
+   "name": "FLOOR THICKNESS",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 17,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 41,
+   "name": "TOPHAT SECTON",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 18,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 42,
+   "name": "ESCAPE HATCH",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 19,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 43,
+   "name": "NOSE CONE",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 20,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 44,
+   "name": "TAIL BOARD",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 3,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 45,
+   "name": "4.5MM 3CR12 S/STEEL FLOOR",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 7,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 56,
+   "name": "4MM MILD STEEL FLOOR",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 10,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 57,
+   "name": "2MM 3CR12 KICK PLATES",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 21,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 58,
+   "name": "3MM 3CR12 KICK PLATES",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 22,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 64,
+   "name": "3MM MILD STEEL FLOOR",
+   "multiplier": null,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 0,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 65,
+   "name": "LOAD LOCK RAILS",
+   "multiplier": null,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 0,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 73,
+   "name": "new section",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 23,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 78,
+   "name": "EXTRAS",
+   "multiplier": 1.0,
+   "is_optional": true,
+   "archived": false,
+   "sort_order": 24,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 79,
+   "name": "OPTIONAL EXTRAS",
+   "multiplier": 1.0,
+   "is_optional": true,
+   "archived": false,
+   "sort_order": 9999,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 80,
+   "name": "TEST",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 10000,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 81,
+   "name": "EXPLOSIVES OPTIONAL EXTRAS",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 10001,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 82,
+   "name": "OPTIONAL EXPLOSIVE EXTRAS",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 10002,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 83,
+   "name": "DOOR FITTINGS SRD",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 2,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 84,
+   "name": "DOOR FITTINGS DRD",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 4,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  },
+  {
+   "id": 85,
+   "name": "REAR FRAME + FLOOR PLATE",
+   "multiplier": 1.0,
+   "is_optional": false,
+   "archived": false,
+   "sort_order": 10,
+   "owner_id": null,
+   "owner_body": null,
+   "owner_master": null
+  }
+ ],
+ "manni": {
+  "3": {
+   "lines": 256,
+   "sections": [
+    {
+     "section_id": 19,
+     "id_name": "ALUMINIUM",
+     "string": "ALUMINIUM",
+     "lines": 5
+    },
+    {
+     "section_id": 36,
+     "id_name": "BODY OPTIONS",
+     "string": "BODY OPTIONS",
+     "lines": 18
+    },
+    {
+     "section_id": 14,
+     "id_name": "DRD",
+     "string": "DRD",
+     "lines": 4
+    },
+    {
+     "section_id": 15,
+     "id_name": "DRD DOOR FITTINGS",
+     "string": "DRD DOOR FITTINGS",
+     "lines": 13
+    },
+    {
+     "section_id": 18,
+     "id_name": "FLOOR",
+     "string": "FLOOR",
+     "lines": 13
+    },
+    {
+     "section_id": 13,
+     "id_name": "FRONT",
+     "string": "FRONT",
+     "lines": 5
+    },
+    {
+     "section_id": 79,
+     "id_name": "OPTIONAL EXTRAS",
+     "string": "OPTIONAL EXTRAS",
+     "lines": 134
+    },
+    {
+     "section_id": 21,
+     "id_name": "REAR FRAME & FLOOR PLATE",
+     "string": "REAR FRAME & FLOOR PLATE",
+     "lines": 9
+    },
+    {
+     "section_id": 23,
+     "id_name": "REFLEXITE TAPE",
+     "string": "REFLEXITE TAPE",
+     "lines": 1
+    },
+    {
+     "section_id": 17,
+     "id_name": "ROOF",
+     "string": "ROOF",
+     "lines": 4
+    },
+    {
+     "section_id": 16,
+     "id_name": "SIDES",
+     "string": "SIDES",
+     "lines": 5
+    },
+    {
+     "section_id": 22,
+     "id_name": "SPRAY PAINTING",
+     "string": "SPRAY PAINTING",
+     "lines": 1
+    },
+    {
+     "section_id": 25,
+     "id_name": "SRD",
+     "string": "SRD",
+     "lines": 4
+    },
+    {
+     "section_id": 26,
+     "id_name": "SRD DOOR FITTINGS",
+     "string": "SRD DOOR FITTINGS",
+     "lines": 17
+    },
+    {
+     "section_id": 20,
+     "id_name": "SUB FRAME + LIGHT BOX ASSY",
+     "string": "SUB FRAME + LIGHT BOX ASSY",
+     "lines": 23
+    }
+   ],
+   "drift": [],
+   "masters": [
+    {
+     "bom_id": 347,
+     "material": "FRONT EPS",
+     "group": "FRONT",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 348,
+     "material": "FRONT PU",
+     "group": "FRONT",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 349,
+     "material": "DRD EPS",
+     "group": "DRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 350,
+     "material": "DRD PU",
+     "group": "DRD",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 351,
+     "material": "SRD EPS",
+     "group": "SRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 352,
+     "material": "SRD PU",
+     "group": "SRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 353,
+     "material": "SIDES EPS",
+     "group": "SIDES",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 354,
+     "material": "SIDES PU",
+     "group": "SIDES",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 355,
+     "material": "ROOF EPS",
+     "group": "ROOF",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 356,
+     "material": "ROOF PU",
+     "group": "ROOF",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 357,
+     "material": "FLOOR EPS",
+     "group": "FLOOR",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 358,
+     "material": "FLOOR PU",
+     "group": "FLOOR",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.076,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 359,
+     "material": "18MM PHENO PLY",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 360,
+     "material": "18MM FINN PLY FLOOR",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 361,
+     "material": "12MM FINN PLYWOOD",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 362,
+     "material": "RICE GRAIN FLOOR",
+     "group": "FLOOR",
+     "subgroup": "SURFACE",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 363,
+     "material": "ALU KICKPLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - ALU KICKPLATES",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 364,
+     "material": "2ND ROW ALU KICKPLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - 2ND ROW ALU KICKPLATES",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    }
+   ],
+   "draft": {
+    "has_draft": false,
+    "snapshots": 0,
+    "categories": [],
+    "parse_error": null
+   },
+   "costings": {
+    "all": 0,
+    "live": 0
+   }
+  },
+  "4": {
+   "lines": 255,
+   "sections": [
+    {
+     "section_id": 19,
+     "id_name": "ALUMINIUM",
+     "string": "ALUMINIUM",
+     "lines": 5
+    },
+    {
+     "section_id": 36,
+     "id_name": "BODY OPTIONS",
+     "string": "BODY OPTIONS",
+     "lines": 18
+    },
+    {
+     "section_id": 14,
+     "id_name": "DRD",
+     "string": "DRD",
+     "lines": 4
+    },
+    {
+     "section_id": 15,
+     "id_name": "DRD DOOR FITTINGS",
+     "string": "DRD DOOR FITTINGS",
+     "lines": 13
+    },
+    {
+     "section_id": 18,
+     "id_name": "FLOOR",
+     "string": "FLOOR",
+     "lines": 12
+    },
+    {
+     "section_id": 13,
+     "id_name": "FRONT",
+     "string": "FRONT",
+     "lines": 5
+    },
+    {
+     "section_id": 79,
+     "id_name": "OPTIONAL EXTRAS",
+     "string": "OPTIONAL EXTRAS",
+     "lines": 134
+    },
+    {
+     "section_id": 21,
+     "id_name": "REAR FRAME & FLOOR PLATE",
+     "string": "REAR FRAME & FLOOR PLATE",
+     "lines": 9
+    },
+    {
+     "section_id": 23,
+     "id_name": "REFLEXITE TAPE",
+     "string": "REFLEXITE TAPE",
+     "lines": 1
+    },
+    {
+     "section_id": 17,
+     "id_name": "ROOF",
+     "string": "ROOF",
+     "lines": 4
+    },
+    {
+     "section_id": 16,
+     "id_name": "SIDES",
+     "string": "SIDES",
+     "lines": 5
+    },
+    {
+     "section_id": 22,
+     "id_name": "SPRAY PAINTING",
+     "string": "SPRAY PAINTING",
+     "lines": 1
+    },
+    {
+     "section_id": 25,
+     "id_name": "SRD",
+     "string": "SRD",
+     "lines": 4
+    },
+    {
+     "section_id": 26,
+     "id_name": "SRD DOOR FITTINGS",
+     "string": "SRD DOOR FITTINGS",
+     "lines": 17
+    },
+    {
+     "section_id": 20,
+     "id_name": "SUB FRAME + LIGHT BOX ASSY",
+     "string": "SUB FRAME + LIGHT BOX ASSY",
+     "lines": 23
+    }
+   ],
+   "drift": [],
+   "masters": [
+    {
+     "bom_id": 468,
+     "material": "FRONT EPS",
+     "group": "FRONT",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 469,
+     "material": "FRONT PU",
+     "group": "FRONT",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 470,
+     "material": "DRD EPS",
+     "group": "DRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 471,
+     "material": "DRD PU",
+     "group": "DRD",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 472,
+     "material": "SRD EPS",
+     "group": "SRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 473,
+     "material": "SRD PU",
+     "group": "SRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 474,
+     "material": "SIDES EPS",
+     "group": "SIDES",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 475,
+     "material": "SIDES PU",
+     "group": "SIDES",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 476,
+     "material": "ROOF EPS",
+     "group": "ROOF",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 477,
+     "material": "ROOF PU",
+     "group": "ROOF",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 478,
+     "material": "FLOOR EPS",
+     "group": "FLOOR",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 479,
+     "material": "FLOOR PU",
+     "group": "FLOOR",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.05,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 480,
+     "material": "6mm PHONOL PLY",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 481,
+     "material": "6MM BIRCH PLY",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 482,
+     "material": "12MM FINN PLYWOOD",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 483,
+     "material": "RICE GRAIN FLOOR",
+     "group": "FLOOR",
+     "subgroup": "SURFACE",
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 484,
+     "material": "ALU KICKPLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - ALU KICKPLATES",
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 485,
+     "material": "2ND ROW ALU KICKPLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - 2ND ROW ALU KICKPLATES",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    }
+   ],
+   "draft": {
+    "has_draft": false,
+    "snapshots": 0,
+    "categories": [],
+    "parse_error": null
+   },
+   "costings": {
+    "all": 0,
+    "live": 0
+   }
+  },
+  "5": {
+   "lines": 255,
+   "sections": [
+    {
+     "section_id": 19,
+     "id_name": "ALUMINIUM",
+     "string": "ALUMINIUM",
+     "lines": 5
+    },
+    {
+     "section_id": 36,
+     "id_name": "BODY OPTIONS",
+     "string": "BODY OPTIONS",
+     "lines": 18
+    },
+    {
+     "section_id": 14,
+     "id_name": "DRD",
+     "string": "DRD",
+     "lines": 4
+    },
+    {
+     "section_id": 15,
+     "id_name": "DRD DOOR FITTINGS",
+     "string": "DRD DOOR FITTINGS",
+     "lines": 13
+    },
+    {
+     "section_id": 18,
+     "id_name": "FLOOR",
+     "string": "FLOOR",
+     "lines": 13
+    },
+    {
+     "section_id": 13,
+     "id_name": "FRONT",
+     "string": "FRONT",
+     "lines": 4
+    },
+    {
+     "section_id": 79,
+     "id_name": "OPTIONAL EXTRAS",
+     "string": "OPTIONAL EXTRAS",
+     "lines": 134
+    },
+    {
+     "section_id": 21,
+     "id_name": "REAR FRAME & FLOOR PLATE",
+     "string": "REAR FRAME & FLOOR PLATE",
+     "lines": 9
+    },
+    {
+     "section_id": 23,
+     "id_name": "REFLEXITE TAPE",
+     "string": "REFLEXITE TAPE",
+     "lines": 1
+    },
+    {
+     "section_id": 17,
+     "id_name": "ROOF",
+     "string": "ROOF",
+     "lines": 4
+    },
+    {
+     "section_id": 16,
+     "id_name": "SIDES",
+     "string": "SIDES",
+     "lines": 5
+    },
+    {
+     "section_id": 22,
+     "id_name": "SPRAY PAINTING",
+     "string": "SPRAY PAINTING",
+     "lines": 1
+    },
+    {
+     "section_id": 25,
+     "id_name": "SRD",
+     "string": "SRD",
+     "lines": 4
+    },
+    {
+     "section_id": 26,
+     "id_name": "SRD DOOR FITTINGS",
+     "string": "SRD DOOR FITTINGS",
+     "lines": 17
+    },
+    {
+     "section_id": 20,
+     "id_name": "SUB FRAME + LIGHT BOX ASSY",
+     "string": "SUB FRAME + LIGHT BOX ASSY",
+     "lines": 23
+    }
+   ],
+   "drift": [],
+   "masters": [
+    {
+     "bom_id": 589,
+     "material": "FRONT EPS",
+     "group": "FRONT",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 590,
+     "material": "FRONT PU",
+     "group": "FRONT",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 591,
+     "material": "DRD EPS",
+     "group": "DRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 592,
+     "material": "DRD PU",
+     "group": "DRD",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 593,
+     "material": "SRD EPS",
+     "group": "SRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 594,
+     "material": "SRD PU",
+     "group": "SRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 595,
+     "material": "SIDES EPS",
+     "group": "SIDES",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 596,
+     "material": "SIDES PU",
+     "group": "SIDES",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 597,
+     "material": "ROOF EPS",
+     "group": "ROOF",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 598,
+     "material": "ROOF PU",
+     "group": "ROOF",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.076,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 599,
+     "material": "FLOOR EPS",
+     "group": "FLOOR",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 600,
+     "material": "FLOOR PU",
+     "group": "FLOOR",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.076,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 601,
+     "material": "18MM PHENO PLY",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 602,
+     "material": "18MM FINN PLY FLOOR",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 603,
+     "material": "12MM FINN PLYWOOD",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 604,
+     "material": "RICE GRAIN FLOOR",
+     "group": "FLOOR",
+     "subgroup": "SURFACE",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 605,
+     "material": "ALU KICKPLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - ALU KICKPLATES",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 606,
+     "material": "2ND ROW ALU KICKPLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - 2ND ROW ALU KICKPLATES",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    }
+   ],
+   "draft": {
+    "has_draft": false,
+    "snapshots": 0,
+    "categories": [],
+    "parse_error": null
+   },
+   "costings": {
+    "all": 0,
+    "live": 0
+   }
+  },
+  "6": {
+   "lines": 260,
+   "sections": [
+    {
+     "section_id": 19,
+     "id_name": "ALUMINIUM",
+     "string": "ALUMINIUM",
+     "lines": 5
+    },
+    {
+     "section_id": 36,
+     "id_name": "BODY OPTIONS",
+     "string": "BODY OPTIONS",
+     "lines": 20
+    },
+    {
+     "section_id": 14,
+     "id_name": "DRD",
+     "string": "DRD",
+     "lines": 4
+    },
+    {
+     "section_id": 15,
+     "id_name": "DRD DOOR FITTINGS",
+     "string": "DRD DOOR FITTINGS",
+     "lines": 13
+    },
+    {
+     "section_id": 18,
+     "id_name": "FLOOR",
+     "string": "FLOOR",
+     "lines": 13
+    },
+    {
+     "section_id": 13,
+     "id_name": "FRONT",
+     "string": "FRONT",
+     "lines": 5
+    },
+    {
+     "section_id": 24,
+     "id_name": "INT FALSE BULKHEAD",
+     "string": "INT FALSE BULKHEAD",
+     "lines": 2
+    },
+    {
+     "section_id": 79,
+     "id_name": "OPTIONAL EXTRAS",
+     "string": "OPTIONAL EXTRAS",
+     "lines": 134
+    },
+    {
+     "section_id": 21,
+     "id_name": "REAR FRAME & FLOOR PLATE",
+     "string": "REAR FRAME & FLOOR PLATE",
+     "lines": 9
+    },
+    {
+     "section_id": 23,
+     "id_name": "REFLEXITE TAPE",
+     "string": "REFLEXITE TAPE",
+     "lines": 1
+    },
+    {
+     "section_id": 17,
+     "id_name": "ROOF",
+     "string": "ROOF",
+     "lines": 4
+    },
+    {
+     "section_id": 16,
+     "id_name": "SIDES",
+     "string": "SIDES",
+     "lines": 5
+    },
+    {
+     "section_id": 22,
+     "id_name": "SPRAY PAINTING",
+     "string": "SPRAY PAINTING",
+     "lines": 1
+    },
+    {
+     "section_id": 25,
+     "id_name": "SRD",
+     "string": "SRD",
+     "lines": 4
+    },
+    {
+     "section_id": 26,
+     "id_name": "SRD DOOR FITTINGS",
+     "string": "SRD DOOR FITTINGS",
+     "lines": 17
+    },
+    {
+     "section_id": 20,
+     "id_name": "SUB FRAME + LIGHT BOX ASSY",
+     "string": "SUB FRAME + LIGHT BOX ASSY",
+     "lines": 23
+    }
+   ],
+   "drift": [],
+   "masters": [
+    {
+     "bom_id": 713,
+     "material": "FRONT EPS",
+     "group": "FRONT",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 714,
+     "material": "FRONT PU",
+     "group": "FRONT",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.097,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 715,
+     "material": "DRD EPS",
+     "group": "DRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 716,
+     "material": "DRD PU",
+     "group": "DRD",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.097,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 717,
+     "material": "SRD EPS",
+     "group": "SRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 718,
+     "material": "SRD PU",
+     "group": "SRD",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 719,
+     "material": "SIDES EPS",
+     "group": "SIDES",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 720,
+     "material": "SIDES PU",
+     "group": "SIDES",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.062,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 721,
+     "material": "ROOF EPS",
+     "group": "ROOF",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 722,
+     "material": "ROOF PU",
+     "group": "ROOF",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.097,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 723,
+     "material": "FLOOR EPS",
+     "group": "FLOOR",
+     "subgroup": "INSULATION",
+     "default": false,
+     "thickness": 0.0,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 724,
+     "material": "FLOOR PU",
+     "group": "FLOOR",
+     "subgroup": "INSULATION",
+     "default": true,
+     "thickness": 0.076,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 725,
+     "material": "18MM PHENO PLY",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 726,
+     "material": "21MM FINN PLY FLOOR",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 727,
+     "material": "12MM FINN PLYWOOD",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 728,
+     "material": "RICE GRAIN FLOOR",
+     "group": "FLOOR",
+     "subgroup": "SURFACE",
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 729,
+     "material": "ALU KICKPLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - ALU KICKPLATES",
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 730,
+     "material": "2ND ROW ALU KICKPLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - 2ND ROW ALU KICKPLATES",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 731,
+     "material": "RIGID",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 732,
+     "material": "TRAILER FALSE BULKHEAD",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": true,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    }
+   ],
+   "draft": {
+    "has_draft": false,
+    "snapshots": 0,
+    "categories": [],
+    "parse_error": null
+   },
+   "costings": {
+    "all": 0,
+    "live": 0
+   }
+  },
+  "7": {
+   "lines": 275,
+   "sections": [
+    {
+     "section_id": 34,
+     "id_name": "24MM WISA TRANS FLOOR",
+     "string": "24MM WISA TRANS FLOOR",
+     "lines": 9
+    },
+    {
+     "section_id": 37,
+     "id_name": "2MM 3CR12 S/STEEL FLOOR",
+     "string": "2MM 3CR12 S/STEEL FLOOR",
+     "lines": 4
+    },
+    {
+     "section_id": 38,
+     "id_name": "3MM 3CR12 S/STEEL FLOOR",
+     "string": "3MM 3CR12 S/STEEL FLOOR",
+     "lines": 4
+    },
+    {
+     "section_id": 33,
+     "id_name": "5MM 300 WA PLATE",
+     "string": "5MM 300 WA PLATE",
+     "lines": 4
+    },
+    {
+     "section_id": 19,
+     "id_name": "ALUMINIUM",
+     "string": "ALUMINIUM",
+     "lines": 7
+    },
+    {
+     "section_id": 39,
+     "id_name": "ALUMINIUM (post-snapshot)",
+     "string": "3MM MILD STEEL FLOOR",
+     "lines": 4
+    },
+    {
+     "section_id": 36,
+     "id_name": "BODY OPTIONS",
+     "string": "BODY OPTIONS",
+     "lines": 22
+    },
+    {
+     "section_id": 14,
+     "id_name": "DRD",
+     "string": "DRD",
+     "lines": 4
+    },
+    {
+     "section_id": 15,
+     "id_name": "DRD DOOR FITTINGS",
+     "string": "DRD DOOR FITTINGS",
+     "lines": 14
+    },
+    {
+     "section_id": 42,
+     "id_name": "ESCAPE HATCH",
+     "string": "ESCAPE HATCH",
+     "lines": 1
+    },
+    {
+     "section_id": 40,
+     "id_name": "FLOOR THICKNESS",
+     "string": "LOAD LOCK RAILS",
+     "lines": 3
+    },
+    {
+     "section_id": 13,
+     "id_name": "FRONT",
+     "string": "FRONT",
+     "lines": 4
+    },
+    {
+     "section_id": 43,
+     "id_name": "NOSE CONE",
+     "string": "NOSE CONE",
+     "lines": 3
+    },
+    {
+     "section_id": 79,
+     "id_name": "OPTIONAL EXTRAS",
+     "string": "OPTIONAL EXTRAS",
+     "lines": 134
+    },
+    {
+     "section_id": 21,
+     "id_name": "REAR FRAME & FLOOR PLATE",
+     "string": "REAR FRAME & FLOOR PLATE",
+     "lines": 6
+    },
+    {
+     "section_id": 23,
+     "id_name": "REFLEXITE TAPE",
+     "string": "REFLEXITE TAPE",
+     "lines": 1
+    },
+    {
+     "section_id": 17,
+     "id_name": "ROOF",
+     "string": "ROOF",
+     "lines": 3
+    },
+    {
+     "section_id": 16,
+     "id_name": "SIDES",
+     "string": "SIDES",
+     "lines": 4
+    },
+    {
+     "section_id": 22,
+     "id_name": "SPRAY PAINTING",
+     "string": "SPRAY PAINTING",
+     "lines": 1
+    },
+    {
+     "section_id": 25,
+     "id_name": "SRD",
+     "string": "SRD",
+     "lines": 4
+    },
+    {
+     "section_id": 26,
+     "id_name": "SRD DOOR FITTINGS",
+     "string": "SRD DOOR FITTINGS",
+     "lines": 19
+    },
+    {
+     "section_id": 20,
+     "id_name": "SUB FRAME + LIGHT BOX ASSY",
+     "string": "SUB FRAME + LIGHT BOX ASSY",
+     "lines": 18
+    },
+    {
+     "section_id": 41,
+     "id_name": "TOPHAT SECTON",
+     "string": "TOPHAT SECTON",
+     "lines": 2
+    }
+   ],
+   "drift": [
+    {
+     "bom_id": 793,
+     "id": 39,
+     "id_name": "ALUMINIUM (post-snapshot)",
+     "string": "3MM MILD STEEL FLOOR"
+    },
+    {
+     "bom_id": 794,
+     "id": 39,
+     "id_name": "ALUMINIUM (post-snapshot)",
+     "string": "3MM MILD STEEL FLOOR"
+    },
+    {
+     "bom_id": 795,
+     "id": 39,
+     "id_name": "ALUMINIUM (post-snapshot)",
+     "string": "3MM MILD STEEL FLOOR"
+    },
+    {
+     "bom_id": 796,
+     "id": 39,
+     "id_name": "ALUMINIUM (post-snapshot)",
+     "string": "3MM MILD STEEL FLOOR"
+    },
+    {
+     "bom_id": 843,
+     "id": 40,
+     "id_name": "FLOOR THICKNESS",
+     "string": "LOAD LOCK RAILS"
+    },
+    {
+     "bom_id": 844,
+     "id": 40,
+     "id_name": "FLOOR THICKNESS",
+     "string": "LOAD LOCK RAILS"
+    },
+    {
+     "bom_id": 845,
+     "id": 40,
+     "id_name": "FLOOR THICKNESS",
+     "string": "LOAD LOCK RAILS"
+    }
+   ],
+   "masters": [
+    {
+     "bom_id": 852,
+     "material": "DRD",
+     "group": "DRD",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 853,
+     "material": "SRD",
+     "group": "SRD",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 854,
+     "material": "2MM3CR12 FLOOR",
+     "group": "SRD",
+     "subgroup": "KICK - 2MM3CR12 FLOOR",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 855,
+     "material": "3MM3CR12 FLOOR",
+     "group": "SRD",
+     "subgroup": "KICK - 3MM3CR12 FLOOR",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 856,
+     "material": "3MM MILD STEEL FLOOR",
+     "group": "SRD",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 857,
+     "material": "5MM MILD STEEL FLOOR",
+     "group": "SRD",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 858,
+     "material": "24MM WISA TRANS FLOOR",
+     "group": "SRD",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 859,
+     "material": "REFLEXITE TAPE",
+     "group": "SRD",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 860,
+     "material": "DRY FREIGHT",
+     "group": "SRD",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 861,
+     "material": "19MM PLYWOOD PANELS",
+     "group": "FLOOR",
+     "subgroup": "PLYWOOD",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 862,
+     "material": "BAKERY BODY",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 863,
+     "material": "RICE GRAIN FLOOR",
+     "group": "FLOOR",
+     "subgroup": "SURFACE",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 864,
+     "material": "1ST ROW ALU KICK PLATE",
+     "group": "FLOOR",
+     "subgroup": "KICK - 1ST ROW ALU KICK PLATE",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 865,
+     "material": "2ND ROW ALU KICK PLATE",
+     "group": "FLOOR",
+     "subgroup": "KICK - 2ND ROW ALU KICK PLATE",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 866,
+     "material": "80 DV COMPOSITE PANELS",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 867,
+     "material": "LOAD LOCK RAIL",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 868,
+     "material": "TOP HAT SECTION",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 869,
+     "material": "ESCAPE HATCH",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 870,
+     "material": "INTERIOR LIGHTS",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 871,
+     "material": "DRAIN HOLES",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 872,
+     "material": "NOSE CONE",
+     "group": "FLOOR",
+     "subgroup": null,
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    },
+    {
+     "bom_id": 873,
+     "material": "2MM3CR12 KICK PLATES",
+     "group": "FLOOR",
+     "subgroup": "KICK - 2MM3CR12 KICK PLATES",
+     "default": false,
+     "thickness": null,
+     "section": "BODY OPTIONS"
+    }
+   ],
+   "draft": {
+    "has_draft": false,
+    "snapshots": 0,
+    "categories": [],
+    "parse_error": null
+   },
+   "costings": {
+    "all": 0,
+    "live": 0
+   }
+  },
+  "41": {
+   "lines": 99,
+   "sections": [
+    {
+     "section_id": 19,
+     "id_name": "ALUMINIUM",
+     "string": "ALUMINIUM",
+     "lines": 5
+    },
+    {
+     "section_id": 84,
+     "id_name": "DOOR FITTINGS DRD",
+     "string": "DOOR FITTINGS DRD",
+     "lines": 13
+    },
+    {
+     "section_id": 83,
+     "id_name": "DOOR FITTINGS SRD",
+     "string": "DOOR FITTINGS SRD",
+     "lines": 17
+    },
+    {
+     "section_id": 14,
+     "id_name": "DRD",
+     "string": "DRD",
+     "lines": 4
+    },
+    {
+     "section_id": 18,
+     "id_name": "FLOOR",
+     "string": "FLOOR",
+     "lines": 8
+    },
+    {
+     "section_id": 13,
+     "id_name": "FRONT",
+     "string": "FRONT",
+     "lines": 5
+    },
+    {
+     "section_id": 85,
+     "id_name": "REAR FRAME + FLOOR PLATE",
+     "string": "REAR FRAME + FLOOR PLATE",
+     "lines": 9
+    },
+    {
+     "section_id": 23,
+     "id_name": "REFLEXITE TAPE",
+     "string": "REFLEXITE TAPE",
+     "lines": 1
+    },
+    {
+     "section_id": 17,
+     "id_name": "ROOF",
+     "string": "ROOF",
+     "lines": 4
+    },
+    {
+     "section_id": 16,
+     "id_name": "SIDES",
+     "string": "SIDES",
+     "lines": 5
+    },
+    {
+     "section_id": 22,
+     "id_name": "SPRAY PAINTING",
+     "string": "SPRAY PAINTING",
+     "lines": 1
+    },
+    {
+     "section_id": 25,
+     "id_name": "SRD",
+     "string": "SRD",
+     "lines": 4
+    },
+    {
+     "section_id": 20,
+     "id_name": "SUB FRAME + LIGHT BOX ASSY",
+     "string": "SUB FRAME + LIGHT BOX ASSY",
+     "lines": 23
+    }
+   ],
+   "drift": [],
+   "masters": [],
+   "draft": {
+    "has_draft": true,
+    "snapshots": 1,
+    "categories": [
+     {
+      "node": "2",
+      "key": "DRD",
+      "label": "DRD",
+      "path": "folder:DOOR TYPE / folder:DRD DOORS"
+     },
+     {
+      "node": "5",
+      "key": "SRD",
+      "label": "SRD",
+      "path": "folder:DOOR TYPE / folder:SRD DOORS"
+     },
+     {
+      "node": "8",
+      "key": "FRONT",
+      "label": "FRONT",
+      "path": ""
+     },
+     {
+      "node": "11",
+      "key": "SIDES",
+      "label": "SIDES",
+      "path": ""
+     },
+     {
+      "node": "14",
+      "key": "ROOF",
+      "label": "ROOF",
+      "path": ""
+     },
+     {
+      "node": "17",
+      "key": "FLOOR",
+      "label": "FLOOR",
+      "path": "folder:FLOOR"
+     },
+     {
+      "node": "25",
+      "key": "ALUMINIUM",
+      "label": "ALUMINIUM",
+      "path": ""
+     },
+     {
+      "node": "26",
+      "key": "SUB FRAME + LIGHT BOX ASSY",
+      "label": "SUB FRAME + LIGHT BOX ASSY",
+      "path": ""
+     },
+     {
+      "node": "28",
+      "key": "SPRAY PAINTING",
+      "label": "SPRAY PAINTING",
+      "path": ""
+     },
+     {
+      "node": "30",
+      "key": "REFLEXITE TAPE",
+      "label": "REFLEXITE TAPE",
+      "path": ""
+     },
+     {
+      "node": "node-42",
+      "key": "DOOR FITTINGS SRD",
+      "label": "DOOR FITTINGS SRD",
+      "path": "folder:DOOR TYPE / folder:SRD DOORS"
+     },
+     {
+      "node": "node-43",
+      "key": "DOOR FITTINGS DRD",
+      "label": "DOOR FITTINGS DRD",
+      "path": "folder:DOOR TYPE / folder:DRD DOORS"
+     }
+    ],
+    "parse_error": null,
+    "updated_at": "2026-10-03 15:43:26.283306",
+    "node_types": {
+     "folder": 6,
+     "category": 12,
+     "flag": 17
+    }
+   },
+   "costings": {
+    "all": 0,
+    "live": 0
+   }
+  }
+ },
+ "sweep": [
+  {
+   "name": "24MM WISA TRANS FLOOR",
+   "manni_lines": 9,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "2MM 3CR12 S/STEEL FLOOR",
+   "manni_lines": 4,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "3MM 3CR12 S/STEEL FLOOR",
+   "manni_lines": 4,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "5MM 300 WA PLATE",
+   "manni_lines": 4,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "ALUMINIUM",
+   "manni_lines": 27,
+   "standard": true
+  },
+  {
+   "name": "ALUMINIUM (post-snapshot)",
+   "manni_lines": 4,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "BODY OPTIONS",
+   "manni_lines": 96,
+   "standard": true
+  },
+  {
+   "name": "DRD",
+   "manni_lines": 20,
+   "standard": true
+  },
+  {
+   "name": "DRD DOOR FITTINGS",
+   "manni_lines": 66,
+   "standard": true
+  },
+  {
+   "name": "ESCAPE HATCH",
+   "manni_lines": 1,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "FLOOR",
+   "manni_lines": 51,
+   "standard": true
+  },
+  {
+   "name": "FLOOR THICKNESS",
+   "manni_lines": 3,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "FRONT",
+   "manni_lines": 23,
+   "standard": true
+  },
+  {
+   "name": "INT FALSE BULKHEAD",
+   "manni_lines": 2,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "NOSE CONE",
+   "manni_lines": 3,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  },
+  {
+   "name": "OPTIONAL EXTRAS",
+   "manni_lines": 670,
+   "standard": true
+  },
+  {
+   "name": "REAR FRAME & FLOOR PLATE",
+   "manni_lines": 42,
+   "standard": true
+  },
+  {
+   "name": "REFLEXITE TAPE",
+   "manni_lines": 5,
+   "standard": true
+  },
+  {
+   "name": "ROOF",
+   "manni_lines": 19,
+   "standard": true
+  },
+  {
+   "name": "SIDES",
+   "manni_lines": 24,
+   "standard": true
+  },
+  {
+   "name": "SPRAY PAINTING",
+   "manni_lines": 5,
+   "standard": true
+  },
+  {
+   "name": "SRD",
+   "manni_lines": 20,
+   "standard": true
+  },
+  {
+   "name": "SRD DOOR FITTINGS",
+   "manni_lines": 87,
+   "standard": true
+  },
+  {
+   "name": "SUB FRAME + LIGHT BOX ASSY",
+   "manni_lines": 110,
+   "standard": true
+  },
+  {
+   "name": "TOPHAT SECTON",
+   "manni_lines": 2,
+   "standard": false,
+   "proposal": null,
+   "how": "none"
+  }
+ ],
+ "usage": {
+  "24MM WISA TRANS FLOOR": {
+   "section_id": 34,
+   "bodies": {
+    "7": 9,
+    "38": 4,
+    "39": 11,
+    "51": 13
+   },
+   "draft_bodies": []
+  },
+  "2MM 3CR12 S/STEEL FLOOR": {
+   "section_id": 37,
+   "bodies": {
+    "7": 4,
+    "38": 4,
+    "39": 4,
+    "51": 4
+   },
+   "draft_bodies": []
+  },
+  "3MM 3CR12 S/STEEL FLOOR": {
+   "section_id": 38,
+   "bodies": {
+    "7": 4,
+    "9": 4,
+    "38": 4,
+    "39": 4,
+    "51": 17
+   },
+   "draft_bodies": []
+  },
+  "5MM 300 WA PLATE": {
+   "section_id": 33,
+   "bodies": {
+    "7": 4,
+    "9": 4,
+    "38": 4,
+    "39": 4,
+    "51": 7
+   },
+   "draft_bodies": []
+  },
+  "ALUMINIUM (post-snapshot)": {
+   "section_id": 39,
+   "bodies": {
+    "7": 4,
+    "9": 4,
+    "38": 4,
+    "39": 4
+   },
+   "draft_bodies": []
+  },
+  "ESCAPE HATCH": {
+   "section_id": 42,
+   "bodies": {
+    "7": 1,
+    "38": 1,
+    "39": 1,
+    "51": 1
+   },
+   "draft_bodies": []
+  },
+  "FLOOR THICKNESS": {
+   "section_id": 40,
+   "bodies": {
+    "7": 3,
+    "38": 4,
+    "39": 4
+   },
+   "draft_bodies": []
+  },
+  "INT FALSE BULKHEAD": {
+   "section_id": 24,
+   "bodies": {
+    "2": 2,
+    "6": 2,
+    "14": 2,
+    "15": 2
+   },
+   "draft_bodies": [
+    15
+   ]
+  },
+  "NOSE CONE": {
+   "section_id": 43,
+   "bodies": {
+    "7": 3
+   },
+   "draft_bodies": []
+  },
+  "TOPHAT SECTON": {
+   "section_id": 41,
+   "bodies": {
+    "7": 2,
+    "38": 2,
+    "39": 2,
+    "51": 2
+   },
+   "draft_bodies": []
+  }
+ },
+ "deleted_41": {
+  "row": {
+   "id": 41,
+   "name": "Manni RIGIDS CB [deleted-41]",
+   "is_active": false,
+   "configurator_v2": true,
+   "default_length": 7.5,
+   "default_width": 2.6,
+   "default_height": 2.6,
+   "default_insulation_foam": "32D",
+   "family": null
+  },
+  "rows_left": {
+   "bill_of_materials.trailer_type_id": 99,
+   "configurator_draft_snapshots.trailer_type_id": 1,
+   "configurator_drafts.trailer_type_id": 1,
+   "trailer_ratios.trailer_type_id": 10
+  },
+  "sections_owned_by_its_masters": [],
+  "orphaned_template_assignments": [
+   {
+    "trailer_name": "Manni RIGIDS CB",
+    "group_id": 7,
+    "override_report_template_id": null
+   }
+  ],
+  "costings": {
+   "all": 0,
+   "live": 0
+  },
+  "draft": true
+ }
+}

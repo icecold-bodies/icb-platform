@@ -1,0 +1,334 @@
+{
+  "tool": "rt3_families",
+  "plan_sha256": "2432dad65b2e066fec8a45e86011ed8d41a4a602ed077d7eca31b1533fc9837b",
+  "tool_sha256": "e83a47d9641c798891aab69528a07b5a357da2e7ba200b047d0276475cb68b6a",
+  "target": "prod",
+  "database": "icb_platform",
+  "groups_updated": [
+    {
+      "before": {
+        "id": 1,
+        "name": "EXPLOSIVE",
+        "description": "EXPLOSIVE-range trailer bodies (auto-created).",
+        "report_template_id": 1,
+        "colour": null,
+        "sort_order": 100,
+        "created_at": "2026-04-27T03:18:33"
+      },
+      "after": {
+        "name": "EXPLOSIVE",
+        "colour": "#E03131",
+        "sort_order": 1
+      }
+    },
+    {
+      "before": {
+        "id": 4,
+        "name": "FREEZER",
+        "description": "FREEZER-range trailer bodies (auto-created).",
+        "report_template_id": 4,
+        "colour": null,
+        "sort_order": 100,
+        "created_at": "2026-04-27T03:18:33"
+      },
+      "after": {
+        "name": "FREEZER",
+        "colour": "#4263EB",
+        "sort_order": 3
+      }
+    },
+    {
+      "before": {
+        "id": 3,
+        "name": "MEATHANGER",
+        "description": "MEATHANGER-range trailer bodies (auto-created).",
+        "report_template_id": 3,
+        "colour": null,
+        "sort_order": 100,
+        "created_at": "2026-04-27T03:18:33"
+      },
+      "after": {
+        "name": "MEAT",
+        "colour": "#D66A0B",
+        "sort_order": 4
+      }
+    }
+  ],
+  "groups_created": [
+    {
+      "id": 5,
+      "name": "CHILLER",
+      "colour": "#168ED9",
+      "sort_order": 2
+    },
+    {
+      "id": 6,
+      "name": "ICE CREAM",
+      "colour": "#D63384",
+      "sort_order": 5
+    },
+    {
+      "id": 7,
+      "name": "OTHER",
+      "colour": "#7D858C",
+      "sort_order": 6
+    }
+  ],
+  "groups_deleted": [
+    {
+      "id": 2,
+      "name": "RHINORANGE",
+      "description": "RHINORANGE Freezer trailer bodies (auto-created).",
+      "report_template_id": 2,
+      "colour": null,
+      "sort_order": 100,
+      "created_at": "2026-04-27T03:18:33"
+    }
+  ],
+  "bodies": [
+    {
+      "id": 25,
+      "name": "CHILLER 2.3 METER",
+      "group_before": null,
+      "group_after": 5
+    },
+    {
+      "id": 27,
+      "name": "CHILLER LARGE",
+      "group_before": null,
+      "group_after": 5
+    },
+    {
+      "id": 26,
+      "name": "CHILLER MEDIUM",
+      "group_before": null,
+      "group_after": 5
+    },
+    {
+      "id": 18,
+      "name": "ICECREAM BODY LARGE",
+      "group_before": null,
+      "group_after": 6
+    },
+    {
+      "id": 17,
+      "name": "ICECREAM BODY MEDIUM",
+      "group_before": null,
+      "group_after": 6
+    },
+    {
+      "id": 16,
+      "name": "ICECREAM BODY SMALL",
+      "group_before": null,
+      "group_after": 6
+    },
+    {
+      "id": 41,
+      "name": "Manni RIGIDS CB",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 15,
+      "name": "RHINORANGE TRAILER",
+      "group_before": 2,
+      "group_after": 7
+    },
+    {
+      "id": 2,
+      "name": "ADVANTICA BODY",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 1,
+      "name": "ADV VACUUM PANELS",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 13,
+      "name": "DRY FREIGHT TRAILER",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 23,
+      "name": "EXPLOSIVE 2.7 TO 4.8 OLD [deleted-23]",
+      "group_before": null,
+      "group_after": 1
+    },
+    {
+      "id": 22,
+      "name": "EXPLOSIVE UP TO 2.7 [deleted-22]",
+      "group_before": null,
+      "group_after": 1
+    },
+    {
+      "id": 28,
+      "name": "EXPLOSIVE UP TO 2.7 [deleted-28]",
+      "group_before": null,
+      "group_after": 1
+    },
+    {
+      "id": 29,
+      "name": "EXPLOSIVE UP TO 2.7 [deleted-29]",
+      "group_before": null,
+      "group_after": 1
+    },
+    {
+      "id": 30,
+      "name": "EXPLOSIVE UP TO 2.7 [deleted-30]",
+      "group_before": null,
+      "group_after": 1
+    },
+    {
+      "id": 31,
+      "name": "EXPLOSIVE UP TO 2.7 [deleted-31]",
+      "group_before": null,
+      "group_after": 1
+    },
+    {
+      "id": 32,
+      "name": "EXPLOSIVE UP TO 2.7 [deleted-32]",
+      "group_before": null,
+      "group_after": 1
+    },
+    {
+      "id": 33,
+      "name": "EXPLOSIVE UP TO 2.7 [deleted-33]",
+      "group_before": null,
+      "group_after": 1
+    },
+    {
+      "id": 14,
+      "name": "GRP TRAILERS",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 4,
+      "name": "MANNI BAKKI RIGIDS",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 7,
+      "name": "MANNI DF",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 3,
+      "name": "MANNI RIGIDS CB",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 5,
+      "name": "MANNI RIGIDS FB",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 6,
+      "name": "MANNI TRAILERS",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 39,
+      "name": "RIGID DRY FREIGHT",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 38,
+      "name": "RIGID DRY FREIGHT [deleted-38]",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 8,
+      "name": "RIGID DRY FREIGHT [deleted-8]",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 11,
+      "name": "SMALL MEAT BODY UP TO 5,2 [deleted-11]",
+      "group_before": null,
+      "group_after": 3
+    },
+    {
+      "id": 35,
+      "name": "SMALL MEAT BODY UP TO 5,2 [deleted-35]",
+      "group_before": null,
+      "group_after": 3
+    },
+    {
+      "id": 9,
+      "name": "TAUT LINER RIGID",
+      "group_before": null,
+      "group_after": 7
+    },
+    {
+      "id": 40,
+      "name": "TESTING EVERYTHING",
+      "group_before": null,
+      "group_after": 7
+    }
+  ],
+  "overrides": [
+    {
+      "id": 15,
+      "name": "RHINORANGE TRAILER",
+      "before": null,
+      "after": 2
+    }
+  ],
+  "applied_at_utc": "2026-10-03T04:06:26+00:00",
+  "resolved_before": {
+    "25": null,
+    "27": null,
+    "26": null,
+    "37": 1,
+    "24": 1,
+    "34": 1,
+    "19": 4,
+    "21": 4,
+    "20": 4,
+    "18": null,
+    "17": null,
+    "16": null,
+    "41": null,
+    "12": 3,
+    "36": 3,
+    "15": 2,
+    "2": null,
+    "1": null,
+    "10": 3,
+    "13": null,
+    "23": null,
+    "22": null,
+    "28": null,
+    "29": null,
+    "30": null,
+    "31": null,
+    "32": null,
+    "33": null,
+    "14": null,
+    "4": null,
+    "7": null,
+    "3": null,
+    "5": null,
+    "6": null,
+    "39": null,
+    "38": null,
+    "8": null,
+    "11": null,
+    "35": null,
+    "9": null,
+    "40": null
+  }
+}

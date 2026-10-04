@@ -1,0 +1,20 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  0926193e  release(v1.59.3): RT2 — Manifest P + G1 + the 15-body CI snaps
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  682a6ccc4f85be46a99c9c87c18616868d530ef6 already present - no fetch needed
+[32m  ok[0m  682a6ccc4f85be46a99c9c87c18616868d530ef6 = 682a6ccc
+
+[1m== 2. plan[0m
+  0926193e -> 682a6ccc   (2 commit(s), 170 file(s))
+    682a6cc RT3: body families in colour — 0051, the bootstrap fix, the family on every body, MES optgroups + chips, the admin editor; data + release kits (v1.60.0) (#212)
+    6066298 docs(release): v1.59.3 OUTCOME + RT2 close — CI snapshot = prod after the window; G1 allowance out; C3 narrowing; C11 (#211)
+
+  DB migration     YES - 0051_trailer_group_colour_order.py 
+  SPA rebuild      YES - 4 file(s) under frontend/
+  Service restart  YES - 21 Python file(s) changed
+
+[32m  ok[0m  dry run - nothing changed.

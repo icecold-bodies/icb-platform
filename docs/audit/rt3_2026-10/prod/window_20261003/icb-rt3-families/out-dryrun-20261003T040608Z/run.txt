@@ -1,0 +1,97 @@
+== prod: db=icb_platform alembic=0051 code=682a6cc staged=682a6cc mode=dryrun  2026-10-03T06:06:08+02:00
+== dry-run (READ ONLY)
+database icb_platform (--target prod); RT3 body families; plan sha256 2432dad65b2e066f…; tool sha256 e83a47d9641c7988…
+    id body                                   act family before  family after template before            template after            
+    25 CHILLER 2.3 METER                      Y   -              CHILLER    (default document)         (default document)        
+    27 CHILLER LARGE                          Y   -              CHILLER    (default document)         (default document)        
+    26 CHILLER MEDIUM                         Y   -              CHILLER    (default document)         (default document)        
+    37 EXPLOSIVE 2.7 TO 4.8                   Y   EXPLOSIVE      EXPLOSIVE  explosive_quote #1         explosive_quote #1        
+    24 EXPLOSIVE 4.9 AND UP                   Y   EXPLOSIVE      EXPLOSIVE  explosive_quote #1         explosive_quote #1        
+    34 EXPLOSIVE UP TO 2.7                    Y   EXPLOSIVE      EXPLOSIVE  explosive_quote #1         explosive_quote #1        
+    19 FREEZER 2.3 METER                      Y   FREEZER        FREEZER    freezer_quote #4           freezer_quote #4          
+    21 FREEZER LARGE                          Y   FREEZER        FREEZER    freezer_quote #4           freezer_quote #4          
+    20 FREEZER MEDIUM                         Y   FREEZER        FREEZER    freezer_quote #4           freezer_quote #4          
+    18 ICECREAM BODY LARGE                    Y   -              ICE CREAM  (default document)         (default document)        
+    17 ICECREAM BODY MEDIUM                   Y   -              ICE CREAM  (default document)         (default document)        
+    16 ICECREAM BODY SMALL                    Y   -              ICE CREAM  (default document)         (default document)        
+    12 MEAT HANGER LARGE                      Y   MEATHANGER     MEAT       meathanger_quote #3        meathanger_quote #3       
+    36 MEAT HANGER SMALL-MEDIUM               Y   MEATHANGER     MEAT       meathanger_quote #3        meathanger_quote #3       
+    41 Manni RIGIDS CB                        Y   -              OTHER      (default document)         (default document)        
+    15 RHINORANGE TRAILER                     Y   RHINORANGE     OTHER      rhinorange_quote #2        rhinorange_quote #2       
+    23 EXPLOSIVE 2.7 TO 4.8 OLD [deleted-23]  n   -              EXPLOSIVE  (default document)         explosive_quote #1           (Q5: allowed, a soft-deleted copy)
+    22 EXPLOSIVE UP TO 2.7 [deleted-22]       n   -              EXPLOSIVE  (default document)         explosive_quote #1           (Q5: allowed, a soft-deleted copy)
+    28 EXPLOSIVE UP TO 2.7 [deleted-28]       n   -              EXPLOSIVE  (default document)         explosive_quote #1           (Q5: allowed, a soft-deleted copy)
+    29 EXPLOSIVE UP TO 2.7 [deleted-29]       n   -              EXPLOSIVE  (default document)         explosive_quote #1           (Q5: allowed, a soft-deleted copy)
+    30 EXPLOSIVE UP TO 2.7 [deleted-30]       n   -              EXPLOSIVE  (default document)         explosive_quote #1           (Q5: allowed, a soft-deleted copy)
+    31 EXPLOSIVE UP TO 2.7 [deleted-31]       n   -              EXPLOSIVE  (default document)         explosive_quote #1           (Q5: allowed, a soft-deleted copy)
+    32 EXPLOSIVE UP TO 2.7 [deleted-32]       n   -              EXPLOSIVE  (default document)         explosive_quote #1           (Q5: allowed, a soft-deleted copy)
+    33 EXPLOSIVE UP TO 2.7 [deleted-33]       n   -              EXPLOSIVE  (default document)         explosive_quote #1           (Q5: allowed, a soft-deleted copy)
+    10 CHESTER SPEC MEAT BODY                 n   MEATHANGER     MEAT       meathanger_quote #3        meathanger_quote #3       
+    11 SMALL MEAT BODY UP TO 5,2 [deleted-11] n   -              MEAT       (default document)         meathanger_quote #3          (Q5: allowed, a soft-deleted copy)
+    35 SMALL MEAT BODY UP TO 5,2 [deleted-35] n   -              MEAT       (default document)         meathanger_quote #3          (Q5: allowed, a soft-deleted copy)
+     1 ADV VACUUM PANELS                      n   -              OTHER      (default document)         (default document)        
+     2 ADVANTICA BODY                         n   -              OTHER      (default document)         (default document)        
+    13 DRY FREIGHT TRAILER                    n   -              OTHER      (default document)         (default document)        
+    14 GRP TRAILERS                           n   -              OTHER      (default document)         (default document)        
+     4 MANNI BAKKI RIGIDS                     n   -              OTHER      (default document)         (default document)        
+     7 MANNI DF                               n   -              OTHER      (default document)         (default document)        
+     3 MANNI RIGIDS CB                        n   -              OTHER      (default document)         (default document)        
+     5 MANNI RIGIDS FB                        n   -              OTHER      (default document)         (default document)        
+     6 MANNI TRAILERS                         n   -              OTHER      (default document)         (default document)        
+    39 RIGID DRY FREIGHT                      n   -              OTHER      (default document)         (default document)        
+    38 RIGID DRY FREIGHT [deleted-38]         n   -              OTHER      (default document)         (default document)        
+     8 RIGID DRY FREIGHT [deleted-8]          n   -              OTHER      (default document)         (default document)        
+     9 TAUT LINER RIGID                       n   -              OTHER      (default document)         (default document)        
+    40 TESTING EVERYTHING                     n   -              OTHER      (default document)         (default document)        
+   families (dropdown order):
+     1 EXPLOSIVE  #E03131  group 1 (EXPLOSIVE)          template explosive_quote      bodies 3 active / 11
+     2 CHILLER    #168ED9  NEW group                    template (none: the default document) bodies 3 active / 3
+     3 FREEZER    #4263EB  group 4 (FREEZER)            template freezer_quote        bodies 3 active / 3
+     4 MEAT       #D66A0B  group 3 (MEATHANGER -> MEAT) template meathanger_quote     bodies 2 active / 5
+     5 ICE CREAM  #D63384  NEW group                    template (none: the default document) bodies 3 active / 3
+     6 OTHER      #7D858C  NEW group                    template (none: the default document) bodies 2 active / 16
+TEMPLATE GUARD: 16 of 16 active bodies keep their resolved template; changed: [11, 22, 23, 28, 29, 30, 31, 32, 33, 35] (allowed: the Q5 soft-deleted copies)
+  APPLY update_group 1 EXPLOSIVE #E03131 1
+  APPLY create_group CHILLER #168ED9 2
+  APPLY update_group 4 FREEZER #4263EB 3
+  APPLY update_group 3 MEAT #D66A0B 4
+  APPLY create_group ICE CREAM #D63384 5
+  APPLY create_group OTHER #7D858C 6
+  APPLY move_body 25 CHILLER
+  APPLY move_body 27 CHILLER
+  APPLY move_body 26 CHILLER
+  APPLY move_body 18 ICE CREAM
+  APPLY move_body 17 ICE CREAM
+  APPLY move_body 16 ICE CREAM
+  APPLY move_body 41 OTHER
+  APPLY move_body 15 OTHER
+  APPLY move_body 2 OTHER
+  APPLY move_body 1 OTHER
+  APPLY move_body 13 OTHER
+  APPLY move_body 23 EXPLOSIVE
+  APPLY move_body 22 EXPLOSIVE
+  APPLY move_body 28 EXPLOSIVE
+  APPLY move_body 29 EXPLOSIVE
+  APPLY move_body 30 EXPLOSIVE
+  APPLY move_body 31 EXPLOSIVE
+  APPLY move_body 32 EXPLOSIVE
+  APPLY move_body 33 EXPLOSIVE
+  APPLY move_body 14 OTHER
+  APPLY move_body 4 OTHER
+  APPLY move_body 7 OTHER
+  APPLY move_body 3 OTHER
+  APPLY move_body 5 OTHER
+  APPLY move_body 6 OTHER
+  APPLY move_body 39 OTHER
+  APPLY move_body 38 OTHER
+  APPLY move_body 8 OTHER
+  APPLY move_body 11 MEAT
+  APPLY move_body 35 MEAT
+  APPLY move_body 9 OTHER
+  APPLY move_body 40 OTHER
+  APPLY set_override 15 rhinorange_quote
+  APPLY delete_group 2 RHINORANGE 1
+40 to apply, 0 already applied.
+(DRY RUN — nothing written. Re-run with --apply.)
+
+######## DONE (dryrun: 40 to apply, 0 already applied.) — tell the CA: /tmp/icb-rt3-families/out-dryrun-20261003T040608Z

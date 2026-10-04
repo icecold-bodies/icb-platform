@@ -1,0 +1,13 @@
+database icb_platform (--target prod); RT3 body families; plan sha256 2432dad65b2e066f…; tool sha256 e83a47d9641c7988…
+  UPDATE group 1 'EXPLOSIVE' -> 'EXPLOSIVE' #E03131 order 1
+  CREATE group 5 CHILLER #168ED9 order 2
+  UPDATE group 4 'FREEZER' -> 'FREEZER' #4263EB order 3
+  UPDATE group 3 'MEATHANGER' -> 'MEAT' #D66A0B order 4
+  CREATE group 6 ICE CREAM #D63384 order 5
+  CREATE group 7 OTHER #7D858C order 6
+  OVERRIDE body 15 RHINORANGE TRAILER -> rhinorange_quote #2
+  MOVED 32 bodies to their family
+  DELETE group 2 RHINORANGE (empty)
+TEMPLATE GUARD: every active body keeps its resolved template (checked in the database before the commit)
+APPLIED 40 change(s). Journal: /tmp/icb-rt3-families/out-apply-20261003T040624Z/rt3_families_journal_prod_20261003T040626Z.json
+Undo: python rt3_families.py --target prod --revert /tmp/icb-rt3-families/out-apply-20261003T040624Z/rt3_families_journal_prod_20261003T040626Z.json --out-dir <dir>

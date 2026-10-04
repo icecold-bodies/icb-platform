@@ -1,0 +1,50 @@
+== prod: db=icb_platform alembic=0050 code=0926193 mode=preflight target=682a6cc (v1.60.0) 2026-10-03T06:02:30+02:00
+== anchors
+   PASS ALEMBIC = 0050
+   PASS HEAD = 0926193e1ee0102c210800c3912949d1df76fbe5
+   PASS TRACKED_CLEAN = 0
+   PASS COLUMNS_ABSENT = 0
+   groups today: 1:EXPLOSIVE:1 2:RHINORANGE:2 3:MEATHANGER:3 4:FREEZER:4
+   bindings md5: d346d7f11d93d3224f4f884d6daeaca3
+== served bytes (the v1.59.3 files are what prod serves today)
+   PASS V_calculator = 185
+   PASS LOCAL_calculator = 15427f7e3616353bd397cb832331dcdbd9b1719c081acaa87caf8802309c778d
+   PASS LAN_calculator = 15427f7e3616353bd397cb832331dcdbd9b1719c081acaa87caf8802309c778d
+   PASS V_calculator2 = 127
+   PASS LOCAL_calculator2 = 94b27e6d8d2e04f07f68851534b7d5b415a54862c4b0d0e89999272c6eb1e4e0
+   PASS LAN_calculator2 = 94b27e6d8d2e04f07f68851534b7d5b415a54862c4b0d0e89999272c6eb1e4e0
+   PASS V_admin_templates = 19
+   PASS LOCAL_admin_templates = e3a28270f021e6411c0f9e922bf6b76bed43140e00f5c8d1297fd8ea13b167df
+   PASS LAN_admin_templates = e3a28270f021e6411c0f9e922bf6b76bed43140e00f5c8d1297fd8ea13b167df
+   PASS V_body_family_NOT_YET = 
+   PASS V_theme-mes = 6
+   PASS LOCAL_theme-mes = cd49b91b37133b5a6d13bcf4c2d25a0516d55d199b0e59d7ed4e795d639da857
+   PASS LAN_theme-mes = cd49b91b37133b5a6d13bcf4c2d25a0516d55d199b0e59d7ed4e795d639da857
+   PASS SPA_DISK_NAME = assets/index-Be8qL-PA.js
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   SPA bundle assets/index-Be8qL-PA.js sha256 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba (frontend/ changed in the range: the deploy rebuilds it)
+   PASS SPA_HAS_FAMILY_NOT_YET = 0
+   PASS HEALTH = 200
+== PyYAML (installed by v1.59.0; this release installs nothing)
+   PASS PYYAML = 6.0.2
+== the SPA build tooling (icb-deploy.sh runs npm run build as icb)
+   PASS NPM = present
+   PASS NODE_MODULES = present
+== the tag is on origin BEFORE the window (the footer reads it at startup)
+   PASS TAG_ON_ORIGIN = 35da9a07954d947bcfe0c5726e235936614035a8
+== backup location (deploy takes a pg_dump before the migration)
+   PASS BACKUP_DIR = writable
+   free space: /dev/mapper/ubuntu--vg-ubuntu--lv   98G  9.8G   84G  11% /
+   latest backups:
+      total 49608
+      -rw------- 1 root     postgres 2544353 Oct  3 02:30 icb_platform_20261003-0230.dump.gz
+      -rw------- 1 root     postgres 2199531 Oct  2 11:11 icb_platform_20261002-1111.dump.gz
+      -rw------- 1 root     root     2505457 Oct  2 11:11 icb_platform_pre-v1.59.3_20261002-111122.dump
+== deploy tooling on prod
+   PASS DEPLOY_SCRIPT = 012d701097d2671c6f0468479d600368e7ae3e2b5dc533bd57f8a5e671d23317
+   PASS ICB_SUDO = nopasswd
+   deploy record: completed 0926193e1ee0102c210800c3912949d1df76fbe5 (owner icb)
+   footer today: git describe -> v1.59.3 (the tag arrives with the deploy's fetch)
+
+######## PREFLIGHT PASSED — tell the CA: /tmp/icb-release-v1.60.0/out-preflight-20261003-060230

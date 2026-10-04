@@ -144,5 +144,5 @@ def test_dropdown_requires_login(client, seeded):
     """Unauthenticated /calculator redirects to /login — the tooltip change
     must not alter the page's auth gate."""
     r = client.get("/calculator", follow_redirects=False)
-    assert r.status_code in (302, 307)
+    assert r.status_code in (302, 303, 307)      # RT4: the app-wide gate answers first — 303 to /login?next=
     assert "/login" in r.headers.get("location", "")

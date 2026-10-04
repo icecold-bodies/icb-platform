@@ -127,9 +127,10 @@ def require_session_unless_public(request: Request, db: Session = Depends(get_db
     """The app-wide gate. Public routes pass; everything else needs a session (or, on a route marked
     @integration_readable, a valid integration token — exactly what require_user accepts).
 
-    No session: a browser opening a page (GET, Accept text/html, not /api/) is sent to /login?next=<page>;
-    every other request — /api/*, curl, fetch() — gets 401. The handler's own require_user / require_admin
-    still runs after this and decides the role."""
+    No session — exactly require_user's answer, so no page or API changes its behaviour: /api/* or an
+    `Accept: application/json` request gets 401; anything else is sent to /login (a GET keeps ?next=<page>).
+    The release kit's no-session probe sends Accept: application/json, so every closed route reads 401.
+    The handler's own require_user / require_admin still runs after this and decides the role."""
     if is_public_route(request):
         return None
     # Test seam only: a test that stands in for the session through dependency_overrides (the house idiom)
@@ -144,12 +145,13 @@ def require_session_unless_public(request: Request, db: Session = Depends(get_db
     if get_current_user(request, db) is not None:      # a bearer on an unmarked route is refused in here
         return None
     path = request.url.path
-    if (request.method == "GET" and not path.startswith("/api/")
-            and "text/html" in request.headers.get("accept", "")):
-        from urllib.parse import quote
-        target = path + (f"?{request.url.query}" if request.url.query else "")
-        raise HTTPException(status_code=303, headers={"Location": f"/login?next={quote(target, safe='/')}"})
-    raise HTTPException(status_code=401, detail=SIGN_IN_REQUIRED)
+    if path.startswith("/api/") or "application/json" in request.headers.get("accept", ""):
+        raise HTTPException(status_code=401, detail=SIGN_IN_REQUIRED)
+    if request.method != "GET":
+        raise HTTPException(status_code=303, headers={"Location": "/login"})
+    from urllib.parse import quote
+    target = path + (f"?{request.url.query}" if request.url.query else "")
+    raise HTTPException(status_code=303, headers={"Location": f"/login?next={quote(target, safe='/')}"})
 
 
 # ── Permissions ────────────────────────────────────────────────────────────────

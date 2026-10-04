@@ -134,9 +134,15 @@ def test_prefix_named_section_defaults_excluded_and_opts_in(staged):
 
 def test_bom_sections_endpoint_reports_effective_optional(app_mod, staged):
     from starlette.testclient import TestClient
+    from app.deps import require_user
     ids = staged
-    with TestClient(app_mod.app) as c:
-        rows = c.get("/api/bom-sections").json()
-        by_id = {r["id"]: r for r in rows}
-        assert by_id[ids["opt_sec"]]["is_optional"] is True    # prefix rule, flag False
-        assert by_id[ids["plain_sec"]]["is_optional"] is False  # control unchanged
+    # RT4 — /api/bom-sections needs a session now (deny by default); stand in for one, the house idiom
+    app_mod.app.dependency_overrides[require_user] = lambda: None
+    try:
+        with TestClient(app_mod.app) as c:
+            rows = c.get("/api/bom-sections").json()
+    finally:
+        app_mod.app.dependency_overrides.pop(require_user, None)
+    by_id = {r["id"]: r for r in rows}
+    assert by_id[ids["opt_sec"]]["is_optional"] is True    # prefix rule, flag False
+    assert by_id[ids["plain_sec"]]["is_optional"] is False  # control unchanged

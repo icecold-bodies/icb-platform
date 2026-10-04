@@ -526,8 +526,13 @@ def test_approved_word_export(client, admin_headers, seeded):
 def test_approved_word_gated(client, planner_headers, seeded):
     r = client.get(f"/results/{seeded['rec_id']}/export/word", headers=planner_headers)
     assert r.status_code == 403
-    r = client.get(f"/results/{seeded['rec_id']}/export/word")
+    # RT4 — no session: the app-wide gate answers first, exactly as require_user would. An API caller (Accept
+    # JSON) gets 401; a browser that opened the link is sent to log in, then straight back to this export.
+    r = client.get(f"/results/{seeded['rec_id']}/export/word", headers={"accept": "application/json"})
     assert r.status_code == 401
+    r = client.get(f"/results/{seeded['rec_id']}/export/word", follow_redirects=False)
+    assert r.status_code == 303
+    assert r.headers["location"] == f"/login?next=/results/{seeded['rec_id']}/export/word"
 
 
 def test_approved_pdf_with_params(client, admin_headers, seeded):

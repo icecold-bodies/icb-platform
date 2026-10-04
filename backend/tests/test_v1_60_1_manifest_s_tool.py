@@ -208,7 +208,10 @@ def test_the_committed_manifest_is_exactly_what_the_generator_makes_from_the_pro
     r = subprocess.run([sys.executable, str(MS_DIR / "make_manifest_s.py")], capture_output=True, text=True)
     try:
         assert r.returncode == 0, r.stderr
-        assert (MS_DIR / "manifest_s.yaml").read_bytes() == before        # byte for byte
+        # byte for byte, LF-normalised: a Windows checkout (CI windows-latest) holds the committed LF file as CRLF;
+        # the staged kit always ships the committed blob (LF), whose sha the data kit pins
+        lf = lambda b: b.replace(b"\r\n", b"\n")                                  # noqa: E731
+        assert lf((MS_DIR / "manifest_s.yaml").read_bytes()) == lf(before)
     finally:
         (MS_DIR / "manifest_s.yaml").write_bytes(before)
 

@@ -101,6 +101,57 @@ def require_admin(request: Request, db: Session = Depends(get_db)) -> User:
     return user
 
 
+# ── RT4 Part C — deny by default ──────────────────────────────────────────────
+# Every route requires a signed-in session unless it is listed here by its DECLARED path and method
+# (RT4_RULING_1 Q7). One app-wide dependency (main.py `FastAPI(dependencies=...)`), never per-route checks:
+# a route added tomorrow is gated without anyone remembering to gate it. Static files (/static,
+# /mes-app/assets) are mounts, not routes — they never pass through here and stay public.
+PUBLIC_ROUTES: set[tuple[str, str]] = {
+    ("/", "GET"),                          # the front door: 302 to /mes-app/, which sends a stranger to /login
+    ("/login", "GET"), ("/login", "POST"), ("/login/change-password", "POST"), ("/logout", "GET"),
+    ("/health", "GET"), ("/health/version", "GET"), ("/debug/health/ping", "GET"),
+    ("/mes-app", "GET"), ("/mes-app/{full_path:path}", "GET"),   # the SPA shell redirects to /login itself
+}
+# The dev/journey demo autologin. main.py mounts it — and makes it public — ONLY when MES_DEMO_AUTOLOGIN_USER
+# is set; prod sets it empty, so on prod the route does not exist (tests/test_rt4_deny_by_default.py).
+DEV_AUTOLOGIN_ROUTE = ("/api/mes/autologin", "POST")
+SIGN_IN_REQUIRED = "Session expired — please log in again"
+
+
+def is_public_route(request: Request) -> bool:
+    route = request.scope.get("route")
+    return (getattr(route, "path", None), request.method) in PUBLIC_ROUTES
+
+
+def require_session_unless_public(request: Request, db: Session = Depends(get_db)) -> None:
+    """The app-wide gate. Public routes pass; everything else needs a session (or, on a route marked
+    @integration_readable, a valid integration token — exactly what require_user accepts).
+
+    No session: a browser opening a page (GET, Accept text/html, not /api/) is sent to /login?next=<page>;
+    every other request — /api/*, curl, fetch() — gets 401. The handler's own require_user / require_admin
+    still runs after this and decides the role."""
+    if is_public_route(request):
+        return None
+    # Test seam only: a test that stands in for the session through dependency_overrides (the house idiom)
+    # is signed in as far as this gate is concerned. Production never sets overrides.
+    ov = getattr(request.app, "dependency_overrides", None) or {}
+    if require_user in ov or require_admin in ov or get_current_user in ov:
+        return None
+    if "authorization" in request.headers:
+        from .integration_auth import identity_for_marked_route
+        if identity_for_marked_route(request) is not None:
+            return None
+    if get_current_user(request, db) is not None:      # a bearer on an unmarked route is refused in here
+        return None
+    path = request.url.path
+    if (request.method == "GET" and not path.startswith("/api/")
+            and "text/html" in request.headers.get("accept", "")):
+        from urllib.parse import quote
+        target = path + (f"?{request.url.query}" if request.url.query else "")
+        raise HTTPException(status_code=303, headers={"Location": f"/login?next={quote(target, safe='/')}"})
+    raise HTTPException(status_code=401, detail=SIGN_IN_REQUIRED)
+
+
 # ── Permissions ────────────────────────────────────────────────────────────────
 
 def _user_permission_set(user: User, db: Session) -> set[str]:

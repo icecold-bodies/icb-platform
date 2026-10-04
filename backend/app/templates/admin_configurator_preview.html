@@ -3161,7 +3161,36 @@ function App({ data, setData, loadState }) {
         }),
       });
     },
-    rename: (path, newLabel) => {
+    rename: (path, newLabel, sharedRenameConfirmed) => {
+      // RT4 (RT4_RULING_1 Q5) — a section is ONE global row: renaming it here renames it for every body that
+      // uses it and (Q6) re-keys every Settings-page draft that names it. Say so first, as Body Templates does.
+      const sid0 = dbSectionId(path[path.length - 1]);
+      if (sid0 != null && !sharedRenameConfirmed) {
+        fetch(`/api/bom-sections/${sid0}/usage?rename_to=${encodeURIComponent(newLabel)}`, { credentials: 'same-origin' })
+          .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+          .then(u => {
+            const here = data && data.trailerId;
+            const live = (u.bodies || []).filter(b => !b.deleted);
+            const rd = u.rename_drafts || { rewritten: [], left: [] };
+            const otherDrafts = [...rd.rewritten, ...rd.left].filter(d => d.trailer_type_id !== here);
+            if (live.length <= 1 && !otherDrafts.length) { mut.rename(path, newLabel, true); return; }
+            const names = (xs) => xs.length > 8 ? `${xs.slice(0, 8).join(', ')} and ${xs.length - 8} more` : xs.join(', ');
+            let body = `This renames '${u.name}' on all ${live.length} bodies that use it: ${names(live.map(b => b.name))}.`;
+            if (rd.rewritten.length) {
+              body += `\n\nThe Settings-page draft of ${names(rd.rewritten.map(d => d.trailer_name))} follows the new name.`;
+            }
+            if (rd.left.length) {
+              body += `\n\nLeft as it is (it already has a '${newLabel}' category — check it on the Settings page): `
+                    + `${names(rd.left.map(d => d.trailer_name))}.`;
+            }
+            askConfirm({ title: 'Rename a shared section', tone: 'warn', body: body + '\n\nContinue?',
+                         confirmLabel: 'Rename', cancelLabel: 'Cancel' })
+              .then(ok => { if (ok) mut.rename(path, newLabel, true); });
+          })
+          .catch(err => askNotice({ title: 'Section rename not done', tone: 'error',
+                                    body: `Could not check which bodies use this section: ${err.message}` }));
+        return;
+      }
       // Snapshot original label so we can revert on server failure.
       let original = null;
       let renamedGroupDbId = null;  // set when this is a flag-group rename we should persist

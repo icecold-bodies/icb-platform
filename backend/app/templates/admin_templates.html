@@ -20,6 +20,7 @@
 {% endblock %}
 {% block breadcrumb %}<strong>Admin</strong> / Trailer Templates{% endblock %}
 {% block topbar_actions %}
+  <button class="btn btn-outline btn-sm" id="btn-sections" onclick="openSectionsList()" title="Every BOM section — sections are shared by all bodies">Sections…</button>
   <button class="btn btn-outline btn-sm" onclick="openModal('modal-import-sheet')" title="Import trailer type from Excel sheet">⇩ Import from Excel</button>
   <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-trailer')">+ New Body Type</button>
 {% endblock %}
@@ -545,6 +546,7 @@
       <div class="form-group">
         <label class="form-label">Section name</label>
         <input class="form-control" id="es-name" oninput="_esSyncOptionalLock()"/>
+        <div id="es-usage" style="font-size:11px;color:var(--text-dim);margin-top:6px;min-height:14px"></div>
       </div>
       <div class="form-group">
         <label class="form-label" style="display:flex;align-items:center;gap:6px;cursor:pointer">
@@ -561,6 +563,27 @@
         <button class="btn btn-outline" onclick="closeModal('modal-edit-section')">Cancel</button>
         <button class="btn btn-primary" onclick="saveSectionFromModal()">Save</button>
       </span>
+    </div>
+  </div>
+</div>
+
+<!-- RT4 — every shared section and who uses it; the way to reach a section no body uses any more -->
+<div class="modal-backdrop hidden" id="modal-sections">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <span class="modal-title">BOM sections</span>
+      <button class="btn btn-icon" onclick="closeModal('modal-sections')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">
+        Every body shares these sections. Click one to rename it, change its Optional flag or delete it.
+      </div>
+      <input class="form-control" id="sections-filter" placeholder="Filter…" oninput="renderSectionsList()"
+             style="margin-bottom:8px"/>
+      <div id="sections-list" style="max-height:55vh;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-sections')">Close</button>
     </div>
   </div>
 </div>
@@ -719,7 +742,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/admin_templates.js?v=20"></script>
+<script src="/static/js/admin_templates.js?v=21"></script>
 <script src="/static/js/driver.js.iife.js"></script>
 <script>
 (function () {

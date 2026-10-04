@@ -24,6 +24,7 @@ from ..services import (
 )
 from ..services import insulation_foam as pu_foam   # RT2 Part 1c — the per-body default grade
 from ..services import body_family                  # RT3 — the body's family (trailer group) + colour
+from ..services import sections as sections_svc     # RT4 — shared-section usage, the one row move, the draft rule
 from ..templates_config import templates
 
 router = APIRouter()
@@ -835,6 +836,7 @@ async def update_bom_section(section_id: int, request: Request, db: Session = De
         row.multiplier = max(0.0, float(body["multiplier"]))
     if "is_optional" in body:
         row.is_optional = bool(body["is_optional"])
+    drafts = {"rewritten": [], "left": []}
     if "name" in body:
         new_name = (body.get("name") or "").strip()
         if not new_name:
@@ -842,16 +844,100 @@ async def update_bom_section(section_id: int, request: Request, db: Session = De
         if new_name != row.name:
             existing = db.query(BOMSection).filter(BOMSection.name == new_name, BOMSection.id != section_id).first()
             if existing:
-                raise HTTPException(status_code=400, detail=f"A section named '{new_name}' already exists")
+                # RT4 — honest: the name belongs to a SHARED section; Body Templates offers to move this body's
+                # lines into it instead (POST /api/bom-sections/{id}/move-body-lines)
+                raise HTTPException(status_code=400, detail=f"A section named '{new_name}' already exists — "
+                                                            f"it is shared, used by other bodies")
             old_name = row.name
             row.name = new_name
             # Cascade to bill_of_materials.bom_section (string fallback column)
             db.query(BillOfMaterial).filter(BillOfMaterial.bom_section == old_name).update(
                 {"bom_section": new_name}, synchronize_session=False
             )
+            # RT4_RULING_1 Q6 — a global rename keeps every draft in step (the A2 rule, same transaction)
+            drafts = sections_svc.rewrite_drafts_for_rename(db, old_name, new_name)
     db.commit()
     return {"ok": True, "name": row.name, "multiplier": row.multiplier,
-            "is_optional": section_effective_optional(row.name, row.is_optional)}
+            "is_optional": section_effective_optional(row.name, row.is_optional),
+            "drafts_rewritten": drafts["rewritten"], "drafts_left": drafts["left"]}
+
+
+@router.get("/api/bom-sections/usage")
+async def bom_sections_usage_summary(request: Request, db: Session = Depends(get_db)):
+    """RT4 — every section with how many bodies (not deleted) and lines use it, by FK id OR legacy string, for
+    Body Templates' Sections list (the only way to reach a section no body uses any more). Admin only."""
+    require_admin(request, db)
+    from sqlalchemy import or_
+    secs = db.query(BOMSection).order_by(BOMSection.name).all()
+    names = {t.id: t.name for t in db.query(TrailerType.id, TrailerType.name).all()}
+    rows = (db.query(BillOfMaterial.trailer_type_id, BillOfMaterial.bom_section_id, BillOfMaterial.bom_section)
+            .filter(or_(BillOfMaterial.bom_section_id.isnot(None), BillOfMaterial.bom_section.isnot(None))).all())
+    by_id = {s.id: s for s in secs}
+    by_name = {s.name: s for s in secs}
+    per: dict[int, dict] = {s.id: {"lines": 0, "bodies": set(), "live": set()} for s in secs}
+    for tid, sid, sname in rows:
+        hit = {x.id for x in (by_id.get(sid), by_name.get(sname)) if x is not None}
+        for h in hit:
+            per[h]["lines"] += 1
+            per[h]["bodies"].add(tid)
+            if tid in names and not sections_svc.is_deleted_body(names[tid]):
+                per[h]["live"].add(tid)
+    return [{"id": s.id, "name": s.name, "lines": per[s.id]["lines"], "bodies": len(per[s.id]["bodies"]),
+             "live_bodies": len(per[s.id]["live"]),
+             "is_optional": section_effective_optional(s.name, s.is_optional)} for s in secs]
+
+
+@router.get("/api/bom-sections/{section_id}/usage")
+async def bom_section_usage(section_id: int, request: Request, db: Session = Depends(get_db),
+                            rename_to: str | None = None):
+    """RT4 — who uses this section (every body, by FK id or legacy string; deleted bodies flagged), the
+    Settings-page drafts naming it, and its pricing properties. `rename_to`: which drafts a global rename would
+    rewrite / leave. Admin only. Body Templates' Edit-section dialog and the Configurator (preview) rename read it."""
+    require_admin(request, db)
+    sec = db.query(BOMSection).filter_by(id=section_id).first()
+    if not sec:
+        raise HTTPException(status_code=404, detail="Section not found")
+    return sections_svc.section_usage(db, sec, rename_to=(rename_to or "").strip() or None)
+
+
+@router.post("/api/bom-sections/{section_id}/move-body-lines")
+async def move_body_lines(section_id: int, request: Request, db: Session = Depends(get_db)):
+    """RT4 — move ALL of one body's lines in this section into another (existing) section, in ONE transaction.
+    Payload {trailer_type_id, to_section_id}. Rows are matched by FK id OR the legacy string; both columns are
+    written together (services.sections.move_rows_to_section — the configurator's move-items uses it too). Only
+    that body's rows move; only that body's Settings-page draft is touched, by the A2 rule. Admin only."""
+    require_admin(request, db)
+    body = await request.json()
+    try:
+        tid = int(body.get("trailer_type_id"))
+        to_id = int(body.get("to_section_id"))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="trailer_type_id and to_section_id must be integers")
+    src = db.query(BOMSection).filter_by(id=section_id).first()
+    dst = db.query(BOMSection).filter_by(id=to_id).first()
+    if not src or not dst:
+        raise HTTPException(status_code=404, detail="Section not found")
+    if src.id == dst.id:
+        raise HTTPException(status_code=400, detail="Pick a different section to move into")
+    if dst.archived_at is not None:
+        raise HTTPException(status_code=400, detail=f"'{dst.name}' is in the Unassigned tray — restore it first")
+    if not db.query(TrailerType).filter_by(id=tid).first():
+        raise HTTPException(status_code=404, detail="Body not found")
+    rows = (sections_svc.section_lines_query(db, src).filter(BillOfMaterial.trailer_type_id == tid)
+            .order_by(BillOfMaterial.id).all())
+    if not rows:
+        raise HTTPException(status_code=400, detail=f"This body has no lines in '{src.name}'")
+    moved = sections_svc.move_rows_to_section(rows, dst)
+    d = sections_svc.rewrite_drafts_for_rename(db, src.name, dst.name, only_body=tid)
+    draft = ("rewritten" if d["rewritten"] else "node_exists" if d["left"]
+             else ("no_node" if db.query(ConfiguratorDraft).filter_by(trailer_type_id=tid).first() else "no_draft"))
+    db.flush()
+    unused = sections_svc.section_lines_query(db, src).count() == 0
+    others = [x for x in sections_svc.drafts_naming(db, src.name) if x["trailer_type_id"] != tid]
+    db.commit()
+    return {"ok": True, "from": {"id": src.id, "name": src.name}, "to": {"id": dst.id, "name": dst.name},
+            "trailer_type_id": tid, "moved_ids": moved, "draft": draft,
+            "old_section_unused": unused, "other_drafts_naming_old": others}
 
 
 @router.delete("/api/bom-sections/{section_id}")
@@ -2567,13 +2653,17 @@ async def configurator_rename_section(
             status_code=409, detail=f"Another section already uses the name {new_name!r}"
         )
 
+    old_name = sec.name
     sec.name = new_name
     # Keep the legacy string column in sync — calculator code reads either.
     db.query(BillOfMaterial).filter_by(bom_section_id=section_id).update(
         {"bom_section": new_name}, synchronize_session=False
     )
+    # RT4_RULING_1 Q6 — a global rename keeps every draft in step (the A2 rule, same transaction)
+    drafts = sections_svc.rewrite_drafts_for_rename(db, old_name, new_name)
     db.commit()
-    return {"id": sec.id, "name": sec.name}
+    return {"id": sec.id, "name": sec.name,
+            "drafts_rewritten": drafts["rewritten"], "drafts_left": drafts["left"]}
 
 
 def _scan_draft_for_category(payload_json: str, section_key: str) -> tuple[int, dict]:
@@ -2625,23 +2715,9 @@ def _find_draft_category_usage(db: Session, section_name: str) -> list[dict]:
     """Walk every configurator draft and return the trailers whose drafts
     reference this section's name as a category. Used by the delete-section
     preview so we can warn users before they break Settings-page configs."""
-    if not section_name:
+    if not (section_name or "").strip():
         return []
-    key = section_name.strip().upper()
-    if not key:
-        return []
-    out = []
-    rows = db.query(ConfiguratorDraft).all()
-    for row in rows:
-        node_count, _cleaned = _scan_draft_for_category(row.payload, key)
-        if node_count > 0:
-            tt = db.query(TrailerType).filter_by(id=row.trailer_type_id).first()
-            out.append({
-                "trailer_type_id": row.trailer_type_id,
-                "trailer_name": tt.name if tt else f"#{row.trailer_type_id}",
-                "node_count": node_count,
-            })
-    return out
+    return sections_svc.drafts_naming(db, section_name)     # RT4 — the one draft-usage lookup
 
 
 @router.get("/api/configurator/sections/{section_id}/usage")
@@ -3760,16 +3836,13 @@ async def configurator_move_items_to_section(
     if len(trailer_ids) > 1:
         raise HTTPException(status_code=400, detail="All items must be from the same trailer")
 
-    moved = []
-    for row in rows:
-        # Allow body-option masters (flag rows) to be moved too — the
-        # configurator now uses this endpoint both to relocate plain BOM
-        # items and to attach flag masters to sections. We only update
-        # bom_section_id / bom_section; is_body_option is preserved so the
-        # row keeps its flag-toggle semantics in its existing group.
-        row.bom_section_id = sec.id
-        row.bom_section = sec.name  # legacy string column, kept in sync
-        moved.append(row.id)
+    # Allow body-option masters (flag rows) to be moved too — the
+    # configurator now uses this endpoint both to relocate plain BOM
+    # items and to attach flag masters to sections. We only update
+    # bom_section_id / bom_section; is_body_option is preserved so the
+    # row keeps its flag-toggle semantics in its existing group.
+    # RT4 — the one shared row move (Body Templates' move-body-lines uses it too).
+    moved = sections_svc.move_rows_to_section(rows, sec)
 
     db.commit()
     return {"ok": True, "sectionId": sec.id, "movedItemIds": moved}

@@ -679,8 +679,10 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         print_plan(plan, changes)
         n_todo = len(plan.todo) + len(plan.draft_todo)
-        n_done = len(plan.done) + len(plan.draft_done)
-        print(f"\n{n_todo} to apply, {n_done} already applied.")
+        # the plan line counts LINE changes, as it always has (the kits match it); drafts get their own line
+        print(f"\n{len(plan.todo)} to apply, {len(plan.done)} already applied.")
+        if plan.draft_todo or plan.draft_done:
+            print(f"drafts: {len(plan.draft_todo)} to apply, {len(plan.draft_done)} already applied.")
         unused = load_expect_unused(Path(a.manifest))
         bad = unused_after_problems(conn, unused, plan)
         if bad:

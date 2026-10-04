@@ -7,7 +7,7 @@
 set -u
 KIT=${1:-rt4/build}
 WIN=/mnt/c/Users/micge/Documents
-HERE=$(cd "$(dirname "$0")" && pwd)
+HERE=   # set after the clone: the COMMITTED sim folder in the sim work tree (works under bash <(git show ...) too)
 SIM=/root/rt4simD-$(date +%s)
 G="git -c safe.directory=*"
 mkdir -p "$SIM"/{bin,opt,varbackups,tmp,state,stageout}
@@ -20,7 +20,7 @@ git clone -q "$SIM/origin.git" "$SIM/work" && cd "$SIM/work" || exit 1
 git -c advice.detachedHead=false checkout -q -B backport/v1.39-base origin/backport/v1.39-base
 $G fetch -q "$WIN/icb-platform" "$KIT" && git -c user.email=sim@x -c user.name=sim merge -q --no-edit FETCH_HEAD || exit 1
 git push -q origin backport/v1.39-base && git fetch -q origin
-TARGET=$(git rev-parse HEAD)
+TARGET=$(git rev-parse HEAD); HERE=$SIM/work/ops/prod-rt4/sim
 git -c user.email=sim@x -c user.name=sim tag -f -a v1.60.1 -m sim "$TARGET" > /dev/null && git push -q -f origin v1.60.1
 bash ops/prod-rt4/mkstage_data.sh "$SIM/stageout" "$TARGET" | head -n 1 || exit 1
 tar -xf "$SIM/stageout/icb-rt4-data.tar" -C "$SIM/tmp" || exit 1

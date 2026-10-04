@@ -1,0 +1,51 @@
+# RT4 Part C §3.0 — the GET probe list for rt4_discovery.sh (one path per line: <local answer> <path>).
+# <local answer> = what the same code (b59d8e3 = prod's 682a6cc app code) answered with NO session in the CA's
+# in-process sweep of all 470 routes (prod-like env: autologin off, read-only DB sessions). GET only, and only
+# handlers read for side effects: every one is a pure read. The probe records status / bytes / type / CF cache
+# status / Location — never a body.
+#
+# -- answered without a session (the candidates) --
+302 /
+200 /login
+200 /health
+200 /health/commodity
+200 /debug/health/ping
+200 /openapi.json
+200 /docs
+200 /docs/oauth2-redirect
+200 /redoc
+200 /api/trailers
+200 /api/trailers/27/bom
+200 /api/trailers/27/ratios
+200 /api/materials
+200 /api/materials/bom-overrides/all
+200 /api/materials/95/bom-overrides
+200 /api/materials/95/history
+200 /api/materials/95/trailer-usage
+200 /api/categories
+200 /api/bom-sections
+200 /api/body-option-groups
+200 /api/bom/cross-body-copy-names
+200 /api/formulas
+200 /api/formulas/apply-targets
+200 /api/global-variables
+200 /api/global-variables/waste-migration-preview
+200 /api/skin-formulas
+200 /api/skin-formula-ingredients
+200 /api/taping-blocks
+200 /api/floor-plates
+200 /api/mounting-cleats
+200 /api/sap-item-codes
+200 /api/sap-item-codes/2785
+# -- controls: gated today (must stay gated) --
+401 /api/session
+401 /api/calculations
+401 /api/trailers/27
+401 /api/trailers?include_inactive=1
+401 /api/configurator/trailers/27/draft
+401 /api/admin/body-families
+303 /debug/health
+303 /mes-app/
+307 /calculator
+307 /mes/calculator
+307 /admin/templates

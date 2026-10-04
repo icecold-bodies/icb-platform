@@ -9,9 +9,11 @@ Design (WO-ratified shape, adjusted post-CI to the house test-override contract)
     ``token=name`` pairs (e.g. ``abc123=erp``). Empty/missing = feature off:
     every bearer-presenting request is rejected and session auth is untouched.
   * The allowlist is the OPT-IN ITSELF: an endpoint grants token access by adding
-    the `@integration_readable` marker under its `@router.get(...)` (or, in the
-    one legacy inline-auth case, calling `integration_identity_if_bearer` before
-    `get_current_user`). Grep `@integration_readable` to enumerate the surface.
+    the `@integration_readable` marker under its `@router.get(...)` (the one
+    legacy inline-auth case, GET /api/calculations/{id}, also calls
+    `integration_identity_if_bearer` before `get_current_user` — and carries the
+    marker too since RT4, so the app-wide sign-in gate in deps.py honours it).
+    Grep `@integration_readable` to enumerate the surface.
     There is no path table to drift from the routes.
   * Handlers KEEP `Depends(require_user)` — deliberately. The house rule (see
     `deps.require_perm`) is that tests override `require_user` via

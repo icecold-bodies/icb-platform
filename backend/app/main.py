@@ -53,6 +53,7 @@ from .deps import (
     _is_dev_mode,
     _login_attempts, _MAX_ATTEMPTS, _LOCKOUT_SECONDS,
     _is_rate_limited, _record_failed_attempt, _clear_attempts, _login_ctx,
+    require_session_unless_public, PUBLIC_ROUTES, DEV_AUTOLOGIN_ROUTE,
 )
 from .templates_config import templates
 from .services import (
@@ -130,7 +131,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger("burtcost")
 
-app = FastAPI(title="Trailer Costing System")
+# RT4 Part C (RT4_RULING_1 Q7/Q8) — deny by default: every route needs a session unless deps.PUBLIC_ROUTES
+# lists it. The interactive API docs are off; /openapi.json is admin-only (registered at the bottom).
+app = FastAPI(title="Trailer Costing System", docs_url=None, redoc_url=None, openapi_url=None,
+              dependencies=[Depends(require_session_unless_public)])
 
 # WO v4.26 — map admin CRUD domain errors to HTTP status codes (422 validation, 409 conflict).
 from .services.admin_bom import AdminConflictError, AdminValidationError  # noqa: E402
@@ -231,6 +235,7 @@ app.include_router(_r_pre_job_card.router)
 # the endpoint's own 403). Dev + journey servers set the var, so it stays on there.
 if _r_pre_job_card._mes_autologin_user() is not None:
     app.include_router(_r_pre_job_card.demo_router)
+    PUBLIC_ROUTES.add(DEV_AUTOLOGIN_ROUTE)  # RT4 — public ONLY where it is mounted (never on prod)
 app.include_router(_r_chassis_catalogue.router)
 app.include_router(_r_chassis_register.router)  # WO v4.22 — chassis register API
 app.include_router(_r_chassis_records.router)  # WO v4.28 — chassis lifecycle API
@@ -637,5 +642,20 @@ templates.env.globals["app_version"] = _APP_VERSION
 
 # Register /debug/health now that _APP_VERSION + require_admin both exist.
 diagnostics.register_health_routes(app, _APP_VERSION)
+
+
+@app.get("/health/version", include_in_schema=False)
+async def health_version():
+    """RT4 (RT4_RULING_1 Q9) — the one harmless probe, public: the version this process started with and nothing
+    else. Read once at startup, so it moves only when the NEW process is up — the release kits compare it on the
+    three doors (it replaces every kit's use of /openapi.json)."""
+    return {"version": _APP_VERSION}
+
+
+@app.get("/openapi.json", include_in_schema=False)
+async def openapi_admin_only(request: Request, db: Session = Depends(get_db)):
+    """RT4 (RT4_RULING_1 Q8) — the API map, for a signed-in ADMIN only (the docs pages stay off)."""
+    require_admin(request, db)
+    return JSONResponse(app.openapi())
 
 

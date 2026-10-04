@@ -2,7 +2,7 @@
 # RT2 window — the audit "All" from the CLI, beside the page's All (dispatch Part 4, steps 1, 3 and 5). READ ONLY.
 # Michael first clicks Admin -> Costing audit -> All and lets it finish; then, on the VM:
 #
-#     sudo bash /tmp/icb-rt2-all/rt2_all.sh <label>        label = pre | post | afterP | afterD | close
+#     sudo bash /tmp/icb-rt2-all/rt2_all.sh <label>        label = pre | post | afterP | afterD | afterS | close
 #
 # Runs the five packs from the DEPLOYED code (/opt/icb-platform/backend: the page's own golden, packs and prod list)
 # with `--env prod`, then compares the page's newest finished All run with the CLI cell by cell (rt2_all_compare.py)
@@ -13,7 +13,7 @@
 # Deliberately no bare `set -e`: each check is a loud STOP.
 set -u
 LABEL=${1:-}
-case "$LABEL" in pre|post|afterP|afterD|close) ;; *) echo "usage: sudo bash $0 pre|post|afterP|afterD|close"; exit 1 ;; esac
+case "$LABEL" in pre|post|afterP|afterD|afterS|close) ;; *) echo "usage: sudo bash $0 pre|post|afterP|afterD|afterS|close"; exit 1 ;; esac
 BASE=/tmp/icb-rt2-all
 REPO=/opt/icb-platform
 PY=$REPO/.venv/bin/python
@@ -21,7 +21,6 @@ PACKS="smoke chillers freezers icecream explosive"
 TS=$(date +%Y%m%d-%H%M%S)
 OUT=$BASE/out-$LABEL-$TS
 MAX_AGE_MIN=45
-KEEP=/var/backups/icb-rt2-2026-10        # the data kit's journals: a page run must START after the newest one (C11)
 
 [ -e "$OUT" ] && { echo "STOP: $OUT already exists (two runs in one second?): run again"; exit 1; }
 mkdir -p "$OUT/reports" || { echo "STOP: cannot create $OUT"; exit 1; }
@@ -35,6 +34,9 @@ say()  { echo "== $*"; }
 # shellcheck disable=SC1091
 . "$BASE/expected.env" || stop KIT "expected.env unreadable"
 for v in EXPECT_HEADS EXPECT_ALEMBICS STAGED_FROM; do [ -n "${!v:-}" ] || stop KIT "expected.env has no $v"; done
+# the data kits' journal folders: a page run must START after the newest journal in any of them (C11).
+# RT4: expected.env may name more than RT2's own (KEEP_DIRS, space-separated); RT2's stays the default.
+KEEP_DIRS=${KEEP_DIRS:-/var/backups/icb-rt2-2026-10}
 [ -r /etc/icb/backend.env ] || stop KIT "/etc/icb/backend.env not readable"
 set -a; . /etc/icb/backend.env; set +a
 [ -n "${DATABASE_URL:-}" ] || stop KIT "DATABASE_URL not set"
@@ -68,9 +70,9 @@ done
 [ -z "$(find "$REPO" -name __pycache__ -newer "$OUT/run.log" 2>/dev/null | head -n1)" ] || echo "   !! a __pycache__ appeared in the repo — tell the CA"
 
 say "2. the page's newest All against the CLI"
-NOT_BEFORE=$(stat -c %Y "$KEEP"/journal_*.json "$KEEP"/*revert*.json 2>/dev/null | sort -n | tail -n1 || true)
+NOT_BEFORE=$(for k in $KEEP_DIRS; do stat -c %Y "$k"/journal_*.json "$k"/*revert*.json 2>/dev/null; done | sort -n | tail -n1 || true)
 NOT_BEFORE=${NOT_BEFORE:-0}
-echo "   last data change on prod (a P / D apply or revert journal): $( [ "$NOT_BEFORE" = 0 ] && echo none || date -d "@$NOT_BEFORE" -Is)"
+echo "   last data change on prod (a data-kit apply or revert journal in $KEEP_DIRS): $( [ "$NOT_BEFORE" = 0 ] && echo none || date -d "@$NOT_BEFORE" -Is)"
 "$PY" "$BASE/rt2_all_compare.py" "$URL" "$OUT/reports" "$MAX_AGE_MIN" "$NOT_BEFORE" > "$OUT/compare.txt" 2>&1; rc=$?
 cat "$OUT/compare.txt"
 ( cd "$OUT" && sha256sum reports/*.json compare.txt > SHA256SUMS.out )

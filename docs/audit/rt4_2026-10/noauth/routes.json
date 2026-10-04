@@ -1,0 +1,8215 @@
+[
+ {
+  "kind": "route",
+  "methods": [
+   "GET",
+   "HEAD"
+  ],
+  "path": "/openapi.json",
+  "endpoint": "fastapi.applications.FastAPI.setup.<locals>.openapi",
+  "file": ".venv/Lib/site-packages/fastapi/applications.py",
+  "line": 1003,
+  "in_schema": false,
+  "deps": [],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET",
+   "HEAD"
+  ],
+  "path": "/docs",
+  "endpoint": "fastapi.applications.FastAPI.setup.<locals>.swagger_ui_html",
+  "file": ".venv/Lib/site-packages/fastapi/applications.py",
+  "line": 1014,
+  "in_schema": false,
+  "deps": [],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET",
+   "HEAD"
+  ],
+  "path": "/docs/oauth2-redirect",
+  "endpoint": "fastapi.applications.FastAPI.setup.<locals>.swagger_ui_redirect",
+  "file": ".venv/Lib/site-packages/fastapi/applications.py",
+  "line": 1032,
+  "in_schema": false,
+  "deps": [],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET",
+   "HEAD"
+  ],
+  "path": "/redoc",
+  "endpoint": "fastapi.applications.FastAPI.setup.<locals>.redoc_html",
+  "file": ".venv/Lib/site-packages/fastapi/applications.py",
+  "line": 1042,
+  "in_schema": false,
+  "deps": [],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/login",
+  "endpoint": "app.routers.auth.login_page",
+  "file": "app/routers/auth.py",
+  "line": 43,
+  "in_schema": true,
+  "deps": [],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/login",
+  "endpoint": "app.routers.auth.login_post",
+  "file": "app/routers/auth.py",
+  "line": 50,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/login/change-password",
+  "endpoint": "app.routers.auth.login_change_password",
+  "file": "app/routers/auth.py",
+  "line": 117,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/logout",
+  "endpoint": "app.routers.auth.logout",
+  "file": "app/routers/auth.py",
+  "line": 171,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/customers",
+  "endpoint": "app.routers.customers.get_customers",
+  "file": "app/routers/customers.py",
+  "line": 30,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/customers",
+  "endpoint": "app.routers.customers.create_customer",
+  "file": "app/routers/customers.py",
+  "line": 66,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/customers/{cust_id}",
+  "endpoint": "app.routers.customers.update_customer",
+  "file": "app/routers/customers.py",
+  "line": 87,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/customers/{cust_id}",
+  "endpoint": "app.routers.customers.delete_customer",
+  "file": "app/routers/customers.py",
+  "line": 110,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/customers/{cust_id}/contacts",
+  "endpoint": "app.routers.customers.list_contacts",
+  "file": "app/routers/customers.py",
+  "line": 149,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "_require_customer",
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/customers/{cust_id}/contacts",
+  "endpoint": "app.routers.customers.create_contact",
+  "file": "app/routers/customers.py",
+  "line": 161,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "_require_customer",
+   "require_admin",
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/customers/{cust_id}/contacts/{contact_id}",
+  "endpoint": "app.routers.customers.update_contact",
+  "file": "app/routers/customers.py",
+  "line": 189,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/customers/{cust_id}/contacts/{contact_id}/set-primary",
+  "endpoint": "app.routers.customers.set_primary_contact",
+  "file": "app/routers/customers.py",
+  "line": 215,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/customers/{cust_id}/contacts/{contact_id}",
+  "endpoint": "app.routers.customers.delete_contact",
+  "file": "app/routers/customers.py",
+  "line": 231,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/customers/{cust_id}/end-users",
+  "endpoint": "app.routers.customers.list_end_users",
+  "file": "app/routers/customers.py",
+  "line": 278,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "_require_customer",
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/customers/{cust_id}/end-users",
+  "endpoint": "app.routers.customers.create_end_user",
+  "file": "app/routers/customers.py",
+  "line": 290,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "_require_customer",
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/customers/{cust_id}/end-users/{end_user_id}",
+  "endpoint": "app.routers.customers.update_end_user",
+  "file": "app/routers/customers.py",
+  "line": 322,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/customers/{cust_id}/end-users/{end_user_id}/set-primary",
+  "endpoint": "app.routers.customers.set_primary_end_user",
+  "file": "app/routers/customers.py",
+  "line": 345,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/customers/{cust_id}/end-users/{end_user_id}",
+  "endpoint": "app.routers.customers.delete_end_user",
+  "file": "app/routers/customers.py",
+  "line": 359,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/users",
+  "endpoint": "app.routers.users.get_users",
+  "file": "app/routers/users.py",
+  "line": 25,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/users/online",
+  "endpoint": "app.routers.users.get_online_users",
+  "file": "app/routers/users.py",
+  "line": 40,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/users/{user_id}/role",
+  "endpoint": "app.routers.users.update_user_role",
+  "file": "app/routers/users.py",
+  "line": 91,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/users/{user_id}/email",
+  "endpoint": "app.routers.users.update_user_email",
+  "file": "app/routers/users.py",
+  "line": 114,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/users",
+  "endpoint": "app.routers.users.create_user",
+  "file": "app/routers/users.py",
+  "line": 129,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/users/{user_id}/password",
+  "endpoint": "app.routers.users.change_password",
+  "file": "app/routers/users.py",
+  "line": 156,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/users/{user_id}",
+  "endpoint": "app.routers.users.delete_user",
+  "file": "app/routers/users.py",
+  "line": 171,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/permissions",
+  "endpoint": "app.routers.users.api_list_permissions",
+  "file": "app/routers/users.py",
+  "line": 192,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/users/{user_id}/permissions",
+  "endpoint": "app.routers.users.api_user_permissions",
+  "file": "app/routers/users.py",
+  "line": 200,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/users/{user_id}/permissions/{perm_name}",
+  "endpoint": "app.routers.users.api_set_user_permission",
+  "file": "app/routers/users.py",
+  "line": 239,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/users",
+  "endpoint": "app.routers.users.admin_manage_users",
+  "file": "app/routers/users.py",
+  "line": 269,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/user-permissions",
+  "endpoint": "app.routers.users.admin_user_permissions",
+  "file": "app/routers/users.py",
+  "line": 281,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/chassis",
+  "endpoint": "app.routers.chassis.admin_chassis",
+  "file": "app/routers/chassis.py",
+  "line": 32,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis/options",
+  "endpoint": "app.routers.chassis.api_chassis_options",
+  "file": "app/routers/chassis.py",
+  "line": 49,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis/constants",
+  "endpoint": "app.routers.chassis.api_chassis_constants",
+  "file": "app/routers/chassis.py",
+  "line": 62,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis/options",
+  "endpoint": "app.routers.chassis.api_chassis_option_create",
+  "file": "app/routers/chassis.py",
+  "line": 74,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/chassis/options/{oid}",
+  "endpoint": "app.routers.chassis.api_chassis_option_update",
+  "file": "app/routers/chassis.py",
+  "line": 98,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/chassis/options/{oid}",
+  "endpoint": "app.routers.chassis.api_chassis_option_delete",
+  "file": "app/routers/chassis.py",
+  "line": 122,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis/constants",
+  "endpoint": "app.routers.chassis.api_chassis_constant_create",
+  "file": "app/routers/chassis.py",
+  "line": 134,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/chassis/constants/{cid}",
+  "endpoint": "app.routers.chassis.api_chassis_constant_update",
+  "file": "app/routers/chassis.py",
+  "line": 158,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/chassis/constants/{cid}",
+  "endpoint": "app.routers.chassis.api_chassis_constant_delete",
+  "file": "app/routers/chassis.py",
+  "line": 180,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/materials",
+  "endpoint": "app.routers.materials.get_materials",
+  "file": "app/routers/materials.py",
+  "line": 19,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/materials",
+  "endpoint": "app.routers.materials.create_material",
+  "file": "app/routers/materials.py",
+  "line": 47,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/materials/{mat_id}",
+  "endpoint": "app.routers.materials.update_material",
+  "file": "app/routers/materials.py",
+  "line": 62,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/materials/{mat_id}",
+  "endpoint": "app.routers.materials.delete_material",
+  "file": "app/routers/materials.py",
+  "line": 89,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/materials/bulk-price",
+  "endpoint": "app.routers.materials.bulk_price_update",
+  "file": "app/routers/materials.py",
+  "line": 99,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/materials/bulk-price/undo",
+  "endpoint": "app.routers.materials.bulk_price_undo",
+  "file": "app/routers/materials.py",
+  "line": 175,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/materials/bulk-price/apply-bom-overrides",
+  "endpoint": "app.routers.materials.apply_bom_override_bulk",
+  "file": "app/routers/materials.py",
+  "line": 200,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/materials/bulk-price/undo-bom-overrides",
+  "endpoint": "app.routers.materials.undo_bom_override_bulk",
+  "file": "app/routers/materials.py",
+  "line": 250,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/materials/{mat_id}/bom-overrides",
+  "endpoint": "app.routers.materials.get_material_bom_overrides",
+  "file": "app/routers/materials.py",
+  "line": 274,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/materials/{mat_id}/trailer-usage",
+  "endpoint": "app.routers.materials.get_material_trailer_usage",
+  "file": "app/routers/materials.py",
+  "line": 303,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/materials/bom-overrides/all",
+  "endpoint": "app.routers.materials.get_all_bom_overrides",
+  "file": "app/routers/materials.py",
+  "line": 341,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/materials/bom-overrides/{bom_id}",
+  "endpoint": "app.routers.materials.update_single_bom_override",
+  "file": "app/routers/materials.py",
+  "line": 378,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/trailer-types/{tt_id}/protect-overrides",
+  "endpoint": "app.routers.materials.set_protect_overrides",
+  "file": "app/routers/materials.py",
+  "line": 405,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/categories",
+  "endpoint": "app.routers.materials.get_categories",
+  "file": "app/routers/materials.py",
+  "line": 418,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/categories",
+  "endpoint": "app.routers.materials.create_category",
+  "file": "app/routers/materials.py",
+  "line": 424,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/materials/{mat_id}/history",
+  "endpoint": "app.routers.materials.price_history",
+  "file": "app/routers/materials.py",
+  "line": 435,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/materials",
+  "endpoint": "app.routers.materials.admin_materials",
+  "file": "app/routers/materials.py",
+  "line": 443,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/trailers",
+  "endpoint": "app.routers.trailers.get_trailers",
+  "file": "app/routers/trailers.py",
+  "line": 70,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/trailers/{tt_id}",
+  "endpoint": "app.routers.trailers.get_trailer",
+  "file": "app/routers/trailers.py",
+  "line": 88,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/trailers",
+  "endpoint": "app.routers.trailers.create_trailer",
+  "file": "app/routers/trailers.py",
+  "line": 100,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/trailers/{tt_id}",
+  "endpoint": "app.routers.trailers.update_trailer",
+  "file": "app/routers/trailers.py",
+  "line": 125,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/trailers/{tt_id}",
+  "endpoint": "app.routers.trailers.delete_trailer",
+  "file": "app/routers/trailers.py",
+  "line": 156,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/trailers/{tt_id}/duplicate",
+  "endpoint": "app.routers.trailers.duplicate_trailer",
+  "file": "app/routers/trailers.py",
+  "line": 168,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/trailers/{tt_id}/bom",
+  "endpoint": "app.routers.trailers.get_bom",
+  "file": "app/routers/trailers.py",
+  "line": 226,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/trailers/{tt_id}/bom",
+  "endpoint": "app.routers.trailers.add_bom_item",
+  "file": "app/routers/trailers.py",
+  "line": 326,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/bom/{bom_id}",
+  "endpoint": "app.routers.trailers.update_bom_item",
+  "file": "app/routers/trailers.py",
+  "line": 359,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin",
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom/{bom_id}/duplicate",
+  "endpoint": "app.routers.trailers.duplicate_bom_item",
+  "file": "app/routers/trailers.py",
+  "line": 455,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/bom/cross-body-copy-names",
+  "endpoint": "app.routers.trailers.list_cross_body_copy_names",
+  "file": "app/routers/trailers.py",
+  "line": 507,
+  "in_schema": true,
+  "deps": [],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom/{bom_id}/copy-to-trailer",
+  "endpoint": "app.routers.trailers.copy_bom_to_trailer",
+  "file": "app/routers/trailers.py",
+  "line": 512,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/bom/{bom_id}",
+  "endpoint": "app.routers.trailers.delete_bom_item",
+  "file": "app/routers/trailers.py",
+  "line": 605,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom/bulk-delete",
+  "endpoint": "app.routers.trailers.bulk_delete_bom_items",
+  "file": "app/routers/trailers.py",
+  "line": 615,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom/bulk-calc2-default",
+  "endpoint": "app.routers.trailers.bulk_set_calc2_default",
+  "file": "app/routers/trailers.py",
+  "line": 626,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/trailers/{tt_id}/bom/link-section-to-option",
+  "endpoint": "app.routers.trailers.link_section_to_body_option",
+  "file": "app/routers/trailers.py",
+  "line": 645,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/bom-sections",
+  "endpoint": "app.routers.trailers.list_bom_sections",
+  "file": "app/routers/trailers.py",
+  "line": 792,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom-sections",
+  "endpoint": "app.routers.trailers.create_bom_section",
+  "file": "app/routers/trailers.py",
+  "line": 801,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/bom-sections/{section_id}",
+  "endpoint": "app.routers.trailers.update_bom_section",
+  "file": "app/routers/trailers.py",
+  "line": 827,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/bom-sections/{section_id}",
+  "endpoint": "app.routers.trailers.delete_bom_section",
+  "file": "app/routers/trailers.py",
+  "line": 857,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom/bulk-selection-mode",
+  "endpoint": "app.routers.trailers.bulk_set_selection_mode",
+  "file": "app/routers/trailers.py",
+  "line": 882,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/trailers/{tt_id}/body-option-groups/rename",
+  "endpoint": "app.routers.trailers.rename_body_option_group",
+  "file": "app/routers/trailers.py",
+  "line": 957,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/body-option-groups",
+  "endpoint": "app.routers.trailers.list_body_option_groups",
+  "file": "app/routers/trailers.py",
+  "line": 1020,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/trailers/{tt_id}/ratios",
+  "endpoint": "app.routers.trailers.get_ratios",
+  "file": "app/routers/trailers.py",
+  "line": 1046,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/trailers/{tt_id}/ratios",
+  "endpoint": "app.routers.trailers.create_ratio",
+  "file": "app/routers/trailers.py",
+  "line": 1054,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/ratios/{ratio_id}",
+  "endpoint": "app.routers.trailers.update_ratio",
+  "file": "app/routers/trailers.py",
+  "line": 1074,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/ratios/{ratio_id}",
+  "endpoint": "app.routers.trailers.delete_ratio",
+  "file": "app/routers/trailers.py",
+  "line": 1089,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/templates",
+  "endpoint": "app.routers.trailers.admin_templates",
+  "file": "app/routers/trailers.py",
+  "line": 1101,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/formulas",
+  "endpoint": "app.routers.trailers.admin_formulas",
+  "file": "app/routers/trailers.py",
+  "line": 1117,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/configurator-preview",
+  "endpoint": "app.routers.trailers.admin_configurator_preview",
+  "file": "app/routers/trailers.py",
+  "line": 1127,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/settings",
+  "endpoint": "app.routers.trailers.admin_visual_configurator_settings",
+  "file": "app/routers/trailers.py",
+  "line": 1137,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/settings/body-types/{trailer_id}/categories",
+  "endpoint": "app.routers.trailers.admin_visual_configurator_categories",
+  "file": "app/routers/trailers.py",
+  "line": 1162,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/trailers",
+  "endpoint": "app.routers.trailers.configurator_list_trailers",
+  "file": "app/routers/trailers.py",
+  "line": 1830,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/tree",
+  "endpoint": "app.routers.trailers.configurator_tree",
+  "file": "app/routers/trailers.py",
+  "line": 1844,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/draft",
+  "endpoint": "app.routers.trailers.configurator_get_draft",
+  "file": "app/routers/trailers.py",
+  "line": 1871,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/drafts",
+  "endpoint": "app.routers.trailers.configurator_list_drafts",
+  "file": "app/routers/trailers.py",
+  "line": 1889,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/draft",
+  "endpoint": "app.routers.trailers.configurator_put_draft",
+  "file": "app/routers/trailers.py",
+  "line": 1905,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/draft-snapshots",
+  "endpoint": "app.routers.trailers.configurator_capture_draft_snapshot",
+  "file": "app/routers/trailers.py",
+  "line": 1948,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/draft-snapshots",
+  "endpoint": "app.routers.trailers.configurator_list_draft_snapshots",
+  "file": "app/routers/trailers.py",
+  "line": 1970,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/draft-snapshots/{snap_id}/restore",
+  "endpoint": "app.routers.trailers.configurator_restore_draft_snapshot",
+  "file": "app/routers/trailers.py",
+  "line": 1992,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/configurator/draft-snapshots/{snap_id}",
+  "endpoint": "app.routers.trailers.configurator_delete_draft_snapshot",
+  "file": "app/routers/trailers.py",
+  "line": 2032,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/draft-snapshots/{snap_id}/cross-audit",
+  "endpoint": "app.routers.trailers.configurator_cross_body_audit",
+  "file": "app/routers/trailers.py",
+  "line": 2278,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/draft-snapshots/{snap_id}/restore-to/{trailer_id}",
+  "endpoint": "app.routers.trailers.configurator_cross_body_restore",
+  "file": "app/routers/trailers.py",
+  "line": 2294,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/move-section",
+  "endpoint": "app.routers.trailers.configurator_move_section",
+  "file": "app/routers/trailers.py",
+  "line": 2342,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/configurator/sections/{section_id}",
+  "endpoint": "app.routers.trailers.configurator_rename_section",
+  "file": "app/routers/trailers.py",
+  "line": 2539,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/sections/{section_id}/usage",
+  "endpoint": "app.routers.trailers.configurator_section_usage",
+  "file": "app/routers/trailers.py",
+  "line": 2647,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/configurator/sections/{section_id}",
+  "endpoint": "app.routers.trailers.configurator_delete_section",
+  "file": "app/routers/trailers.py",
+  "line": 2668,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/sections/{section_id}/restore",
+  "endpoint": "app.routers.trailers.configurator_restore_section",
+  "file": "app/routers/trailers.py",
+  "line": 2720,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/configurator/options/{master_id}/set-default",
+  "endpoint": "app.routers.trailers.configurator_set_option_default",
+  "file": "app/routers/trailers.py",
+  "line": 2751,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/orphan-conditions",
+  "endpoint": "app.routers.trailers.configurator_orphan_conditions",
+  "file": "app/routers/trailers.py",
+  "line": 2834,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/configurator/options/{master_id}",
+  "endpoint": "app.routers.trailers.configurator_delete_option",
+  "file": "app/routers/trailers.py",
+  "line": 2875,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/snapshots",
+  "endpoint": "app.routers.trailers.configurator_list_snapshots",
+  "file": "app/routers/trailers.py",
+  "line": 3072,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/snapshots",
+  "endpoint": "app.routers.trailers.configurator_create_snapshot",
+  "file": "app/routers/trailers.py",
+  "line": 3090,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/snapshots/{snapshot_id}/restore",
+  "endpoint": "app.routers.trailers.configurator_restore_snapshot",
+  "file": "app/routers/trailers.py",
+  "line": 3116,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/configurator/snapshots/{snapshot_id}",
+  "endpoint": "app.routers.trailers.configurator_delete_snapshot",
+  "file": "app/routers/trailers.py",
+  "line": 3134,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/configurator/groups/{group_id}",
+  "endpoint": "app.routers.trailers.configurator_delete_group",
+  "file": "app/routers/trailers.py",
+  "line": 3147,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/move-flags-to-group",
+  "endpoint": "app.routers.trailers.configurator_move_flags_to_group",
+  "file": "app/routers/trailers.py",
+  "line": 3174,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/bundle-flags",
+  "endpoint": "app.routers.trailers.configurator_bundle_flags",
+  "file": "app/routers/trailers.py",
+  "line": 3252,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/dissolve-bundle",
+  "endpoint": "app.routers.trailers.configurator_dissolve_bundle",
+  "file": "app/routers/trailers.py",
+  "line": 3307,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/configurator/groups/{group_id}",
+  "endpoint": "app.routers.trailers.configurator_rename_group",
+  "file": "app/routers/trailers.py",
+  "line": 3367,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/configurator/groups/{group_id}/parent-option",
+  "endpoint": "app.routers.trailers.configurator_set_group_parent_option",
+  "file": "app/routers/trailers.py",
+  "line": 3404,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/configurator/flags/{master_id}/style",
+  "endpoint": "app.routers.trailers.configurator_set_flag_style",
+  "file": "app/routers/trailers.py",
+  "line": 3444,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/flag-groups",
+  "endpoint": "app.routers.trailers.configurator_create_flag_group",
+  "file": "app/routers/trailers.py",
+  "line": 3477,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/flag-groups/{group_id}/flags",
+  "endpoint": "app.routers.trailers.configurator_create_flag",
+  "file": "app/routers/trailers.py",
+  "line": 3530,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/configurator/flags/{master_id}/rename",
+  "endpoint": "app.routers.trailers.configurator_rename_flag",
+  "file": "app/routers/trailers.py",
+  "line": 3595,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/configurator/flags/{master_id}/unbind-section",
+  "endpoint": "app.routers.trailers.configurator_unbind_flag_section",
+  "file": "app/routers/trailers.py",
+  "line": 3665,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/trailers/{trailer_id}/sections",
+  "endpoint": "app.routers.trailers.configurator_create_section",
+  "file": "app/routers/trailers.py",
+  "line": 3680,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/configurator/sections/{section_id}/move-items",
+  "endpoint": "app.routers.trailers.configurator_move_items_to_section",
+  "file": "app/routers/trailers.py",
+  "line": 3727,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/configurator/items/{item_id}/conditions",
+  "endpoint": "app.routers.trailers.configurator_set_item_conditions",
+  "file": "app/routers/trailers.py",
+  "line": 3778,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_api"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/skin-formulas",
+  "endpoint": "app.routers.skin_taping.list_skin_formulas",
+  "file": "app/routers/skin_taping.py",
+  "line": 57,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/skin-formulas",
+  "endpoint": "app.routers.skin_taping.create_skin_formula",
+  "file": "app/routers/skin_taping.py",
+  "line": 96,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/skin-formulas/{f_id}",
+  "endpoint": "app.routers.skin_taping.update_skin_formula",
+  "file": "app/routers/skin_taping.py",
+  "line": 127,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/skin-formulas/{f_id}",
+  "endpoint": "app.routers.skin_taping.delete_skin_formula",
+  "file": "app/routers/skin_taping.py",
+  "line": 159,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/skin-formula-ingredients",
+  "endpoint": "app.routers.skin_taping.list_skin_formula_ingredients",
+  "file": "app/routers/skin_taping.py",
+  "line": 171,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/skin-formula-ingredients",
+  "endpoint": "app.routers.skin_taping.create_skin_formula_ingredient",
+  "file": "app/routers/skin_taping.py",
+  "line": 189,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/skin-formula-ingredients/{ing_id}",
+  "endpoint": "app.routers.skin_taping.update_skin_formula_ingredient",
+  "file": "app/routers/skin_taping.py",
+  "line": 207,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/skin-formula-ingredients/{ing_id}/inline-price",
+  "endpoint": "app.routers.skin_taping.inline_update_skin_ingredient_price",
+  "file": "app/routers/skin_taping.py",
+  "line": 225,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/skin-formula-ingredients/{ing_id}/sync-sap",
+  "endpoint": "app.routers.skin_taping.sync_ingredient_from_sap",
+  "file": "app/routers/skin_taping.py",
+  "line": 242,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/skin-formula-items/{item_id}/price-source",
+  "endpoint": "app.routers.skin_taping.update_recipe_item_price_source",
+  "file": "app/routers/skin_taping.py",
+  "line": 258,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/sap-item-codes",
+  "endpoint": "app.routers.skin_taping.list_sap_item_codes",
+  "file": "app/routers/skin_taping.py",
+  "line": 275,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/sap-item-codes/{sap_id}",
+  "endpoint": "app.routers.skin_taping.get_sap_item_code",
+  "file": "app/routers/skin_taping.py",
+  "line": 292,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/sap-item-codes/{sap_id}",
+  "endpoint": "app.routers.skin_taping.update_sap_item_code",
+  "file": "app/routers/skin_taping.py",
+  "line": 301,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/sap-item-codes",
+  "endpoint": "app.routers.skin_taping.create_sap_item_code",
+  "file": "app/routers/skin_taping.py",
+  "line": 316,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/taping-blocks",
+  "endpoint": "app.routers.skin_taping.list_taping_blocks",
+  "file": "app/routers/skin_taping.py",
+  "line": 335,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/taping-blocks",
+  "endpoint": "app.routers.skin_taping.create_taping_block",
+  "file": "app/routers/skin_taping.py",
+  "line": 343,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/taping-blocks/{b_id}",
+  "endpoint": "app.routers.skin_taping.update_taping_block",
+  "file": "app/routers/skin_taping.py",
+  "line": 375,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/taping-blocks/{b_id}",
+  "endpoint": "app.routers.skin_taping.delete_taping_block",
+  "file": "app/routers/skin_taping.py",
+  "line": 407,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/taping-block-items/{item_id}/inline-price",
+  "endpoint": "app.routers.skin_taping.inline_update_taping_item_price",
+  "file": "app/routers/skin_taping.py",
+  "line": 417,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/taping-block-items/{item_id}/price-source",
+  "endpoint": "app.routers.skin_taping.update_taping_block_item_price_source",
+  "file": "app/routers/skin_taping.py",
+  "line": 434,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/taping-blocks",
+  "endpoint": "app.routers.skin_taping.admin_taping_blocks",
+  "file": "app/routers/skin_taping.py",
+  "line": 454,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/sap-prices",
+  "endpoint": "app.routers.skin_taping.admin_sap_prices",
+  "file": "app/routers/skin_taping.py",
+  "line": 464,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/skin-formulas",
+  "endpoint": "app.routers.skin_taping.admin_skin_formulas",
+  "file": "app/routers/skin_taping.py",
+  "line": 474,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/floor-plates",
+  "endpoint": "app.routers.skin_taping.list_floor_plates",
+  "file": "app/routers/skin_taping.py",
+  "line": 486,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/floor-plates",
+  "endpoint": "app.routers.skin_taping.create_floor_plate",
+  "file": "app/routers/skin_taping.py",
+  "line": 494,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/floor-plates/{p_id}",
+  "endpoint": "app.routers.skin_taping.update_floor_plate",
+  "file": "app/routers/skin_taping.py",
+  "line": 527,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/floor-plates/{p_id}",
+  "endpoint": "app.routers.skin_taping.delete_floor_plate",
+  "file": "app/routers/skin_taping.py",
+  "line": 560,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/floor-plate-items/{item_id}/inline-price",
+  "endpoint": "app.routers.skin_taping.inline_update_floor_plate_item_price",
+  "file": "app/routers/skin_taping.py",
+  "line": 570,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/floor-plate-items/{item_id}/price-source",
+  "endpoint": "app.routers.skin_taping.update_floor_plate_item_price_source",
+  "file": "app/routers/skin_taping.py",
+  "line": 587,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/floor-plates",
+  "endpoint": "app.routers.skin_taping.admin_floor_plates",
+  "file": "app/routers/skin_taping.py",
+  "line": 605,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/mounting-cleats",
+  "endpoint": "app.routers.skin_taping.list_mounting_cleats",
+  "file": "app/routers/skin_taping.py",
+  "line": 617,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/mounting-cleats",
+  "endpoint": "app.routers.skin_taping.create_mounting_cleat",
+  "file": "app/routers/skin_taping.py",
+  "line": 623,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/mounting-cleats/{c_id}",
+  "endpoint": "app.routers.skin_taping.update_mounting_cleat",
+  "file": "app/routers/skin_taping.py",
+  "line": 657,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/mounting-cleats/{c_id}",
+  "endpoint": "app.routers.skin_taping.delete_mounting_cleat",
+  "file": "app/routers/skin_taping.py",
+  "line": 692,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/mounting-cleat-items/{item_id}/price-source",
+  "endpoint": "app.routers.skin_taping.update_mounting_cleat_item_price_source",
+  "file": "app/routers/skin_taping.py",
+  "line": 703,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/mounting-cleats",
+  "endpoint": "app.routers.skin_taping.admin_mounting_cleats",
+  "file": "app/routers/skin_taping.py",
+  "line": 717,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/calculator",
+  "endpoint": "app.routers.calculator.calculator_page",
+  "file": "app/routers/calculator.py",
+  "line": 170,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/calculator2",
+  "endpoint": "app.routers.calculator.calculator2_page",
+  "file": "app/routers/calculator.py",
+  "line": 181,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculate",
+  "endpoint": "app.routers.calculator.api_calculate",
+  "file": "app/routers/calculator.py",
+  "line": 809,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/check-duplicate",
+  "endpoint": "app.routers.calculator.check_duplicate",
+  "file": "app/routers/calculator.py",
+  "line": 924,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/approve",
+  "endpoint": "app.routers.calculator.api_approve",
+  "file": "app/routers/calculator.py",
+  "line": 1044,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/results/{record_id}",
+  "endpoint": "app.routers.calculator.results_page",
+  "file": "app/routers/calculator.py",
+  "line": 1501,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/calculations",
+  "endpoint": "app.routers.calculator.api_list_calculations",
+  "file": "app/routers/calculator.py",
+  "line": 1590,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/approve",
+  "endpoint": "app.routers.calculator.api_mark_calculation_accepted",
+  "file": "app/routers/calculator.py",
+  "line": 1756,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/accept",
+  "endpoint": "app.routers.calculator.api_mark_calculation_accepted",
+  "file": "app/routers/calculator.py",
+  "line": 1756,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/capture-for/users",
+  "endpoint": "app.routers.calculator.api_capture_for_users",
+  "file": "app/routers/calculator.py",
+  "line": 1814,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/calculations/{record_id}/sales-rep",
+  "endpoint": "app.routers.calculator.api_get_costing_attribution",
+  "file": "app/routers/calculator.py",
+  "line": 1826,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/sales-rep",
+  "endpoint": "app.routers.calculator.api_reassign_costing",
+  "file": "app/routers/calculator.py",
+  "line": 1838,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/decline",
+  "endpoint": "app.routers.calculator.api_mark_calculation_declined",
+  "file": "app/routers/calculator.py",
+  "line": 1892,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/calculations/{record_id}",
+  "endpoint": "app.routers.calculator.api_delete_calculation",
+  "file": "app/routers/calculator.py",
+  "line": 2004,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin",
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/restore",
+  "endpoint": "app.routers.calculator.api_restore_calculation",
+  "file": "app/routers/calculator.py",
+  "line": 2068,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/calculations/{record_id}",
+  "endpoint": "app.routers.calculator.api_get_calculation",
+  "file": "app/routers/calculator.py",
+  "line": 2093,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "integration_identity_if_bearer"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/health",
+  "endpoint": "app.routers.health.health",
+  "file": "app/routers/health.py",
+  "line": 12,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/health/commodity",
+  "endpoint": "app.routers.health.health_commodity",
+  "file": "app/routers/health.py",
+  "line": 21,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/formulas",
+  "endpoint": "app.routers.formulas.get_formulas",
+  "file": "app/routers/formulas.py",
+  "line": 15,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/formulas",
+  "endpoint": "app.routers.formulas.create_formula",
+  "file": "app/routers/formulas.py",
+  "line": 22,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/formulas/{f_id}",
+  "endpoint": "app.routers.formulas.update_formula",
+  "file": "app/routers/formulas.py",
+  "line": 34,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/formulas/{f_id}",
+  "endpoint": "app.routers.formulas.delete_formula",
+  "file": "app/routers/formulas.py",
+  "line": 48,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/formulas/apply-targets",
+  "endpoint": "app.routers.formulas.get_apply_targets",
+  "file": "app/routers/formulas.py",
+  "line": 58,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/formulas/apply",
+  "endpoint": "app.routers.formulas.apply_formula_to_bom",
+  "file": "app/routers/formulas.py",
+  "line": 88,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/global-variables",
+  "endpoint": "app.routers.formulas.get_global_variables",
+  "file": "app/routers/formulas.py",
+  "line": 111,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/global-variables",
+  "endpoint": "app.routers.formulas.create_global_variable",
+  "file": "app/routers/formulas.py",
+  "line": 118,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/global-variables/{gv_id}",
+  "endpoint": "app.routers.formulas.update_global_variable",
+  "file": "app/routers/formulas.py",
+  "line": 135,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/global-variables/{gv_id}",
+  "endpoint": "app.routers.formulas.delete_global_variable",
+  "file": "app/routers/formulas.py",
+  "line": 152,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/global-variables/waste-migration-preview",
+  "endpoint": "app.routers.formulas.waste_migration_preview",
+  "file": "app/routers/formulas.py",
+  "line": 162,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/global-variables/waste-migration-apply",
+  "endpoint": "app.routers.formulas.waste_migration_apply",
+  "file": "app/routers/formulas.py",
+  "line": 180,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/dashboard/approval-rates",
+  "endpoint": "app.routers.dashboard.api_approval_rates",
+  "file": "app/routers/dashboard.py",
+  "line": 44,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/dashboard/kpis",
+  "endpoint": "app.routers.dashboard.api_dashboard_kpis",
+  "file": "app/routers/dashboard.py",
+  "line": 101,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/",
+  "endpoint": "app.routers.dashboard.root_frontdoor",
+  "file": "app/routers/dashboard.py",
+  "line": 179,
+  "in_schema": true,
+  "deps": [],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/trailer-designer",
+  "endpoint": "app.routers.trailer_designer.admin_trailer_designer",
+  "file": "app/routers/trailer_designer.py",
+  "line": 18,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/trailer-designer/save",
+  "endpoint": "app.routers.trailer_designer.trailer_designer_save",
+  "file": "app/routers/trailer_designer.py",
+  "line": 84,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/commodity/enabled",
+  "endpoint": "app.routers.admin_settings.get_commodity_enabled",
+  "file": "app/routers/admin_settings.py",
+  "line": 45,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/commodity/enabled",
+  "endpoint": "app.routers.admin_settings.set_commodity_enabled",
+  "file": "app/routers/admin_settings.py",
+  "line": 51,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/commodity/sub-category-trend",
+  "endpoint": "app.routers.admin_settings.commodity_trend",
+  "file": "app/routers/admin_settings.py",
+  "line": 65,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/admin/nav-groups",
+  "endpoint": "app.routers.admin_settings.update_nav_groups",
+  "file": "app/routers/admin_settings.py",
+  "line": 97,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/themes",
+  "endpoint": "app.routers.admin_settings.admin_themes",
+  "file": "app/routers/admin_settings.py",
+  "line": 122,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/themes",
+  "endpoint": "app.routers.admin_settings.admin_add_theme",
+  "file": "app/routers/admin_settings.py",
+  "line": 139,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/themes/{theme_id}/activate",
+  "endpoint": "app.routers.admin_settings.admin_activate_theme",
+  "file": "app/routers/admin_settings.py",
+  "line": 157,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/themes/{theme_id}/edit",
+  "endpoint": "app.routers.admin_settings.admin_edit_theme",
+  "file": "app/routers/admin_settings.py",
+  "line": 176,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/themes/{theme_id}/delete",
+  "endpoint": "app.routers.admin_settings.admin_delete_theme",
+  "file": "app/routers/admin_settings.py",
+  "line": 199,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/quote-numbering",
+  "endpoint": "app.routers.admin_settings.admin_quote_numbering",
+  "file": "app/routers/admin_settings.py",
+  "line": 244,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/quote-numbering",
+  "endpoint": "app.routers.admin_settings.api_quote_numbering_get",
+  "file": "app/routers/admin_settings.py",
+  "line": 264,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/quote-numbering/preview",
+  "endpoint": "app.routers.admin_settings.api_quote_numbering_preview",
+  "file": "app/routers/admin_settings.py",
+  "line": 273,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/quote-numbering",
+  "endpoint": "app.routers.admin_settings.api_quote_numbering_update",
+  "file": "app/routers/admin_settings.py",
+  "line": 285,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/quote-templates",
+  "endpoint": "app.routers.admin_settings.admin_quote_templates",
+  "file": "app/routers/admin_settings.py",
+  "line": 317,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/body-families",
+  "endpoint": "app.routers.admin_settings.admin_body_families",
+  "file": "app/routers/admin_settings.py",
+  "line": 381,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/body-families/colour-check",
+  "endpoint": "app.routers.admin_settings.admin_body_family_colour_check",
+  "file": "app/routers/admin_settings.py",
+  "line": 388,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/quote-templates/groups/new",
+  "endpoint": "app.routers.admin_settings.admin_quote_group_new",
+  "file": "app/routers/admin_settings.py",
+  "line": 400,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/quote-templates/groups/{group_id}/edit",
+  "endpoint": "app.routers.admin_settings.admin_quote_group_edit",
+  "file": "app/routers/admin_settings.py",
+  "line": 425,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/quote-templates/groups/{group_id}/delete",
+  "endpoint": "app.routers.admin_settings.admin_quote_group_delete",
+  "file": "app/routers/admin_settings.py",
+  "line": 456,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/quote-templates/trailer/{trailer_id}/assign",
+  "endpoint": "app.routers.admin_settings.admin_quote_trailer_assign",
+  "file": "app/routers/admin_settings.py",
+  "line": 467,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/quote-templates/orphans/{orphan_id}/restore",
+  "endpoint": "app.routers.admin_settings.admin_quote_orphan_restore",
+  "file": "app/routers/admin_settings.py",
+  "line": 482,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/admin/quote-templates/orphans/{orphan_id}/discard",
+  "endpoint": "app.routers.admin_settings.admin_quote_orphan_discard",
+  "file": "app/routers/admin_settings.py",
+  "line": 509,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/customers",
+  "endpoint": "app.routers.admin_settings.admin_customers_page",
+  "file": "app/routers/admin_settings.py",
+  "line": 521,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/costing-audit",
+  "endpoint": "app.routers.costing_audit.admin_costing_audit",
+  "file": "app/routers/costing_audit.py",
+  "line": 46,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/costing-audit/overview",
+  "endpoint": "app.routers.costing_audit.api_overview",
+  "file": "app/routers/costing_audit.py",
+  "line": 62,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/costing-audit/runs",
+  "endpoint": "app.routers.costing_audit.api_start_run",
+  "file": "app/routers/costing_audit.py",
+  "line": 67,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/costing-audit/runs",
+  "endpoint": "app.routers.costing_audit.api_list_runs",
+  "file": "app/routers/costing_audit.py",
+  "line": 79,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/costing-audit/runs/{run_id}",
+  "endpoint": "app.routers.costing_audit.api_get_run",
+  "file": "app/routers/costing_audit.py",
+  "line": 84,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/costing-audit/runs/{run_id}/changes",
+  "endpoint": "app.routers.costing_audit.api_run_changes",
+  "file": "app/routers/costing_audit.py",
+  "line": 89,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/costing-audit/runs/{run_id}/report",
+  "endpoint": "app.routers.costing_audit.api_run_report",
+  "file": "app/routers/costing_audit.py",
+  "line": 94,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/browse-folders",
+  "endpoint": "app.routers.import_excel.api_browse_folders",
+  "file": "app/routers/import_excel.py",
+  "line": 121,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/excel-folder",
+  "endpoint": "app.routers.import_excel.api_get_excel_folder",
+  "file": "app/routers/import_excel.py",
+  "line": 175,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/excel-folder",
+  "endpoint": "app.routers.import_excel.api_set_excel_folder",
+  "file": "app/routers/import_excel.py",
+  "line": 183,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/import/sheets",
+  "endpoint": "app.routers.import_excel.list_excel_sheets",
+  "file": "app/routers/import_excel.py",
+  "line": 205,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/import/preview",
+  "endpoint": "app.routers.import_excel.import_preview",
+  "file": "app/routers/import_excel.py",
+  "line": 215,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/import/execute",
+  "endpoint": "app.routers.import_excel.import_execute",
+  "file": "app/routers/import_excel.py",
+  "line": 236,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/import",
+  "endpoint": "app.routers.import_excel.admin_import_page",
+  "file": "app/routers/import_excel.py",
+  "line": 355,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/import/grp",
+  "endpoint": "app.routers.import_excel.admin_import_grp_page",
+  "file": "app/routers/import_excel.py",
+  "line": 367,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/import/sheets",
+  "endpoint": "app.routers.import_excel.api_list_sheets",
+  "file": "app/routers/import_excel.py",
+  "line": 381,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/import/upload",
+  "endpoint": "app.routers.import_excel.api_import_upload",
+  "file": "app/routers/import_excel.py",
+  "line": 388,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/import/reuse",
+  "endpoint": "app.routers.import_excel.api_import_reuse",
+  "file": "app/routers/import_excel.py",
+  "line": 441,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/import/example-screenshot.png",
+  "endpoint": "app.routers.import_excel.admin_import_example_screenshot",
+  "file": "app/routers/import_excel.py",
+  "line": 470,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/import/sample-template.xlsx",
+  "endpoint": "app.routers.import_excel.admin_import_sample_template",
+  "file": "app/routers/import_excel.py",
+  "line": 481,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/import/sheet_preview",
+  "endpoint": "app.routers.import_excel.api_import_sheet_preview",
+  "file": "app/routers/import_excel.py",
+  "line": 597,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/import/grp/preview",
+  "endpoint": "app.routers.import_excel.api_import_grp_preview",
+  "file": "app/routers/import_excel.py",
+  "line": 692,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/import/grp/commit",
+  "endpoint": "app.routers.import_excel.api_import_grp_commit",
+  "file": "app/routers/import_excel.py",
+  "line": 723,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/import/sheet",
+  "endpoint": "app.routers.import_excel.api_import_sheet",
+  "file": "app/routers/import_excel.py",
+  "line": 1005,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/templates/formula-scan",
+  "endpoint": "app.routers.import_excel.admin_formula_scan_page",
+  "file": "app/routers/import_excel.py",
+  "line": 1087,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/formula-scan/run",
+  "endpoint": "app.routers.import_excel.api_formula_scan_run",
+  "file": "app/routers/import_excel.py",
+  "line": 1173,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/formula-scan/apply",
+  "endpoint": "app.routers.import_excel.api_formula_scan_apply",
+  "file": "app/routers/import_excel.py",
+  "line": 1214,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/formula-scan/pending/{trailer_type_id}",
+  "endpoint": "app.routers.import_excel.api_formula_scan_pending_for_trailer",
+  "file": "app/routers/import_excel.py",
+  "line": 1319,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/performance",
+  "endpoint": "app.routers.performance.performance_page",
+  "file": "app/routers/performance.py",
+  "line": 26,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_account"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/performance/data",
+  "endpoint": "app.routers.performance.performance_data",
+  "file": "app/routers/performance.py",
+  "line": 32,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_admin_account"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/performance/beacon",
+  "endpoint": "app.routers.performance.performance_beacon",
+  "file": "app/routers/performance.py",
+  "line": 53,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/pdf-template-builder",
+  "endpoint": "app.routers.pdf_templates.admin_pdf_template_builder",
+  "file": "app/routers/pdf_templates.py",
+  "line": 19,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/pdf-templates",
+  "endpoint": "app.routers.pdf_templates.admin_pdf_templates",
+  "file": "app/routers/pdf_templates.py",
+  "line": 54,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/pdf-templates/builder/save",
+  "endpoint": "app.routers.pdf_templates.save_pdf_template_from_builder",
+  "file": "app/routers/pdf_templates.py",
+  "line": 93,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/pdf-templates",
+  "endpoint": "app.routers.pdf_templates.get_pdf_templates",
+  "file": "app/routers/pdf_templates.py",
+  "line": 243,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/pdf-templates/{template_id}/test",
+  "endpoint": "app.routers.pdf_templates.test_pdf_template",
+  "file": "app/routers/pdf_templates.py",
+  "line": 259,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/pdf-templates/{template_id}/source-pdf",
+  "endpoint": "app.routers.pdf_templates.get_pdf_template_source_pdf",
+  "file": "app/routers/pdf_templates.py",
+  "line": 339,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/pdf-templates",
+  "endpoint": "app.routers.pdf_templates.create_pdf_template",
+  "file": "app/routers/pdf_templates.py",
+  "line": 365,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/pdf-templates/{template_id}",
+  "endpoint": "app.routers.pdf_templates.update_pdf_template",
+  "file": "app/routers/pdf_templates.py",
+  "line": 441,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/pdf-templates/{template_id}",
+  "endpoint": "app.routers.pdf_templates.delete_pdf_template",
+  "file": "app/routers/pdf_templates.py",
+  "line": 524,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/export/preview",
+  "endpoint": "app.routers.exports.export_preview",
+  "file": "app/routers/exports.py",
+  "line": 1272,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/export/excel-preview",
+  "endpoint": "app.routers.exports.export_excel_preview",
+  "file": "app/routers/exports.py",
+  "line": 1282,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/export/email-policy",
+  "endpoint": "app.routers.exports.email_policy",
+  "file": "app/routers/exports.py",
+  "line": 1412,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/export/preview/email",
+  "endpoint": "app.routers.exports.email_preview",
+  "file": "app/routers/exports.py",
+  "line": 1425,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_export_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/results/{record_id}/export/email",
+  "endpoint": "app.routers.exports.email_approved",
+  "file": "app/routers/exports.py",
+  "line": 1442,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_export_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/results/{record_id}/export/excel",
+  "endpoint": "app.routers.exports.export_excel",
+  "file": "app/routers/exports.py",
+  "line": 1505,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_export_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/results/{record_id}/export/word",
+  "endpoint": "app.routers.exports.export_word",
+  "file": "app/routers/exports.py",
+  "line": 1527,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_export_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/results/{record_id}/export/pdf",
+  "endpoint": "app.routers.exports.export_pdf",
+  "file": "app/routers/exports.py",
+  "line": 1554,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_export_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/results/{record_id}/report",
+  "endpoint": "app.routers.exports.report_for_record",
+  "file": "app/routers/exports.py",
+  "line": 1582,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/results/{record_id}/report/explosive-quote",
+  "endpoint": "app.routers.exports.report_explosive_quote_compat",
+  "file": "app/routers/exports.py",
+  "line": 1652,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/calculations/{record_id}/repair-quote.pdf",
+  "endpoint": "app.routers.quote_document.repair_quote_pdf",
+  "file": "app/routers/quote_document.py",
+  "line": 76,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_pdf_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/quote-document",
+  "endpoint": "app.routers.quote_document.admin_quote_document",
+  "file": "app/routers/quote_document.py",
+  "line": 135,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/quote-document-config",
+  "endpoint": "app.routers.quote_document.api_quote_document_config",
+  "file": "app/routers/quote_document.py",
+  "line": 157,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/quote-document-config",
+  "endpoint": "app.routers.quote_document.api_save_quote_document_config",
+  "file": "app/routers/quote_document.py",
+  "line": 163,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/bom-snapshots",
+  "endpoint": "app.routers.bom_snapshots.snapshot_list",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 100,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/admin/bom-snapshots/{snapshot_id}",
+  "endpoint": "app.routers.bom_snapshots.snapshot_detail",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 146,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user",
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom-snapshots/capture",
+  "endpoint": "app.routers.bom_snapshots.capture_snapshot",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 298,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom-snapshots/capture-excel",
+  "endpoint": "app.routers.bom_snapshots.capture_excel_snapshot",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 317,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom-snapshots/items/{snap_item_id}/update-price",
+  "endpoint": "app.routers.bom_snapshots.update_snapshot_item_price",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 425,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom-snapshots/{snapshot_id}/pin",
+  "endpoint": "app.routers.bom_snapshots.pin_snapshot_as_baseline",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 470,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom-snapshots/{snapshot_id}/unpin",
+  "endpoint": "app.routers.bom_snapshots.unpin_snapshot_baseline",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 490,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom-snapshots/{snapshot_id}/restore-baseline",
+  "endpoint": "app.routers.bom_snapshots.restore_snapshot_baseline",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 503,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/bom-snapshots/{snapshot_id}",
+  "endpoint": "app.routers.bom_snapshots.delete_snapshot",
+  "file": "app/routers/bom_snapshots.py",
+  "line": 549,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/validated-references/settings",
+  "endpoint": "app.routers.validated_references.get_settings",
+  "file": "app/routers/validated_references.py",
+  "line": 87,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/validated-references/settings",
+  "endpoint": "app.routers.validated_references.put_settings",
+  "file": "app/routers/validated_references.py",
+  "line": 105,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/validated-references",
+  "endpoint": "app.routers.validated_references.create_reference",
+  "file": "app/routers/validated_references.py",
+  "line": 124,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/validated-references",
+  "endpoint": "app.routers.validated_references.list_references",
+  "file": "app/routers/validated_references.py",
+  "line": 201,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/validated-references/{ref_id}/retire",
+  "endpoint": "app.routers.validated_references.retire_reference",
+  "file": "app/routers/validated_references.py",
+  "line": 237,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/validated-references/match",
+  "endpoint": "app.routers.validated_references.match_reference",
+  "file": "app/routers/validated_references.py",
+  "line": 257,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/repair/body-categories",
+  "endpoint": "app.routers.repair_templates.repair_body_categories",
+  "file": "app/routers/repair_templates.py",
+  "line": 103,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/repair/category-preview",
+  "endpoint": "app.routers.repair_templates.repair_category_preview",
+  "file": "app/routers/repair_templates.py",
+  "line": 116,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/repair-templates",
+  "endpoint": "app.routers.repair_templates.list_repair_templates",
+  "file": "app/routers/repair_templates.py",
+  "line": 337,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/repair-templates",
+  "endpoint": "app.routers.repair_templates.create_repair_template",
+  "file": "app/routers/repair_templates.py",
+  "line": 350,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/repair-templates/{template_id}/expand",
+  "endpoint": "app.routers.repair_templates.expand_repair_template",
+  "file": "app/routers/repair_templates.py",
+  "line": 373,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/repair-templates/{template_id}",
+  "endpoint": "app.routers.repair_templates.get_repair_template",
+  "file": "app/routers/repair_templates.py",
+  "line": 387,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PUT"
+  ],
+  "path": "/api/repair-templates/{template_id}",
+  "endpoint": "app.routers.repair_templates.update_repair_template",
+  "file": "app/routers/repair_templates.py",
+  "line": 395,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/repair-templates/{template_id}/retire",
+  "endpoint": "app.routers.repair_templates.retire_repair_template",
+  "file": "app/routers/repair_templates.py",
+  "line": 421,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/repair-templates/{template_id}/restore",
+  "endpoint": "app.routers.repair_templates.restore_repair_template",
+  "file": "app/routers/repair_templates.py",
+  "line": 434,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_perm"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/help/health",
+  "endpoint": "app.routers.help.help_health",
+  "file": "app/routers/help.py",
+  "line": 59,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/help/attachment",
+  "endpoint": "app.routers.help.help_attachment_upload",
+  "file": "app/routers/help.py",
+  "line": 362,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/help/attachment/{upload_id}",
+  "endpoint": "app.routers.help.help_attachment_delete",
+  "file": "app/routers/help.py",
+  "line": 434,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/help/chat",
+  "endpoint": "app.routers.help.help_chat",
+  "file": "app/routers/help.py",
+  "line": 449,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/help/audit",
+  "endpoint": "app.routers.help.help_audit",
+  "file": "app/routers/help.py",
+  "line": 541,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/feedback/health",
+  "endpoint": "app.routers.feedback.feedback_health",
+  "file": "app/routers/feedback.py",
+  "line": 219,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/feedback",
+  "endpoint": "app.routers.feedback.submit_feedback",
+  "file": "app/routers/feedback.py",
+  "line": 225,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/feedback/{ticket_id}/answer",
+  "endpoint": "app.routers.feedback.answer_feedback",
+  "file": "app/routers/feedback.py",
+  "line": 287,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/feedback",
+  "endpoint": "app.routers.feedback.list_feedback",
+  "file": "app/routers/feedback.py",
+  "line": 329,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/feedback/{ticket_id}",
+  "endpoint": "app.routers.feedback.get_feedback",
+  "file": "app/routers/feedback.py",
+  "line": 345,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/feedback/{ticket_id}",
+  "endpoint": "app.routers.feedback.update_feedback",
+  "file": "app/routers/feedback.py",
+  "line": 354,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/feedback/{ticket_id}/screenshot",
+  "endpoint": "app.routers.feedback.get_feedback_screenshot",
+  "file": "app/routers/feedback.py",
+  "line": 392,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/pre-job-card",
+  "endpoint": "app.routers.pre_job_card.api_pre_job_card_sent",
+  "file": "app/routers/pre_job_card.py",
+  "line": 79,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/pre-job-confirm",
+  "endpoint": "app.routers.pre_job_card.api_pre_job_card_confirmed",
+  "file": "app/routers/pre_job_card.py",
+  "line": 104,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/schedule-repair",
+  "endpoint": "app.routers.pre_job_card.api_schedule_repair",
+  "file": "app/routers/pre_job_card.py",
+  "line": 136,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/pre-job-signoff",
+  "endpoint": "app.routers.pre_job_card.api_pre_job_signoff",
+  "file": "app/routers/pre_job_card.py",
+  "line": 211,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/chassis-eta",
+  "endpoint": "app.routers.pre_job_card.api_chassis_eta",
+  "file": "app/routers/pre_job_card.py",
+  "line": 264,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/chassis-received",
+  "endpoint": "app.routers.pre_job_card.api_chassis_received",
+  "file": "app/routers/pre_job_card.py",
+  "line": 322,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/calculations/{record_id}/planning-ack",
+  "endpoint": "app.routers.pre_job_card.api_planning_ack",
+  "file": "app/routers/pre_job_card.py",
+  "line": 367,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "_require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis/catalogue",
+  "endpoint": "app.routers.chassis_catalogue.api_chassis_catalogue",
+  "file": "app/routers/chassis_catalogue.py",
+  "line": 31,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-register",
+  "endpoint": "app.routers.chassis_register.list_chassis",
+  "file": "app/routers/chassis_register.py",
+  "line": 24,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-register/by-job/{job_number}",
+  "endpoint": "app.routers.chassis_register.chassis_by_job",
+  "file": "app/routers/chassis_register.py",
+  "line": 38,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-register/{chassis_id}",
+  "endpoint": "app.routers.chassis_register.get_chassis",
+  "file": "app/routers/chassis_register.py",
+  "line": 43,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records",
+  "endpoint": "app.routers.chassis_records.list_records",
+  "file": "app/routers/chassis_records.py",
+  "line": 27,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records/checklists",
+  "endpoint": "app.routers.chassis_records.checklists",
+  "file": "app/routers/chassis_records.py",
+  "line": 35,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records/models",
+  "endpoint": "app.routers.chassis_records.chassis_models",
+  "file": "app/routers/chassis_records.py",
+  "line": 44,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records/type-images",
+  "endpoint": "app.routers.chassis_records.type_images",
+  "file": "app/routers/chassis_records.py",
+  "line": 52,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records/bays/assembly",
+  "endpoint": "app.routers.chassis_records.bays_assembly",
+  "file": "app/routers/chassis_records.py",
+  "line": 60,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/bays/{bay_id}/advance-stage",
+  "endpoint": "app.routers.chassis_records.advance_bay_build_stage",
+  "file": "app/routers/chassis_records.py",
+  "line": 69,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records/bays/parking",
+  "endpoint": "app.routers.chassis_records.bays_parking",
+  "file": "app/routers/chassis_records.py",
+  "line": 79,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records/awaiting-qa",
+  "endpoint": "app.routers.chassis_records.awaiting_qa",
+  "file": "app/routers/chassis_records.py",
+  "line": 86,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records/photos/{photo_id}",
+  "endpoint": "app.routers.chassis_records.serve_photo",
+  "file": "app/routers/chassis_records.py",
+  "line": 94,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/chassis-records/{record_id}",
+  "endpoint": "app.routers.chassis_records.get_record",
+  "file": "app/routers/chassis_records.py",
+  "line": 102,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records",
+  "endpoint": "app.routers.chassis_records.create_record",
+  "file": "app/routers/chassis_records.py",
+  "line": 108,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/chassis-records/{record_id}",
+  "endpoint": "app.routers.chassis_records.update_record",
+  "file": "app/routers/chassis_records.py",
+  "line": 123,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/{record_id}/vin",
+  "endpoint": "app.routers.chassis_records.capture_vin",
+  "file": "app/routers/chassis_records.py",
+  "line": 132,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/{record_id}/vcl",
+  "endpoint": "app.routers.chassis_records.capture_vcl",
+  "file": "app/routers/chassis_records.py",
+  "line": 141,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/{record_id}/dcl",
+  "endpoint": "app.routers.chassis_records.capture_dcl",
+  "file": "app/routers/chassis_records.py",
+  "line": 147,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/{record_id}/assembly",
+  "endpoint": "app.routers.chassis_records.assign_assembly",
+  "file": "app/routers/chassis_records.py",
+  "line": 153,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/{record_id}/body-attached",
+  "endpoint": "app.routers.chassis_records.body_attached",
+  "file": "app/routers/chassis_records.py",
+  "line": 161,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/{record_id}/move-to-awaiting-qa",
+  "endpoint": "app.routers.chassis_records.move_to_awaiting_qa",
+  "file": "app/routers/chassis_records.py",
+  "line": 172,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/{record_id}/return-to-parking",
+  "endpoint": "app.routers.chassis_records.return_to_parking",
+  "file": "app/routers/chassis_records.py",
+  "line": 182,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/chassis-records/{record_id}/events/{event_id}/photos",
+  "endpoint": "app.routers.chassis_records.upload_photos",
+  "file": "app/routers/chassis_records.py",
+  "line": 193,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/mes/dashboard",
+  "endpoint": "app.routers.mes_views.mes_dashboard",
+  "file": "app/routers/mes_views.py",
+  "line": 37,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/mes/calculator",
+  "endpoint": "app.routers.mes_views.mes_calculator",
+  "file": "app/routers/mes_views.py",
+  "line": 46,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/mes/calculator2",
+  "endpoint": "app.routers.mes_views.mes_calculator2",
+  "file": "app/routers/mes_views.py",
+  "line": 59,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/production-jobs",
+  "endpoint": "app.routers.production_jobs.list_production_jobs",
+  "file": "app/routers/production_jobs.py",
+  "line": 39,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/production-jobs/{job_id}/revert-to-unscheduled",
+  "endpoint": "app.routers.production_jobs.revert_to_unscheduled",
+  "file": "app/routers/production_jobs.py",
+  "line": 67,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/production-jobs/{job_id}/reject",
+  "endpoint": "app.routers.production_jobs.reject_job",
+  "file": "app/routers/production_jobs.py",
+  "line": 83,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/production-jobs/in-progress",
+  "endpoint": "app.routers.production_jobs.list_in_progress_jobs",
+  "file": "app/routers/production_jobs.py",
+  "line": 111,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/production-jobs/kpis",
+  "endpoint": "app.routers.production_jobs.production_kpis",
+  "file": "app/routers/production_jobs.py",
+  "line": 134,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/production-jobs/unlinked",
+  "endpoint": "app.routers.production_jobs.list_unlinked_jobs",
+  "file": "app/routers/production_jobs.py",
+  "line": 152,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/production-jobs/{job_id}/chassis-prefill",
+  "endpoint": "app.routers.production_jobs.chassis_prefill",
+  "file": "app/routers/production_jobs.py",
+  "line": 160,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/production-jobs/{job_id}",
+  "endpoint": "app.routers.production_jobs.get_production_job",
+  "file": "app/routers/production_jobs.py",
+  "line": 171,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/production-jobs/from-calculation/{calculation_id}",
+  "endpoint": "app.routers.production_jobs.accept_from_calculation",
+  "file": "app/routers/production_jobs.py",
+  "line": 203,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/production-jobs/{job_id}/pre-job-card",
+  "endpoint": "app.routers.production_jobs.send_pre_job_card",
+  "file": "app/routers/production_jobs.py",
+  "line": 225,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/production-jobs/{job_id}/pre-job-signoff",
+  "endpoint": "app.routers.production_jobs.pre_job_signoff",
+  "file": "app/routers/production_jobs.py",
+  "line": 237,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/production-jobs/{job_id}/planning-ack",
+  "endpoint": "app.routers.production_jobs.planning_ack",
+  "file": "app/routers/production_jobs.py",
+  "line": 253,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/production-jobs/{job_id}/chassis-received",
+  "endpoint": "app.routers.production_jobs.chassis_received",
+  "file": "app/routers/production_jobs.py",
+  "line": 280,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/production-jobs/{job_id}/chassis-received",
+  "endpoint": "app.routers.production_jobs.chassis_received_untick",
+  "file": "app/routers/production_jobs.py",
+  "line": 290,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/production-jobs/{job_id}/panels-arrived-in-bay",
+  "endpoint": "app.routers.production_jobs.panels_arrived_in_bay",
+  "file": "app/routers/production_jobs.py",
+  "line": 300,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/production-jobs/{job_id}/panels-arrived-in-bay",
+  "endpoint": "app.routers.production_jobs.clear_panels_arrived",
+  "file": "app/routers/production_jobs.py",
+  "line": 316,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/production-jobs/{job_id}/timeline",
+  "endpoint": "app.routers.production_jobs.production_job_timeline",
+  "file": "app/routers/production_jobs.py",
+  "line": 325,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/production/team-worksheet",
+  "endpoint": "app.routers.production.team_worksheet",
+  "file": "app/routers/production.py",
+  "line": 22,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/templates",
+  "endpoint": "app.routers.prejob_cards.template_options",
+  "file": "app/routers/prejob_cards.py",
+  "line": 45,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/user-options",
+  "endpoint": "app.routers.prejob_cards.user_options",
+  "file": "app/routers/prejob_cards.py",
+  "line": 53,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/fridge-options",
+  "endpoint": "app.routers.prejob_cards.fridge_options",
+  "file": "app/routers/prejob_cards.py",
+  "line": 59,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/summaries",
+  "endpoint": "app.routers.prejob_cards.card_summaries",
+  "file": "app/routers/prejob_cards.py",
+  "line": 73,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/outstanding",
+  "endpoint": "app.routers.prejob_cards.outstanding_signoffs",
+  "file": "app/routers/prejob_cards.py",
+  "line": 81,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/by-calculation/{calculation_id}",
+  "endpoint": "app.routers.prejob_cards.get_by_calculation",
+  "file": "app/routers/prejob_cards.py",
+  "line": 88,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/{card_id}",
+  "endpoint": "app.routers.prejob_cards.get_card",
+  "file": "app/routers/prejob_cards.py",
+  "line": 95,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/{card_id}/pdf",
+  "endpoint": "app.routers.prejob_cards.get_card_pdf",
+  "file": "app/routers/prejob_cards.py",
+  "line": 103,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/prejob-cards/{card_id}/email",
+  "endpoint": "app.routers.prejob_cards.get_card_email",
+  "file": "app/routers/prejob_cards.py",
+  "line": 119,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/prejob-cards",
+  "endpoint": "app.routers.prejob_cards.create_card",
+  "file": "app/routers/prejob_cards.py",
+  "line": 130,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/prejob-cards/{card_id}",
+  "endpoint": "app.routers.prejob_cards.update_card",
+  "file": "app/routers/prejob_cards.py",
+  "line": 136,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/prejob-cards/{card_id}/submit-for-check",
+  "endpoint": "app.routers.prejob_cards.submit_for_check",
+  "file": "app/routers/prejob_cards.py",
+  "line": 145,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/prejob-cards/{card_id}/signoff/sales",
+  "endpoint": "app.routers.prejob_cards.signoff_sales",
+  "file": "app/routers/prejob_cards.py",
+  "line": 157,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/prejob-cards/{card_id}/signoff/planner",
+  "endpoint": "app.routers.prejob_cards.signoff_planner",
+  "file": "app/routers/prejob_cards.py",
+  "line": 163,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/prejob-cards/{card_id}/reject/sales",
+  "endpoint": "app.routers.prejob_cards.reject_sales",
+  "file": "app/routers/prejob_cards.py",
+  "line": 169,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/prejob-cards/{card_id}/reject/planner",
+  "endpoint": "app.routers.prejob_cards.reject_planner",
+  "file": "app/routers/prejob_cards.py",
+  "line": 175,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/mes-materials",
+  "endpoint": "app.routers.mes_materials.list_materials",
+  "file": "app/routers/mes_materials.py",
+  "line": 24,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/mes-materials/{sap_code}",
+  "endpoint": "app.routers.mes_materials.get_material",
+  "file": "app/routers/mes_materials.py",
+  "line": 38,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/stock-counts",
+  "endpoint": "app.routers.stock_counts.list_stock_counts",
+  "file": "app/routers/stock_counts.py",
+  "line": 21,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/stock-counts",
+  "endpoint": "app.routers.stock_counts.record_count",
+  "file": "app/routers/stock_counts.py",
+  "line": 37,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/stock-counts/{stock_count_id}/raise-discrepancy",
+  "endpoint": "app.routers.stock_counts.raise_discrepancy",
+  "file": "app/routers/stock_counts.py",
+  "line": 50,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/discrepancies",
+  "endpoint": "app.routers.discrepancies.list_discrepancies",
+  "file": "app/routers/discrepancies.py",
+  "line": 16,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/discrepancies/{discrepancy_id}/resolve",
+  "endpoint": "app.routers.discrepancies.resolve_discrepancy",
+  "file": "app/routers/discrepancies.py",
+  "line": 27,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/po-suggestions",
+  "endpoint": "app.routers.po_suggestions.list_po_suggestions",
+  "file": "app/routers/po_suggestions.py",
+  "line": 21,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/po-suggestions/{suggestion_id}/raise",
+  "endpoint": "app.routers.po_suggestions.raise_pr",
+  "file": "app/routers/po_suggestions.py",
+  "line": 32,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/po-suggestions/{suggestion_id}/defer",
+  "endpoint": "app.routers.po_suggestions.defer_suggestion",
+  "file": "app/routers/po_suggestions.py",
+  "line": 44,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/po-suggestions/{suggestion_id}/override-supplier",
+  "endpoint": "app.routers.po_suggestions.override_supplier",
+  "file": "app/routers/po_suggestions.py",
+  "line": 58,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/po-suggestions/raise",
+  "endpoint": "app.routers.po_suggestions.bulk_raise",
+  "file": "app/routers/po_suggestions.py",
+  "line": 73,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/demand-lines",
+  "endpoint": "app.routers.demand_lines.list_demand_lines",
+  "file": "app/routers/demand_lines.py",
+  "line": 20,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/suppliers",
+  "endpoint": "app.routers.suppliers.list_suppliers",
+  "file": "app/routers/suppliers.py",
+  "line": 16,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/session",
+  "endpoint": "app.routers.session.get_session",
+  "file": "app/routers/session.py",
+  "line": 20,
+  "in_schema": true,
+  "deps": [
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/session/branch",
+  "endpoint": "app.routers.session.switch_branch",
+  "file": "app/routers/session.py",
+  "line": 30,
+  "in_schema": true,
+  "deps": [
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/planning-board",
+  "endpoint": "app.routers.planning.get_planning_board",
+  "file": "app/routers/planning.py",
+  "line": 28,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/planning-slots",
+  "endpoint": "app.routers.planning.list_planning_slots",
+  "file": "app/routers/planning.py",
+  "line": 43,
+  "in_schema": true,
+  "deps": [
+   "active_branch",
+   "current_session_id",
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/planning-slots",
+  "endpoint": "app.routers.planning.schedule_slot",
+  "file": "app/routers/planning.py",
+  "line": 58,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/planning-slots/{slot_id}/move",
+  "endpoint": "app.routers.planning.move_slot",
+  "file": "app/routers/planning.py",
+  "line": 74,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/planning-slots/{slot_id}",
+  "endpoint": "app.routers.planning.unschedule_slot",
+  "file": "app/routers/planning.py",
+  "line": 90,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_permission"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/visual-integrity/flags/summary",
+  "endpoint": "app.routers.visual_integrity.flags_summary",
+  "file": "app/routers/visual_integrity.py",
+  "line": 23,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/visual-integrity/flags/chassis",
+  "endpoint": "app.routers.visual_integrity.flags_chassis",
+  "file": "app/routers/visual_integrity.py",
+  "line": 30,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/visual-integrity/flags/jobs",
+  "endpoint": "app.routers.visual_integrity.flags_jobs",
+  "file": "app/routers/visual_integrity.py",
+  "line": 37,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/visual-integrity/flags/bays",
+  "endpoint": "app.routers.visual_integrity.flags_bays",
+  "file": "app/routers/visual_integrity.py",
+  "line": 45,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/visual-integrity/flags/catalog",
+  "endpoint": "app.routers.visual_integrity.flags_catalog",
+  "file": "app/routers/visual_integrity.py",
+  "line": 52,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/bom/generate",
+  "endpoint": "app.routers.bom_generate.generate_bom",
+  "file": "app/routers/bom_generate.py",
+  "line": 22,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/bom-rules",
+  "endpoint": "app.routers.admin.bom_rules.list_rules",
+  "file": "app/routers/admin/bom_rules.py",
+  "line": 23,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/bom-rules",
+  "endpoint": "app.routers.admin.bom_rules.create_rule",
+  "file": "app/routers/admin/bom_rules.py",
+  "line": 36,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/bom-rules/{rule_id}",
+  "endpoint": "app.routers.admin.bom_rules.update_rule",
+  "file": "app/routers/admin/bom_rules.py",
+  "line": 44,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/bom-rules/{rule_id}",
+  "endpoint": "app.routers.admin.bom_rules.delete_rule",
+  "file": "app/routers/admin/bom_rules.py",
+  "line": 61,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/bom-rules/validate-formula",
+  "endpoint": "app.routers.admin.bom_rules.validate_formula",
+  "file": "app/routers/admin/bom_rules.py",
+  "line": 74,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/bom-rule-lookups",
+  "endpoint": "app.routers.admin.bom_rule_lookups.list_lookups",
+  "file": "app/routers/admin/bom_rule_lookups.py",
+  "line": 18,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/bom-rule-lookups",
+  "endpoint": "app.routers.admin.bom_rule_lookups.create_lookup",
+  "file": "app/routers/admin/bom_rule_lookups.py",
+  "line": 35,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/bom-rule-lookups/{lookup_id}",
+  "endpoint": "app.routers.admin.bom_rule_lookups.update_lookup",
+  "file": "app/routers/admin/bom_rule_lookups.py",
+  "line": 43,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/bom-rule-lookups/{lookup_id}",
+  "endpoint": "app.routers.admin.bom_rule_lookups.delete_lookup",
+  "file": "app/routers/admin/bom_rule_lookups.py",
+  "line": 57,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/material-price-overrides",
+  "endpoint": "app.routers.admin.material_price_overrides.list_overrides",
+  "file": "app/routers/admin/material_price_overrides.py",
+  "line": 22,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/material-price-overrides",
+  "endpoint": "app.routers.admin.material_price_overrides.create_override",
+  "file": "app/routers/admin/material_price_overrides.py",
+  "line": 33,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/material-price-overrides/{override_id}",
+  "endpoint": "app.routers.admin.material_price_overrides.update_override",
+  "file": "app/routers/admin/material_price_overrides.py",
+  "line": 43,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/material-price-overrides/{override_id}",
+  "endpoint": "app.routers.admin.material_price_overrides.delete_override",
+  "file": "app/routers/admin/material_price_overrides.py",
+  "line": 61,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/bom-spec-options",
+  "endpoint": "app.routers.admin.bom_spec_options.list_options",
+  "file": "app/routers/admin/bom_spec_options.py",
+  "line": 24,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/bom-spec-options",
+  "endpoint": "app.routers.admin.bom_spec_options.create_option",
+  "file": "app/routers/admin/bom_spec_options.py",
+  "line": 40,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/bom-spec-options/{option_id}",
+  "endpoint": "app.routers.admin.bom_spec_options.update_option",
+  "file": "app/routers/admin/bom_spec_options.py",
+  "line": 49,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/bom-spec-options/{option_id}",
+  "endpoint": "app.routers.admin.bom_spec_options.delete_option",
+  "file": "app/routers/admin/bom_spec_options.py",
+  "line": 66,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/oitm-search",
+  "endpoint": "app.routers.admin.bom_spec_options.oitm_search",
+  "file": "app/routers/admin/bom_spec_options.py",
+  "line": 75,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/prejob-templates",
+  "endpoint": "app.routers.admin.prejob_templates.list_templates",
+  "file": "app/routers/admin/prejob_templates.py",
+  "line": 38,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/prejob-templates/{template_id}",
+  "endpoint": "app.routers.admin.prejob_templates.get_template",
+  "file": "app/routers/admin/prejob_templates.py",
+  "line": 57,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/prejob-templates/{template_id}",
+  "endpoint": "app.routers.admin.prejob_templates.update_template",
+  "file": "app/routers/admin/prejob_templates.py",
+  "line": 66,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/prejob-templates/{template_id}/approve",
+  "endpoint": "app.routers.admin.prejob_templates.approve_template",
+  "file": "app/routers/admin/prejob_templates.py",
+  "line": 84,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/prejob-templates/{template_id}/deactivate",
+  "endpoint": "app.routers.admin.prejob_templates.deactivate_template",
+  "file": "app/routers/admin/prejob_templates.py",
+  "line": 100,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/prejob-templates/{template_id}",
+  "endpoint": "app.routers.admin.prejob_templates.delete_template",
+  "file": "app/routers/admin/prejob_templates.py",
+  "line": 113,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/fridge-units",
+  "endpoint": "app.routers.admin.fridge_units.list_units",
+  "file": "app/routers/admin/fridge_units.py",
+  "line": 53,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/fridge-units",
+  "endpoint": "app.routers.admin.fridge_units.create_unit",
+  "file": "app/routers/admin/fridge_units.py",
+  "line": 65,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/fridge-units/{unit_id}",
+  "endpoint": "app.routers.admin.fridge_units.update_unit",
+  "file": "app/routers/admin/fridge_units.py",
+  "line": 80,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/fridge-units/{unit_id}",
+  "endpoint": "app.routers.admin.fridge_units.delete_unit",
+  "file": "app/routers/admin/fridge_units.py",
+  "line": 95,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/production-thresholds",
+  "endpoint": "app.routers.admin.production_thresholds.list_thresholds",
+  "file": "app/routers/admin/production_thresholds.py",
+  "line": 52,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/production-thresholds",
+  "endpoint": "app.routers.admin.production_thresholds.create_threshold",
+  "file": "app/routers/admin/production_thresholds.py",
+  "line": 58,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/production-thresholds/{threshold_id}",
+  "endpoint": "app.routers.admin.production_thresholds.update_threshold",
+  "file": "app/routers/admin/production_thresholds.py",
+  "line": 74,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/production-thresholds/{threshold_id}",
+  "endpoint": "app.routers.admin.production_thresholds.delete_threshold",
+  "file": "app/routers/admin/production_thresholds.py",
+  "line": 92,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/chassis-models",
+  "endpoint": "app.routers.admin.chassis_models.list_models",
+  "file": "app/routers/admin/chassis_models.py",
+  "line": 71,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/chassis-models",
+  "endpoint": "app.routers.admin.chassis_models.create_model",
+  "file": "app/routers/admin/chassis_models.py",
+  "line": 81,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/chassis-models/{model_id}",
+  "endpoint": "app.routers.admin.chassis_models.update_model",
+  "file": "app/routers/admin/chassis_models.py",
+  "line": 104,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/chassis-models/{model_id}",
+  "endpoint": "app.routers.admin.chassis_models.delete_model",
+  "file": "app/routers/admin/chassis_models.py",
+  "line": 127,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/chassis/orphans",
+  "endpoint": "app.routers.admin.chassis_admin.list_orphans",
+  "file": "app/routers/admin/chassis_admin.py",
+  "line": 20,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/chassis/{chassis_id}/retrofit-link",
+  "endpoint": "app.routers.admin.chassis_admin.retrofit_link",
+  "file": "app/routers/admin/chassis_admin.py",
+  "line": 32,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/chassis/{chassis_id}",
+  "endpoint": "app.routers.admin.chassis_admin.soft_delete",
+  "file": "app/routers/admin/chassis_admin.py",
+  "line": 41,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/chassis/{loser_id}/merge-preview",
+  "endpoint": "app.routers.admin.chassis_admin.merge_preview",
+  "file": "app/routers/admin/chassis_admin.py",
+  "line": 50,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/chassis/{loser_id}/merge",
+  "endpoint": "app.routers.admin.chassis_admin.merge",
+  "file": "app/routers/admin/chassis_admin.py",
+  "line": 62,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/chassis/{chassis_id}/restore",
+  "endpoint": "app.routers.admin.chassis_admin.restore",
+  "file": "app/routers/admin/chassis_admin.py",
+  "line": 70,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/admin/defect-categories",
+  "endpoint": "app.routers.admin.defect_categories.list_categories",
+  "file": "app/routers/admin/defect_categories.py",
+  "line": 41,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/admin/defect-categories",
+  "endpoint": "app.routers.admin.defect_categories.create_category",
+  "file": "app/routers/admin/defect_categories.py",
+  "line": 50,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "PATCH"
+  ],
+  "path": "/api/admin/defect-categories/{category_id}",
+  "endpoint": "app.routers.admin.defect_categories.update_category",
+  "file": "app/routers/admin/defect_categories.py",
+  "line": 67,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "DELETE"
+  ],
+  "path": "/api/admin/defect-categories/{category_id}",
+  "endpoint": "app.routers.admin.defect_categories.deactivate_category",
+  "file": "app/routers/admin/defect_categories.py",
+  "line": 92,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_admin"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/qc/awaiting",
+  "endpoint": "app.routers.qc.qc_awaiting",
+  "file": "app/routers/qc.py",
+  "line": 33,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/qc/dispatched",
+  "endpoint": "app.routers.qc.qc_dispatched",
+  "file": "app/routers/qc.py",
+  "line": 39,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/qc/inspection/{chassis_id}",
+  "endpoint": "app.routers.qc.qc_inspection",
+  "file": "app/routers/qc.py",
+  "line": 45,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/qc/inspection/{chassis_id}/category/{category_id}",
+  "endpoint": "app.routers.qc.qc_record_category",
+  "file": "app/routers/qc.py",
+  "line": 52,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/qc/signoff/{chassis_id}",
+  "endpoint": "app.routers.qc.qc_signoff",
+  "file": "app/routers/qc.py",
+  "line": 60,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_perm.<locals>._dep",
+   "require_user"
+  ],
+  "auth_calls": []
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/qc/collection-note/{chassis_id}",
+  "endpoint": "app.routers.qc.qc_collection_note",
+  "file": "app/routers/qc.py",
+  "line": 69,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/plan/floor-state",
+  "endpoint": "app.routers.plan.get_floor_state",
+  "file": "app/routers/plan.py",
+  "line": 48,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/plan/floor-transitions",
+  "endpoint": "app.routers.plan.floor_transition",
+  "file": "app/routers/plan.py",
+  "line": 92,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "POST"
+  ],
+  "path": "/api/plan/floor-reset",
+  "endpoint": "app.routers.plan.floor_reset",
+  "file": "app/routers/plan.py",
+  "line": 113,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/plan/job-card/{job_number}",
+  "endpoint": "app.routers.plan.job_card",
+  "file": "app/routers/plan.py",
+  "line": 161,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user",
+   "user_can"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/floor/state",
+  "endpoint": "app.routers.floor_read.floor_state",
+  "file": "app/routers/floor_read.py",
+  "line": 24,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/api/floor-events",
+  "endpoint": "app.routers.floor_read.list_floor_events",
+  "file": "app/routers/floor_read.py",
+  "line": 33,
+  "in_schema": true,
+  "deps": [
+   "get_db",
+   "require_user"
+  ],
+  "auth_calls": [
+   "require_user"
+  ]
+ },
+ {
+  "kind": "mount",
+  "path": "/static",
+  "name": "static"
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/mes-app/{full_path:path}",
+  "endpoint": "app.main.serve_mes_app",
+  "file": "app/main.py",
+  "line": 485,
+  "in_schema": false,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/mes-app",
+  "endpoint": "app.main.serve_mes_app",
+  "file": "app/main.py",
+  "line": 485,
+  "in_schema": false,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "get_current_user"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/debug/health",
+  "endpoint": "app.diagnostics.register_health_routes.<locals>.health",
+  "file": "app/diagnostics.py",
+  "line": 196,
+  "in_schema": true,
+  "deps": [
+   "get_db"
+  ],
+  "auth_calls": [
+   "require_admin"
+  ]
+ },
+ {
+  "kind": "route",
+  "methods": [
+   "GET"
+  ],
+  "path": "/debug/health/ping",
+  "endpoint": "app.diagnostics.register_health_routes.<locals>.ping",
+  "file": "app/diagnostics.py",
+  "line": 222,
+  "in_schema": true,
+  "deps": [],
+  "auth_calls": []
+ }
+]

@@ -15,7 +15,7 @@ from ..database import (
     CalculationRecord, Customer, CustomerContact, CustomerEndUser, Formula, GlobalVariable,
 )
 from ..deps import get_current_user, user_can
-from ..integration_auth import integration_identity_if_bearer  # v1.43 — GET /api/calculations/{id} token read (ADR 0038)
+from ..integration_auth import integration_identity_if_bearer, integration_readable  # v1.43 — GET /api/calculations/{id} token read (ADR 0038)
 from ..services import (
     _bom_load_options,
     _compute_skin_formula_cost, _compute_taping_block_cost, _compute_floor_plate_cost,
@@ -2091,6 +2091,7 @@ async def api_restore_calculation(record_id: int, request: Request, db: Session 
 
 
 @router.get("/api/calculations/{record_id}")
+@integration_readable   # RT4 — the mark the app-wide sign-in gate honours (the inline resolver below stays)
 async def api_get_calculation(record_id: int, request: Request, db: Session = Depends(get_db)):
     # v1.43 (ADR 0038): allowlisted for ERP token reads (Pack §4 — full costing detail).
     # The bearer branch must run BEFORE get_current_user, whose chokepoint guard

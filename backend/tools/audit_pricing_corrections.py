@@ -57,6 +57,24 @@ Optional per-entry check — `equal_at: {length: 6.7}` evaluates the current and
 the new formula through the MES formula engine at those dimensions (plus the
 database's global variables and any `vars:` given) and refuses the manifest
 unless they agree: the F3 substitutions must equal the literal 6.7 at 6.7 m.
+
+v1.60.1 (RT4 Manifest S) — three more things a manifest can say:
+
+  * `field: section` moves a line to another section. The value is the PAIR
+    {id, name} — bom_section_id and the legacy bom_section string — guarded and
+    written together, exactly as services.sections.move_rows_to_section writes
+    them. The entry's `section:` names the line's current section string; the
+    target section row must exist under that id and name.
+  * a top-level `drafts:` list re-keys a body's Settings-page draft by the A2
+    rule (services.sections.rewrite_draft_key): {finding, body_id, body,
+    old_key, new_key, nodes}. Guard: exactly `nodes` category nodes keyed
+    old_key and none keyed new_key (done: none old, `nodes` new). The journal
+    keeps the whole before-payload; --revert restores it while the draft still
+    holds the applied payload. Draft snapshots are never touched.
+  * `expect_unused_after: [section ids]` — after the apply no line (by id or
+    string) and no draft may name those sections. Before the apply, every line
+    and draft naming them must be pending in this manifest; otherwise the run
+    STOPs (RT4_RULING_1 Q3: "if any other body or draft still names one, STOP").
 """
 from __future__ import annotations
 
@@ -76,11 +94,13 @@ DEFAULT_MANIFEST = (Path(__file__).resolve().parents[2]
 
 TARGETS = {"mirror": "icb_prodmirror", "prod": "icb_platform", "dev": "icb", "test": None}
 FIELDS = {"formula_expression": str, "unit_price_override": float, "body_option_default": bool,
-          "bom_conditions": list}
+          "bom_conditions": list, "section": dict}
 PRICE_FIELD = "unit_price_override"
 CONDITIONS_FIELD = "bom_conditions"
+SECTION_FIELD = "section"
 REVERT_COLUMNS = ("formula_expression", "unit_price_override", "body_option_default", "bom_conditions",
-                  "price_updated_at")
+                  "price_updated_at", "bom_section_id", "bom_section")
+DRAFT_KEYS = {"finding", "body_id", "body", "old_key", "new_key", "nodes", "note"}
 EQUAL_TOL = 1e-9
 ENTRY_KEYS = {"finding", "body_id", "body", "section", "bom_id", "line", "field", "current", "new",
               "equal_at", "vars", "note"}
@@ -119,11 +139,28 @@ class Change:
         return f"{self.finding} bom={self.bom_id} {self.body} / {self.section} / {self.line} .{self.field}"
 
 
+@dataclass(frozen=True)
+class DraftChange:
+    finding: str
+    body_id: int
+    body: str
+    old_key: str
+    new_key: str
+    nodes: int
+
+    @property
+    def key(self) -> str:
+        return f"{self.finding} draft of body {self.body_id} {self.body}: {self.old_key!r} -> {self.new_key!r}"
+
+
 @dataclass
 class Plan:
     todo: list[Change] = field(default_factory=list)
     done: list[Change] = field(default_factory=list)
     rows: dict[int, dict] = field(default_factory=dict)      # bom_id -> full current row
+    draft_todo: list[DraftChange] = field(default_factory=list)
+    draft_done: list[DraftChange] = field(default_factory=list)
+    drafts: dict[int, str] = field(default_factory=dict)     # body_id -> current draft payload
 
 
 # ── manifest ─────────────────────────────────────────────────────────────────
@@ -149,7 +186,10 @@ def _conditions_text(v):
 
 def _canonical(field_name: str, v):
     """The value a guard compares. bom_conditions compares as canonical JSON (sorted keys, no
-    whitespace), so key order or spacing in the stored text never causes a false mismatch."""
+    whitespace), so key order or spacing in the stored text never causes a false mismatch. A section
+    compares as the pair (id, name) — both columns, never one alone."""
+    if field_name == SECTION_FIELD and isinstance(v, dict):
+        return (v.get("id"), v.get("name"))
     if field_name != CONDITIONS_FIELD or v is None:
         return v
     try:
@@ -166,6 +206,11 @@ def _coerce(field_name: str, v):
     if v is None:
         return None
     kind = FIELDS[field_name]
+    if kind is dict:
+        if not (isinstance(v, dict) and set(v) == {"id", "name"} and isinstance(v["id"], int)
+                and not isinstance(v["id"], bool) and isinstance(v["name"], str) and v["name"]):
+            raise ManifestError(f"{field_name}: expected {{id: <int>, name: <text>}}, got {v!r}")
+        return {"id": v["id"], "name": v["name"]}
     if kind is list:
         return _conditions_text(v)
     if kind is bool:
@@ -215,11 +260,50 @@ def load_manifest(path: Path) -> tuple[list[Change], str]:
         seen.add(k)
         if e.get("equal_at") is not None and e["field"] != "formula_expression":
             raise ManifestError(f"{where}: equal_at only applies to formula_expression")
+        if e["field"] == SECTION_FIELD and str(e["section"]) != cur["name"]:
+            raise ManifestError(f"{where}: `section:` {e['section']!r} must be the line's current section "
+                                f"string {cur['name']!r}")
         out.append(Change(finding=str(e["finding"]), body_id=int(e["body_id"]), body=" | ".join(names),
                           section=str(e["section"]), bom_id=int(e["bom_id"]), line=str(e["line"]),
                           field=e["field"], current=cur, new=new,
                           equal_at=e.get("equal_at"), vars=e.get("vars"), bodies=tuple(names)))
     return out, hashlib.sha256(raw_bytes).hexdigest()
+
+
+def load_drafts(path: Path) -> list[DraftChange]:
+    """The manifest's optional top-level `drafts:` list (v1.60.1)."""
+    import yaml
+    doc = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    entries = (doc.get("drafts") if isinstance(doc, dict) else None) or []
+    if not isinstance(entries, list):
+        raise ManifestError(f"{path}: `drafts:` must be a list")
+    out, seen = [], set()
+    need = {"finding", "body_id", "body", "old_key", "new_key", "nodes"}
+    for i, e in enumerate(entries):
+        where = f"{Path(path).name} drafts entry {i + 1}"
+        if not isinstance(e, dict) or set(e) - DRAFT_KEYS or need - set(e):
+            raise ManifestError(f"{where}: needs exactly finding, body_id, body, old_key, new_key, nodes (+ note)")
+        if not (isinstance(e["nodes"], int) and not isinstance(e["nodes"], bool) and e["nodes"] > 0):
+            raise ManifestError(f"{where}: nodes must be a positive integer")
+        if str(e["old_key"]).strip().upper() == str(e["new_key"]).strip().upper():
+            raise ManifestError(f"{where}: old_key == new_key — a no-op entry is a manifest mistake")
+        k = (int(e["body_id"]), str(e["old_key"]).strip().upper())
+        if k in seen:
+            raise ManifestError(f"{where}: body {k[0]} key {k[1]!r} appears twice")
+        seen.add(k)
+        out.append(DraftChange(finding=str(e["finding"]), body_id=int(e["body_id"]), body=str(e["body"]),
+                               old_key=str(e["old_key"]), new_key=str(e["new_key"]), nodes=int(e["nodes"])))
+    return out
+
+
+def load_expect_unused(path: Path) -> list[int]:
+    """The manifest's optional `expect_unused_after:` section ids (v1.60.1)."""
+    import yaml
+    doc = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    ids = (doc.get("expect_unused_after") if isinstance(doc, dict) else None) or []
+    if not (isinstance(ids, list) and all(isinstance(i, int) and not isinstance(i, bool) for i in ids)):
+        raise ManifestError(f"{path}: `expect_unused_after:` must be a list of section ids")
+    return ids
 
 
 def manifest_note(path: Path) -> str:
@@ -301,22 +385,103 @@ def build_plan(conn, changes: list[Change]) -> Plan:
             continue
         ident = {"body_id": (r["trailer_type_id"] == c.body_id, r["trailer_type_id"]),
                  "body": (r["_trailer_name"] in (c.bodies or (c.body,)), r["_trailer_name"]),
-                 "section": (r["bom_section"] == c.section, r["bom_section"]),
                  "line": (r["_material_name"] == c.line, r["_material_name"])}
+        if c.field != SECTION_FIELD:      # a section move guards the section as its VALUE (both columns)
+            ident["section"] = (r["bom_section"] == c.section, r["bom_section"])
         wrong = [f"{k} is {have!r}" for k, (ok, have) in ident.items() if not ok]
         if wrong:
             problems.append(f"{c.key}: identity mismatch — " + ", ".join(wrong))
             continue
-        have = r[c.field]
+        have = _value(r, c.field)
         if _same(c.field, have, c.current):
             plan.todo.append(c)
         elif _same(c.field, have, c.new):
             plan.done.append(c)
         else:
             problems.append(f"{c.key}: GUARD — found {have!r}, manifest expects {c.current!r} (new {c.new!r})")
+    problems += _target_section_problems(conn, [c for c in changes if c.field == SECTION_FIELD])
     if problems:
         raise GuardMismatch(problems)
     return plan
+
+
+def _value(row: dict, field_name: str):
+    """A line's current value for a manifest field — a section is the pair of columns."""
+    if field_name == SECTION_FIELD:
+        return {"id": row["bom_section_id"], "name": row["bom_section"]}
+    return row[field_name]
+
+
+def _target_section_problems(conn, moves: list[Change]) -> list[str]:
+    """Every section a move points at must exist under exactly that id AND name."""
+    import sqlalchemy as sa
+    if not moves:
+        return []
+    have = dict(conn.execute(sa.text("SELECT id, name FROM bom_sections WHERE id = ANY(:i)"),
+                             {"i": sorted({c.new["id"] for c in moves})}).all())
+    return [f"{c.key}: target section {c.new['id']} is {have.get(c.new['id'])!r}, manifest says {c.new['name']!r}"
+            for c in moves if have.get(c.new["id"]) != c.new["name"]]
+
+
+def build_draft_plan(conn, plan: Plan, drafts: list[DraftChange]) -> None:
+    """Sort every draft change into plan.draft_todo / draft_done; GuardMismatch lists every problem."""
+    import sqlalchemy as sa
+    from app.services.sections import draft_category_count
+    if not drafts:
+        return
+    ids = sorted({d.body_id for d in drafts})
+    rows = dict(conn.execute(sa.text("SELECT trailer_type_id, payload FROM configurator_drafts "
+                                     "WHERE trailer_type_id = ANY(:t)"), {"t": ids}).all())
+    names = dict(conn.execute(sa.text("SELECT id, name FROM trailer_types WHERE id = ANY(:t)"), {"t": ids}).all())
+    problems = []
+    for d in drafts:
+        if names.get(d.body_id) != d.body:
+            problems.append(f"{d.key}: body {d.body_id} is {names.get(d.body_id)!r}")
+            continue
+        payload = rows.get(d.body_id)
+        if payload is None:
+            problems.append(f"{d.key}: the body has no draft")
+            continue
+        plan.drafts[d.body_id] = payload
+        n_old, n_new = draft_category_count(payload, d.old_key), draft_category_count(payload, d.new_key)
+        if (n_old, n_new) == (d.nodes, 0):
+            plan.draft_todo.append(d)
+        elif (n_old, n_new) == (0, d.nodes):
+            plan.draft_done.append(d)
+        else:
+            problems.append(f"{d.key}: GUARD — the draft has {n_old} node(s) keyed old and {n_new} keyed new; "
+                            f"the manifest expects {d.nodes} / 0 (or 0 / {d.nodes} once applied)")
+    if problems:
+        raise GuardMismatch(problems)
+
+
+def unused_after_problems(conn, section_ids: list[int], plan: Plan) -> list[str]:
+    """`expect_unused_after`: once THIS manifest is fully applied, no line and no draft may name those sections.
+    Every line / draft still naming them must be pending in this plan — anything else is a STOP."""
+    import sqlalchemy as sa
+    from app.services.sections import draft_category_count
+    if not section_ids:
+        return []
+    secs = dict(conn.execute(sa.text("SELECT id, name FROM bom_sections WHERE id = ANY(:i)"),
+                             {"i": section_ids}).all())
+    problems = [f"expect_unused_after: section {i} does not exist" for i in section_ids if i not in secs]
+    moving = {c.bom_id for c in plan.todo if c.field == SECTION_FIELD}
+    rekeying = {(d.body_id, d.old_key.strip().upper()) for d in plan.draft_todo}
+    drafts = conn.execute(sa.text("SELECT trailer_type_id, payload FROM configurator_drafts")).all()
+    for sid, name in sorted(secs.items()):
+        lines = conn.execute(sa.text("SELECT id, trailer_type_id FROM bill_of_materials "
+                                     "WHERE bom_section_id = :i OR bom_section = :n ORDER BY id"),
+                             {"i": sid, "n": name}).all()
+        stay = [f"bom {b} (body {t})" for b, t in lines if b not in moving]
+        if stay:
+            problems.append(f"expect_unused_after: section {sid} {name!r} would still be used by "
+                            f"{len(stay)} line(s) this manifest does not move: {', '.join(stay[:10])}")
+        named = [t for t, p in drafts
+                 if draft_category_count(p, name) and (t, name.strip().upper()) not in rekeying]
+        if named:
+            problems.append(f"expect_unused_after: section {sid} {name!r} would still be named by the draft of "
+                            f"body {', '.join(str(t) for t in named)}")
+    return problems
 
 
 def apply_plan(conn, plan: Plan, *, target: str, dbname: str, manifest_sha: str,
@@ -345,12 +510,33 @@ def apply_plan(conn, plan: Plan, *, target: str, dbname: str, manifest_sha: str,
                  "tn": r["_trailer_name"], "mn": r["_material_name"],
                  "o": c.current, "n": c.new, "now": batch}).scalar()
             journal["override_history_ids"].append(ohid)
+        elif c.field == SECTION_FIELD:
+            conn.execute(sa.text("UPDATE bill_of_materials SET bom_section_id=:s, bom_section=:n WHERE id=:i"),
+                         {"s": c.new["id"], "n": c.new["name"], "i": c.bom_id})
         else:
             conn.execute(sa.text(f"UPDATE bill_of_materials SET {c.field}=:v WHERE id=:i"),
                          {"v": c.new, "i": c.bom_id})
         journal["changes"].append({"finding": c.finding, "bom_id": c.bom_id, "body": c.body,
                                    "section": c.section, "line": c.line, "field": c.field,
                                    "before": c.current, "after": c.new})
+    if plan.draft_todo:
+        from app.services.sections import rewrite_draft_key
+        journal["drafts"] = []
+        for body_id in sorted({d.body_id for d in plan.draft_todo}):
+            before = plan.drafts[body_id]
+            payload = before
+            for d in [x for x in plan.draft_todo if x.body_id == body_id]:
+                status, new_payload, n = rewrite_draft_key(payload, d.old_key, d.new_key)
+                if status != "rewritten" or n != d.nodes:       # the plan's guard said otherwise: never write
+                    raise GuardMismatch([f"{d.key}: the A2 rule answered {status!r} ({n} node(s))"])
+                payload = new_payload
+                journal["changes"].append({"finding": d.finding, "draft_body_id": body_id, "body": d.body,
+                                           "field": "draft_key", "before": d.old_key, "after": d.new_key,
+                                           "nodes": n})
+            conn.execute(sa.text("UPDATE configurator_drafts SET payload=:p WHERE trailer_type_id=:t"),
+                         {"p": payload, "t": body_id})
+            journal["drafts"].append({"body_id": body_id, "before_payload": before,
+                                      "after_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest()})
     return journal
 
 
@@ -362,12 +548,19 @@ def revert_journal(conn, journal: dict) -> dict:
     rows = _fetch_rows(conn, bids)
     problems = []
     for ch in journal["changes"]:
+        if "bom_id" not in ch:            # a draft entry — checked below, by the whole payload
+            continue
         r = rows.get(ch["bom_id"])
         if r is None:
             problems.append(f"bom {ch['bom_id']}: line not found")
-        elif not _same(ch["field"], r[ch["field"]], ch["after"]):
-            problems.append(f"bom {ch['bom_id']} .{ch['field']}: found {r[ch['field']]!r}, "
+        elif not _same(ch["field"], _value(r, ch["field"]), ch["after"]):
+            problems.append(f"bom {ch['bom_id']} .{ch['field']}: found {_value(r, ch['field'])!r}, "
                             f"journal applied {ch['after']!r} — moved since the apply")
+    for dj in journal.get("drafts") or []:
+        have = conn.execute(sa.text("SELECT payload FROM configurator_drafts WHERE trailer_type_id=:t"),
+                            {"t": dj["body_id"]}).scalar()
+        if have is None or hashlib.sha256(have.encode("utf-8")).hexdigest() != dj["after_sha256"]:
+            problems.append(f"draft of body {dj['body_id']}: changed since the apply (or gone)")
     hist = journal.get("override_history_ids") or []
     if hist:
         have = {r[0] for r in conn.execute(sa.text("SELECT id FROM bom_override_history WHERE id = ANY(:ids)"),
@@ -380,14 +573,20 @@ def revert_journal(conn, journal: dict) -> dict:
     for bid, before in journal["before_rows"].items():
         stamp = before["price_updated_at"]
         conn.execute(sa.text("UPDATE bill_of_materials SET formula_expression=:f, unit_price_override=:o, "
-                             "body_option_default=:d, bom_conditions=:c, price_updated_at=:p WHERE id=:i"),
+                             "body_option_default=:d, bom_conditions=:c, price_updated_at=:p, "
+                             "bom_section_id=:si, bom_section=:sn WHERE id=:i"),
                      {"f": before["formula_expression"], "o": before["unit_price_override"],
                       "d": before["body_option_default"], "c": before["bom_conditions"],
-                      "p": datetime.fromisoformat(stamp) if stamp else None, "i": int(bid)})
+                      "p": datetime.fromisoformat(stamp) if stamp else None,
+                      "si": before["bom_section_id"], "sn": before["bom_section"], "i": int(bid)})
+    for dj in journal.get("drafts") or []:
+        conn.execute(sa.text("UPDATE configurator_drafts SET payload=:p WHERE trailer_type_id=:t"),
+                     {"p": dj["before_payload"], "t": dj["body_id"]})
     if hist:
         conn.execute(sa.text("DELETE FROM bom_override_history WHERE id = ANY(:ids)"), {"ids": hist})
     return {"reverted_at": datetime.now(timezone.utc).isoformat(), "journal_batch_at": journal["batch_at"],
-            "lines": len(journal["before_rows"]), "override_history_deleted": len(hist)}
+            "lines": len(journal["before_rows"]), "override_history_deleted": len(hist),
+            "drafts": len(journal.get("drafts") or [])}
 
 
 # ── report ───────────────────────────────────────────────────────────────────
@@ -403,6 +602,11 @@ def print_plan(plan: Plan, changes: list[Change]) -> None:
         by_finding.setdefault(c.finding, []).append(
             f"  {state} bom={c.bom_id:<6} {c.body} / {c.section} / {c.line}  .{c.field}\n"
             f"          {_fmt(c.current)}\n       -> {_fmt(c.new)}")
+    for d in plan.draft_todo + plan.draft_done:
+        state = "APPLY" if d in plan.draft_todo else "done "
+        by_finding.setdefault(d.finding, []).append(
+            f"  {state} draft of body {d.body_id} {d.body}: {d.nodes} category node(s)\n"
+            f"          {d.old_key!r}\n       -> {d.new_key!r}")
     for f in sorted(by_finding):
         print(f"── {f}")
         for line in by_finding[f]:
@@ -445,7 +649,8 @@ def main(argv: list[str] | None = None) -> int:
         out_dir.mkdir(parents=True, exist_ok=True)
         rpath.write_text(json.dumps({**res, "journal": jpath.name, "database": dbname}, indent=2), encoding="utf-8")
         print(f"REVERTED {jpath.name}: {res['lines']} lines restored, "
-              f"{res['override_history_deleted']} bom_override_history rows deleted. Record: {rpath}")
+              f"{res['override_history_deleted']} bom_override_history rows deleted, "
+              f"{res['drafts']} draft(s) restored. Record: {rpath}")
         return 0
 
     changes, sha = load_manifest(Path(a.manifest))
@@ -465,6 +670,7 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         try:
             plan = build_plan(conn, changes)
+            build_draft_plan(conn, plan, load_drafts(Path(a.manifest)))
         except GuardMismatch as g:
             print(f"ABORT — {len(g.problems)} guard mismatch(es); the database is not where the manifest "
                   f"says. Nothing written:")
@@ -472,8 +678,23 @@ def main(argv: list[str] | None = None) -> int:
                 print("  -", p)
             return 2
         print_plan(plan, changes)
+        n_todo = len(plan.todo) + len(plan.draft_todo)
+        # the plan line counts LINE changes, as it always has (the kits match it); drafts get their own line
         print(f"\n{len(plan.todo)} to apply, {len(plan.done)} already applied.")
-        if not plan.todo:
+        if plan.draft_todo or plan.draft_done:
+            print(f"drafts: {len(plan.draft_todo)} to apply, {len(plan.draft_done)} already applied.")
+        unused = load_expect_unused(Path(a.manifest))
+        bad = unused_after_problems(conn, unused, plan)
+        if bad:
+            print("STOP — after this manifest a section that must end up unused would still be named. "
+                  "Nothing written:")
+            for b in bad:
+                print("  -", b)
+            return 2
+        if unused:
+            print(f"expect_unused_after {unused}: no other line or draft names them — "
+                  + ("they are unused now." if not n_todo else "they are unused once this applies."))
+        if not n_todo:
             print("nothing to apply.")
             return 0
         if not a.apply:
@@ -491,7 +712,8 @@ def main(argv: list[str] | None = None) -> int:
             jpath.unlink(missing_ok=True)
             raise
     print(f"APPLIED {len(journal['changes'])} changes on {len(journal['before_rows'])} lines "
-          f"({len(journal['override_history_ids'])} bom_override_history rows). Journal: {jpath}")
+          f"({len(journal['override_history_ids'])} bom_override_history rows, "
+          f"{len(journal.get('drafts') or [])} draft(s)). Journal: {jpath}")
     print(f"Undo: python tools/audit_pricing_corrections.py --target {a.target} --revert {jpath}")
     return 0
 

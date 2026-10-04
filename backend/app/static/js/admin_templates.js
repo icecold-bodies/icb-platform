@@ -658,33 +658,17 @@ async function loadBOMSections() {
   } catch(e) { /* non-fatal */ }
 }
 
-async function renameSection(sectionName) {
-  const sec = bomSectionMap[sectionName];
-  if (!sec) return toast('Section not found', 'error');
-  const newName = await promptModal(
-    `Rename "${sectionName}" to:`,
-    sectionName,
-    { title: `Rename section`, okText: 'Rename' }
-  );
-  if (newName === null) return;
-  const trimmed = (newName || '').trim();
-  if (!trimmed || trimmed === sectionName) return;
-  try {
-    await api('PUT', `/api/bom-sections/${sec.id}`, { name: trimmed });
-    toast(`Renamed "${sectionName}" → "${trimmed}"`, 'success');
-    await loadBOMSections();
-    await loadBOM(currentTTId);
-  } catch(e) {
-    toast('Rename failed: ' + e.message, 'error');
-  }
-}
-
 // ── v1.42 — Edit Section modal (rename + optional flag + delete) ─────────────
 // The pencil on every section header opens this. The Optional tick maps to
 // BOMSection.is_optional; sections named "OPTIONAL …" are optional BY NAME
 // (the v1.42 prefix rule) — the tick locks ON for those so the effective
 // behaviour is never misrepresented.
+// RT4 — a section is ONE global row every body shares. The dialog says who uses
+// it; a name that already exists offers to MOVE this body's lines into that
+// section (only this body); a plain rename of a shared section warns first and
+// names the bodies; a section no body uses any more offers its own deletion.
 let _editingSectionName = null;
+let _editingFromBody = null;   // the body whose section header opened the dialog; null = the Sections list
 
 function _esSyncOptionalLock() {
   const nameEl = document.getElementById('es-name');
@@ -702,14 +686,52 @@ function _esSyncOptionalLock() {
   }
 }
 
-function openSectionEditModal(sectionName) {
+function _sectionUsage(id, renameTo) {
+  const q = renameTo ? `?rename_to=${encodeURIComponent(renameTo)}` : '';
+  return api('GET', `/api/bom-sections/${id}/usage${q}`);
+}
+
+function _plural(n, one, many) { return `${n} ${n === 1 ? one : many}`; }
+
+function _nameList(names, max = 8) {
+  return names.length > max ? `${names.slice(0, max).join(', ')} and ${names.length - max} more` : names.join(', ');
+}
+
+const _ES_DELETE_LABEL = 'Delete section';
+
+async function _reloadAfterSectionChange() {
+  await loadBOMSections();
+  if (currentTTId) await loadBOM(currentTTId);
+}
+const _ES_DELETE_UNUSED = 'Delete: no body uses it any more';
+
+function openSectionEditModal(sectionName, fromBody = currentTTId) {
   const sec = bomSectionMap[sectionName];
   if (!sec) return toast('Section not found', 'error');
   _editingSectionName = sectionName;
+  _editingFromBody = fromBody || null;
   document.getElementById('es-name').value = sectionName;
   document.getElementById('es-optional').checked = !!sec.is_optional;
   _esSyncOptionalLock();
+  const usage = document.getElementById('es-usage');
+  const del = document.getElementById('es-delete');
+  if (usage) usage.textContent = 'Checking who uses this section…';
+  if (del) del.textContent = _ES_DELETE_LABEL;
   openModal('modal-edit-section');
+  _sectionUsage(sec.id).then(u => {
+    if (_editingSectionName !== sectionName || !usage) return;   // the dialog moved on meanwhile
+    const live = u.bodies.filter(b => !b.deleted);
+    const gone = u.bodies.length - live.length;
+    if (!u.lines) {
+      usage.textContent = 'No body uses it any more.';
+      if (del) del.textContent = _ES_DELETE_UNUSED;
+    } else {
+      usage.textContent = `Shared: used by ${_plural(live.length, 'body', 'bodies')}`
+        + (live.length ? ` (${_nameList(live.map(b => b.name))})` : '')
+        + (gone ? `, plus ${_plural(gone, 'deleted body', 'deleted bodies')}` : '')
+        + ` — ${_plural(u.lines, 'line', 'lines')} in all.`;
+    }
+  }).catch(() => { if (usage) usage.textContent = ''; });
 }
 
 async function saveSectionFromModal() {
@@ -719,16 +741,151 @@ async function saveSectionFromModal() {
   if (!name) return toast('Section name cannot be empty', 'error');
   const tick = document.getElementById('es-optional');
   const body = { is_optional: !!tick.checked };
-  if (name !== _editingSectionName) body.name = name;
+  if (name !== _editingSectionName) {
+    // A name that is already a section (any case) is that SHARED section: offer the move, never a near-twin.
+    const others = Object.values(bomSectionMap).filter(s => s.id !== sec.id);
+    const target = others.find(s => s.name === name)
+                || others.find(s => s.name.toUpperCase() === name.toUpperCase());
+    if (target) {
+      if (!_editingFromBody) {
+        return toast(`'${target.name}' already exists and is shared. To move a body's lines into it, `
+          + `open that body and use Edit section on its '${sec.name}' header.`, 'error', 7000);
+      }
+      return moveSectionIntoExisting(sec, target, !!tick.checked !== !!sec.is_optional);
+    }
+    // A plain rename renames the section for EVERY body that uses it: say so first.
+    let u;
+    try { u = await _sectionUsage(sec.id, name); } catch(e) { return toast('Save failed: ' + e.message, 'error'); }
+    const live = u.bodies.filter(b => !b.deleted);
+    const rd = u.rename_drafts || { rewritten: [], left: [] };
+    const otherDrafts = [...rd.rewritten, ...rd.left].filter(d => d.trailer_type_id !== _editingFromBody);
+    if (live.length > 1 || otherDrafts.length) {
+      let msg = `This renames '${sec.name}' on all ${_plural(live.length, 'body', 'bodies')} that use it: `
+              + `${_nameList(live.map(b => b.name))}.`;
+      if (rd.rewritten.length) {
+        msg += `\n\nThe Settings-page draft of ${_nameList(rd.rewritten.map(d => d.trailer_name))} follows the new name.`;
+      }
+      if (rd.left.length) {
+        msg += `\n\nLeft as it is (it already has a '${name}' category — check it on the Settings page): `
+             + `${_nameList(rd.left.map(d => d.trailer_name))}.`;
+      }
+      if (!await confirmModal(msg + '\n\nContinue?', { title: 'Rename a shared section', okText: 'Rename' })) return;
+    }
+    body.name = name;
+  }
   try {
-    await api('PUT', `/api/bom-sections/${sec.id}`, body);
+    const r = await api('PUT', `/api/bom-sections/${sec.id}`, body);
     closeModal('modal-edit-section');
     toast(`Section "${name}" saved`, 'success');
-    await loadBOMSections();
-    await loadBOM(currentTTId);
+    if (r.drafts_left && r.drafts_left.length) {
+      toast(`Check the Settings page for ${_nameList(r.drafts_left.map(d => d.trailer_name))}: `
+        + `its draft already had a '${name}' category, so it was left as it is.`, 'warn', 9000);
+    }
+    await _reloadAfterSectionChange();
   } catch(e) {
     toast('Save failed: ' + e.message, 'error');
   }
+}
+
+// RT4 — move THIS body's lines from `sec` into the existing shared section `target`. Only this body's rows move,
+// and only this body's Settings-page draft follows (the server applies the draft rule). The confirmation says
+// when the move would change how the lines price; afterwards an emptied section offers its own deletion.
+async function moveSectionIntoExisting(sec, target, optionalTickChanged) {
+  let uo, ut;
+  try { [uo, ut] = await Promise.all([_sectionUsage(sec.id), _sectionUsage(target.id)]); }
+  catch(e) { return toast('Move failed: ' + e.message, 'error'); }
+  const tid = _editingFromBody;
+  const mine = uo.bodies.find(b => b.id === tid);
+  const m = mine ? mine.lines : 0;
+  if (!m) return toast(`This body has no lines in '${sec.name}'.`, 'error');
+  const others = ut.bodies.filter(b => !b.deleted && b.id !== tid);
+  let msg = `'${target.name}' is already used by ${_plural(others.length, 'other body', 'other bodies')}. `
+          + `Move this body's ${_plural(m, 'line', 'lines')} from '${sec.name}' into it?`;
+  const notes = [];
+  if (Number(uo.multiplier) !== Number(ut.multiplier)) {
+    notes.push(`'${target.name}' multiplies its lines by ${ut.multiplier}; '${sec.name}' by ${uo.multiplier}.`);
+  }
+  if (!!uo.is_optional !== !!ut.is_optional) {
+    notes.push(ut.is_optional
+      ? `'${target.name}' is Optional: its lines are left out of the costing until the user opts in.`
+      : `'${target.name}' is not Optional: the lines will always be costed.`);
+  }
+  const t = trailerMap[tid];
+  if (t && !t.configurator_v2 && (uo.door_prefix || null) !== (ut.door_prefix || null)) {
+    notes.push(ut.door_prefix
+      ? `Lines in a section starting '${ut.door_prefix}' are costed only when the ${ut.door_prefix} door is chosen.`
+      : `'${target.name}' does not start with '${uo.door_prefix}': its lines no longer follow the ${uo.door_prefix} door.`);
+  }
+  if (notes.length) msg += `\n\nThis changes how the lines price:\n• ${notes.join('\n• ')}`;
+  if (optionalTickChanged) {
+    msg += `\n\nThe Optional tick is not applied on a move: it belongs to '${target.name}', which other bodies share.`;
+  }
+  if (!await confirmModal(msg, { title: 'Move into existing section', okText: 'Move' })) return;
+  let r;
+  try {
+    r = await api('POST', `/api/bom-sections/${sec.id}/move-body-lines`,
+                  { trailer_type_id: tid, to_section_id: target.id });
+  } catch(e) { return toast('Move failed: ' + e.message, 'error'); }
+  closeModal('modal-edit-section');
+  toast(`Moved ${_plural(r.moved_ids.length, 'line', 'lines')} into '${target.name}'`, 'success');
+  if (r.draft === 'node_exists') {
+    toast(`Check the Settings page for this body: its draft already had a '${target.name}' category, `
+      + `so it was left as it is.`, 'warn', 9000);
+  }
+  if (r.old_section_unused) {
+    let dm = `No body uses '${sec.name}' any more. Delete it?`;
+    if (r.other_drafts_naming_old && r.other_drafts_naming_old.length) {
+      dm += `\n\nThe Settings-page draft of ${_nameList(r.other_drafts_naming_old.map(d => d.trailer_name))} `
+          + `still lists it; that draft is left as it is.`;
+    }
+    if (await confirmModal(dm, { title: _ES_DELETE_UNUSED, okText: 'Delete', danger: true })) {
+      try {
+        await api('DELETE', `/api/bom-sections/${sec.id}`);
+        toast(`Section "${sec.name}" deleted`, 'success');
+      } catch(e) { toast(e.message, 'error'); }
+    }
+  }
+  await _reloadAfterSectionChange();
+}
+
+// ── RT4 — the Sections list: every shared section and who uses it ────────────
+// The only way to open a section no body uses any more (its lines are gone, so
+// no body shows its header) — e.g. to delete it.
+let _sectionsSummary = [];
+
+async function openSectionsList() {
+  const list = document.getElementById('sections-list');
+  if (list) list.innerHTML = '<div style="padding:12px;color:var(--text-dim)"><span class="spinner"></span> Loading…</div>';
+  openModal('modal-sections');
+  try {
+    await loadBOMSections();
+    _sectionsSummary = await api('GET', '/api/bom-sections/usage');
+    renderSectionsList();
+  } catch(e) {
+    if (list) list.innerHTML = `<div style="padding:12px;color:var(--red)">${escHtml(e.message)}</div>`;
+  }
+}
+
+function renderSectionsList() {
+  const list = document.getElementById('sections-list');
+  if (!list) return;
+  const f = (document.getElementById('sections-filter')?.value || '').trim().toUpperCase();
+  const rows = _sectionsSummary.filter(s => !f || s.name.toUpperCase().includes(f));
+  list.innerHTML = rows.map(s => {
+    const use = s.lines
+      ? `${_plural(s.live_bodies, 'body', 'bodies')} · ${_plural(s.lines, 'line', 'lines')}`
+      : '<span class="badge" style="color:var(--red,#e35d6a)">unused</span>';
+    return `<div class="sections-row" data-name="${escHtml(s.name)}"
+        onclick="openSectionFromList(this.dataset.name)"
+        style="display:flex;justify-content:space-between;gap:12px;padding:6px 8px;cursor:pointer;
+               border-bottom:1px solid var(--border);font-size:12px">
+        <span>${escHtml(s.name)}</span><span style="color:var(--text-dim);white-space:nowrap">${use}</span></div>`;
+  }).join('') || '<div style="padding:12px;color:var(--text-dim)">No section matches.</div>';
+}
+
+function openSectionFromList(name) {
+  closeModal('modal-sections');
+  openSectionEditModal(name, null);
 }
 
 async function deleteSectionFromModal() {
@@ -742,8 +899,7 @@ async function deleteSectionFromModal() {
     await api('DELETE', `/api/bom-sections/${sec.id}`);
     closeModal('modal-edit-section');
     toast(`Section "${_editingSectionName}" deleted`, 'success');
-    await loadBOMSections();
-    await loadBOM(currentTTId);
+    await _reloadAfterSectionChange();
   } catch(e) {
     toast(e.message, 'error');   // 409 carries the "used by N BOM lines" message
   }

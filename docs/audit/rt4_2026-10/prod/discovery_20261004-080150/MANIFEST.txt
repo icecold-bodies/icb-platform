@@ -1,0 +1,6 @@
+database     icb_platform
+alembic      0051
+prod_code    682a6ccc4f85be46a99c9c87c18616868d530ef6
+staged_from  0d83b56e43cbdd34dcfcea2cdde75dfe77dc7038
+manni_ids    4,7,3,5,6
+finished     2026-10-04T08:02:09+02:00

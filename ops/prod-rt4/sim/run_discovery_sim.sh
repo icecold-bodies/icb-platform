@@ -67,6 +67,10 @@ tar -tf "$T" | grep -q 'noauth_probe.txt' && tar -tf "$T" | grep -q 'manni_snaps
 echo '{"bodies": [{"id": 3, "name": "MANNI RIGIDS CB"}]}' > "$SIM/state/discovery.json"
 expect "Manni names missing -> export skipped, still DONE" 'DONE'
 grep -q 'SKIPPED: the five Manni names' "$SIM/last.log" && echo "PASS  skip message" && P=$((P+1)) || { echo "FAIL  skip message"; F=$((F+1)); }
+echo '{"bodies": [], "drafts_full": {"3": "{\"label\": \"ask jan.smit@example.co.za\"}"}}' > "$SIM/state/discovery.json"
+expect "email-shaped value in discovery.json" 'STOP \[GATE\]'
+ls "$SIM"/tmp/icb-rt4-discovery/out-*/discovery.json 2>/dev/null | wc -l | grep -qx 2 \
+  && echo "PASS  the gated discovery.json was deleted (only the two DONE runs keep one)" && P=$((P+1)) || { echo "FAIL  gated file left behind"; F=$((F+1)); }
 echo "$FIVE" > "$SIM/state/discovery.json"
 echo 0050 > "$SIM/state/alembic"
 expect "alembic not 0051"          'STOP \[DB\]'

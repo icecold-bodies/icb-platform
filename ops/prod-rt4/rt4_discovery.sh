@@ -58,6 +58,10 @@ say "1. discovery (read-only session)"
 "$PY" "$BASE/rt4_discovery.py" "$URL" "$OUT" > "$OUT/discovery.log" 2>&1; rc=$?
 grep -E '^== |^   #|^   (ok|NON) |⚠|rows left|standard 14' "$OUT/discovery.log" | head -n 80
 [ $rc = 0 ] || { tail -n 20 "$OUT/discovery.log"; stop DISCOVERY "the discovery failed (exit $rc)"; }
+# discovery.json carries the Mannis' draft trees (configuration text): no email-shaped value may leave the VM
+EM=$(grep -cE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}' "$OUT/discovery.json" || true)
+[ "$EM" = 0 ] || { rm -f "$OUT/discovery.json" "$OUT/discovery.txt" "$OUT/discovery.log"; stop GATE "an email-shaped value in discovery.json — files deleted"; }
+echo "   gate ok: no email-shaped value in discovery.json"
 
 # ---- 2. the five Mannis' pricing rows, for the CA's mirror -----------------------------------------------------
 say "2. export of the five Mannis' pricing rows (read-only session)"

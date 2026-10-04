@@ -10,7 +10,7 @@ Writes discovery.json + discovery.txt:
   3. per Manni: its body-option masters by name (group / subgroup / default / thickness) — the door and insulation
      masters the pricing proof toggles;
   4. per Manni: its Trailer Designer draft — every category node's section key (sourceCategoryKey), its label and
-     its folder path — plus draft snapshots;
+     its folder path — plus draft snapshots; the five Mannis' full draft trees (payload only) for the CA's mirror;
   5. per Manni: saved costings (all / live);
   6. the E3 sweep: EVERY section name the Mannis use against the set the 14 standard bodies use, each non-standard
      one with a proposed standard target (token match, else a fuzzy candidate, else none), and what a move into that
@@ -160,6 +160,8 @@ def main(url: str, out_dir: str) -> int:
             entry = {"has_draft": bool(d), "snapshots": dsnaps.get(b["id"], 0), "categories": [], "parse_error": None}
             if d:
                 entry["updated_at"] = str(d["updated_at"])
+                if b["id"] in manni_ids:     # the full tree, for the CA's mirror (B.5) — never updated_by
+                    doc.setdefault("drafts_full", {})[b["id"]] = d["payload"]
                 try:
                     p = json.loads(d["payload"] or "{}")
                     nodes = p.get("nodes") or {}

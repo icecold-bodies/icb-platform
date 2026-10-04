@@ -1,7 +1,8 @@
 # Prod deploy: v1.60.0 (RT3) — body families in colour: the code release, then the six families, in one window
 
-**Status:** prepared for `RT3_RULING_2` (nothing on prod until then). Prod today: **v1.59.3 = `0926193`**, alembic
-**0050**. Michael runs every prod step; the CA's own writes to the VM are refused (correctly).
+**Status: DONE, 3 Oct 2026, 06:02–06:22 SAST. Prod = v1.60.0 = `682a6cc`, alembic 0051, the six families on.** See
+the OUTCOME at the end. (Before: v1.59.3 = `0926193`, alembic 0050.) Michael ran every prod step; the CA read the
+records back.
 
 ## What ships
 
@@ -146,4 +147,51 @@ on its first start if the families were still on.
 
 ## OUTCOME
 
-(to be written after the window)
+**3 Oct 2026 (SAST): v1.60.0 on prod, the six families on, nothing priced moved.** The records, read back from the VM by
+the CA, are in `docs/audit/rt3_2026-10/prod/window_20261003/` (each run's `run.log` committed as `run.txt`).
+
+- **Merge + tag:**
+  - #212 squash-merged as **`682a6cc`** onto `6066298`; its tree `b3eb614` = the CI-tested head `6fd2190`'s tree;
+  - annotated tag **`v1.60.0`** = object `35da9a07…`, local = origin, peels to `682a6cc`.
+- **The kits:** staged from `682a6cc` into `icb-rt3-stage\2`, then copied by Michael.
+
+| time | step | result |
+|---|---|---|
+| 06:02 | `release.sh preflight` | **PREFLIGHT PASSED** (alembic 0050, `0926193`, the columns absent, the v1.59.3 files and SPA served on both doors, npm + node_modules present, the tag on origin) |
+| 06:02 | `release.sh verify` (before) | **exactly 23 failed**: the not-yet-deployed checks, as the runbook lists |
+| 06:04 | (a) **All** → `rt2_all.sh pre` | **PAGE = CLI, 2 702 of 2 702 cells identical**; smoke 9/15/165/45, chillers 0/9/581/126, freezers 27/24/522/117, icecream 40/43/413/116, explosive 36/99/432/117 (UNVERIFIABLE / ACCEPTED / PASS / SKIP), **0 FLAG** |
+| 06:04–06:05 | `release.sh deploy` | **DEPLOYED** — see below |
+| 06:06 | (b) `rt3_families.sh dryrun` | **40 to apply, 0 already applied**; `TEMPLATE GUARD: 16 of 16 active bodies keep their resolved template; changed: [11, 22, 23, 28, 29, 30, 31, 32, 33, 35]` — exactly as reviewed |
+| 06:06 | (b) `… apply` | one transaction; the guard re-checked in the database before the commit; journal `journal_families_rt3_families_journal_prod_20261003T040626Z.json` + the data-only backup kept in `/var/backups/icb-rt3-2026-10/`; second dry-run **0 to apply, 40 already applied** |
+| — | (c) quote previews, (d) MES → Costings → New + the costings list chip, (e) an admin colour change on the calculator and the costings list | done by Michael, "checked and verified, looks good" |
+| 06:12:20 | (f) **the extra restart** | the service restarted (pid 195040) |
+| 06:12, 06:21 | (f) `rt3_families.sh dryrun` | **refused** (exit 2, nothing written): `a group 'OTHER' already exists (id 7) and is not the plan's: ('#21C458', 6, None)` — step (e)'s test colour on OTHER had not been set back yet. The guard did its job |
+| 06:14 | `release.sh verify` (after) | **0 failed** (`BOOTSTRAP_SEEDED_GROUPS` 0 for the 06:12 start) |
+| 06:14:57 | (g) `rt2_doors.sh` | **SUMMARY: 14 OK** |
+| 06:16 | (a′) **All** → `rt2_all.sh post` | **PAGE = CLI, 2 702 of 2 702**; every pack's counts = (a): **No change** |
+| — | Michael sets OTHER back to `#7D858C` (Admin → Quote templates) | |
+| 06:22 | (f) `rt3_families.sh dryrun` again (same service start as 06:12:20) | **DONE (dryrun: already applied)**: `0 to apply, 40 already applied`; guard `16 of 16 … changed: none`. The six families, every body's family and RHINORANGE's override **survived the restart on the fixed bootstrap** |
+
+The deploy (`out-deploy-20261003-060447/OUTCOME.txt`):
+- **Code:** `0926193` → **`682a6cc`**; `git describe` = `v1.60.0`.
+- **Database:** alembic **0050 → 0051**. The columns read `colour:character varying:7:YES:NULL sort_order:integer:-:NO:100`, and the CHECK is present.
+- **Restart and bootstrap:**
+  - the groups and every body's binding are **unchanged by the restart** (`1:EXPLOSIVE:1 2:RHINORANGE:2 3:MEATHANGER:3 4:FREEZER:4`, bindings md5 = before);
+  - **4 workers, 0 bootstrap failed, 0 groups seeded, 0 tracebacks**; health 200;
+  - restart 2 Oct 11:11:37 → 3 Oct 06:05:28, after the code moved.
+- **Backup:** `/var/backups/postgres/icb_platform_pre-v1.60.0_20261003-060447.dump` (2 919 048 bytes, sha256 `34f075a3…`).
+- **Served files:**
+  - the five files at `?v=` 186 / 128 / 20 / 1 / 7, with local = LAN = the target blobs;
+  - the SPA rebuilt (`index-Be8qL-PA.js` → `index-Bd_exvgd.js`), local = LAN = disk, carrying the family chip;
+  - `/openapi.json` local = LAN.
+
+**The Cloudflare door** (CA, from outside, after DEPLOYED):
+- the five files at their new `?v=` = the target blobs on `mes.icecoldgrp.online` and the LAN door;
+- the rebuilt SPA bundle is equal on both, with the family chip;
+- `/openapi.json` is equal on both.
+
+On 4 Oct the live bodies API (Cloudflare) reads the six families in order with the approved colours:
+`EXPLOSIVE #E03131 · CHILLER #168ED9 · FREEZER #4263EB · MEAT #D66A0B · ICE CREAM #D63384 · OTHER #7D858C`.
+
+- **Rollback anchors** (not needed): code `0926193`; the families journal above; the full dump above.
+- **Raised for the BA, not fixed:** prod's `/api/trailers` (the active body list, now with families) answers without a sign-in. It predates RT3, like the open `/openapi.json`.

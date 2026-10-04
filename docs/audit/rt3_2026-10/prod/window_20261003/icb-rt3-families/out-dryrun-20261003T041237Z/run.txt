@@ -1,0 +1,7 @@
+== prod: db=icb_platform alembic=0051 code=682a6cc staged=682a6cc mode=dryrun  2026-10-03T06:12:38+02:00
+== dry-run (READ ONLY)
+database icb_platform (--target prod); RT3 body families; plan sha256 2432dad65b2e066f…; tool sha256 e83a47d9641c7988…
+  REFUSED: a group 'OTHER' already exists (id 7) and is not the plan's: ('#21C458', 6, None). The transaction rolled back; nothing written.
+
+######## STOP [GUARD]: the dry-run refused (exit 2): a guard mismatch means prod moved since the 2 Oct discovery; nothing written
+######## tell the CA: /tmp/icb-rt3-families/out-dryrun-20261003T041237Z

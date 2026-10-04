@@ -1,0 +1,44 @@
+== prod: db=icb_platform alembic=0050 code=0926193 mode=verify target=682a6cc (v1.60.0) 2026-10-03T06:02:41+02:00
+== code + tag + schema (0051: colour + sort_order and the CHECK)
+   FAIL HEAD = '0926193e1ee0102c210800c3912949d1df76fbe5' (want 682a6ccc4f85be46a99c9c87c18616868d530ef6)
+   FAIL TAG_LOCAL = 'missing' (want 35da9a07954d947bcfe0c5726e235936614035a8)
+   FAIL DESCRIBE = 'v1.59.3' (want v1.60.0)
+   FAIL ALEMBIC = '0050' (want 0051)
+   FAIL COLUMNS = '' (want colour:character varying:7:YES:NULL sort_order:integer:-:NO:100)
+   FAIL CHECK_CONSTRAINT = '0' (want 1)
+   families coloured: ERROR:  column "colour" does not exist
+LINE 1: ...t count(*) from icb_costings.trailer_groups where colour is ...
+                                                             ^ (0 right after the deploy; rt3_families.sh sets the six)
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS BOOTSTRAP_SEEDED_GROUPS = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   PASS TOOL_IMPORT = ok
+   PASS OPENAPI_DOORS_EQUAL = yes
+== served bytes: each page loads the target ?v=, and both doors serve the target blob under it
+   FAIL V_calculator = '185' (want 186)
+   FAIL LOCAL_calculator = '15427f7e3616353bd397cb832331dcdbd9b1719c081acaa87caf8802309c778d' (want 0cadd8fc2e4c2833f41bc367dd5f7d41b0822d56f7015a3e0507027908d2f940)
+   FAIL LAN_calculator = '15427f7e3616353bd397cb832331dcdbd9b1719c081acaa87caf8802309c778d' (want 0cadd8fc2e4c2833f41bc367dd5f7d41b0822d56f7015a3e0507027908d2f940)
+   FAIL V_calculator2 = '127' (want 128)
+   FAIL LOCAL_calculator2 = '94b27e6d8d2e04f07f68851534b7d5b415a54862c4b0d0e89999272c6eb1e4e0' (want a54320915bbe749a1c73f30f6abda8d42fcc536365fcdf227f90ba9e99ea269b)
+   FAIL LAN_calculator2 = '94b27e6d8d2e04f07f68851534b7d5b415a54862c4b0d0e89999272c6eb1e4e0' (want a54320915bbe749a1c73f30f6abda8d42fcc536365fcdf227f90ba9e99ea269b)
+   FAIL V_admin_templates = '19' (want 20)
+   FAIL LOCAL_admin_templates = 'e3a28270f021e6411c0f9e922bf6b76bed43140e00f5c8d1297fd8ea13b167df' (want 43cb21e436d6dd39ece910d137794904502ee94c339b2c24b00b9912b4a009fa)
+   FAIL LAN_admin_templates = 'e3a28270f021e6411c0f9e922bf6b76bed43140e00f5c8d1297fd8ea13b167df' (want 43cb21e436d6dd39ece910d137794904502ee94c339b2c24b00b9912b4a009fa)
+   FAIL V_body_family = '' (want 1)
+   FAIL LOCAL_body_family = '37ec4665a8102d115ffd1ac20dae94c98b4dac64b0c1a68228aa2a531caeb35d' (want 22b4ab8e94b94c936fd1daf6e895a2fc8953868136c89a3978ba8dc30839665e)
+   FAIL LAN_body_family = '37ec4665a8102d115ffd1ac20dae94c98b4dac64b0c1a68228aa2a531caeb35d' (want 22b4ab8e94b94c936fd1daf6e895a2fc8953868136c89a3978ba8dc30839665e)
+   FAIL V_theme-mes = '6' (want 7)
+   FAIL LOCAL_theme-mes = 'cd49b91b37133b5a6d13bcf4c2d25a0516d55d199b0e59d7ed4e795d639da857' (want 6bcab87b9df463aa9e835c30aa8308e05c1438cd44530883d478a4264d7bc91a)
+   FAIL LAN_theme-mes = 'cd49b91b37133b5a6d13bcf4c2d25a0516d55d199b0e59d7ed4e795d639da857' (want 6bcab87b9df463aa9e835c30aa8308e05c1438cd44530883d478a4264d7bc91a)
+   PASS SPA_LOCAL = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   PASS SPA_LAN = 2a4f277f7127fe7dd8e308fac6c361433f944ba1dffb1c7a332490cbd72a12ba
+   FAIL SPA_HAS_FAMILY_LOCAL = '0' (want ~^[1-9])
+   FAIL SPA_HAS_FAMILY_LAN = '0' (want ~^[1-9])
+
+######## VERIFY: 23 check(s) failed — tell the CA: /tmp/icb-release-v1.60.0/out-verify-20261003-060240

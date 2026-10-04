@@ -1,0 +1,25 @@
+== prod: db=icb_platform alembic=0051 code=682a6cc label=post staged=682a6cc  2026-10-03T06:16:05+02:00
+== 1. the five packs, --env prod (the deployed code, read-only sessions)
+   smoke exit=0  - Cells: UNVERIFIABLE 9, ACCEPTED 15, PASS 165, SKIP 45
+   chillers exit=0  - Cells: ACCEPTED 9, PASS 581, SKIP 126
+   freezers exit=0  - Cells: UNVERIFIABLE 27, ACCEPTED 24, PASS 522, SKIP 117
+   icecream exit=0  - Cells: UNVERIFIABLE 40, ACCEPTED 43, PASS 413, SKIP 116
+   explosive exit=0  - Cells: UNVERIFIABLE 36, ACCEPTED 99, PASS 432, SKIP 117
+== 2. the page's newest All against the CLI
+   last data change on prod (a P / D apply or revert journal): 2026-10-02T11:33:23+02:00
+page run #33: All, passed, started 2026-10-03 06:03:42.377541+02, finished 2026-10-03 06:03:47.657136+02 (13 min ago)
+   environment prod · database icb_platform · accepted list accepted_differences.prod.yaml · golden 04c774e2a7de6314
+   stored counts: PASS 1948  FLAG 0  ACCEPTED 175  EXPIRED 0  UNVERIFIABLE 103
+
+CLI, per pack (the deployed code's golden, packs and prod list):
+   chillers   PASS 581  ACCEPTED 9  SKIP 126  (cells 716)
+   freezers   PASS 522  ACCEPTED 24  SKIP 117  UNVERIFIABLE 27  (cells 690)
+   icecream   PASS 413  ACCEPTED 43  SKIP 116  UNVERIFIABLE 40  (cells 612)
+   explosive  PASS 432  ACCEPTED 99  SKIP 117  UNVERIFIABLE 36  (cells 684)
+   ALL        PASS 1948  ACCEPTED 175  SKIP 476  UNVERIFIABLE 103  (cells 2702)
+page       PASS 1948  ACCEPTED 175  SKIP 476  UNVERIFIABLE 103  (cells 2702)
+
+cells: page 2702, CLI 2702, identical 2702, differ 0, page only 0, CLI only 0
+PAGE_EQUALS_CLI: yes (2702 of 2702 cells identical)
+
+######## DONE (post): PAGE = CLI — tell the CA: /tmp/icb-rt2-all/out-post-20261003-061605

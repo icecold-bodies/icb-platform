@@ -1,0 +1,13 @@
+deployed      0926193 -> 682a6cc (682a6ccc4f85be46a99c9c87c18616868d530ef6)
+tag           v1.60.0 = 35da9a07954d947bcfe0c5726e235936614035a8 (local = origin, peels to the target); git describe = v1.60.0
+alembic       0050 -> 0051 (0051_trailer_group_colour_order.py)
+columns       trailer_groups colour:character varying:7:YES:NULL sort_order:integer:-:NO:100; CHECK present: 1
+groups        unchanged by the restart: 1:EXPLOSIVE:1 2:RHINORANGE:2 3:MEATHANGER:3 4:FREEZER:4; bindings md5 d346d7f11d93d3224f4f884d6daeaca3 (= before)
+backup        /var/backups/postgres/icb_platform_pre-v1.60.0_20261003-060447.dump  2919048 bytes  sha256 34f075a3da8b411893beef0df9d9bfb11d1f9f8bd3ec3b898657c111dba9dba6
+restart       Fri 2026-10-02 11:11:37 SAST -> Sat 2026-10-03 06:05:28 SAST (pid 184932 -> 194503), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 groups seeded, 0 tracebacks
+health        200
+static        calculator.js ?v=186 0cadd8fc2e4c2833  calculator2.js ?v=128 a54320915bbe749a  admin_templates.js ?v=20 43cb21e436d6dd39  body_family.js ?v=1 22b4ab8e94b94c93  theme-mes.css ?v=7 6bcab87b9df463aa  (local = lan = the target blobs)
+spa           assets/index-Be8qL-PA.js -> assets/index-Bd_exvgd.js (rebuilt; local = lan = disk; carries the family chip)
+openapi       local = lan
+finished      2026-10-03T06:05:58+02:00

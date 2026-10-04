@@ -92,8 +92,15 @@ sudo bash /tmp/icb-release-v1.60.1/release.sh verify
 It also **prints, for the record, what each door answers today with no session**. Before the deploy those are the
 open routes.
 
-`verify` before the deploy **must fail on exactly the not-yet-deployed checks** (the simulation's list, in
-`RT4_RETURN_2`) and pass the rest.
+`verify` before the deploy **must fail on exactly 14 checks** (the simulation's list) and pass the rest:
+- `HEAD`, `TAG_LOCAL`, `DESCRIBE` (`v1.60.0` today);
+- `TOOL_IMPORT`: `app.services.sections` does not exist yet;
+- `VERSION_LOCAL` / `_LAN` / `_CF`: `/health/version` is a 404 today;
+- `NOAUTH_LOCAL` / `_LAN` / `_CF`: today's open routes answer 200 where they must answer 401;
+- `TEMPLATE_V` (20), `STAT_LOCAL` / `STAT_LAN` (the v1.60.0 blob), `PREVIEW_TEMPLATE` (no warning text yet).
+
+`TRACEBACKS` counts since the current service start (3 Oct 06:12). If prod has logged an error since then, that check
+fails too and prints the excerpt. That error is pre-existing: report it, but it does not block.
 
 **3. The window** (RT4_RULING_1, in this order).
 

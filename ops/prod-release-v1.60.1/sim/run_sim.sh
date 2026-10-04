@@ -88,7 +88,8 @@ case "$SCEN" in
   nobackup) touch "$SIMSTATE/backup_no_drafts" ;;
 esac
 
-run() { # run the staged kit inside the private mount namespace, as prod would
+run() { # run the staged kit inside the private mount namespace, as prod would (1 s apart: each run's folder is per-second)
+  sleep 1
   unshare -m bash -c "
     mount --bind '$SIM/opt' /opt && mount --bind '$SIM/etc' /etc && mount --bind '$SIM/vartmp' /var/tmp &&
     mount --bind '$SIM/varbackups' /var/backups && mount --bind '$SIM/tmp' /tmp &&

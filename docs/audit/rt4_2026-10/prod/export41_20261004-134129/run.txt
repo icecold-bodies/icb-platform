@@ -1,0 +1,13 @@
+== prod: db=icb_platform alembic=0051 code=682a6cc staged=edd8edd 2026-10-04T13:41:30+02:00
+== 1. body 41's lines in 83/84/85, its draft, and who else names them (read-only session)
+database / read only: icb_platform / on
+sections: {83: 'DOOR FITTINGS SRD', 84: 'DOOR FITTINGS DRD', 85: 'REAR FRAME + FLOOR PLATE'}
+lines in 83/84/85 (by id or string): 39 — body 41: 39; other bodies: none
+draft 41: yes, snapshots 1; drafts naming 83/84/85: [{'body_id': 41, 'keys': ['DOOR FITTINGS DRD', 'DOOR FITTINGS SRD']}]
+   gate ok: no email-shaped value in export41.json
+== 2. body 41's pricing rows, for the CA's mirror (read-only session)
+[snapshot] body41_snapshot.json: admin_settings 1, bill_of_materials 105, body_option_groups 3, body_option_subgroups 1, bom_sections 44, global_variables 1, material_categories 15, trailer_groups 1, trailer_types 2, materials 102
+   gate ok: test_the_gates_catch_a_known_hit
+   gate ok: test_snapshot_tables_are_pricing_definitions_only
+   gate ok: test_snapshot_has_no_personal_columns
+   gate ok: test_snapshot_has_no_email_addresses

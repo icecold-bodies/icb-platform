@@ -1,0 +1,414 @@
+{
+ "sections": {
+  "83": "DOOR FITTINGS SRD",
+  "84": "DOOR FITTINGS DRD",
+  "85": "REAR FRAME + FLOOR PLATE"
+ },
+ "lines": [
+  {
+   "bom_id": 11113,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "CSLB HINGES",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 9
+  },
+  {
+   "bom_id": 11114,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "SB 51111 DOOR SET",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 10
+  },
+  {
+   "bom_id": 11115,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "28779 DOOR CAPPING",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 11
+  },
+  {
+   "bom_id": 11116,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "28777 DOOR CAPPING",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 12
+  },
+  {
+   "bom_id": 11117,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "2316 DOOR RUBBER",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 13
+  },
+  {
+   "bom_id": 11118,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "2317 DOOR RUBBER",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 14
+  },
+  {
+   "bom_id": 11119,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "M10*40 GALV. BOLTS",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 15
+  },
+  {
+   "bom_id": 11120,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "M10 SPRING WASHERS",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 16
+  },
+  {
+   "bom_id": 11121,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "0661-0631 LONG RIVETS",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 17
+  },
+  {
+   "bom_id": 11122,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "3MM 3CR12 FLOOR PLATE",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 18
+  },
+  {
+   "bom_id": 11123,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "28781 SMALL HORIZ CAPPING",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 19
+  },
+  {
+   "bom_id": 11124,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "28780 SMALL VERTICAL",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 20
+  },
+  {
+   "bom_id": 11125,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "0661-0631 LONG RIVETS",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 21
+  },
+  {
+   "bom_id": 11126,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "SILPLUS X WHITE SILICONE",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 22
+  },
+  {
+   "bom_id": 11127,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "3MM ALU BUFFER PLATE",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 23
+  },
+  {
+   "bom_id": 11128,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "T-BAR CATCH",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 24
+  },
+  {
+   "bom_id": 11129,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "D-RUBBER",
+   "section_id": 83,
+   "section": "DOOR FITTINGS SRD",
+   "is_master": false,
+   "sort_order": 25
+  },
+  {
+   "bom_id": 11134,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "CSLB HINGES",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 30
+  },
+  {
+   "bom_id": 11135,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "SB 51111 DOOR SET",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 31
+  },
+  {
+   "bom_id": 11136,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "28779 DOOR CAPPING",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 32
+  },
+  {
+   "bom_id": 11137,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "28777 DOOR CAPPING",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 33
+  },
+  {
+   "bom_id": 11138,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "2316 DOOR RUBBER",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 34
+  },
+  {
+   "bom_id": 11139,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "2317 DOOR RUBBER",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 35
+  },
+  {
+   "bom_id": 11140,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "M10*40 GALV. BOLTS",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 36
+  },
+  {
+   "bom_id": 11141,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "M10 SPRING WASHERS",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 37
+  },
+  {
+   "bom_id": 11142,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "0661-0631 LONG RIVETS",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 38
+  },
+  {
+   "bom_id": 11143,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "SILPLUS X WHITE SILICONE",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 39
+  },
+  {
+   "bom_id": 11144,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "3MM ALU BUFFER PLATE",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 40
+  },
+  {
+   "bom_id": 11145,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "T-BAR CATCH",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 41
+  },
+  {
+   "bom_id": 11146,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "D-RUBBER",
+   "section_id": 84,
+   "section": "DOOR FITTINGS DRD",
+   "is_master": false,
+   "sort_order": 42
+  },
+  {
+   "bom_id": 11192,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "3MM 3CR12 REAR FRAME",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 88
+  },
+  {
+   "bom_id": 11193,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "TOP FRAME RAIN GUTTER",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 89
+  },
+  {
+   "bom_id": 11194,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "3MM 3CR12 FLOOR PLATE",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 90
+  },
+  {
+   "bom_id": 11195,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "SILPLUS X-WHITE",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 91
+  },
+  {
+   "bom_id": 11196,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "M8*150 GALV. CUP SQUARES",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 92
+  },
+  {
+   "bom_id": 11197,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "M8*45*3 FENDER WASHER",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 93
+  },
+  {
+   "bom_id": 11198,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "M8 NYLOCK NUT",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 94
+  },
+  {
+   "bom_id": 11199,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "5MM CORNER GUSSET",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 95
+  },
+  {
+   "bom_id": 11200,
+   "body_id": 41,
+   "body": "Manni RIGIDS CB [deleted-41]",
+   "material": "2771-0824 MONOBOLTS",
+   "section_id": 85,
+   "section": "REAR FRAME + FLOOR PLATE",
+   "is_master": false,
+   "sort_order": 96
+  }
+ ],
+ "other_bodies": [],
+ "draft41": {
+  "payload": "{\"nextId\": 44, \"rootIds\": [\"8\", \"1\", \"11\", \"14\", \"node-35\", \"25\", \"26\", \"28\", \"30\"], \"nodes\": {\"1\": {\"childIds\": [\"node-31\", \"node-32\"], \"type\": \"folder\", \"label\": \"DOOR TYPE\", \"selectionMode\": \"radio\", \"parentId\": null, \"id\": \"1\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"2\": {\"childIds\": [\"3\", \"4\"], \"type\": \"category\", \"label\": \"DRD\", \"sourceCategoryKey\": \"DRD\", \"parentId\": \"node-31\", \"id\": \"2\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"3\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"DRD EPS\", \"flagMode\": \"radio\", \"flagValue\": 1, \"flagBindingId\": null, \"flagBindingName\": \"DRD EPS\", \"parentId\": \"2\", \"id\": \"3\"}, \"4\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"DRD PU\", \"flagMode\": \"radio\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"DRD PU\", \"parentId\": \"2\", \"id\": \"4\"}, \"5\": {\"childIds\": [\"6\", \"7\"], \"type\": \"category\", \"label\": \"SRD\", \"sourceCategoryKey\": \"SRD\", \"parentId\": \"node-32\", \"id\": \"5\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"6\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"SRD EPS\", \"flagMode\": \"radio\", \"flagValue\": 1, \"flagBindingId\": null, \"flagBindingName\": \"SRD EPS\", \"parentId\": \"5\", \"id\": \"6\"}, \"7\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"SRD PU\", \"flagMode\": \"radio\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"SRD PU\", \"parentId\": \"5\", \"id\": \"7\"}, \"8\": {\"childIds\": [\"9\", \"10\"], \"type\": \"category\", \"label\": \"FRONT\", \"sourceCategoryKey\": \"FRONT\", \"parentId\": null, \"id\": \"8\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"9\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"FRONT EPS\", \"flagMode\": \"radio\", \"flagValue\": 1, \"flagBindingId\": null, \"flagBindingName\": \"FRONT EPS\", \"parentId\": \"8\", \"id\": \"9\"}, \"10\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"FRONT PU\", \"flagMode\": \"radio\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"FRONT PU\", \"parentId\": \"8\", \"id\": \"10\"}, \"11\": {\"childIds\": [\"12\", \"13\"], \"type\": \"category\", \"label\": \"SIDES\", \"sourceCategoryKey\": \"SIDES\", \"parentId\": null, \"id\": \"11\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"12\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"SIDES EPS\", \"flagMode\": \"radio\", \"flagValue\": 1, \"flagBindingId\": null, \"flagBindingName\": \"SIDES EPS\", \"parentId\": \"11\", \"id\": \"12\"}, \"13\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"SIDES PU\", \"flagMode\": \"radio\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"SIDES PU\", \"parentId\": \"11\", \"id\": \"13\"}, \"14\": {\"childIds\": [\"15\", \"16\"], \"type\": \"category\", \"label\": \"ROOF\", \"sourceCategoryKey\": \"ROOF\", \"parentId\": null, \"id\": \"14\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"15\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"ROOF EPS\", \"flagMode\": \"radio\", \"flagValue\": 1, \"flagBindingId\": null, \"flagBindingName\": \"ROOF EPS\", \"parentId\": \"14\", \"id\": \"15\"}, \"16\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"ROOF PU\", \"flagMode\": \"radio\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"ROOF PU\", \"parentId\": \"14\", \"id\": \"16\"}, \"17\": {\"childIds\": [\"22\", \"23\", \"24\"], \"type\": \"category\", \"label\": \"FLOOR\", \"sourceCategoryKey\": \"FLOOR\", \"parentId\": \"node-35\", \"id\": \"17\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"18\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"FLOOR EPS\", \"flagMode\": \"radio\", \"flagValue\": 1, \"flagBindingId\": null, \"flagBindingName\": \"FLOOR EPS\", \"parentId\": \"node-36\", \"id\": \"18\"}, \"19\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"FLOOR PU\", \"flagMode\": \"radio\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"FLOOR PU\", \"parentId\": \"node-36\", \"id\": \"19\"}, \"22\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"RICE GRAIN ALU FLOOR\", \"flagMode\": \"tickbox\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"RICE GRAIN ALU FLOOR\", \"parentId\": \"17\", \"id\": \"22\"}, \"23\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"ALU KICK PLATE\", \"flagMode\": \"tickbox\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"ALU KICK PLATE\", \"parentId\": \"17\", \"id\": \"23\"}, \"24\": {\"childIds\": [], \"type\": \"flag\", \"label\": \"2ND ROW ALU KICKPLATE\", \"flagMode\": \"tickbox\", \"flagValue\": 0, \"flagBindingId\": null, \"flagBindingName\": \"2ND ROW ALU KICKPLATE\", \"parentId\": \"17\", \"id\": \"24\"}, \"25\": {\"childIds\": [], \"type\": \"category\", \"label\": \"ALUMINIUM\", \"sourceCategoryKey\": \"ALUMINIUM\", \"parentId\": null, \"id\": \"25\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"26\": {\"childIds\": [], \"type\": \"category\", \"label\": \"SUB FRAME + LIGHT BOX ASSY\", \"sourceCategoryKey\": \"SUB FRAME + LIGHT BOX ASSY\", \"parentId\": null, \"id\": \"26\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"28\": {\"childIds\": [], \"type\": \"category\", \"label\": \"SPRAY PAINTING\", \"sourceCategoryKey\": \"SPRAY PAINTING\", \"parentId\": null, \"id\": \"28\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"30\": {\"childIds\": [], \"type\": \"category\", \"label\": \"REFLEXITE TAPE\", \"sourceCategoryKey\": \"REFLEXITE TAPE\", \"parentId\": null, \"id\": \"30\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"node-31\": {\"id\": \"node-31\", \"type\": \"folder\", \"label\": \"DRD DOORS\", \"parentId\": \"1\", \"childIds\": [\"2\", \"node-43\"], \"folderMode\": \"radio\", \"folderValue\": 1, \"selectionMode\": null, \"selectionValue\": 0, \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null, \"sourceCategoryId\": null, \"sourceCategoryKey\": null}, \"node-32\": {\"id\": \"node-32\", \"type\": \"folder\", \"label\": \"SRD DOORS\", \"parentId\": \"1\", \"childIds\": [\"5\", \"node-42\"], \"folderMode\": \"radio\", \"folderValue\": 0, \"selectionMode\": null, \"selectionValue\": 0, \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null, \"sourceCategoryId\": null, \"sourceCategoryKey\": null}, \"node-35\": {\"id\": \"node-35\", \"type\": \"folder\", \"label\": \"FLOOR\", \"parentId\": null, \"childIds\": [\"node-36\", \"node-37\", \"17\"], \"folderMode\": \"container\", \"folderValue\": 0, \"selectionMode\": null, \"selectionValue\": 0, \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null, \"sourceCategoryId\": null, \"sourceCategoryKey\": null}, \"node-36\": {\"id\": \"node-36\", \"type\": \"folder\", \"label\": \"FLOOR INSULATION\", \"parentId\": \"node-35\", \"childIds\": [\"18\", \"19\"], \"folderMode\": \"container\", \"folderValue\": 0, \"selectionMode\": null, \"selectionValue\": 0, \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null, \"sourceCategoryId\": null, \"sourceCategoryKey\": null}, \"node-37\": {\"id\": \"node-37\", \"type\": \"folder\", \"label\": \"FLOOR DECK\", \"parentId\": \"node-35\", \"childIds\": [\"node-39\", \"node-40\"], \"folderMode\": \"container\", \"folderValue\": 0, \"selectionMode\": null, \"selectionValue\": 0, \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null, \"sourceCategoryId\": null, \"sourceCategoryKey\": null}, \"node-39\": {\"id\": \"node-39\", \"type\": \"flag\", \"label\": \"12MM PHENO PLY\", \"parentId\": \"node-37\", \"childIds\": [], \"folderMode\": null, \"folderValue\": 0, \"selectionMode\": null, \"selectionValue\": 0, \"flagMode\": \"radio\", \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null, \"sourceCategoryId\": null, \"sourceCategoryKey\": null}, \"node-40\": {\"id\": \"node-40\", \"type\": \"flag\", \"label\": \"12MM FINN PLYWWOD\", \"parentId\": \"node-37\", \"childIds\": [], \"folderMode\": null, \"folderValue\": 0, \"selectionMode\": null, \"selectionValue\": 0, \"flagMode\": \"radio\", \"flagValue\": 1, \"flagBindingName\": \"\", \"flagBindingId\": null, \"sourceCategoryId\": null, \"sourceCategoryKey\": null}, \"node-42\": {\"id\": \"node-42\", \"type\": \"category\", \"label\": \"DOOR FITTINGS SRD\", \"parentId\": \"node-32\", \"childIds\": [], \"folderMode\": null, \"selectionMode\": \"container\", \"selectionValue\": 0, \"sourceCategoryId\": 83, \"sourceCategoryKey\": \"DOOR FITTINGS SRD\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}, \"node-43\": {\"id\": \"node-43\", \"type\": \"category\", \"label\": \"DOOR FITTINGS DRD\", \"parentId\": \"node-31\", \"childIds\": [], \"folderMode\": null, \"selectionMode\": \"container\", \"selectionValue\": 0, \"sourceCategoryId\": 84, \"sourceCategoryKey\": \"DOOR FITTINGS DRD\", \"flagMode\": null, \"flagValue\": 0, \"flagBindingName\": \"\", \"flagBindingId\": null}}, \"itemRules\": {}}",
+  "updated_at": "2026-10-03 15:43:26.283306"
+ },
+ "draft41_snapshots": 1,
+ "drafts_naming_old": [
+  {
+   "body_id": 41,
+   "keys": [
+    "DOOR FITTINGS DRD",
+    "DOOR FITTINGS SRD"
+   ]
+  }
+ ]
+}

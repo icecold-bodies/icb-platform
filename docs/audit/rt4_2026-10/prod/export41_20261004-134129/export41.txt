@@ -1,0 +1,43 @@
+database / read only: icb_platform / on
+sections: {83: 'DOOR FITTINGS SRD', 84: 'DOOR FITTINGS DRD', 85: 'REAR FRAME + FLOOR PLATE'}
+lines in 83/84/85 (by id or string): 39 — body 41: 39; other bodies: none
+   bom  11113 body 41 CSLB HINGES                          id 83 str DOOR FITTINGS SRD
+   bom  11114 body 41 SB 51111 DOOR SET                    id 83 str DOOR FITTINGS SRD
+   bom  11115 body 41 28779 DOOR CAPPING                   id 83 str DOOR FITTINGS SRD
+   bom  11116 body 41 28777 DOOR CAPPING                   id 83 str DOOR FITTINGS SRD
+   bom  11117 body 41 2316 DOOR RUBBER                     id 83 str DOOR FITTINGS SRD
+   bom  11118 body 41 2317 DOOR RUBBER                     id 83 str DOOR FITTINGS SRD
+   bom  11119 body 41 M10*40 GALV. BOLTS                   id 83 str DOOR FITTINGS SRD
+   bom  11120 body 41 M10 SPRING WASHERS                   id 83 str DOOR FITTINGS SRD
+   bom  11121 body 41 0661-0631 LONG RIVETS                id 83 str DOOR FITTINGS SRD
+   bom  11122 body 41 3MM 3CR12 FLOOR PLATE                id 83 str DOOR FITTINGS SRD
+   bom  11123 body 41 28781 SMALL HORIZ CAPPING            id 83 str DOOR FITTINGS SRD
+   bom  11124 body 41 28780 SMALL VERTICAL                 id 83 str DOOR FITTINGS SRD
+   bom  11125 body 41 0661-0631 LONG RIVETS                id 83 str DOOR FITTINGS SRD
+   bom  11126 body 41 SILPLUS X WHITE SILICONE             id 83 str DOOR FITTINGS SRD
+   bom  11127 body 41 3MM ALU BUFFER PLATE                 id 83 str DOOR FITTINGS SRD
+   bom  11128 body 41 T-BAR CATCH                          id 83 str DOOR FITTINGS SRD
+   bom  11129 body 41 D-RUBBER                             id 83 str DOOR FITTINGS SRD
+   bom  11134 body 41 CSLB HINGES                          id 84 str DOOR FITTINGS DRD
+   bom  11135 body 41 SB 51111 DOOR SET                    id 84 str DOOR FITTINGS DRD
+   bom  11136 body 41 28779 DOOR CAPPING                   id 84 str DOOR FITTINGS DRD
+   bom  11137 body 41 28777 DOOR CAPPING                   id 84 str DOOR FITTINGS DRD
+   bom  11138 body 41 2316 DOOR RUBBER                     id 84 str DOOR FITTINGS DRD
+   bom  11139 body 41 2317 DOOR RUBBER                     id 84 str DOOR FITTINGS DRD
+   bom  11140 body 41 M10*40 GALV. BOLTS                   id 84 str DOOR FITTINGS DRD
+   bom  11141 body 41 M10 SPRING WASHERS                   id 84 str DOOR FITTINGS DRD
+   bom  11142 body 41 0661-0631 LONG RIVETS                id 84 str DOOR FITTINGS DRD
+   bom  11143 body 41 SILPLUS X WHITE SILICONE             id 84 str DOOR FITTINGS DRD
+   bom  11144 body 41 3MM ALU BUFFER PLATE                 id 84 str DOOR FITTINGS DRD
+   bom  11145 body 41 T-BAR CATCH                          id 84 str DOOR FITTINGS DRD
+   bom  11146 body 41 D-RUBBER                             id 84 str DOOR FITTINGS DRD
+   bom  11192 body 41 3MM 3CR12 REAR FRAME                 id 85 str REAR FRAME + FLOOR PLATE
+   bom  11193 body 41 TOP FRAME RAIN GUTTER                id 85 str REAR FRAME + FLOOR PLATE
+   bom  11194 body 41 3MM 3CR12 FLOOR PLATE                id 85 str REAR FRAME + FLOOR PLATE
+   bom  11195 body 41 SILPLUS X-WHITE                      id 85 str REAR FRAME + FLOOR PLATE
+   bom  11196 body 41 M8*150 GALV. CUP SQUARES             id 85 str REAR FRAME + FLOOR PLATE
+   bom  11197 body 41 M8*45*3 FENDER WASHER                id 85 str REAR FRAME + FLOOR PLATE
+   bom  11198 body 41 M8 NYLOCK NUT                        id 85 str REAR FRAME + FLOOR PLATE
+   bom  11199 body 41 5MM CORNER GUSSET                    id 85 str REAR FRAME + FLOOR PLATE
+   bom  11200 body 41 2771-0824 MONOBOLTS                  id 85 str REAR FRAME + FLOOR PLATE
+draft 41: yes, snapshots 1; drafts naming 83/84/85: [{'body_id': 41, 'keys': ['DOOR FITTINGS DRD', 'DOOR FITTINGS SRD']}]

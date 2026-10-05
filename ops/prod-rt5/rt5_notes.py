@@ -1,10 +1,13 @@
 """RT5 — Burt's two body rules as the CHILLER and FREEZER families' rule notes (RT5_RULING_1: the wording approved
 exactly). Data only; over v1.60.2 (alembic 0052, trailer_groups.rule_note). psycopg only, independent of app code.
 
-    DATABASE_URL=...  python rt5_notes.py --target prod|mirror                               dry-run (read only)
-    DATABASE_URL=...  python rt5_notes.py --target prod|mirror --apply --out-dir DIR         apply (journaled)
-    DATABASE_URL=...  python rt5_notes.py --target prod|mirror --revert J --out-dir DIR      revert a journal
-    DATABASE_URL=...  python rt5_notes.py --target prod|mirror --show                        read back (read only)
+    DATABASE_URL=...  python rt5_notes.py --target prod|mirror|dev                           dry-run (read only)
+    DATABASE_URL=...  python rt5_notes.py --target prod|mirror|dev --apply --out-dir DIR     apply (journaled)
+    DATABASE_URL=...  python rt5_notes.py --target prod|mirror|dev --revert J --out-dir DIR  revert a journal
+    DATABASE_URL=...  python rt5_notes.py --target prod|mirror|dev --show                    read back (read only)
+
+--target names the database the run must be on (prod = icb_platform, mirror = icb_prodmirror, dev = Michael's icb,
+for his :8000 after the merge); any other database refuses. The VM wrapper rt5_notes.sh only ever passes prod.
 
 THE PLAN: each family (trailer group) found BY NAME, exactly one row, case-insensitive:
     CHILLER  "No PU insulation for Chillers"
@@ -29,7 +32,7 @@ from pathlib import Path
 
 import psycopg
 
-TARGETS = {"prod": "icb_platform", "mirror": "icb_prodmirror"}
+TARGETS = {"prod": "icb_platform", "mirror": "icb_prodmirror", "dev": "icb"}
 S = "icb_costings"
 PLAN = {
     "CHILLER": "No PU insulation for Chillers",

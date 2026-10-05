@@ -1,0 +1,70 @@
+database icb_platform · read-only session
+
+== 1 · the families (the note's scope): every body, active or not
+   CHILLER: 3 bodies — #25 CHILLER 2.3 METER; #27 CHILLER LARGE; #26 CHILLER MEDIUM
+   FREEZER: 3 bodies — #19 FREEZER 2.3 METER; #21 FREEZER LARGE; #20 FREEZER MEDIUM
+   EXPLOSIVE: 11 bodies — #37 EXPLOSIVE 2.7 TO 4.8; #23 EXPLOSIVE 2.7 TO 4.8 OLD [deleted-23] (inactive) NON-v2; #24 EXPLOSIVE 4.9 AND UP; #34 EXPLOSIVE UP TO 2.7; #22 EXPLOSIVE UP TO 2.7 [deleted-22] (inactive) NON-v2; #28 EXPLOSIVE UP TO 2.7 [deleted-28] (inactive) NON-v2; #29 EXPLOSIVE UP TO 2.7 [deleted-29] (inactive) NON-v2; #30 EXPLOSIVE UP TO 2.7 [deleted-30] (inactive) NON-v2; #31 EXPLOSIVE UP TO 2.7 [deleted-31] (inactive) NON-v2; #32 EXPLOSIVE UP TO 2.7 [deleted-32] (inactive) NON-v2; #33 EXPLOSIVE UP TO 2.7 [deleted-33] (inactive) NON-v2
+   ICE CREAM: 3 bodies — #18 ICECREAM BODY LARGE; #17 ICECREAM BODY MEDIUM; #16 ICECREAM BODY SMALL
+   named CHILLER/FREEZER but outside that family: none
+
+== 2 · per chiller / freezer body: the forbidden masters (they stay; the drafts stopped offering them)
+   #25 CHILLER 2.3 METER (CHILLER) · draft present · backups 1
+      FRONT PU   master 3794 T=0.0 default=False · live draft: not offered · backups offering it: draft#14 2026-05-23
+      SIDES PU   master 3800 T=0.0 default=False · live draft: not offered · backups offering it: draft#14 2026-05-23
+      ROOF PU    master 3802 T=0.0 default=False · live draft: not offered · backups offering it: draft#14 2026-05-23
+      FLOOR PU   master 3804 T=0.0 default=False · live draft: not offered · backups offering it: draft#14 2026-05-23
+      DRD PU     master 3796 T=0.0 default=False · live draft: not offered · backups offering it: draft#14 2026-05-23
+      SRD PU     master 3798 T=0.0 default=False · live draft: not offered · backups offering it: draft#14 2026-05-23
+   #27 CHILLER LARGE (CHILLER) · draft present · backups 1
+      FRONT PU   master 3432 T=0.0 default=False · live draft: not offered · backups offering it: draft#2 2026-05-23
+      SIDES PU   master 3438 T=0.0 default=False · live draft: not offered · backups offering it: draft#2 2026-05-23
+      ROOF PU    master 3440 T=0.0 default=False · live draft: not offered · backups offering it: draft#2 2026-05-23
+      FLOOR PU   master 3442 T=0.0 default=False · live draft: not offered · backups offering it: draft#2 2026-05-23
+      DRD PU     master 3434 T=0.0 default=False · live draft: not offered · backups offering it: draft#2 2026-05-23
+      SRD PU     master 3436 T=0.0 default=False · live draft: not offered · backups offering it: draft#2 2026-05-23
+   #26 CHILLER MEDIUM (CHILLER) · draft present · backups 1
+      FRONT PU   master 3293 T=0.0 default=False · live draft: not offered · backups offering it: draft#15 2026-05-23
+      SIDES PU   master 3299 T=0.0 default=False · live draft: not offered · backups offering it: draft#15 2026-05-23
+      ROOF PU    master 3301 T=0.0 default=False · live draft: not offered · backups offering it: draft#15 2026-05-23
+      FLOOR PU   master 3303 T=0.0 default=False · live draft: not offered · backups offering it: draft#15 2026-05-23
+      DRD PU     master 3295 T=0.0 default=False · live draft: not offered · backups offering it: draft#15 2026-05-23
+      SRD PU     master 3297 T=0.0 default=False · live draft: not offered · backups offering it: draft#15 2026-05-23
+   #19 FREEZER 2.3 METER (FREEZER) · draft present · backups 1
+      FRONT EPS  master 3673 T=0.0 default=False · live draft: not offered · backups offering it: draft#1 2026-05-23
+      SIDES EPS  master 3679 T=0.0 default=False · live draft: not offered · backups offering it: draft#1 2026-05-23
+      DRD EPS    master 3675 T=0.0 default=False · live draft: not offered · backups offering it: draft#1 2026-05-23
+      SRD EPS    master 3677 T=0.0 default=False · live draft: not offered · backups offering it: draft#1 2026-05-23
+   #21 FREEZER LARGE (FREEZER) · draft present · backups 1
+      FRONT EPS  master 2680 T=0.0 default=False · live draft: not offered · backups offering it: draft#3 2026-05-23
+      SIDES EPS  master 2686 T=0.0 default=False · live draft: not offered · backups offering it: draft#3 2026-05-23
+      DRD EPS    master 2682 T=0.0 default=False · live draft: not offered · backups offering it: draft#3 2026-05-23
+      SRD EPS    master 2684 T=0.0 default=False · live draft: not offered · backups offering it: draft#3 2026-05-23
+   #20 FREEZER MEDIUM (FREEZER) · draft present · backups 1
+      FRONT EPS  master 2532 T=0.0 default=False · live draft: not offered · backups offering it: draft#10 2026-05-23
+      SIDES EPS  master 2538 T=0.0 default=False · live draft: not offered · backups offering it: draft#10 2026-05-23
+      DRD EPS    master 2534 T=0.0 default=False · live draft: not offered · backups offering it: draft#10 2026-05-23
+      SRD EPS    master 2536 T=0.0 default=False · live draft: not offered · backups offering it: draft#10 2026-05-23
+
+== 3 · saved costings on chiller / freezer bodies that carry a forbidden choice (quote numbers only)
+   #25 CHILLER 2.3 METER: 6 live costing(s), 0 soft-deleted
+   #27 CHILLER LARGE: 7 live costing(s), 1 soft-deleted
+   #26 CHILLER MEDIUM: 8 live costing(s), 2 soft-deleted
+   #19 FREEZER 2.3 METER: 6 live costing(s), 0 soft-deleted
+   #21 FREEZER LARGE: 7 live costing(s), 0 soft-deleted
+   #20 FREEZER MEDIUM: 13 live costing(s), 0 soft-deleted
+
+   CHILLER (PU anywhere): 1 live costing(s) carry it — by status {'pending': 1}
+      N9937/07/2026    pending    2026-07-14 #26 CHILLER MEDIUM       priced=- thickness=FRONT,SIDES,DRD selected=-
+      soft-deleted carrying it: 0 (not listed)
+
+   FREEZER (EPS on FRONT / SIDES / doors): 1 live costing(s) carry it — by status {'pending': 1}
+      A9998/09/2026    pending    2026-09-15 #20 FREEZER MEDIUM       priced=SIDES thickness=SIDES selected=SIDES
+      soft-deleted carrying it: 0 (not listed)
+
+== 4 · validated references whose costing carries a forbidden choice (recall re-applies it)
+   3 reference(s) on these bodies; 0 point at a costing in §3: none
+
+== 5 · side-door lines on the freezer bodies (the note's wording)
+   #19 FREEZER 2.3 METER: 7 line(s) — OPTIONAL EXTRAS: Side doors with access step - Single; OPTIONAL EXTRAS: Side doors with access step - Double; OPTIONAL EXTRAS: Side doors with access step - Dry Freight Side Door; OPTIONAL EXTRAS: Insulated Panelvan - Side door & double rear doors; OPTIONAL EXTRAS: Insulated Panelvan - Double side doors & double rear doors; OPTIONAL EXTRAS: Sliding steps on side door (Bidfood); OPTIONAL EXTRAS: Platform & ladder on side door
+   #21 FREEZER LARGE: 7 line(s) — OPTIONAL EXTRAS: Side doors with access step - Single; OPTIONAL EXTRAS: Side doors with access step - Double; OPTIONAL EXTRAS: Side doors with access step - Dry Freight Side Door; OPTIONAL EXTRAS: Insulated Panelvan - Side door & double rear doors; OPTIONAL EXTRAS: Insulated Panelvan - Double side doors & double rear doors; OPTIONAL EXTRAS: Sliding steps on side door (Bidfood); OPTIONAL EXTRAS: Platform & ladder on side door
+   #20 FREEZER MEDIUM: 7 line(s) — OPTIONAL EXTRAS: Side doors with access step - Single; OPTIONAL EXTRAS: Side doors with access step - Double; OPTIONAL EXTRAS: Side doors with access step - Dry Freight Side Door; OPTIONAL EXTRAS: Insulated Panelvan - Side door & double rear doors; OPTIONAL EXTRAS: Insulated Panelvan - Double side doors & double rear doors; OPTIONAL EXTRAS: Sliding steps on side door (Bidfood); OPTIONAL EXTRAS: Platform & ladder on side door

@@ -1,0 +1,157 @@
+=== 'Manni RIGIDS CB'  block=A  source=auto
+  inputs: LENGTH=C4(7.5)  WIDTH=C5(2.6)  HEIGHT=C6(2.6)
+  flags:
+    FRONT EPS                thickness C8=0.0      flag D8=N
+    FRONT PU                 thickness C9=0.062    flag D9=Y
+    DRD EPS                  thickness C10=0.0      flag D10=N
+    DRD PU                   thickness C11=0.038    flag D11=Y
+    SRD EPS                  thickness C12=0.0      flag D12=N
+    SRD PU                   thickness C13=0.0      flag D13=N
+    SIDES EPS                thickness C14=0.0      flag D14=N
+    SIDES PU                 thickness C15=0.038    flag D15=Y
+    ROOF EPS                 thickness C16=0.0      flag D16=N
+    ROOF PU                  thickness C17=0.038    flag D17=Y
+    FLOOR EPS                thickness C18=0.0      flag D18=N
+    FLOOR PU                 thickness C19=0.076    flag D19=Y
+    18MM PHENO PLY           thickness C20=None     flag D20=N
+    18MM FINN PLY FLOOR      thickness C21=None     flag D21=Y
+    12MM FINN PLYWOOD        thickness C22=None     flag D22=N
+    RICE GRAIN FLOOR         thickness C23=None     flag D23=N
+    ALU KICKPLATES           thickness C24=None     flag D24=N
+    2ND ROW ALU KICKPLATES   thickness C25=None     flag D25=N
+  sections (13):
+    FRONT                        rows 30-40 hdr=30 total=37 cols q/p/t=F/G/H lines=5 gated=J37 gate=I32<-FRONT PU cached=6769.659731
+    SRD                          rows 42-49 hdr=42 total=48 cols q/p/t=F/G/H lines=4 gated=J48,J49 gate=I44<-SRD PU; I48<-SRD EPS; I49<-SRD PU cached=0.0
+    SRD DOOR FITTINGS            rows 51-72 hdr=51 total=70 cols q/p/t=D/E/F lines=17 gated=J70,J71 gate=I70<-SRD EPS; I71<-SRD PU cached=0.0
+    DRD                          rows 74-81 hdr=74 total=80 cols q/p/t=F/G/H lines=4 gated=J80,J81 gate=I76<-DRD PU; I80<-DRD EPS; I81<-DRD PU cached=4860.489874
+    DRD DOOR FITTINGS            rows 83-100 hdr=83 total=98 cols q/p/t=D/E/F lines=13 gated=J98,J99 gate=I98<-DRD EPS; I99<-DRD PU cached=6111.09422
+    SIDES                        rows 102-110 hdr=102 total=109 cols q/p/t=F/G/H lines=5 gated=J109 gate=I104<-SIDES PU cached=26818.960315
+    ROOF                         rows 112-119 hdr=112 total=118 cols q/p/t=F/G/H lines=4 gated=J118 gate=I114<-ROOF PU cached=11867.882619
+    FLOOR                        rows 121-137 hdr=121 total=136 cols q/p/t=F/G/H lines=13 gated=J136 gate=I123<-FLOOR PU; I124<-18MM PHENO PLY; I125<-18MM FINN PLY FLOOR; I126<-12MM FINN PLYWOOD; I127<-RICE GRAIN FLOOR; I128<-ALU KICKPLATES; I129<-2ND ROW ALU KICKPLATES; I133<-; I134<- cached=31406.674513
+    ALUMINIUM                    rows 139-148 hdr=140 total=147 cols q/p/t=F/G/H lines=5 gated=J147 gate=- cached=13646.146
+    SUB FRAME + LIGHT BOX ASSY   rows 150-178 hdr=151 total=177 cols q/p/t=F/G/H lines=24 gated=J177 gate=- cached=9554.913396
+    REAR FRAME + FLOOR PLATE     rows 180-194 hdr=181 total=193 cols q/p/t=F/G/H lines=9 gated=J193,J194 gate=I193<-DRD EPS; I194<-DRD PU cached=5081.02272
+    SPRAY PAINTING               rows 196-198 hdr=None total=None cols q/p/t=None/None/None lines=1 gated=J197 gate=- cached=750.0
+    REFLEXITE TAPE               rows 200-204 hdr=201 total=None cols q/p/t=F/G/H lines=1 gated=J203 gate=- cached=316.8
+  grand total: J205=117183.64338882054  self-check OK
+  stale external links: [3]=PRICE 20.04.2004.xls
+
+=== 'Manni Bakkie Rigids'  block=A  source=auto
+  inputs: LENGTH=C4(2.3)  WIDTH=C5(1.8)  HEIGHT=C6(1.6)
+  flags:
+    FRONT EPS                thickness C8=0.0      flag D8=N
+    FRONT PU                 thickness C9=0.062    flag D9=Y
+    DRD EPS                  thickness C10=0.0      flag D10=N
+    DRD PU                   thickness C11=0.062    flag D11=Y
+    SRD EPS                  thickness C12=0.0      flag D12=N
+    SRD PU                   thickness C13=0.0      flag D13=N
+    SIDES EPS                thickness C14=0.0      flag D14=N
+    SIDES PU                 thickness C15=0.062    flag D15=Y
+    ROOF EPS                 thickness C16=0.0      flag D16=N
+    ROOF PU                  thickness C17=0.062    flag D17=Y
+    FLOOR EPS                thickness C18=0.0      flag D18=N
+    FLOOR PU                 thickness C19=0.05     flag D19=Y
+    6mm PHONOL PLY           thickness C20=None     flag D20=N
+    6MM BIRCH PLY            thickness C21=None     flag D21=Y
+    12MM FINN PLYWOOD        thickness C22=None     flag D22=N
+    RICE GRAIN FLOOR         thickness C23=None     flag D23=Y
+    ALU KICKPLATES           thickness C24=None     flag D24=Y
+    2ND ROW ALU KICKPLATES   thickness C25=None     flag D25=N
+  sections (13):
+    FRONT                        rows 30-40 hdr=30 total=37 cols q/p/t=F/G/H lines=5 gated=J37 gate=I32<-FRONT PU cached=3152.499762
+    SRD                          rows 42-49 hdr=42 total=48 cols q/p/t=F/G/H lines=4 gated=J48,J49 gate=I44<-SRD PU; I48<-SRD EPS; I49<-SRD PU cached=0.0
+    SRD DOOR FITTINGS            rows 51-72 hdr=51 total=70 cols q/p/t=D/E/F lines=17 gated=J70,J71 gate=I70<-SRD EPS; I71<-SRD PU cached=0.0
+    DRD                          rows 74-81 hdr=74 total=80 cols q/p/t=F/G/H lines=4 gated=J80,J81 gate=I76<-DRD PU; I80<-DRD EPS; I81<-DRD PU cached=2728.529363
+    DRD DOOR FITTINGS            rows 83-100 hdr=83 total=98 cols q/p/t=D/E/F lines=13 gated=J98,J99 gate=I98<-DRD EPS; I99<-DRD PU cached=4599.63332
+    SIDES                        rows 102-110 hdr=102 total=109 cols q/p/t=F/G/H lines=5 gated=J109 gate=I104<-SIDES PU cached=6261.329009
+    ROOF                         rows 112-119 hdr=112 total=118 cols q/p/t=F/G/H lines=4 gated=J118 gate=I114<-ROOF PU cached=3183.995399
+    FLOOR                        rows 121-136 hdr=121 total=135 cols q/p/t=F/G/H lines=12 gated=J135 gate=I123<-FLOOR PU; I124<-6mm PHONOL PLY; I125<-6MM BIRCH PLY; I126<-RICE GRAIN FLOOR; I127<-ALU KICKPLATES; I128<-2ND ROW ALU KICKPLATES; I132<-; I133<- cached=12686.69188
+    ALUMINIUM                    rows 138-147 hdr=139 total=146 cols q/p/t=F/G/H lines=5 gated=J146 gate=- cached=3939.998
+    SUB FRAME + LIGHT BOX ASSY   rows 149-177 hdr=150 total=176 cols q/p/t=F/G/H lines=24 gated=J176 gate=- cached=5324.098996
+    REAR FRAME + FLOOR PLATE     rows 179-193 hdr=180 total=192 cols q/p/t=F/G/H lines=9 gated=J192,J193 gate=I192<-DRD EPS; I193<-DRD PU cached=1583.568
+    SPRAY PAINTING               rows 195-197 hdr=None total=None cols q/p/t=None/None/None lines=1 gated=J196 gate=- cached=750.0
+    REFLEXITE TAPE               rows 199-203 hdr=200 total=None cols q/p/t=F/G/H lines=1 gated=J202 gate=- cached=115.2
+  grand total: J204=44325.54372947808  self-check OK
+  stale external links: [3]=PRICE 20.04.2004.xls
+
+=== 'Manni RIGIDS FB'  block=A  source=auto
+  inputs: LENGTH=C4(7.5)  WIDTH=C5(2.6)  HEIGHT=C6(2.6)
+  flags:
+    FRONT EPS                thickness C8=0.0      flag D8=N
+    FRONT PU                 thickness C9=0.062    flag D9=Y
+    DRD EPS                  thickness C10=0.0      flag D10=N
+    DRD PU                   thickness C11=0.062    flag D11=Y
+    SRD EPS                  thickness C12=0.0      flag D12=N
+    SRD PU                   thickness C13=0.0      flag D13=N
+    SIDES EPS                thickness C14=0.0      flag D14=N
+    SIDES PU                 thickness C15=0.062    flag D15=Y
+    ROOF EPS                 thickness C16=0.0      flag D16=N
+    ROOF PU                  thickness C17=0.082    flag D17=Y
+    FLOOR EPS                thickness C18=0.0      flag D18=N
+    FLOOR PU                 thickness C19=0.076    flag D19=Y
+    18MM PHENO PLY           thickness C20=None     flag D20=N
+    18MM FINN PLY FLOOR      thickness C21=None     flag D21=Y
+    12MM FINN PLYWOOD        thickness C22=None     flag D22=N
+    RICE GRAIN FLOOR         thickness C23=None     flag D23=Y
+    ALU KICKPLATES           thickness C24=None     flag D24=Y
+    2ND ROW ALU KICKPLATES   thickness C25=None     flag D25=N
+  sections (13):
+    FRONT                        rows 30-39 hdr=30 total=36 cols q/p/t=F/G/H lines=4 gated=J36 gate=I32<-FRONT PU cached=4378.150596
+    SRD                          rows 41-48 hdr=41 total=47 cols q/p/t=F/G/H lines=4 gated=J47,J48 gate=I43<-SRD PU; I47<-SRD EPS; I48<-SRD PU cached=0.0
+    SRD DOOR FITTINGS            rows 50-71 hdr=50 total=69 cols q/p/t=D/E/F lines=17 gated=J69,J70 gate=I69<-SRD EPS; I70<-SRD PU cached=0.0
+    DRD                          rows 73-80 hdr=73 total=79 cols q/p/t=F/G/H lines=4 gated=J79,J80 gate=I75<-DRD PU; I79<-DRD EPS; I80<-DRD PU cached=3262.822075
+    DRD DOOR FITTINGS            rows 82-99 hdr=82 total=97 cols q/p/t=D/E/F lines=13 gated=J97,J98 gate=I97<-DRD EPS; I98<-DRD PU cached=6063.1641
+    SIDES                        rows 101-109 hdr=101 total=108 cols q/p/t=F/G/H lines=5 gated=J108 gate=I103<-SIDES PU cached=18689.300739
+    ROOF                         rows 111-118 hdr=111 total=117 cols q/p/t=F/G/H lines=4 gated=J117 gate=I113<-ROOF PU cached=10334.279119
+    FLOOR                        rows 120-136 hdr=120 total=135 cols q/p/t=F/G/H lines=13 gated=J135 gate=I122<-FLOOR PU; I123<-18MM PHENO PLY; I124<-18MM FINN PLY FLOOR; I125<-12MM FINN PLYWOOD; I126<-RICE GRAIN FLOOR; I127<-ALU KICKPLATES; I128<-2ND ROW ALU KICKPLATES; I132<-; I133<- cached=61010.742221
+    ALUMINIUM                    rows 138-147 hdr=139 total=146 cols q/p/t=F/G/H lines=5 gated=J146 gate=- cached=11837.626
+    SUB FRAME + LIGHT BOX ASSY   rows 149-177 hdr=150 total=176 cols q/p/t=F/G/H lines=24 gated=J176 gate=- cached=9554.913396
+    REAR FRAME + FLOOR PLATE     rows 179-193 hdr=180 total=192 cols q/p/t=F/G/H lines=9 gated=J192,J193 gate=I192<-DRD EPS; I193<-DRD PU cached=5081.02272
+    SPRAY PAINTING               rows 195-197 hdr=None total=None cols q/p/t=None/None/None lines=1 gated=J196 gate=- cached=750.0
+    REFLEXITE TAPE               rows 199-203 hdr=200 total=None cols q/p/t=F/G/H lines=1 gated=J202 gate=- cached=316.8
+  grand total: J204=131278.8209660603  self-check OK
+  stale external links: [3]=PRICE 20.04.2004.xls
+
+=== 'Manni TRAILERS'  block=A  source=auto
+  inputs: LENGTH=C4(15.5)  WIDTH=C5(2.6)  HEIGHT=C6(2.85)
+  flags:
+    FRONT EPS                thickness C8=0.0      flag D8=N
+    FRONT PU                 thickness C9=0.082    flag D9=Y
+    DRD EPS                  thickness C10=0.0      flag D10=N
+    DRD PU                   thickness C11=0.067    flag D11=Y
+    SRD EPS                  thickness C12=0.0      flag D12=N
+    SRD PU                   thickness C13=0.0      flag D13=N
+    SIDES EPS                thickness C14=0.0      flag D14=N
+    SIDES PU                 thickness C15=0.062    flag D15=Y
+    ROOF EPS                 thickness C16=0.0      flag D16=N
+    ROOF PU                  thickness C17=0.082    flag D17=Y
+    FLOOR EPS                thickness C18=0.0      flag D18=N
+    FLOOR PU                 thickness C19=0.076    flag D19=Y
+    18MM PHENO PLY           thickness C20=None     flag D20=N
+    21MM FINN PLY FLOOR      thickness C21=None     flag D21=Y
+    12MM FINN PLYWOOD        thickness C22=None     flag D22=N
+    RICE GRAIN FLOOR         thickness C23=None     flag D23=Y
+    ALU KICKPLATES           thickness C24=None     flag D24=Y
+    2ND ROW ALU KICKPLATES   thickness C25=None     flag D25=N
+    RIGID                    thickness C26=None     flag D26=N
+    TRAILER FALSE BULKHEAD   thickness C27=None     flag D27=Y
+  sections (14):
+    FRONT                        rows 30-39 hdr=30 total=37 cols q/p/t=F/G/H lines=5 gated=J37 gate=I32<-FRONT PU cached=8044.810962
+    INT FALSE BULKHEAD           rows 41-48 hdr=41 total=46 cols q/p/t=F/G/H lines=2 gated=J46 gate=I46<-TRAILER FALSE BULKHEAD cached=7507.48
+    SRD                          rows 50-57 hdr=50 total=56 cols q/p/t=F/G/H lines=4 gated=J56,J57 gate=I52<-SRD PU; I56<-SRD EPS; I57<-SRD PU cached=0.0
+    SRD DOOR FITTINGS            rows 59-80 hdr=59 total=78 cols q/p/t=D/E/F lines=17 gated=J78,J79 gate=I78<-SRD EPS; I79<-SRD PU cached=0.0
+    DRD                          rows 82-89 hdr=82 total=88 cols q/p/t=F/G/H lines=4 gated=J88,J89 gate=I84<-DRD PU; I88<-DRD EPS; I89<-DRD PU cached=6425.03003
+    DRD DOOR FITTINGS            rows 91-108 hdr=91 total=106 cols q/p/t=D/E/F lines=13 gated=J106,J107 gate=I106<-DRD EPS; I107<-DRD PU cached=6565.1416
+    SIDES                        rows 110-118 hdr=110 total=117 cols q/p/t=F/G/H lines=5 gated=J117 gate=I112<-SIDES PU cached=73119.638695
+    ROOF                         rows 120-127 hdr=120 total=126 cols q/p/t=F/G/H lines=4 gated=J126 gate=I122<-ROOF PU cached=33965.899624
+    FLOOR                        rows 129-145 hdr=129 total=144 cols q/p/t=F/G/H lines=13 gated=J144 gate=I131<-FLOOR PU; I132<-18MM PHENO PLY; I133<-21MM FINN PLY FLOOR; I134<-12MM FINN PLYWOOD; I135<-RICE GRAIN FLOOR; I136<-ALU KICKPLATES; I137<-2ND ROW ALU KICKPLATES; I141<-; I142<- cached=125519.155257
+    ALUMINIUM                    rows 147-156 hdr=148 total=155 cols q/p/t=F/G/H lines=5 gated=J155 gate=- cached=23733.546
+    SUB FRAME + LIGHT BOX ASSY   rows 158-186 hdr=159 total=185 cols q/p/t=F/G/H lines=24 gated=J185 gate=I185<-RIGID cached=0.0
+    REAR FRAME + FLOOR PLATE     rows 188-202 hdr=189 total=201 cols q/p/t=F/G/H lines=9 gated=J201,J202 gate=I201<-DRD EPS; I202<-DRD PU cached=5177.59872
+    SPRAY PAINTING               rows 204-206 hdr=None total=None cols q/p/t=None/None/None lines=1 gated=J205 gate=- cached=750.0
+    REFLEXITE TAPE               rows 208-212 hdr=209 total=None cols q/p/t=F/G/H lines=1 gated=J211 gate=- cached=604.8
+  grand total: J213=291413.1008873934  self-check OK
+  stale external links: [3]=PRICE 20.04.2004.xls
+
+=== 'Manni DF'
+  NOT DISCOVERABLE: no LENGTH label in row 4 — not a standard body sheet (add a sheet_map)

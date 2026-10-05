@@ -1,0 +1,12 @@
+deployed      682a6cc -> 01751fa (01751fa330f57526c15129892820013cdb5f8b17)
+tag           v1.60.1 = e9b6327b83db27696cdb465133a56d58b773e11f (local = origin, peels to the target); git describe = v1.60.1
+alembic       0051 -> 0051 (no migration)
+backup        /var/backups/postgres/icb_platform_pre-v1.60.1_20261005-085605.dump  3134567 bytes  sha256 8d65ca3ffd9930d66a36d6140dece6d4b8be7318c18fbf88cf6ef8ae9533eea2
+restart       Sat 2026-10-03 06:12:20 SAST -> Mon 2026-10-05 08:56:09 SAST (pid 195040 -> 212582), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+version       local v1.60.1 · lan v1.60.1 · cloudflare v1.60.1
+no session    local: all 44 as expected · lan: all 44 as expected · cloudflare: all 44 as expected
+body tmpl     admin_templates.html loads ?v=21; admin_templates.js da0224ce9656e8226b45d881fa60b9269f957cc275cc1bc2661ca9cab18b0e48 (local = lan = the target blob)
+spa           assets/index-Bd_exvgd.js e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161 (local = lan = disk; unchanged, no rebuild)
+finished      2026-10-05T08:56:54+02:00

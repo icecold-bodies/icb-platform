@@ -1,0 +1,8 @@
+# RT4 window 5 Oct — the CLI reports of the pre-window check (08:19) and of the window's All pre (08:55), post (08:57, after the deploy) and afterS (08:58, after Manifest S), compared cell by cell on (status, base_status, excel_total, mes_total) over all five packs (smoke included). CA, scratchpad cmp3.py, 2026-10-05T09:35:35
+prewindow cells: 2936
+pre cells: 2936
+post cells: 2936
+afterS cells: 2936
+prewindow vs pre: 0 cell(s) differ
+     post vs pre: 0 cell(s) differ
+   afterS vs pre: 0 cell(s) differ

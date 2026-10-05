@@ -1,0 +1,99 @@
+== RT4 close 2026-10-05T12:33:24+02:00 · code 01751fa
+
+== 1. READ ONLY
+-- session
+db | read_only | alembic
+icb_platform | on | 0051
+
+-- bom_sections 83, 84, 85 (must be gone) and 26, 15, 21 (must exist)
+id | name | sort_order | multiplier | is_optional | archived_at
+15 | DRD DOOR FITTINGS | 2 | 1 | f | 
+21 | REAR FRAME & FLOOR PLATE | 8 | 1 | f | 
+26 | SRD DOOR FITTINGS | 2 | 1 | f | 
+83 | DOOR FITTINGS SRD | 2 | 1 | f | 
+84 | DOOR FITTINGS DRD | 4 | 1 | f | 
+85 | REAR FRAME + FLOOR PLATE | 10 | 1 | f | 
+
+-- lines naming 83 / 84 / 85 by id or by string (must be 0)
+lines
+0
+
+-- drafts naming them as a key (must be 0)
+drafts
+0
+
+-- MANNI DF's 7 lines (Manifest S1: 793-796 on 64, 843-845 on 65)
+id | trailer_type_id | bom_section_id | bom_section
+793 | 7 | 64 | 3MM MILD STEEL FLOOR
+794 | 7 | 64 | 3MM MILD STEEL FLOOR
+795 | 7 | 64 | 3MM MILD STEEL FLOOR
+796 | 7 | 64 | 3MM MILD STEEL FLOOR
+843 | 7 | 65 | LOAD LOCK RAILS
+844 | 7 | 65 | LOAD LOCK RAILS
+845 | 7 | 65 | LOAD LOCK RAILS
+
+-- deleted id 41's 39 Manifest S2 lines by section (26 x 17, 15 x 13, 21 x 9)
+bom_section_id | bom_section | count
+15 | DRD DOOR FITTINGS | 13
+21 | REAR FRAME & FLOOR PLATE | 9
+26 | SRD DOOR FITTINGS | 17
+
+== 2. /tmp clean-up (the RT4 kits; /var/backups is kept)
+-- before:
+-rwxr-xr-x 1 mickeyger mickeyger     2265 Sep  7 16:56 /tmp/icb-allpairs-v1522.sh
+-rwxr-xr-x 1 mickeyger mickeyger     5061 Sep  7 16:38 /tmp/icb-deploy-v1521.sh
+-rwxr-xr-x 1 mickeyger mickeyger     1948 Sep  7 16:09 /tmp/icb-reardoor-v152.sh
+drwxr-xr-x 6 mickeyger mickeyger     4096 Oct  5 09:01 /tmp/icb-release-v1.60.1
+-rw-rw-r-- 1 mickeyger mickeyger    30720 Oct  5 08:17 /tmp/icb-release-v1.60.1.tar
+-rw-rw-r-- 1 icb       icb             41 Sep 15 14:55 /tmp/icb-rollback-20260915-145559.txt
+-rw-rw-r-- 1 icb       icb             41 Sep 15 16:42 /tmp/icb-rollback-20260915-164241.txt
+-rw-rw-r-- 1 icb       icb             41 Sep 16 10:51 /tmp/icb-rollback-20260916-105138.txt
+-rw-rw-r-- 1 icb       icb             41 Sep 28 15:28 /tmp/icb-rollback-20260928-152820.txt
+-rw-rw-r-- 1 icb       icb             41 Sep 30 20:51 /tmp/icb-rollback-20260930-205119.txt
+-rw-rw-r-- 1 icb       icb             41 Oct  2 11:11 /tmp/icb-rollback-20261002-111127.txt
+-rw-rw-r-- 1 icb       icb             41 Oct  3 06:04 /tmp/icb-rollback-20261003-060452.txt
+-rw-rw-r-- 1 icb       icb             41 Oct  5 08:56 /tmp/icb-rollback-20261005-085609.txt
+-rwxr-xr-x 1 mickeyger mickeyger      779 Sep  7 16:38 /tmp/icb-rollback-v1521.sh
+drwxr-xr-x 6 mickeyger mickeyger     4096 Oct  5 08:58 /tmp/icb-rt2-all
+-rw-rw-r-- 1 mickeyger mickeyger    20480 Oct  5 08:17 /tmp/icb-rt2-all.tar
+drwxr-xr-x 3 mickeyger mickeyger     4096 Oct  5 09:01 /tmp/icb-rt2-doors
+-rw-rw-r-- 1 mickeyger mickeyger  3993600 Oct  5 08:17 /tmp/icb-rt2-doors.tar
+drwxr-xr-x 5 mickeyger mickeyger     4096 Oct  5 08:58 /tmp/icb-rt4-data
+-rw-rw-r-- 1 mickeyger mickeyger    71680 Oct  5 08:17 /tmp/icb-rt4-data.tar
+drwxr-xr-x 4 mickeyger mickeyger     4096 Oct  4 08:02 /tmp/icb-rt4-discovery
+-rw-rw-r-- 1 mickeyger mickeyger   256000 Oct  4 08:01 /tmp/icb-rt4-discovery.tar
+drwxr-xr-x 4 mickeyger mickeyger     4096 Oct  4 13:41 /tmp/icb-rt4-export41
+-rw-rw-r-- 1 mickeyger mickeyger   225280 Oct  4 13:41 /tmp/icb-rt4-export41.tar
+drwxr-xr-x 3 mickeyger mickeyger     4096 Oct  5 08:19 /tmp/icb-rt4-prewindow
+-rw-rw-r-- 1 mickeyger mickeyger  4085760 Oct  5 08:17 /tmp/icb-rt4-prewindow.tar
+drwxrwxr-x 3 icb       icb           4096 Sep 29 13:21 /tmp/icb-srd-discovery
+-rw-rw-r-- 1 mickeyger mickeyger       41 Sep  7 16:41 /tmp/icb-v1521-rollback-anchor.txt
+-rw-r--r-- 1 root      root          1264 Oct  5 12:33 /tmp/rt4-close-check.txt
+-rw-rw-r-- 1 mickeyger mickeyger 10434560 Oct  5 08:19 /tmp/rt4-prewindow-back.tar
+-rw-r--r-- 1 root      root      25344000 Oct  5 09:13 /tmp/rt4-window-back.tar
+-- after:
+-rwxr-xr-x 1 mickeyger mickeyger 2265 Sep  7 16:56 /tmp/icb-allpairs-v1522.sh
+-rwxr-xr-x 1 mickeyger mickeyger 5061 Sep  7 16:38 /tmp/icb-deploy-v1521.sh
+-rwxr-xr-x 1 mickeyger mickeyger 1948 Sep  7 16:09 /tmp/icb-reardoor-v152.sh
+-rw-rw-r-- 1 icb       icb         41 Sep 15 14:55 /tmp/icb-rollback-20260915-145559.txt
+-rw-rw-r-- 1 icb       icb         41 Sep 15 16:42 /tmp/icb-rollback-20260915-164241.txt
+-rw-rw-r-- 1 icb       icb         41 Sep 16 10:51 /tmp/icb-rollback-20260916-105138.txt
+-rw-rw-r-- 1 icb       icb         41 Sep 28 15:28 /tmp/icb-rollback-20260928-152820.txt
+-rw-rw-r-- 1 icb       icb         41 Sep 30 20:51 /tmp/icb-rollback-20260930-205119.txt
+-rw-rw-r-- 1 icb       icb         41 Oct  2 11:11 /tmp/icb-rollback-20261002-111127.txt
+-rw-rw-r-- 1 icb       icb         41 Oct  3 06:04 /tmp/icb-rollback-20261003-060452.txt
+-rw-rw-r-- 1 icb       icb         41 Oct  5 08:56 /tmp/icb-rollback-20261005-085609.txt
+-rwxr-xr-x 1 mickeyger mickeyger  779 Sep  7 16:38 /tmp/icb-rollback-v1521.sh
+drwxrwxr-x 3 icb       icb       4096 Sep 29 13:21 /tmp/icb-srd-discovery
+-rw-rw-r-- 1 mickeyger mickeyger   41 Sep  7 16:41 /tmp/icb-v1521-rollback-anchor.txt
+-rw-r--r-- 1 root      root      3846 Oct  5 12:33 /tmp/rt4-close-check.txt
+-- kept:
+-rw------- 1 root root 3134567 Oct  5 08:56 /var/backups/postgres/icb_platform_pre-v1.60.1_20261005-085605.dump
+
+/var/backups/icb-rt4-2026-10/:
+total 220
+-rw-r--r-- 1 root root  80078 Oct  5 08:58 journal_S_pricing_corrections_journal_prod_20261005T065813Z.json
+-rw-r--r-- 1 root root    519 Oct  5 08:58 journal_S_pricing_corrections_journal_prod_20261005T065813Z.provenance.txt
+-rw-r--r-- 1 root root 135668 Oct  5 08:58 pre_apply_S_20261005T065809Z.sql.gz
+
+== done 2026-10-05T12:33:25+02:00

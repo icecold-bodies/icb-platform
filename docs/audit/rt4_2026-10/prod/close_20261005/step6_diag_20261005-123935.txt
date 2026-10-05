@@ -1,0 +1,35 @@
+== RT4 step-6 diagnosis 2026-10-05T12:39:35+02:00 · code 01751fa
+
+== 1. the service log since 2026-10-05 08:50
+-- non-GET calls on /api/bom-sections (the request line and its status)
+
+-- the Sections list and usage reads (count per path)
+     12 "GET /api/bom-sections
+      1 "GET /api/bom-sections/20/usage
+
+-- errors and tracebacks
+
+== 2. the database (read-only)
+-- session
+db | read_only
+icb_platform | on
+
+-- bom_sections 83, 84, 85 now
+id | name | sort_order | archived_at | body_option_master_id
+83 | DOOR FITTINGS SRD | 2 |  | 
+84 | DOOR FITTINGS DRD | 4 |  | 
+85 | REAR FRAME + FLOOR PLATE | 10 |  | 
+
+-- every foreign key that references bom_sections
+tbl | conname | def
+bill_of_materials | bill_of_materials_bom_section_id_fkey | FOREIGN KEY (bom_section_id) REFERENCES bom_sections(id) NOT VALID
+body_option_groups | body_option_groups_bom_section_id_fkey | FOREIGN KEY (bom_section_id) REFERENCES bom_sections(id)
+
+-- body_option_groups pointing at 83 / 84 / 85
+id | name | sort_order | bom_section_id
+
+-- bill_of_materials pointing at 83 / 84 / 85 (expected 0)
+count
+0
+
+== done 2026-10-05T12:39:35+02:00

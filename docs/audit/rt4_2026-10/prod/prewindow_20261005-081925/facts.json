@@ -1,0 +1,448 @@
+{
+ "bodies": [
+  {
+   "id": 12,
+   "name": "MEAT HANGER LARGE",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "MEAT",
+   "kind": null
+  },
+  {
+   "id": 15,
+   "name": "RHINORANGE TRAILER",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "OTHER",
+   "kind": null
+  },
+  {
+   "id": 16,
+   "name": "ICECREAM BODY SMALL",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "ICE CREAM",
+   "kind": null
+  },
+  {
+   "id": 17,
+   "name": "ICECREAM BODY MEDIUM",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "ICE CREAM",
+   "kind": null
+  },
+  {
+   "id": 18,
+   "name": "ICECREAM BODY LARGE",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "ICE CREAM",
+   "kind": null
+  },
+  {
+   "id": 19,
+   "name": "FREEZER 2.3 METER",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "FREEZER",
+   "kind": "FREEZER"
+  },
+  {
+   "id": 20,
+   "name": "FREEZER MEDIUM",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "FREEZER",
+   "kind": "FREEZER"
+  },
+  {
+   "id": 21,
+   "name": "FREEZER LARGE",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "FREEZER",
+   "kind": "FREEZER"
+  },
+  {
+   "id": 24,
+   "name": "EXPLOSIVE 4.9 AND UP",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "EXPLOSIVE",
+   "kind": null
+  },
+  {
+   "id": 25,
+   "name": "CHILLER 2.3 METER",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "CHILLER",
+   "kind": "CHILLER"
+  },
+  {
+   "id": 26,
+   "name": "CHILLER MEDIUM",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "CHILLER",
+   "kind": "CHILLER"
+  },
+  {
+   "id": 27,
+   "name": "CHILLER LARGE",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "CHILLER",
+   "kind": "CHILLER"
+  },
+  {
+   "id": 34,
+   "name": "EXPLOSIVE UP TO 2.7",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "EXPLOSIVE",
+   "kind": null
+  },
+  {
+   "id": 36,
+   "name": "MEAT HANGER SMALL-MEDIUM",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "MEAT",
+   "kind": null
+  },
+  {
+   "id": 37,
+   "name": "EXPLOSIVE 2.7 TO 4.8",
+   "is_active": true,
+   "configurator_v2": true,
+   "family": "EXPLOSIVE",
+   "kind": null
+  }
+ ],
+ "per_body": {
+  "19": {
+   "name": "FREEZER 2.3 METER",
+   "kind": "FREEZER",
+   "draft_state": "unchanged since 3 Oct (saved 2026-09-29 12:37)",
+   "offered": {
+    "FRONT": [
+     "PU"
+    ],
+    "DRD": [
+     "PU"
+    ],
+    "SRD": [
+     "PU"
+    ],
+    "SIDES": [
+     "PU"
+    ],
+    "ROOF": [
+     "EPS",
+     "PU"
+    ],
+    "FLOOR": [
+     "EPS",
+     "PU"
+    ]
+   },
+   "burt": "EPS offered on FLOOR, ROOF only (as ruled)",
+   "masters_deleted_since_2oct": [],
+   "stale_bindings": [],
+   "draft_sha": "d73822f38973"
+  },
+  "20": {
+   "name": "FREEZER MEDIUM",
+   "kind": "FREEZER",
+   "draft_state": "unchanged since 3 Oct (saved 2026-09-29 12:39)",
+   "offered": {
+    "FRONT": [
+     "PU"
+    ],
+    "DRD": [
+     "PU"
+    ],
+    "SRD": [
+     "PU"
+    ],
+    "SIDES": [
+     "PU"
+    ],
+    "ROOF": [
+     "EPS",
+     "PU"
+    ],
+    "FLOOR": [
+     "EPS",
+     "PU"
+    ]
+   },
+   "burt": "EPS offered on FLOOR, ROOF only (as ruled)",
+   "masters_deleted_since_2oct": [],
+   "stale_bindings": [],
+   "draft_sha": "20e28a71c023"
+  },
+  "21": {
+   "name": "FREEZER LARGE",
+   "kind": "FREEZER",
+   "draft_state": "unchanged since 3 Oct (saved 2026-10-02 17:42)",
+   "offered": {
+    "FRONT": [
+     "PU"
+    ],
+    "DRD": [
+     "PU"
+    ],
+    "SRD": [
+     "PU"
+    ],
+    "SIDES": [
+     "PU"
+    ],
+    "ROOF": [
+     "EPS",
+     "PU"
+    ],
+    "FLOOR": [
+     "EPS",
+     "PU"
+    ]
+   },
+   "burt": "EPS offered on FLOOR, ROOF only (as ruled)",
+   "masters_deleted_since_2oct": [],
+   "stale_bindings": [],
+   "draft_sha": "9f3f156d3f8c"
+  },
+  "25": {
+   "name": "CHILLER 2.3 METER",
+   "kind": "CHILLER",
+   "draft_state": "unchanged since 3 Oct (saved 2026-10-01 13:06)",
+   "offered": {
+    "FRONT": [
+     "EPS"
+    ],
+    "DRD": [
+     "EPS"
+    ],
+    "SRD": [
+     "EPS"
+    ],
+    "SIDES": [
+     "EPS"
+    ],
+    "ROOF": [
+     "EPS"
+    ],
+    "FLOOR": [
+     "EPS"
+    ]
+   },
+   "burt": "no PU offered (as ruled)",
+   "masters_deleted_since_2oct": [],
+   "stale_bindings": [],
+   "draft_sha": "78a7b07dc8fd"
+  },
+  "26": {
+   "name": "CHILLER MEDIUM",
+   "kind": "CHILLER",
+   "draft_state": "unchanged since 3 Oct (saved 2026-10-01 10:12)",
+   "offered": {
+    "FRONT": [
+     "EPS"
+    ],
+    "DRD": [
+     "EPS"
+    ],
+    "SRD": [
+     "EPS"
+    ],
+    "SIDES": [
+     "EPS"
+    ],
+    "ROOF": [
+     "EPS"
+    ],
+    "FLOOR": [
+     "EPS"
+    ]
+   },
+   "burt": "no PU offered (as ruled)",
+   "masters_deleted_since_2oct": [],
+   "stale_bindings": [],
+   "draft_sha": "3768c77d7f52"
+  },
+  "27": {
+   "name": "CHILLER LARGE",
+   "kind": "CHILLER",
+   "draft_state": "unchanged since 3 Oct (saved 2026-10-01 10:07)",
+   "offered": {
+    "FRONT": [
+     "EPS"
+    ],
+    "DRD": [
+     "EPS"
+    ],
+    "SRD": [
+     "EPS"
+    ],
+    "SIDES": [
+     "EPS"
+    ],
+    "ROOF": [
+     "EPS"
+    ],
+    "FLOOR": [
+     "EPS"
+    ]
+   },
+   "burt": "no PU offered (as ruled)",
+   "masters_deleted_since_2oct": [],
+   "stale_bindings": [],
+   "draft_sha": "b08caefa123e"
+  }
+ },
+ "dangling": [],
+ "manifest_a": {
+  "25": {
+   "name": "CHILLER 2.3 METER",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "26": {
+   "name": "CHILLER MEDIUM",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "27": {
+   "name": "CHILLER LARGE",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "19": {
+   "name": "FREEZER 2.3 METER",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "20": {
+   "name": "FREEZER MEDIUM",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "21": {
+   "name": "FREEZER LARGE",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "12": {
+   "name": "MEAT HANGER LARGE",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "16": {
+   "name": "ICECREAM BODY SMALL",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "17": {
+   "name": "ICECREAM BODY MEDIUM",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "18": {
+   "name": "ICECREAM BODY LARGE",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "24": {
+   "name": "EXPLOSIVE 4.9 AND UP",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 6,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "34": {
+   "name": "EXPLOSIVE UP TO 2.7",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "36": {
+   "name": "MEAT HANGER SMALL-MEDIUM",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 9,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  },
+  "37": {
+   "name": "EXPLOSIVE 2.7 TO 4.8",
+   "ok": true,
+   "every_condition_names_an_existing_master": true,
+   "as_written": 6,
+   "changed": [],
+   "gone": [],
+   "engine_ok": true
+  }
+ },
+ "diff_counts": {
+  "bom_removed_line": 6,
+  "bom_added_line": 7,
+  "bill_of_materials_changed": 13,
+  "materials_removed": 7,
+  "materials_added": 7,
+  "materials_changed": 10
+ },
+ "verdict": {
+  "a": "BOM ROWS AS WELL \u00b7 drafts saved since 3 Oct on 0 chiller/freezer bodies [] \u00b7 pricing rows changed {'bom_removed_line': 6, 'bom_added_line': 7, 'bill_of_materials_changed': 13, 'materials_removed': 7, 'materials_added': 7, 'materials_changed': 10} \u00b7 materials changed (see facts.txt) \u00b7 Burt's rulings read from the drafts: as ruled on 6 of 6 bodies with a draft",
+  "b": "#25 OK; #26 OK; #27 OK; #19 OK; #20 OK; #21 OK \u00b7 other Manifest A bodies: 8/8 OK",
+  "b_ok": true
+ }
+}

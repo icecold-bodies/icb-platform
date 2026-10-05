@@ -1,0 +1,33 @@
+# RT4 B.6 — the four standard Manni sheets of Burt's 21 Sep workbook, each at prod's DEFAULT size for its body
+# (RT4 discovery, 4 Oct: they equal the sheets' own saved sizes). Report only: no accepted list, no CI.
+# Manni DF is NOT here: its sheet is Burt's dry-freight template (inputs in B3:B5, Y/N options, no insulation
+# block), which the audit's sheet discovery does not read — manni_df_gap.py handles it.
+name: manni_gap
+workbook_month: "2026-09"
+tolerance_pct: 1.0
+gate_mode: as_sheet
+bodies:
+  - sheet: "Manni RIGIDS CB"
+    lengths: [7.5]
+    widths: [2.6]
+    heights: [2.6]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: "Manni Bakkie Rigids"
+    lengths: [2.3]
+    widths: [1.8]
+    heights: [1.6]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: "Manni RIGIDS FB"
+    lengths: [7.5]
+    widths: [2.6]
+    heights: [2.6]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+  - sheet: "Manni TRAILERS"
+    lengths: [15.5]
+    widths: [2.6]
+    heights: [2.85]
+    variants: [as_sheet, all_eps, all_pu, srd, drd, foam_4g]
+# the sheets save EPS at 0 thickness: all_eps uses the packs' standard EPS thickness (both sides get the same)
+thickness_defaults:
+  eps: {FRONT: 0.06, DRD: 0.06, SRD: 0.06, SIDES: 0.06, ROOF: 0.076, FLOOR: 0.076}
+  pu:  {FRONT: 0.06, DRD: 0.06, SRD: 0.06, SIDES: 0.06, ROOF: 0.076, FLOOR: 0.076}

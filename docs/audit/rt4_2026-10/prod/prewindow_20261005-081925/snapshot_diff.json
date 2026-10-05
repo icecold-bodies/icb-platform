@@ -1,0 +1,1218 @@
+{
+ "bill_of_materials": {
+  "removed": [
+   {
+    "id": 6308,
+    "trailer_type_id": 18,
+    "material_id": 707,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 17,
+    "bom_section": "SRD",
+    "bom_section_id": 25,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": true,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": null,
+    "floor_plate_id": 2,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 6311,
+    "trailer_type_id": 18,
+    "material_id": 710,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 44,
+    "bom_section": "DRD",
+    "bom_section_id": 14,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": null,
+    "floor_plate_id": 2,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 6312,
+    "trailer_type_id": 17,
+    "material_id": 711,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 17,
+    "bom_section": "SRD",
+    "bom_section_id": 25,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": null,
+    "floor_plate_id": 2,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 6313,
+    "trailer_type_id": 17,
+    "material_id": 712,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 44,
+    "bom_section": "DRD",
+    "bom_section_id": 14,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": true,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": null,
+    "floor_plate_id": 2,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 6314,
+    "trailer_type_id": 16,
+    "material_id": 713,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 13,
+    "bom_section": "SRD",
+    "bom_section_id": 25,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": true,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": null,
+    "floor_plate_id": 2,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 6315,
+    "trailer_type_id": 16,
+    "material_id": 714,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 38,
+    "bom_section": "DRD",
+    "bom_section_id": 14,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": null,
+    "floor_plate_id": 2,
+    "mounting_cleat_id": null
+   }
+  ],
+  "added": [
+   {
+    "id": 11213,
+    "trailer_type_id": 24,
+    "material_id": 1003,
+    "formula_expression": "6",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 43,
+    "bom_section": "DRD",
+    "bom_section_id": 14,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": 2,
+    "floor_plate_id": null,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 11214,
+    "trailer_type_id": 34,
+    "material_id": 1004,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 17,
+    "bom_section": "SRD",
+    "bom_section_id": 25,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": 2,
+    "floor_plate_id": null,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 11215,
+    "trailer_type_id": 24,
+    "material_id": 1005,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 17,
+    "bom_section": "SRD",
+    "bom_section_id": 25,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": 2,
+    "floor_plate_id": null,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 11216,
+    "trailer_type_id": 18,
+    "material_id": 1006,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 17,
+    "bom_section": "SRD",
+    "bom_section_id": 25,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": 2,
+    "floor_plate_id": null,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 11217,
+    "trailer_type_id": 18,
+    "material_id": 1007,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 44,
+    "bom_section": "DRD",
+    "bom_section_id": 14,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": 2,
+    "floor_plate_id": null,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 11218,
+    "trailer_type_id": 17,
+    "material_id": 1008,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 44,
+    "bom_section": "DRD",
+    "bom_section_id": 14,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": 2,
+    "floor_plate_id": null,
+    "mounting_cleat_id": null
+   },
+   {
+    "id": 11219,
+    "trailer_type_id": 17,
+    "material_id": 1009,
+    "formula_expression": "3",
+    "waste_percentage": 0.0,
+    "notes": "layout=area",
+    "sort_order": 17,
+    "bom_section": "SRD",
+    "bom_section_id": 25,
+    "excel_formula": null,
+    "unit_price_snapshot": null,
+    "source_cell": null,
+    "is_formula_skin": false,
+    "highlight_color": null,
+    "unit_price_override": null,
+    "price_updated_at": null,
+    "is_body_option": false,
+    "body_option_group": null,
+    "body_option_group_id": null,
+    "body_option_subgroup": null,
+    "body_option_subgroup_id": null,
+    "body_option_default": false,
+    "calc2_default_excluded": false,
+    "selection_mode": "always",
+    "selection_group": null,
+    "bom_conditions": null,
+    "variable_value": null,
+    "body_option_linked": null,
+    "body_option_linked_id": null,
+    "skin_formula_id": null,
+    "skin_formula_region": "standard",
+    "taping_block_id": 2,
+    "floor_plate_id": null,
+    "mounting_cleat_id": null
+   }
+  ],
+  "changed": [
+   {
+    "pk": [
+     1794
+    ],
+    "cols": {
+     "unit_price_override": [
+      256.5,
+      null
+     ]
+    }
+   },
+   {
+    "pk": [
+     1805
+    ],
+    "cols": {
+     "unit_price_override": [
+      256.5,
+      null
+     ]
+    }
+   },
+   {
+    "pk": [
+     1827
+    ],
+    "cols": {
+     "unit_price_override": [
+      256.5,
+      null
+     ]
+    }
+   },
+   {
+    "pk": [
+     1854
+    ],
+    "cols": {
+     "formula_expression": [
+      "((length+{Waste})+0.5)*((width+{Waste})+0.9)*2",
+      "((length+{Waste})+0.5)*((width+{Waste})+0.9)"
+     ]
+    }
+   },
+   {
+    "pk": [
+     1855
+    ],
+    "cols": {
+     "formula_expression": [
+      "((length+{Waste})+0.5)*((width+{Waste})+0.9)*2/2",
+      "((length+{Waste})+0.5)*((width+{Waste})+0.9)/2"
+     ]
+    }
+   },
+   {
+    "pk": [
+     2493
+    ],
+    "cols": {
+     "material_id": [
+      139,
+      182
+     ]
+    }
+   },
+   {
+    "pk": [
+     3953
+    ],
+    "cols": {
+     "formula_expression": [
+      "10",
+      "7"
+     ],
+     "taping_block_id": [
+      null,
+      1
+     ]
+    }
+   },
+   {
+    "pk": [
+     3979
+    ],
+    "cols": {
+     "formula_expression": [
+      "20",
+      "14"
+     ],
+     "taping_block_id": [
+      null,
+      1
+     ]
+    }
+   },
+   {
+    "pk": [
+     4021
+    ],
+    "cols": {
+     "material_id": [
+      182,
+      139
+     ]
+    }
+   },
+   {
+    "pk": [
+     5189
+    ],
+    "cols": {
+     "formula_expression": [
+      "10",
+      "7"
+     ],
+     "taping_block_id": [
+      null,
+      1
+     ]
+    }
+   },
+   {
+    "pk": [
+     5256
+    ],
+    "cols": {
+     "material_id": [
+      229,
+      139
+     ]
+    }
+   },
+   {
+    "pk": [
+     5311
+    ],
+    "cols": {
+     "formula_expression": [
+      "5",
+      "7"
+     ]
+    }
+   },
+   {
+    "pk": [
+     6418
+    ],
+    "cols": {
+     "material_id": [
+      225,
+      139
+     ]
+    }
+   }
+  ],
+  "cols_only_before": [],
+  "cols_only_now": []
+ },
+ "materials": {
+  "removed": [
+   {
+    "id": 225,
+    "name": "28783  SMALL HORIZONTALE CAP",
+    "category_id": 22,
+    "unit_of_measure": "each",
+    "price_per_unit": 197.2,
+    "supplier": null,
+    "material_code": null,
+    "sap_code": null,
+    "size": null,
+    "manufacture_sub_category": "ALU DIES",
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-05-13T12:25:21",
+    "is_active": true
+   },
+   {
+    "id": 707,
+    "name": "3MM ALU BUFFER PLATE",
+    "category_id": 28,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-07-21T08:57:54.671562",
+    "is_active": true
+   },
+   {
+    "id": 710,
+    "name": "3MM ALU BUFFER PLATE",
+    "category_id": 16,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-07-21T08:58:38.067681",
+    "is_active": true
+   },
+   {
+    "id": 711,
+    "name": "3MM ALU BUFFER PLATE",
+    "category_id": 28,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-07-21T08:51:05.321061",
+    "is_active": true
+   },
+   {
+    "id": 712,
+    "name": "3MM ALU BUFFER PLATE",
+    "category_id": 16,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-07-21T08:50:20.646346",
+    "is_active": true
+   },
+   {
+    "id": 713,
+    "name": "3MM ALU BUFFER PLATE",
+    "category_id": 28,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-07-21T08:47:37.304040",
+    "is_active": true
+   },
+   {
+    "id": 714,
+    "name": "3MM ALU BUFFER PLATE",
+    "category_id": 16,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-07-21T08:35:33.638174",
+    "is_active": true
+   }
+  ],
+  "added": [
+   {
+    "id": 1003,
+    "name": "TAPPING BLOCKS_250MM",
+    "category_id": 16,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-10-03T06:54:21.092253",
+    "is_active": true
+   },
+   {
+    "id": 1004,
+    "name": "130*62MM TAPPING BLOCKS 250MM",
+    "category_id": 28,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-10-03T06:56:59.327276",
+    "is_active": true
+   },
+   {
+    "id": 1005,
+    "name": "130*62MM TAPPING BLOCKS 250MM",
+    "category_id": 28,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-10-03T06:58:30.984716",
+    "is_active": true
+   },
+   {
+    "id": 1006,
+    "name": "130*62MM TAPPING BLOCKS 250MM",
+    "category_id": 28,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-10-03T07:21:20.284087",
+    "is_active": true
+   },
+   {
+    "id": 1007,
+    "name": "TAPPING BLOCKS_250MM",
+    "category_id": 16,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-10-03T07:23:29.837480",
+    "is_active": true
+   },
+   {
+    "id": 1008,
+    "name": "TAPPING BLOCKS_250MM",
+    "category_id": 16,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-10-03T07:28:09.506755",
+    "is_active": true
+   },
+   {
+    "id": 1009,
+    "name": "130*62MM TAPPING BLOCKS 250MM",
+    "category_id": 28,
+    "unit_of_measure": "each",
+    "price_per_unit": 68.0,
+    "supplier": "",
+    "material_code": null,
+    "sap_code": "",
+    "size": "",
+    "manufacture_sub_category": null,
+    "last_bulk_update_at": null,
+    "last_bulk_update_note": null,
+    "last_updated": "2026-10-03T07:28:52.799396",
+    "is_active": true
+   }
+  ],
+  "changed": [
+   {
+    "pk": [
+     104
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-09-21T11:07:38.745722",
+      "2026-10-03T07:30:22.617284"
+     ],
+     "name": [
+      "TAPPING BLOCKS_200MM",
+      "130*62MM TAPPING BLOCKS_200MM"
+     ]
+    }
+   },
+   {
+    "pk": [
+     139
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-05-16T03:16:42",
+      "2026-10-03T06:45:31.328725"
+     ],
+     "price_per_unit": [
+      203.25,
+      240.58
+     ]
+    }
+   },
+   {
+    "pk": [
+     182
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-05-13T12:25:21",
+      "2026-10-04T11:45:16.890508"
+     ],
+     "name": [
+      "28781 small HORIZONTALE CAP",
+      "28781 SMALL HORIZONTALE CAP"
+     ],
+     "price_per_unit": [
+      197.2,
+      203.25
+     ],
+     "sap_code": [
+      null,
+      ""
+     ],
+     "size": [
+      null,
+      ""
+     ],
+     "supplier": [
+      null,
+      ""
+     ]
+    }
+   },
+   {
+    "pk": [
+     240
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-05-16T03:29:42",
+      "2026-10-03T06:46:15.107768"
+     ],
+     "price_per_unit": [
+      242.9,
+      240.58
+     ]
+    }
+   },
+   {
+    "pk": [
+     328
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-04-29T06:09:25",
+      "2026-10-03T06:34:16.867245"
+     ],
+     "price_per_unit": [
+      95.6376,
+      86.58
+     ],
+     "sap_code": [
+      null,
+      ""
+     ],
+     "size": [
+      null,
+      ""
+     ],
+     "supplier": [
+      null,
+      ""
+     ]
+    }
+   },
+   {
+    "pk": [
+     335
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-08-07T08:11:03.242589",
+      "2026-10-03T06:36:40.320626"
+     ],
+     "price_per_unit": [
+      95.64,
+      86.58
+     ]
+    }
+   },
+   {
+    "pk": [
+     666
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-05-13T12:25:22",
+      "2026-10-03T06:45:46.462777"
+     ],
+     "price_per_unit": [
+      166.6,
+      240.58
+     ],
+     "sap_code": [
+      null,
+      ""
+     ],
+     "size": [
+      null,
+      ""
+     ],
+     "supplier": [
+      null,
+      ""
+     ]
+    }
+   },
+   {
+    "pk": [
+     888
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-07-13T11:08:31.924307",
+      "2026-10-03T06:31:34.305712"
+     ],
+     "price_per_unit": [
+      95.64,
+      86.58
+     ]
+    }
+   },
+   {
+    "pk": [
+     929
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-09-04T08:42:18.497914",
+      "2026-10-03T06:34:57.760271"
+     ],
+     "price_per_unit": [
+      68.79194630872483,
+      86.58
+     ]
+    }
+   },
+   {
+    "pk": [
+     942
+    ],
+    "cols": {
+     "last_updated": [
+      "2026-09-04T08:42:18.497914",
+      "2026-10-03T07:38:41.068200"
+     ],
+     "price_per_unit": [
+      264.37,
+      272.27
+     ],
+     "sap_code": [
+      null,
+      ""
+     ],
+     "size": [
+      null,
+      ""
+     ],
+     "supplier": [
+      null,
+      ""
+     ]
+    }
+   }
+  ],
+  "cols_only_before": [],
+  "cols_only_now": []
+ },
+ "trailer_groups": {
+  "removed": [
+   {
+    "id": 2,
+    "name": "RHINORANGE",
+    "description": "RHINORANGE Freezer trailer bodies (auto-created).",
+    "report_template_id": 2,
+    "created_at": "2026-04-27T03:18:33"
+   }
+  ],
+  "added": [
+   {
+    "id": 5,
+    "name": "CHILLER",
+    "description": "CHILLER bodies (RT3 body family).",
+    "report_template_id": null,
+    "created_at": "2026-10-03T04:06:25.930513",
+    "colour": "#168ED9",
+    "sort_order": 2
+   },
+   {
+    "id": 6,
+    "name": "ICE CREAM",
+    "description": "ICE CREAM bodies (RT3 body family).",
+    "report_template_id": null,
+    "created_at": "2026-10-03T04:06:25.930513",
+    "colour": "#D63384",
+    "sort_order": 5
+   },
+   {
+    "id": 7,
+    "name": "OTHER",
+    "description": "OTHER bodies (RT3 body family).",
+    "report_template_id": null,
+    "created_at": "2026-10-03T04:06:25.930513",
+    "colour": "#7D858C",
+    "sort_order": 6
+   }
+  ],
+  "changed": [
+   {
+    "pk": [
+     3
+    ],
+    "cols": {
+     "name": [
+      "MEATHANGER",
+      "MEAT"
+     ]
+    }
+   }
+  ],
+  "cols_only_before": [],
+  "cols_only_now": [
+   "colour",
+   "sort_order"
+  ]
+ },
+ "trailer_types": {
+  "removed": [],
+  "added": [],
+  "changed": [
+   {
+    "pk": [
+     15
+    ],
+    "cols": {
+     "group_id": [
+      2,
+      7
+     ],
+     "override_report_template_id": [
+      null,
+      2
+     ]
+    }
+   },
+   {
+    "pk": [
+     16
+    ],
+    "cols": {
+     "group_id": [
+      null,
+      6
+     ]
+    }
+   },
+   {
+    "pk": [
+     17
+    ],
+    "cols": {
+     "group_id": [
+      null,
+      6
+     ]
+    }
+   },
+   {
+    "pk": [
+     18
+    ],
+    "cols": {
+     "group_id": [
+      null,
+      6
+     ]
+    }
+   },
+   {
+    "pk": [
+     25
+    ],
+    "cols": {
+     "group_id": [
+      null,
+      5
+     ]
+    }
+   },
+   {
+    "pk": [
+     26
+    ],
+    "cols": {
+     "group_id": [
+      null,
+      5
+     ]
+    }
+   },
+   {
+    "pk": [
+     27
+    ],
+    "cols": {
+     "group_id": [
+      null,
+      5
+     ]
+    }
+   }
+  ],
+  "cols_only_before": [],
+  "cols_only_now": []
+ }
+}

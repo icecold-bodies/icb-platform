@@ -1,3 +1,4 @@
+# v1.60.2 (RT5): UNCHANGED from v1.60.1 — RT5 adds no route and changes no gate; the same probes, same statuses.
 # v1.60.1 — the no-session probe (RT4 Part C, RT4_RULING_1 window step 8). One path per line: <status> <path>.
 # <status> = what the v1.60.1 code answers with NO session and `Accept: application/json` (generated from the code
 # itself, read-only). release.sh probes every line on the three doors (127.0.0.1, LAN, Cloudflare) after the deploy:

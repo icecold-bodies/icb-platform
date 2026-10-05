@@ -42,7 +42,9 @@ RF = "REAR FRAME & FLOOR PLATE"
 PANELS = ("FRONT", "DRD", "SRD", "SIDES", "ROOF", "FLOOR")
 INS_RE = re.compile(r"^(FRONT|DRD|SRD|SIDES|ROOF|FLOOR) (EPS|PU)$")
 SIX = (25, 26, 27, 19, 20, 21)                    # the 3 chillers and 3 freezers RT4_RULING_2 (b) names
-RT3_EXPECTED = {("trailer_types", "group_id"), ("trailer_groups", "*")}
+# RT3 (3 Oct): every body's family (group_id), RHINORANGE kept its quote template by an override when it moved
+# to OTHER (override_report_template_id), and the families themselves (trailer_groups)
+RT3_EXPECTED = {("trailer_types", "group_id"), ("trailer_types", "override_report_template_id"), ("trailer_groups", "*")}
 ALL_PACKS = ("chillers", "freezers", "icecream", "explosive")      # the page's All (smoke is a subset)
 STATUSES = ("PASS", "ACCEPTED", "SKIP", "UNVERIFIABLE", "EXPIRED", "FLAG", "PRESENCE", "UNMAPPED", "NO_GOLDEN")
 
@@ -137,7 +139,8 @@ def render_diff(diff: dict, base: dict, now: dict, say) -> dict:
                 if t == "bill_of_materials" and row.get("is_body_option"):
                     counts["bom_changed_master"] += 1
             for col, (b, n) in c["cols"].items():
-                say(f"      CHANGED {what} · {col}: {short(b, 60)} -> {short(n, 60)}" + ("   (RT3)" if only_rt3 else ""))
+                say(f"      CHANGED {what} · {col}: {short(b, 60)} -> {short(n, 60)}"
+                    + ("   (RT3)" if rt3 or (t, col) in RT3_EXPECTED else ""))
     return dict(counts)
 
 
@@ -622,7 +625,8 @@ def facts(conn, db, stage: Path, out: Path, now_doc: dict | None, say) -> dict:
     kind = ("DRAFT NODES ONLY" if draft_changed and not bom_touched else
             "BOM ROWS AS WELL" if bom_touched else "NOTHING CHANGED")
     verdict["a"] = (f"{kind} · drafts saved since 3 Oct on {len(draft_changed)} chiller/freezer bodies {draft_changed}"
-                    + (f" · BOM rows changed {counts}" if bom_touched else " · no BOM row deleted, added or changed")
+                    + (f" · pricing rows changed {counts}" if bom_touched else " · no BOM row deleted, added or changed")
+                    + (f" · other pricing rows changed {counts}" if counts and not bom_touched else "")
                     + (f" · masters deleted {lost_all}" if lost_all else "")
                     + (" · materials changed (see facts.txt)" if any(k.startswith("materials") for k in counts) else "")
                     + " · Burt's rulings read from the drafts: "

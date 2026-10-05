@@ -1,6 +1,7 @@
 # Prod deploy: v1.60.1 (RT4): move into an existing section, deny-by-default sign-in, Manifest S, in one window
 
-**Status: NOT RUN.** This runbook is committed before the run; the OUTCOME is appended after it.
+**Status: RUN 5 Oct 2026, 08:53–09:01 SAST — DEPLOYED, see the OUTCOME at the end.** This runbook was committed
+before the run; the OUTCOME is appended after it.
 (Before: v1.60.0 = `682a6cc`, alembic 0051.) Michael runs every prod step. The CA stages the kits and reads the
 records back.
 
@@ -172,4 +173,92 @@ Every line and id 41's draft go back; the dry-run then reads **46 to apply** aga
 
 ## OUTCOME
 
-*(appended after the window)*
+**PROD = v1.60.1 = `01751fa`**:
+- **tag:** object `e9b6327`; local = origin, peels to `01751fa`;
+- **schema:** alembic **0051** (no migration);
+- **deployed:** 5 Oct 2026 08:56 SAST by Michael's `release.sh deploy`;
+- **restore point:** `icb_platform_pre-v1.60.1_20261005-085605.dump` (3 134 567 bytes, sha256 `8d65ca3f…`).
+
+**Manifest S applied** 08:58. **Nothing priced moved.** The evidence is under `docs/audit/rt4_2026-10/prod/`.
+
+### Before the window (RT4_RULING_2's read-only check, 08:19): `prewindow_20261005-081925/`
+
+- **Release checks:** `release.sh preflight` PASSED. `verify` failed on exactly the 14 expected checks; TRACEBACKS 0.
+- **(a) What changed:**
+  - **Michael's removals** (no PU on the chillers; EPS only on ROOF + FLOOR on the freezers) are **draft nodes only**,
+    saved 29 Sep – 2 Oct, before the 3 Oct baseline. No master was deleted.
+  - **Since 3 Oct,** there are hand edits to prices, lines and formulas on the icecream, explosive, FREEZER MEDIUM (a
+    cap swap with no price effect) and RHINORANGE bodies. They are listed in `facts.txt`, and they are not RT4's.
+- **(b) Manifest A:** OK on all 14 bodies, through the engine.
+- **(c) The door report:** 14 OK.
+- **(d) Audit cells:** 156 of 2 702 moved since page run #33 (explosive 108, icecream 48), none from the removals. Today
+  = page run #36 (PASS 1 987 · ACCEPTED 136 · FLAG 0).
+
+### The window (5 Oct): `window_20261005/`
+
+| # | step | result |
+|---|---|---|
+| 1 | All #37 → `rt2_all.sh pre` | first try **STOP [PAGE]** (the newest run was older than 45 min); after All: **PAGE = CLI**, 2 702 / 2 702 |
+| 2 | `release.sh deploy` 08:56:05 → 08:56:54 | **DEPLOYED**. Every assert PASS: version **v1.60.1** on 127.0.0.1, LAN and Cloudflare; no-session probe **all 44 as expected** on all three doors; `?v=21` + target blob on both doors; the preview warning present; the SPA unchanged |
+| 3 | All #38 → `post` | **PAGE = CLI**, same counts |
+| 4 | `rt4_data.sh dryrun` → `apply` | **46 to apply · drafts: 2** → APPLIED (journal `/var/backups/icb-rt4-2026-10/journal_S_…065813Z.json`, backup `pre_apply_S_…sql.gz`). Second dry-run: **0 to apply, 46 already applied · drafts 2 already · 83/84/85 unused now** |
+| 5 | All #39 → `afterS` | **PAGE = CLI**, same counts. C11 used S's journal |
+| 6 | Sections… → delete DOOR FITTINGS SRD / DOOR FITTINGS DRD / REAR FRAME + FLOOR PLATE | **Done on prod at the close (12:40–12:44)**. The first attempt, in the window, was made in a browser on ANOTHER server. See the close check below |
+| 7 | `rt2_doors.sh` | **SUMMARY: 14 OK** |
+| 8 | `release.sh verify` | **0 checks failed** |
+| 9 | click-through | MANNI DF's 7 lines under 3MM MILD STEEL FLOOR (4) and LOAD LOCK RAILS (3), at the top of its list (sort 0); a sales user prices normally; **CHILLER MEDIUM offers no PU**; **FREEZER MEDIUM offers EPS on the roof and floor only** |
+
+**No change, cell by cell** (`cells_window_identical.txt`): 2 936 of 2 936 cells over the five packs are identical
+across the pre-window run, All pre, post (after the deploy) and afterS (after S).
+
+### Step 6's evidence: the close check (read-only, BA addition), in `close_20261005/`
+
+1. **12:33, `close_check_20261005-123324.txt`:** bom_sections **83, 84 and 85 still existed**, even though Michael had
+   deleted all three in the window. The rest was as expected: no line and no draft named them; MANNI DF's 7 lines on
+   64 / 65; id 41's 39 lines on 26 × 17, 15 × 13, 21 × 9. The `/tmp` kits were removed in the same run.
+2. **12:39, `step6_diag_20261005-123935.txt`** (`rt4_step6_diag.sh`, read only):
+   - prod's service log has **no DELETE / PUT / POST on `/api/bom-sections` since 08:50**, and no read of the
+     Sections list. The deletes had been made in a browser tab on another server;
+   - no error since the window;
+   - the only foreign keys onto `bom_sections` are `bill_of_materials` (0 rows on 83–85) and `body_option_groups`
+     (none on 83–85), so nothing blocks the delete.
+3. **12:40–12:44:** step 6 was redone on prod (`mes.icecoldgrp.online` / `192.168.0.251` → Body Templates →
+   Sections…).
+4. **12:44, `close_check_20261005-124452.txt`:**
+   - **83, 84 and 85 are gone; 15 (DRD DOOR FITTINGS), 21 (REAR FRAME & FLOOR PLATE) and 26 (SRD DOOR FITTINGS)
+     exist.**
+   - Lines naming them: 0. Drafts naming them: 0.
+   - S1: 793–796 on 64 and 843–845 on 65. S2: 26 × 17, 15 × 13, 21 × 9.
+
+**`/tmp` on the VM:** every RT4 kit folder and tar is removed (`rt4_close.sh`). What stays are older files that are not
+RT4's: the v1.52 scripts of 7 Sep, `icb-deploy.sh`'s rollback anchors, and `icb-srd-discovery`. Kept on purpose:
+`/var/backups/postgres/icb_platform_pre-v1.60.1_20261005-085605.dump` and `/var/backups/icb-rt4-2026-10/` (S's journal,
+provenance and pre-apply backup).
+
+**Rollback from now on:** reverting S needs 83 / 84 / 85 back first (the INSERT in "Rollback" above), because step 6
+deleted them.
+
+**Lesson:** a window step done in the browser names the prod URL and gets a read-back in the next paste. A UI delete
+leaves no record in any kit's output; this one was caught only by the BA's close check.
+
+### What the integration token can read after RT4 (RT4_RULING_2 Q4)
+
+Exactly the **24 GET routes marked `@integration_readable`**, and nothing else:
+- chassis records (9);
+- production jobs (7);
+- floor state and events (2);
+- MES materials (2);
+- demand lines, discrepancies and stock counts (1 each);
+- one saved costing by id (`GET /api/calculations/{id}`, newly marked in RT4).
+
+Every other route needs a signed-in session; no write accepts the token.
+
+### Open, not RT4's (queued by the BA)
+
+- **The CI snapshot ≠ prod** since the 3–4 Oct hand edits (`all.json` predates them). The README's standing rule asks
+  for a refresh with the pruned prod list. The CA recommends RT5.
+- **Accepted-list entries that now cover new gaps:** ICECREAM UP TO 4.8, −R259.72, PASS → ACCEPTED.
+- **The Burt gap table for the five Mannis** (report only, the input for the next job):
+  `docs/audit/rt4_2026-10/burt_gap/MANNI_GAP_TABLE.md`.
+- **Already queued:** the duplicate `GET /api/import/sheets`; a role review; the old-stylesheet clean-up; the Trailer
+  Designer console error.

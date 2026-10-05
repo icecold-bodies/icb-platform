@@ -64,7 +64,7 @@ PS
 cat > "$SIM/bin/pg_dump" <<'PD'
 #!/bin/bash
 [ -f "$SIMSTATE/fail_pgdump" ] && exit 1
-echo "-- data-only dump of icb_costings.trailer_groups (stub)"
+echo "-- data-only dump (stub)"; echo "COPY icb_costings.trailer_groups (id, name, rule_note) FROM stdin;"; echo '\.'
 PD
 chmod +x "$SIM/bin/psql" "$SIM/bin/pg_dump"
 echo 0052 > "$SIM/state/alembic"; echo none > "$SIM/state/notes"

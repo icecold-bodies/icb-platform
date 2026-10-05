@@ -103,8 +103,11 @@ if [ "$MODE" = dryrun ] || [ "$MODE" = apply ]; then
   mkdir -p "$KEEP" && chmod 700 "$KEEP" || stop BACKUP "cannot create $KEEP"
   BK="$KEEP/pre_apply_notes_$TS.sql.gz"
   say "pre-apply backup (data only): trailer_groups"
-  pg_dump "$URL" --data-only -t icb_costings.trailer_groups | gzip > "$BK" || stop BACKUP "pg_dump failed — nothing applied"
+  # a pipeline's status is gzip's alone: a failed pg_dump would leave a valid, EMPTY gzip — check both, then the content
+  pg_dump "$URL" --data-only -t icb_costings.trailer_groups | gzip > "$BK"; PS=("${PIPESTATUS[@]}")
+  [ "${PS[0]}" = 0 ] && [ "${PS[1]}" = 0 ] || stop BACKUP "pg_dump exited ${PS[0]}, gzip ${PS[1]} — nothing applied"
   [ -s "$BK" ] && gzip -t "$BK" || stop BACKUP "$BK is empty or not gzip — nothing applied"
+  zcat "$BK" | grep -q '^COPY icb_costings.trailer_groups ' || stop BACKUP "$BK holds no trailer_groups data — nothing applied"
   echo "   ok   $BK $(stat -c %s "$BK") bytes sha256 $(sha256sum "$BK" | cut -d' ' -f1)"
 
   say "apply — one transaction"

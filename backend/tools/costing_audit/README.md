@@ -60,9 +60,16 @@ literal `×0` is tagged **ZERO_FORMULA**.
 ## Variants (per body, per pack)
 
 `as_sheet` (Burt's flag/thickness block exactly as saved) · `all_eps` ·
-`all_pu` · `srd` · `drd` · `foam_4g` · plus `custom_variants` spelled per
-panel (`FRONT: pu:0.05`). Thickness for `all_eps`/`all_pu` comes from the
-sheet's own block where non-zero, else the pack's `thickness_defaults`.
+`all_pu` · `roof_floor_eps` · `srd` · `drd` · `foam_4g` · plus `custom_variants`
+spelled per panel (`FRONT: pu:0.05`). Thickness for `all_eps`/`all_pu`/
+`roof_floor_eps` comes from the sheet's own block where non-zero, else the
+pack's `thickness_defaults`.
+
+`roof_floor_eps` (RT5) is EPS on the ROOF and FLOOR and PU on every other panel —
+the only EPS a freezer may carry (Burt, 5 Oct). The freezer pack and the smoke
+pack's freezer use it instead of `all_eps`, and
+`test_rt5_packs_follow_burts_rules.py` keeps every committed pack to Burt's two
+rules: no PU on a chiller, no EPS on a freezer's FRONT, SIDES or doors.
 
 `gate_mode` (pack or body): `as_sheet` (default — every sheet has an EPS-gated
 and a PU-gated row per door section, so honest flags price PU doors), `force`

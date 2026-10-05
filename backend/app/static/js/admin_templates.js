@@ -118,6 +118,18 @@ async function loadTrailers() {
   } catch(e) { toast('Failed to load trailers: ' + e.message, 'error'); }
 }
 
+// RT5 — the body family's rule note (Burt's product rule) under the body's header: the /api/trailers row's
+// rule_note, written as TEXT (textContent), hidden when the family has none.
+function _showRuleNote(t) {
+  const box = document.getElementById('tt-rule-note');
+  const txt = document.getElementById('tt-rule-note-text');
+  if (!box || !txt) return;
+  const note = (t && typeof t.rule_note === 'string') ? t.rule_note.trim() : '';
+  txt.textContent = note;
+  box.hidden = !note;
+  box.style.display = note ? 'flex' : 'none';
+}
+
 function selectTrailer(id) {
   document.querySelectorAll('.part-item, .tt-tile, .tt-details-row').forEach(el => el.classList.remove('selected'));
   document.getElementById(`tt-${id}`)?.classList.add('selected');
@@ -128,6 +140,7 @@ function selectTrailer(id) {
   const t = trailerMap[id];
   document.getElementById('bom-title').textContent = t ? t.name : 'Trailer';
   if (t && window.BodyFamily) document.getElementById('bom-title').insertAdjacentHTML('beforeend', _famChip(t));
+  _showRuleNote(t);   // RT5
   ['btn-rename','btn-dup','btn-del','btn-add-bom','btn-bom-sort','btn-collapse-all','btn-toggle-active'].forEach(b =>
     document.getElementById(b).classList.remove('hidden'));
   _syncToggleActiveBtn(t);
@@ -2006,6 +2019,7 @@ async function renameTrailer() {
     await loadTrailers();
     document.getElementById('bom-title').textContent = name.trim();
     if (trailerMap[currentTTId]) document.getElementById('bom-title').insertAdjacentHTML('beforeend', _famChip(trailerMap[currentTTId]));
+    _showRuleNote(trailerMap[currentTTId]);   // RT5
   } catch(e) { toast(e.message, 'error'); }
 }
 

@@ -23,6 +23,8 @@
   .qt-colour input[type=color] { width:34px; height:28px; padding:0 2px; border:1px solid #ddd; border-radius:4px; background:#fff; cursor:pointer; }
   .qt-colour input[type=text] { width:84px !important; font-family:var(--font-mono, monospace); text-transform:uppercase; }
   .qt-table input[type=number] { width:64px; padding:4px 6px; }
+  /* RT5 — a family's rule note: plain text, several lines allowed, shown in red on the calculator */
+  .qt-rule-note { width:100%; min-width:180px; padding:4px 6px; font:inherit; font-size:12px; resize:vertical; }
   .qt-form-row.qt-fam { grid-template-columns:1fr 1fr 1fr auto auto auto; }
 </style>
 
@@ -66,7 +68,7 @@
 <div class="qt-section">
   <h2>🗂 Trailer Groups = Body Families</h2>
   <table class="qt-table">
-    <thead><tr><th>Name</th><th>Colour</th><th>Order</th><th>Description</th><th>Default Template</th><th>Trailer Types</th><th class="qt-actions"></th></tr></thead>
+    <thead><tr><th>Name</th><th>Colour</th><th>Order</th><th>Description</th><th title="Shown in red under BODY OPTIONS on every body of this family, and in Body Templates. Never on a customer document.">Rule note</th><th>Default Template</th><th>Trailer Types</th><th class="qt-actions"></th></tr></thead>
     <tbody>
       {% for g in groups %}
       <tr>
@@ -85,6 +87,9 @@
           </td>
           <td><input type="number" name="sort_order" value="{{ g.sort_order }}" step="1" title="Lower comes first in the BODY TYPE dropdown"></td>
           <td><input type="text" name="description" value="{{ g.description or '' }}"></td>
+          <td><textarea name="rule_note" rows="2" maxlength="500" class="qt-rule-note" data-rule-note
+                        aria-label="Rule note of {{ g.name }}"
+                        placeholder="e.g. No PU insulation for Chillers">{{ g.rule_note or '' }}</textarea></td>
           <td>
             <select name="report_template_id">
               <option value="">— none —</option>
@@ -127,6 +132,8 @@
     </div>
     <div><label>Order</label><input type="number" name="sort_order" value="100" step="1"></div>
     <div><label>Description</label><input type="text" name="description"></div>
+    <div><label>Rule note</label><textarea name="rule_note" rows="2" maxlength="500" class="qt-rule-note"
+         placeholder="Shown in red under BODY OPTIONS (optional)"></textarea></div>
     <div>
       <label>Default Template</label>
       <select name="report_template_id">

@@ -157,5 +157,6 @@ def test_the_bundle_tag_moved_with_the_javascript():
     # v1.59.1 (NOT SELECTED header) moved it 182 -> 183; v1.59.2 (plain-English
     # rule badges) moved it 183 -> 184; RT2 v1.59.3 (a quote never writes the template,
     # the per-body default foam) moved it 184 -> 185; RT3 v1.60.0 (body families: the
-    # closed box's family bar, the top-bar chip) moved it 185 -> 186.
-    assert "calculator.js?v=186" in tags[0], tags[0]
+    # closed box's family bar, the top-bar chip) moved it 185 -> 186; RT5 v1.60.2 (the family's
+    # rule note under BODY OPTIONS, the foam picker hidden when no PU is offered) moved it 186 -> 187.
+    assert "calculator.js?v=187" in tags[0], tags[0]

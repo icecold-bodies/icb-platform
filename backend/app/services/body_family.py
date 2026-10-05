@@ -169,8 +169,46 @@ def all_families(db) -> list[dict]:
     out = []
     for g in db.query(TrailerGroup).order_by(TrailerGroup.sort_order, TrailerGroup.name).all():
         out.append(dict(group_family(g), active_bodies=counts.get(g.id, 0),
-                        report_template_id=g.report_template_id))
+                        report_template_id=g.report_template_id,
+                        rule_note=normalise_rule_note(g.rule_note)))   # RT5
     return out
+
+
+# RT5 (migration 0052) — the family's RULE NOTE: Burt's product rule for every body of the family ("No PU insulation
+# for Chillers"), shown in red under BODY OPTIONS (the calculator) and under the body's header (Body Templates).
+# Plain text, several lines allowed; every page writes it as TEXT (textContent / Jinja autoescape), never as HTML.
+# Its red is the MES skin's own --red darkened by ink() until it reads on both light backgrounds (#DC2626 alone is
+# 4.50:1 on #F5F7FB, under INK_MIN). Never on a customer document or an export.
+SKIN_RED = "#DC2626"
+RULE_NOTE_INK = ink(SKIN_RED)
+RULE_NOTE_MAX = 500
+
+
+def normalise_rule_note(text) -> str | None:
+    """The stored form of a note: Windows and old-Mac line ends become LF, trailing spaces are trimmed per line,
+    blank lines at either end are dropped; None when nothing is left. ValueError when longer than RULE_NOTE_MAX."""
+    if text is None:
+        return None
+    lines = [ln.rstrip() for ln in str(text).replace("\r\n", "\n").replace("\r", "\n").split("\n")]
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    while lines and not lines[-1].strip():
+        lines.pop()
+    out = "\n".join(lines)
+    if not out:
+        return None
+    if len(out) > RULE_NOTE_MAX:
+        raise ValueError(f"A rule note is at most {RULE_NOTE_MAX} characters (this one is {len(out)}).")
+    return out
+
+
+def rule_note_of(tt) -> str | None:
+    """The rule note a body shows: its family's — the same family body_family() resolves (its group, else the
+    OTHER group). None when the family has none."""
+    if tt is None:
+        return None
+    g = tt.group if tt.group is not None else _other_group(object_session(tt))
+    return normalise_rule_note(g.rule_note) if g is not None else None
 
 
 def default_group(db, body_name: str):

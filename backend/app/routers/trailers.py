@@ -49,7 +49,10 @@ def _trailer_row(t: TrailerType) -> dict:
             "is_active":         bool(t.is_active),
             # RT3 — {id, name, colour, ink, sort_order}: every page that lists bodies
             # groups and colours them from this, never from a colour of its own
-            "family":            body_family.body_family(t)}
+            "family":            body_family.body_family(t),
+            # RT5 — the family's rule note (Burt's product rule), shown in red under BODY OPTIONS and in Body
+            # Templates. A sibling of `family`, which keeps RT3's ratified shape; None = no note.
+            "rule_note":         body_family.rule_note_of(t)}
 
 
 def _new_body_group_id(db: Session, name: str, group_id) -> int | None:

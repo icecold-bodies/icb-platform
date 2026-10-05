@@ -72,11 +72,14 @@ say "prod: db=$DBNAME alembic=$ALEMBIC code=${HEAD:0:7} staged=${STAGED_FROM:0:7
 $PY -c "import psycopg" || stop IMPORT "psycopg does not import in prod's venv"
 
 plan_line() { grep -E '^[0-9]+ to apply, [0-9]+ already applied\.$' "$1" | tail -n1; }
-dry() { $PY "$TOOL" --target prod > "$1" 2>&1; }       # exit 2 = a guard refused (prod is not where the plan says)
+# dry-run and show also run under a server-enforced read-only session (belt and braces: the tool sets its own)
+RO='-c default_transaction_read_only=on'
+dry() { PGOPTIONS="$RO" $PY "$TOOL" --target prod > "$1" 2>&1; }   # exit 2 = a guard refused (prod is not where the plan says)
+show() { PGOPTIONS="$RO" $PY "$TOOL" --target prod --show; }
 
 if [ "$MODE" = show ]; then
   say "every family's rule note (READ ONLY)"
-  $PY "$TOOL" --target prod --show > "$OUT/show.txt" 2>&1; rc=$?
+  show > "$OUT/show.txt" 2>&1; rc=$?
   cat "$OUT/show.txt"
   [ $rc = 0 ] || stop SHOW "the read-back failed (exit $rc)"
   chmod -R a+rX "$OUT"; echo; echo "######## DONE (show) — tell the CA: $OUT"; exit 0
@@ -128,7 +131,7 @@ if [ "$MODE" = dryrun ] || [ "$MODE" = apply ]; then
   [ $rc = 0 ] && [ "$(plan_line "$OUT/after.txt")" = "0 to apply, $PLAN_TODO already applied." ] \
     || stop AFTER "the second dry-run is not '0 to apply, $PLAN_TODO already applied.' — tell the CA"
   say "the read-back (every family's note, exactly)"
-  $PY "$TOOL" --target prod --show | tee "$OUT/show.txt"
+  show | tee "$OUT/show.txt"
   chmod -R a+rX "$OUT"
   echo; echo "######## DONE (apply) — tell the CA: $OUT  (undo: sudo bash $0 revert $KEEP/$JN)"; exit 0
 fi
@@ -139,6 +142,6 @@ say "revert from $ARG"
 $PY "$TOOL" --target prod --revert "$ARG" --out-dir "$OUT" > "$OUT/revert.txt" 2>&1; rc=$?
 cat "$OUT/revert.txt"
 [ $rc = 0 ] || stop REVERT "revert refused or failed (exit $rc): nothing changed"
-$PY "$TOOL" --target prod --show | tee "$OUT/show.txt"
+show | tee "$OUT/show.txt"
 chmod -R a+rX "$OUT"
 echo; echo "######## DONE (revert) — tell the CA: $OUT"

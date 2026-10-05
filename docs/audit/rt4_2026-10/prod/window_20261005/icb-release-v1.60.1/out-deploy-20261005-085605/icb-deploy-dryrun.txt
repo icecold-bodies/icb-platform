@@ -1,0 +1,20 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  682a6ccc  RT3: body families in colour — 0051, the bootstrap fix, the fa
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  01751fa330f57526c15129892820013cdb5f8b17 already present - no fetch needed
+[32m  ok[0m  01751fa330f57526c15129892820013cdb5f8b17 = 01751fa3
+
+[1m== 2. plan[0m
+  682a6ccc -> 01751fa3   (2 commit(s), 106 file(s))
+    01751fa RT4 (v1.60.1): move into an existing section + honest renames, deny-by-default sign-in, Manifest S; release, data and window kits (#214)
+    b59d8e3 docs(release): v1.60.0 OUTCOME + RT3 close — prod = 682a6cc (alembic 0051), the six body families on, nothing priced moved (#213)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 14 Python file(s) changed
+
+[32m  ok[0m  dry run - nothing changed.

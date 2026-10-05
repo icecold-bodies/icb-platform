@@ -1,0 +1,250 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  682a6ccc  RT3: body families in colour — 0051, the bootstrap fix, the fa
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  01751fa330f57526c15129892820013cdb5f8b17 already present - no fetch needed
+[32m  ok[0m  01751fa330f57526c15129892820013cdb5f8b17 = 01751fa3
+
+[1m== 2. plan[0m
+  682a6ccc -> 01751fa3   (2 commit(s), 106 file(s))
+    01751fa RT4 (v1.60.1): move into an existing section + honest renames, deny-by-default sign-in, Manifest S; release, data and window kits (#214)
+    b59d8e3 docs(release): v1.60.0 OUTCOME + RT3 close — prod = 682a6cc (alembic 0051), the six body families on, nothing priced moved (#213)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 14 Python file(s) changed
+
+  rollback anchor 682a6ccc saved to /tmp/icb-rollback-20261005-085609.txt
+
+[1m== 3. database backup - skipped (no migration in this range)[0m
+
+[1m== 4. fast-forward the code[0m
+Updating 682a6cc..01751fa
+Fast-forward
+ backend/VERSION                                    |     2 +-
+ backend/app/deps.py                                |    53 +
+ backend/app/integration_auth.py                    |     8 +-
+ backend/app/main.py                                |    22 +-
+ backend/app/routers/calculator.py                  |     3 +-
+ backend/app/routers/trailers.py                    |   139 +-
+ backend/app/services/sections.py                   |   172 +
+ backend/app/static/js/admin_templates.js           |   212 +-
+ .../app/templates/admin_configurator_preview.html  |    31 +-
+ backend/app/templates/admin_templates.html         |    25 +-
+ .../journeys/test_rt4_section_move_journey.py      |   148 +
+ backend/tests/test_optional_prefix_sections.py     |    16 +-
+ backend/tests/test_preview_formats.py              |     7 +-
+ backend/tests/test_rt4_deny_by_default.py          |   189 +
+ backend/tests/test_rt4_section_move.py             |   336 +
+ backend/tests/test_trailer_name_tooltip.py         |     2 +-
+ backend/tests/test_v1_60_1_manifest_s_tool.py      |   233 +
+ backend/tools/audit_pricing_corrections.py         |   248 +-
+ .../window_20261003/icb-release-v1.60.0/SHA256SUMS |     2 +
+ .../icb-release-v1.60.0/expected.env               |    20 +
+ .../out-deploy-20261003-060447/OUTCOME.txt         |    13 +
+ .../out-deploy-20261003-060447/bindings-before.txt |     1 +
+ .../out-deploy-20261003-060447/groups-before.txt   |     1 +
+ .../icb-deploy-dryrun.txt                          |    20 +
+ .../out-deploy-20261003-060447/icb-deploy.txt      |   387 +
+ .../out-deploy-20261003-060447/rollback-anchor.txt |     1 +
+ .../out-deploy-20261003-060447/run.txt             |   513 +
+ .../out-preflight-20261003-060230/run.txt          |    50 +
+ .../out-verify-20261003-060240/run.txt             |    44 +
+ .../out-verify-20261003-061416/run.txt             |    42 +
+ .../prod/window_20261003/icb-rt2-all/SHA256SUMS    |     3 +
+ .../prod/window_20261003/icb-rt2-all/expected.env  |     4 +
+ .../out-post-20261003-061605/SHA256SUMS.out        |     6 +
+ .../out-post-20261003-061605/compare.txt           |    14 +
+ .../icb-rt2-all/out-post-20261003-061605/run.txt   |    25 +
+ .../out-pre-20261003-060409/SHA256SUMS.out         |     6 +
+ .../out-pre-20261003-060409/compare.txt            |    14 +
+ .../icb-rt2-all/out-pre-20261003-060409/run.txt    |    25 +
+ .../prod/window_20261003/icb-rt2-doors/SHA256SUMS  |     4 +
+ .../window_20261003/icb-rt2-doors/expected.env     |     4 +
+ .../out-20261003-061457/door_report.txt            |    21 +
+ .../window_20261003/icb-rt3-families/SHA256SUMS    |     3 +
+ .../window_20261003/icb-rt3-families/expected.env  |     6 +
+ .../out-apply-20261003T040624Z/after.txt           |    53 +
+ .../out-apply-20261003T040624Z/apply.txt           |    13 +
+ .../out-apply-20261003T040624Z/dryrun.txt          |    93 +
+ ...rt3_families_journal_prod_20261003T040626Z.json |   334 +
+ .../out-apply-20261003T040624Z/run.txt             |   168 +
+ .../out-dryrun-20261003T040608Z/dryrun.txt         |    93 +
+ .../out-dryrun-20261003T040608Z/run.txt            |    97 +
+ .../out-dryrun-20261003T041237Z/dryrun.txt         |     2 +
+ .../out-dryrun-20261003T041237Z/run.txt            |     7 +
+ .../out-dryrun-20261003T042116Z/dryrun.txt         |     2 +
+ .../out-dryrun-20261003T042116Z/run.txt            |     7 +
+ .../out-dryrun-20261003T042212Z/dryrun.txt         |    53 +
+ .../out-dryrun-20261003T042212Z/run.txt            |    58 +
+ .../rt4_2026-10/manifest_s/make_manifest_s.py      |   121 +
+ docs/audit/rt4_2026-10/manifest_s/manifest_s.yaml  |   434 +
+ .../manifest_s/proof/proof_s_mirror.json           | 26035 +++++++++
+ .../rt4_2026-10/manifest_s/proof/proof_s_mirror.md |    48 +
+ docs/audit/rt4_2026-10/manifest_s/prove_s.py       |   221 +
+ docs/audit/rt4_2026-10/noauth/README.md            |    36 +
+ docs/audit/rt4_2026-10/noauth/noauth_sweep.py      |   159 +
+ docs/audit/rt4_2026-10/noauth/probe_list_check.py  |    21 +
+ docs/audit/rt4_2026-10/noauth/routes.json          |  8215 +++
+ docs/audit/rt4_2026-10/noauth/routes_list.py       |    39 +
+ docs/audit/rt4_2026-10/noauth/sweep_final.json     |  6099 +++
+ .../prod/discovery_20261004-080150/MANIFEST.txt    |     6 +
+ .../prod/discovery_20261004-080150/SHA256SUMS.out  |     4 +
+ .../prod/discovery_20261004-080150/discovery.json  |  2591 +
+ .../prod/discovery_20261004-080150/discovery.txt   |   291 +
+ .../discovery_20261004-080150/manni_snapshot.json  | 54834 +++++++++++++++++++
+ .../discovery_20261004-080150/noauth_probe.txt     |   130 +
+ .../prod/discovery_20261004-080150/run.txt         |    74 +
+ .../prod/export41_20261004-134129/MANIFEST.txt     |     5 +
+ .../prod/export41_20261004-134129/SHA256SUMS.out   |     3 +
+ .../export41_20261004-134129/body41_snapshot.json  |  5991 ++
+ .../prod/export41_20261004-134129/export41.json    |   414 +
+ .../prod/export41_20261004-134129/export41.txt     |    43 +
+ .../prod/export41_20261004-134129/run.txt          |    13 +
+ docs/runbooks/prod-deploy-v1.60.0.md               |    54 +-
+ docs/runbooks/prod-deploy-v1.60.1.md               |   175 +
+ .../journeys/rt4_section_move/01-move-offer.png    |   Bin 0 -> 9579 bytes
+ .../journeys/rt4_section_move/02-delete-offer.png  |   Bin 0 -> 7942 bytes
+ .../03-lines-under-the-shared-section.png          |   Bin 0 -> 105736 bytes
+ ops/prod-release-v1.60.1/mkstage.sh                |   100 +
+ ops/prod-release-v1.60.1/probe_paths.txt           |    50 +
+ ops/prod-release-v1.60.1/release.sh                |   329 +
+ ops/prod-release-v1.60.1/sim/run_all.sh            |    28 +
+ ops/prod-release-v1.60.1/sim/run_sim.sh            |   111 +
+ ops/prod-release-v1.60.1/sim/stubs.sh              |   123 +
+ ops/prod-rt2/rt2_all.sh                            |    12 +-
+ ops/prod-rt4/mkstage_data.sh                       |    61 +
+ ops/prod-rt4/mkstage_discovery.sh                  |    53 +
+ ops/prod-rt4/mkstage_window.sh                     |    65 +
+ ops/prod-rt4/noauth_probe_paths.txt                |    51 +
+ ops/prod-rt4/rt4_data.sh                           |   158 +
+ ops/prod-rt4/rt4_discovery.py                      |   338 +
+ ops/prod-rt4/rt4_discovery.sh                      |   140 +
+ ops/prod-rt4/rt4_export41.py                       |    87 +
+ ops/prod-rt4/rt4_export41.sh                       |    89 +
+ ops/prod-rt4/sim/fake_s_tool.py                    |    78 +
+ ops/prod-rt4/sim/run_data_sim.sh                   |   106 +
+ ops/prod-rt4/sim/run_discovery_sim.sh              |    84 +
+ ops/prod-rt4/sim/run_export41_sim.sh               |    77 +
+ ops/prod-rt4/sim/run_window_sim.sh                 |   102 +
+ 106 files changed, 112257 insertions(+), 96 deletions(-)
+ create mode 100644 backend/app/services/sections.py
+ create mode 100644 backend/tests/journeys/test_rt4_section_move_journey.py
+ create mode 100644 backend/tests/test_rt4_deny_by_default.py
+ create mode 100644 backend/tests/test_rt4_section_move.py
+ create mode 100644 backend/tests/test_v1_60_1_manifest_s_tool.py
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/SHA256SUMS
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/expected.env
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-deploy-20261003-060447/OUTCOME.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-deploy-20261003-060447/bindings-before.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-deploy-20261003-060447/groups-before.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-deploy-20261003-060447/icb-deploy-dryrun.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-deploy-20261003-060447/icb-deploy.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-deploy-20261003-060447/rollback-anchor.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-deploy-20261003-060447/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-preflight-20261003-060230/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-verify-20261003-060240/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-release-v1.60.0/out-verify-20261003-061416/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-all/SHA256SUMS
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-all/expected.env
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-all/out-post-20261003-061605/SHA256SUMS.out
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-all/out-post-20261003-061605/compare.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-all/out-post-20261003-061605/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-all/out-pre-20261003-060409/SHA256SUMS.out
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-all/out-pre-20261003-060409/compare.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-all/out-pre-20261003-060409/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-doors/SHA256SUMS
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-doors/expected.env
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt2-doors/out-20261003-061457/door_report.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/SHA256SUMS
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/expected.env
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-apply-20261003T040624Z/after.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-apply-20261003T040624Z/apply.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-apply-20261003T040624Z/dryrun.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-apply-20261003T040624Z/rt3_families_journal_prod_20261003T040626Z.json
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-apply-20261003T040624Z/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-dryrun-20261003T040608Z/dryrun.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-dryrun-20261003T040608Z/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-dryrun-20261003T041237Z/dryrun.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-dryrun-20261003T041237Z/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-dryrun-20261003T042116Z/dryrun.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-dryrun-20261003T042116Z/run.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-dryrun-20261003T042212Z/dryrun.txt
+ create mode 100644 docs/audit/rt3_2026-10/prod/window_20261003/icb-rt3-families/out-dryrun-20261003T042212Z/run.txt
+ create mode 100644 docs/audit/rt4_2026-10/manifest_s/make_manifest_s.py
+ create mode 100644 docs/audit/rt4_2026-10/manifest_s/manifest_s.yaml
+ create mode 100644 docs/audit/rt4_2026-10/manifest_s/proof/proof_s_mirror.json
+ create mode 100644 docs/audit/rt4_2026-10/manifest_s/proof/proof_s_mirror.md
+ create mode 100644 docs/audit/rt4_2026-10/manifest_s/prove_s.py
+ create mode 100644 docs/audit/rt4_2026-10/noauth/README.md
+ create mode 100644 docs/audit/rt4_2026-10/noauth/noauth_sweep.py
+ create mode 100644 docs/audit/rt4_2026-10/noauth/probe_list_check.py
+ create mode 100644 docs/audit/rt4_2026-10/noauth/routes.json
+ create mode 100644 docs/audit/rt4_2026-10/noauth/routes_list.py
+ create mode 100644 docs/audit/rt4_2026-10/noauth/sweep_final.json
+ create mode 100644 docs/audit/rt4_2026-10/prod/discovery_20261004-080150/MANIFEST.txt
+ create mode 100644 docs/audit/rt4_2026-10/prod/discovery_20261004-080150/SHA256SUMS.out
+ create mode 100644 docs/audit/rt4_2026-10/prod/discovery_20261004-080150/discovery.json
+ create mode 100644 docs/audit/rt4_2026-10/prod/discovery_20261004-080150/discovery.txt
+ create mode 100644 docs/audit/rt4_2026-10/prod/discovery_20261004-080150/manni_snapshot.json
+ create mode 100644 docs/audit/rt4_2026-10/prod/discovery_20261004-080150/noauth_probe.txt
+ create mode 100644 docs/audit/rt4_2026-10/prod/discovery_20261004-080150/run.txt
+ create mode 100644 docs/audit/rt4_2026-10/prod/export41_20261004-134129/MANIFEST.txt
+ create mode 100644 docs/audit/rt4_2026-10/prod/export41_20261004-134129/SHA256SUMS.out
+ create mode 100644 docs/audit/rt4_2026-10/prod/export41_20261004-134129/body41_snapshot.json
+ create mode 100644 docs/audit/rt4_2026-10/prod/export41_20261004-134129/export41.json
+ create mode 100644 docs/audit/rt4_2026-10/prod/export41_20261004-134129/export41.txt
+ create mode 100644 docs/audit/rt4_2026-10/prod/export41_20261004-134129/run.txt
+ create mode 100644 docs/runbooks/prod-deploy-v1.60.1.md
+ create mode 100644 docs/screenshots/journeys/rt4_section_move/01-move-offer.png
+ create mode 100644 docs/screenshots/journeys/rt4_section_move/02-delete-offer.png
+ create mode 100644 docs/screenshots/journeys/rt4_section_move/03-lines-under-the-shared-section.png
+ create mode 100644 ops/prod-release-v1.60.1/mkstage.sh
+ create mode 100644 ops/prod-release-v1.60.1/probe_paths.txt
+ create mode 100644 ops/prod-release-v1.60.1/release.sh
+ create mode 100644 ops/prod-release-v1.60.1/sim/run_all.sh
+ create mode 100644 ops/prod-release-v1.60.1/sim/run_sim.sh
+ create mode 100644 ops/prod-release-v1.60.1/sim/stubs.sh
+ create mode 100644 ops/prod-rt4/mkstage_data.sh
+ create mode 100644 ops/prod-rt4/mkstage_discovery.sh
+ create mode 100644 ops/prod-rt4/mkstage_window.sh
+ create mode 100644 ops/prod-rt4/noauth_probe_paths.txt
+ create mode 100644 ops/prod-rt4/rt4_data.sh
+ create mode 100644 ops/prod-rt4/rt4_discovery.py
+ create mode 100644 ops/prod-rt4/rt4_discovery.sh
+ create mode 100644 ops/prod-rt4/rt4_export41.py
+ create mode 100644 ops/prod-rt4/rt4_export41.sh
+ create mode 100644 ops/prod-rt4/sim/fake_s_tool.py
+ create mode 100644 ops/prod-rt4/sim/run_data_sim.sh
+ create mode 100644 ops/prod-rt4/sim/run_discovery_sim.sh
+ create mode 100644 ops/prod-rt4/sim/run_export41_sim.sh
+ create mode 100644 ops/prod-rt4/sim/run_window_sim.sh
+[32m  ok[0m  at 01751fa3 (verified by SHA, not by git describe)
+
+[1m== 5. migrations - skipped[0m
+
+[1m== 6. SPA build - skipped (frontend/ untouched in this range)[0m
+
+[1m== 7. restart icb-backend[0m
+  active since (before): Sat 2026-10-03 06:12:20 SAST
+  active since (after):  Mon 2026-10-05 08:56:09 SAST
+[32m  ok[0m  restarted
+
+[1m== 8. verify[0m
+  workers started      4 (expected 4)
+  BOOTSTRAP FAILED     0 (expected 0)
+  https://127.0.0.1/health -> 200
+[32m  ok[0m  healthy
+
+[32m[1mDEPLOYED[0m  682a6ccc -> 01751fa3  (01751fa330f57526c15129892820013cdb5f8b17)
+
+Rollback (code-only - additive migrations are left in place deliberately):
+    /opt/icb-platform/deploy/prod/icb-rollback.sh 682a6ccc
+
+  or, without the script:
+    sudo -u icb git -C /opt/icb-platform reset --hard 682a6ccc
+    sudo systemctl restart icb-backend
+

@@ -1,0 +1,153 @@
+database icb_platform (--target prod); manifest manifest_s.yaml sha256 bad7f51294b8ae11…, 46 entries
+── S1
+  APPLY bom=793    MANNI DF / 3MM MILD STEEL FLOOR / 4 MM BEND UP SUB FRAME  .section
+          {'id': 39, 'name': '3MM MILD STEEL FLOOR'}
+       -> {'id': 64, 'name': '3MM MILD STEEL FLOOR'}
+  APPLY bom=794    MANNI DF / 3MM MILD STEEL FLOOR / 80*50*3 CROSSMEMBERS  .section
+          {'id': 39, 'name': '3MM MILD STEEL FLOOR'}
+       -> {'id': 64, 'name': '3MM MILD STEEL FLOOR'}
+  APPLY bom=795    MANNI DF / 3MM MILD STEEL FLOOR / 3MM PLATE  .section
+          {'id': 39, 'name': '3MM MILD STEEL FLOOR'}
+       -> {'id': 64, 'name': '3MM MILD STEEL FLOOR'}
+  APPLY bom=796    MANNI DF / 3MM MILD STEEL FLOOR / 3MM GUSSETS  .section
+          {'id': 39, 'name': '3MM MILD STEEL FLOOR'}
+       -> {'id': 64, 'name': '3MM MILD STEEL FLOOR'}
+  APPLY bom=843    MANNI DF / LOAD LOCK RAILS / LOAD LOCK RAIL  .section
+          {'id': 40, 'name': 'LOAD LOCK RAILS'}
+       -> {'id': 65, 'name': 'LOAD LOCK RAILS'}
+  APPLY bom=844    MANNI DF / LOAD LOCK RAILS / RIVETS BACKING PLATE  .section
+          {'id': 40, 'name': 'LOAD LOCK RAILS'}
+       -> {'id': 65, 'name': 'LOAD LOCK RAILS'}
+  APPLY bom=845    MANNI DF / LOAD LOCK RAILS / RIVETS LOAD LOCK RAIL  .section
+          {'id': 40, 'name': 'LOAD LOCK RAILS'}
+       -> {'id': 65, 'name': 'LOAD LOCK RAILS'}
+── S2
+  APPLY bom=11113  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / CSLB HINGES  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11114  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / SB 51111 DOOR SET  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11115  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 28779 DOOR CAPPING  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11116  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 28777 DOOR CAPPING  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11117  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 2316 DOOR RUBBER  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11118  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 2317 DOOR RUBBER  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11119  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / M10*40 GALV. BOLTS  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11120  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / M10 SPRING WASHERS  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11121  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 0661-0631 LONG RIVETS  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11122  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 3MM 3CR12 FLOOR PLATE  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11123  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 28781 SMALL HORIZ CAPPING  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11124  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 28780 SMALL VERTICAL  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11125  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 0661-0631 LONG RIVETS  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11126  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / SILPLUS X WHITE SILICONE  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11127  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / 3MM ALU BUFFER PLATE  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11128  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / T-BAR CATCH  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11129  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS SRD / D-RUBBER  .section
+          {'id': 83, 'name': 'DOOR FITTINGS SRD'}
+       -> {'id': 26, 'name': 'SRD DOOR FITTINGS'}
+  APPLY bom=11134  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / CSLB HINGES  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11135  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / SB 51111 DOOR SET  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11136  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / 28779 DOOR CAPPING  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11137  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / 28777 DOOR CAPPING  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11138  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / 2316 DOOR RUBBER  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11139  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / 2317 DOOR RUBBER  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11140  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / M10*40 GALV. BOLTS  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11141  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / M10 SPRING WASHERS  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11142  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / 0661-0631 LONG RIVETS  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11143  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / SILPLUS X WHITE SILICONE  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11144  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / 3MM ALU BUFFER PLATE  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11145  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / T-BAR CATCH  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11146  Manni RIGIDS CB [deleted-41] / DOOR FITTINGS DRD / D-RUBBER  .section
+          {'id': 84, 'name': 'DOOR FITTINGS DRD'}
+       -> {'id': 15, 'name': 'DRD DOOR FITTINGS'}
+  APPLY bom=11192  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / 3MM 3CR12 REAR FRAME  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+  APPLY bom=11193  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / TOP FRAME RAIN GUTTER  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+  APPLY bom=11194  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / 3MM 3CR12 FLOOR PLATE  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+  APPLY bom=11195  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / SILPLUS X-WHITE  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+  APPLY bom=11196  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / M8*150 GALV. CUP SQUARES  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+  APPLY bom=11197  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / M8*45*3 FENDER WASHER  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+  APPLY bom=11198  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / M8 NYLOCK NUT  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+  APPLY bom=11199  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / 5MM CORNER GUSSET  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+  APPLY bom=11200  Manni RIGIDS CB [deleted-41] / REAR FRAME + FLOOR PLATE / 2771-0824 MONOBOLTS  .section
+          {'id': 85, 'name': 'REAR FRAME + FLOOR PLATE'}
+       -> {'id': 21, 'name': 'REAR FRAME & FLOOR PLATE'}
+── S3
+  APPLY draft of body 41 Manni RIGIDS CB [deleted-41]: 1 category node(s)
+          'DOOR FITTINGS SRD'
+       -> 'SRD DOOR FITTINGS'
+  APPLY draft of body 41 Manni RIGIDS CB [deleted-41]: 1 category node(s)
+          'DOOR FITTINGS DRD'
+       -> 'DRD DOOR FITTINGS'
+
+46 to apply, 0 already applied.
+drafts: 2 to apply, 0 already applied.
+expect_unused_after [83, 84, 85]: no other line or draft names them — they are unused once this applies.
+(DRY RUN — nothing written. Re-run with --apply.)

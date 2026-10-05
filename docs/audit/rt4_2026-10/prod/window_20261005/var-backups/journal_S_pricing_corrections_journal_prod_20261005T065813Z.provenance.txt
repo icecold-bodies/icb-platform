@@ -1,0 +1,8 @@
+journal      journal_S_pricing_corrections_journal_prod_20261005T065813Z.json (the tool's own file, unchanged)
+manifest     S  sha256 bad7f51294b8ae117d2664d9ac3dc8504adb8f6e5ed91792c2161000b120f02b
+tool         sha256 81747403b2871f925dac8b400ed8c52cdfcbe2b84a94cc46572464810d306319
+staged_from  01751fa330f57526c15129892820013cdb5f8b17
+prod_code    01751fa330f57526c15129892820013cdb5f8b17
+alembic      0051
+backup       pre_apply_S_20261005T065809Z.sql.gz
+run_folder   /tmp/icb-rt4-data/out-apply-S-20261005T065809Z

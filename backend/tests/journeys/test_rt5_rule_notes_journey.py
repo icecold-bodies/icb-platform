@@ -23,7 +23,7 @@ import time
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import admin_session, shot  # noqa: E402  (sys.path set in conftest)
+from _common import SCREENSHOT_ROOT, admin_session  # noqa: E402  (sys.path set in conftest)
 
 T = 20_000
 JOURNEY = "rt5_rule_notes"
@@ -33,6 +33,18 @@ NOTE_F = f"Freezers: EPS insulation in the ROOF and FLOOR only ({MARK})\nnever i
 XSS = f'<b>{MARK} bold</b> <img src=x onerror="window.__rt5=1"> & done'
 RED = "rgb(209, 36, 36)"                         # #D12424 — body_family.RULE_NOTE_INK
 EPS, PU = f"{MARK} FRONT EPS", f"{MARK} FRONT PU"
+
+
+def shot(page: Page, name: str, journey: str = JOURNEY) -> None:
+    """The card that carries the note, never the whole page: the calculator's customer list (and the costings
+    list) would put customer names into the committed screenshots (the RT3 rule)."""
+    out = SCREENSHOT_ROOT / journey
+    out.mkdir(parents=True, exist_ok=True)
+    if page.locator(".calc-panel--config").count():
+        card = page.locator(".calc-panel--config").first          # the calculator's configuration panel
+    else:
+        card = page.locator("#bom-title").locator("xpath=ancestor::div[contains(@class,'card')][1]")
+    card.screenshot(path=str(out / f"{name}.png"))
 
 
 def _purge(db) -> None:

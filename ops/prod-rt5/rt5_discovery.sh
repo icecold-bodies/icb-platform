@@ -54,8 +54,8 @@ say "1. discovery (read-only session)"
 grep -E '^== |^   [A-Z#]|^      [A-Z]' "$OUT/discovery.log" | head -n 120
 [ $rc = 0 ] || { tail -n 20 "$OUT/discovery.log"; stop DISCOVERY "the discovery failed (exit $rc)"; }
 # no email-shaped value may leave the VM
-EM=$(cat "$OUT/discovery.json" "$OUT/discovery.txt" | grep -cE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}' || true)
-[ "$EM" = 0 ] || { rm -f "$OUT/discovery.json" "$OUT/discovery.txt" "$OUT/discovery.log"; stop GATE "an email-shaped value in the discovery output — files deleted"; }
+EM=$(cat "$OUT/discovery.json" "$OUT/discovery.txt" "$OUT/drafts.json" | grep -cE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}' || true)
+[ "$EM" = 0 ] || { rm -f "$OUT/discovery.json" "$OUT/discovery.txt" "$OUT/drafts.json" "$OUT/discovery.log"; stop GATE "an email-shaped value in the discovery output — files deleted"; }
 echo "   gate ok: no email-shaped value in the discovery output"
 
 # ---- 2. the freezer and smoke packs with roof_floor_eps, on prod ------------------------------------------------

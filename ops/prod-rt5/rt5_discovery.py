@@ -15,7 +15,9 @@ masters (BOM rows) stay. Writes discovery.json + discovery.txt:
      line with a cost in that panel's section), THICKNESS (the priced body variable > 0), SELECTED (the saved
      selection / flag). Quote number, status and date only;
   4. validated references whose costing is in (3) (reference id + the costing's quote number only);
-  5. the freezers' side-door lines (the note's wording: "doors" or "rear doors").
+  5. the freezers' side-door lines (the note's wording: "doors" or "rear doors");
+  6. drafts.json: the chiller / freezer bodies' live draft trees (payload only), so the CA's mirror quotes them as
+     prod does (the RT5_RULING_1 screenshots and the window rehearsal).
 
 Selects pricing / configuration / identity columns only — never a customer, contact, user or person column:
 calculations are read for their id, quote number, status, created date, body and result_json, and only the
@@ -170,9 +172,9 @@ def main(url: str, out_dir: str) -> int:
                          from icb_costings.bill_of_materials b join icb_costings.materials m on m.id = b.material_id
                          where b.is_body_option and b.trailer_type_id = any(%s)""", (list(scope),)):
             masters[r["tid"]][norm(r["name"])] = r
-        drafts = {r["trailer_type_id"]: parse(r["payload"]).get("nodes") or {}
-                  for r in rows("select trailer_type_id, payload from icb_costings.configurator_drafts where trailer_type_id = any(%s)",
-                                (list(scope),))}
+        draft_rows = rows("select id, branch_id, trailer_type_id, payload, updated_at from icb_costings.configurator_drafts "
+                          "where trailer_type_id = any(%s)", (list(scope),))
+        drafts = {r["trailer_type_id"]: parse(r["payload"]).get("nodes") or {} for r in draft_rows}
         backups = defaultdict(list)
         for tbl in ("configurator_draft_snapshots", "configurator_snapshots"):
             for r in rows(f"select id, trailer_type_id, created_at, payload from icb_costings.{tbl} where trailer_type_id = any(%s)",
@@ -254,6 +256,9 @@ def main(url: str, out_dir: str) -> int:
         doc["side_doors"] = sd
 
     out.mkdir(parents=True, exist_ok=True)
+    (out / "drafts.json").write_text(json.dumps(
+        [{"id": r["id"], "branch_id": r["branch_id"], "trailer_type_id": r["trailer_type_id"],
+          "updated_at": str(r["updated_at"]), "payload": r["payload"]} for r in draft_rows], indent=1), encoding="utf-8")
     (out / "discovery.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     (out / "discovery.json").write_text(json.dumps(doc, indent=1, default=str), encoding="utf-8")
     print("\n".join(lines))

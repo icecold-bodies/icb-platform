@@ -26,7 +26,8 @@ cat > "$SIM/opt/icb-platform/.venv/bin/python" <<'PY'
 case "${PGOPTIONS:-}" in *default_transaction_read_only=on*) ;; *) echo "python stub: NOT read-only"; exit 3;; esac
 case "$1" in
   */rt5_discovery.py)
-    cat "$SIMSTATE/discovery.json" > "$3/discovery.json"; echo "== 1 · the families (stub)" | tee "$3/discovery.txt"; exit 0 ;;
+    cat "$SIMSTATE/discovery.json" > "$3/discovery.json"; cat "$SIMSTATE/drafts.json" > "$3/drafts.json"
+    echo "== 1 · the families (stub)" | tee "$3/discovery.txt"; exit 0 ;;
   -c) case "$2" in
         *"import tools.costing_audit"*) echo "$PWD/tools/costing_audit/__init__.py"; exit 0 ;;
         *"import app"*) cat "$SIMSTATE/app_where"; exit 0 ;;
@@ -45,6 +46,8 @@ echo 0051 > "$SIM/state/alembic"; echo 0 > "$SIM/state/run_rc"
 echo /opt/icb-platform/backend/app/__init__.py > "$SIM/state/app_where"
 OK='{"database": "icb_platform", "costings": [{"quote_number": "A1/10/2026", "rule": "CHILLER"}]}'
 echo "$OK" > "$SIM/state/discovery.json"
+DR='[{"trailer_type_id": 26, "payload": "{}"}]'
+echo "$DR" > "$SIM/state/drafts.json"
 cat > "$SIM/bin/psql" <<'PS'
 #!/bin/bash
 case "${PGOPTIONS:-}" in *default_transaction_read_only=on*) ;; *) echo "psql stub: NOT read-only"; exit 3;; esac
@@ -63,7 +66,7 @@ expect "over v1.60.1"                      'DONE'
 T=$(ls -t "$SIM/tmp/icb-rt5-discovery/"out-*.tar | head -n1)
 check "both packs ran, freezers then smoke"  '[ "$(tr "\n" " " < "$SIM/state/runs.log")" = "prod_freezers prod_smoke " ]'
 check "the output tar carries discovery + both reports" \
-  'tar -tf "$T" | grep -q discovery.json && tar -tf "$T" | grep -q reports/prod_freezers.json && tar -tf "$T" | grep -q reports/prod_smoke.json'
+  'tar -tf "$T" | grep -q discovery.json && tar -tf "$T" | grep -q drafts.json && tar -tf "$T" | grep -q reports/prod_freezers.json && tar -tf "$T" | grep -q reports/prod_smoke.json'
 check "the staged tool is the roof_floor_eps prototype" 'grep -q roof_floor_eps "$SIM/tmp/icb-rt5-discovery/stage/backend/tools/costing_audit/scenarios.py"'
 echo 1 > "$SIM/state/run_rc"
 expect "unaccepted cells (exit 1) are reported, not a stop" 'DONE'
@@ -78,6 +81,10 @@ expect "email-shaped value in the output"  'STOP \[GATE\]'
 N=$(ls "$SIM"/tmp/icb-rt5-discovery/out-*/discovery.json 2>/dev/null | wc -l)
 check "the gated discovery.json was deleted (only the 2 DONE runs + 2 later stops keep one)" '[ "$N" = 4 ]'
 echo "$OK" > "$SIM/state/discovery.json"
+echo '[{"trailer_type_id": 26, "payload": "ask jan.smit@example.co.za"}]' > "$SIM/state/drafts.json"
+expect "email-shaped value in a draft"     'STOP \[GATE\]'
+check "the gated drafts.json was deleted" '[ "$(ls "$SIM"/tmp/icb-rt5-discovery/out-*/drafts.json 2>/dev/null | wc -l)" = 4 ]'
+echo "$DR" > "$SIM/state/drafts.json"
 echo 0050 > "$SIM/state/alembic"
 expect "alembic not 0051"                  'STOP \[DB\]'
 echo 0051 > "$SIM/state/alembic"

@@ -40,7 +40,7 @@ def test_layout_has_grid_divider_and_two_bottom_panels(tmp_path):
     assert "costingAudit.split" in html and "localStorage" in html    # remembered split …
     assert "try {" in html                                            # … never required
     # variants are columns in canonical order, dimensions are rows
-    assert "VARIANT_ORDER = ['as_sheet','all_eps','all_pu','srd','drd','foam_4g']" in html
+    assert "VARIANT_ORDER = ['as_sheet','all_eps','all_pu','roof_floor_eps','srd','drd','foam_4g']" in html
 
 
 def test_embedded_data_cannot_close_the_script(tmp_path):

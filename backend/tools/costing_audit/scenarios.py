@@ -30,6 +30,8 @@ variants (ratified default 4):
     as_sheet  Burt's own flag/thickness block exactly as saved
     all_eps   every panel EPS at the sheet's EPS thickness (else defaults)
     all_pu    every panel PU  at the sheet's PU thickness  (else defaults)
+    roof_floor_eps  ROOF + FLOOR EPS at the sheet's EPS thickness, every other panel PU at its PU
+              thickness (RT5: Burt, 5 Oct — a freezer takes EPS in the roof and floor only)
     srd       as_sheet insulation, rear door = SRD
     drd       as_sheet insulation, rear door = DRD
     foam_4g   as_sheet, PU foam graded 4G
@@ -57,7 +59,8 @@ from .mapping import PANELS, DOOR_PANELS, SHEET_TO_TRAILER, norm_name
 if TYPE_CHECKING:        # annotations only — sheet_map imports openpyxl, the run path must not
     from .sheet_map import SheetMap
 
-NAMED_VARIANTS = ("as_sheet", "all_eps", "all_pu", "srd", "drd", "foam_4g", "foam_32d")
+NAMED_VARIANTS = ("as_sheet", "all_eps", "all_pu", "roof_floor_eps", "srd", "drd", "foam_4g", "foam_32d")
+ROOF_FLOOR = ("ROOF", "FLOOR")                           # RT5: the only panels a freezer may insulate with EPS
 FOAM_VARIANTS = {"foam_4g": "4G", "foam_32d": "32D"}     # the named variants that SET the grade
 FOAM_GRADES = ("32D", "4G")
 # as_sheet: Burt's own gate rows decide (every sheet has an EPS-gated and a
@@ -255,6 +258,13 @@ def expand_pack(pack: Pack, maps: dict[str, SheetMap]) -> list[Scenario]:
                                 if p in DOOR_PANELS and p.lower() != door:
                                     panels[p] = PanelSpec("none", 0.0)
                                 else:
+                                    panels[p] = PanelSpec(kind, _panel_thickness(kind, p, sm, pack.thickness_defaults))
+                        elif var == "roof_floor_eps":
+                            for p in panels:
+                                if p in DOOR_PANELS and p.lower() != door:
+                                    panels[p] = PanelSpec("none", 0.0)
+                                else:
+                                    kind = "eps" if p in ROOF_FLOOR else "pu"
                                     panels[p] = PanelSpec(kind, _panel_thickness(kind, p, sm, pack.thickness_defaults))
                         elif var in ("srd", "drd"):
                             door = var

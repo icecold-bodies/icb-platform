@@ -1598,11 +1598,11 @@
   },
   {
    "scenario": {
-    "id": "4.9_+_UP_FREEZER_BODY_2~L4.9~W2.6~H2.56~all_eps",
+    "id": "4.9_+_UP_FREEZER_BODY_2~L4.9~W2.6~H2.56~roof_floor_eps",
     "pack": "freezers",
     "sheet": " 4.9 & UP FREEZER BODY (2",
     "trailer_id": 21,
-    "variant": "all_eps",
+    "variant": "roof_floor_eps",
     "length": 4.9,
     "width": 2.6,
     "height": 2.56,
@@ -1610,11 +1610,11 @@
     "foam": "32D",
     "panels": {
      "FRONT": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "DRD": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "SRD": {
@@ -1622,7 +1622,7 @@
       "thickness": 0.0
      },
      "SIDES": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "ROOF": {
@@ -1644,17 +1644,17 @@
     "section_map": {},
     "foam_explicit": false
    },
-   "grand_total": 84345.94857883,
+   "grand_total": 93207.9692851924,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 4043.588126,
-     "raw_total": 4043.58812636375,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 5506.601017,
+     "raw_total": 5506.60101699463,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I31": 1,
-      "I32": 0
+      "I31": 0,
+      "I32": 1
      },
      "lines": [
       {
@@ -1681,8 +1681,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 1463.01289063087,
        "stale": false
       },
       {
@@ -1941,15 +1941,15 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 4807.917059,
-     "raw_total": 4807.91705895034,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 6270.92995,
+     "raw_total": 6270.92994958121,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I83": 1,
-      "I84": 0,
-      "I91": 1,
-      "I92": 0
+      "I83": 0,
+      "I84": 1,
+      "I91": 0,
+      "I92": 1
      },
      "lines": [
       {
@@ -1976,8 +1976,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 1463.01289063087,
        "stale": false
       },
       {
@@ -2024,8 +2024,8 @@
      "status": "OK",
      "reason": null,
      "gates": {
-      "I110": 1,
-      "I111": 0
+      "I110": 0,
+      "I111": 1
      },
      "lines": [
       {
@@ -2130,13 +2130,13 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 15479.701232,
-     "raw_total": 7739.85061580417,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 21415.696157,
+     "raw_total": 10707.8480783545,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I117": 1,
-      "I118": 0
+      "I117": 0,
+      "I118": 1
      },
      "lines": [
       {
@@ -2163,8 +2163,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 2967.99746255034,
        "stale": false
       },
       {
@@ -2632,8 +2632,8 @@
      "status": "OK",
      "reason": null,
      "gates": {
-      "I214": 1,
-      "I215": 0
+      "I214": 0,
+      "I215": 1
      },
      "lines": [
       {
@@ -8450,11 +8450,11 @@
   },
   {
    "scenario": {
-    "id": "4.9_+_UP_FREEZER_BODY_2~L6.5~W2.6~H2.56~all_eps",
+    "id": "4.9_+_UP_FREEZER_BODY_2~L6.5~W2.6~H2.56~roof_floor_eps",
     "pack": "freezers",
     "sheet": " 4.9 & UP FREEZER BODY (2",
     "trailer_id": 21,
-    "variant": "all_eps",
+    "variant": "roof_floor_eps",
     "length": 6.5,
     "width": 2.6,
     "height": 2.56,
@@ -8462,11 +8462,11 @@
     "foam": "32D",
     "panels": {
      "FRONT": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "DRD": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "SRD": {
@@ -8474,7 +8474,7 @@
       "thickness": 0.0
      },
      "SIDES": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "ROOF": {
@@ -8496,17 +8496,17 @@
     "section_map": {},
     "foam_explicit": false
    },
-   "grand_total": 101684.282218101,
+   "grand_total": 112465.008354799,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 4043.588126,
-     "raw_total": 4043.58812636375,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 5506.601017,
+     "raw_total": 5506.60101699463,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I31": 1,
-      "I32": 0
+      "I31": 0,
+      "I32": 1
      },
      "lines": [
       {
@@ -8533,8 +8533,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 1463.01289063087,
        "stale": false
       },
       {
@@ -8793,15 +8793,15 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 4807.917059,
-     "raw_total": 4807.91705895034,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 6270.92995,
+     "raw_total": 6270.92994958121,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I83": 1,
-      "I84": 0,
-      "I91": 1,
-      "I92": 0
+      "I83": 0,
+      "I84": 1,
+      "I91": 0,
+      "I92": 1
      },
      "lines": [
       {
@@ -8828,8 +8828,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 1463.01289063087,
        "stale": false
       },
       {
@@ -8876,8 +8876,8 @@
      "status": "OK",
      "reason": null,
      "gates": {
-      "I110": 1,
-      "I111": 0
+      "I110": 0,
+      "I111": 1
      },
      "lines": [
       {
@@ -8982,13 +8982,13 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 20362.27879,
-     "raw_total": 10181.1393948713,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 28216.979145,
+     "raw_total": 14108.4895725894,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I117": 1,
-      "I118": 0
+      "I117": 0,
+      "I118": 1
      },
      "lines": [
       {
@@ -9015,8 +9015,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 3927.35017771812,
        "stale": false
       },
       {
@@ -9484,8 +9484,8 @@
      "status": "OK",
      "reason": null,
      "gates": {
-      "I214": 1,
-      "I215": 0
+      "I214": 0,
+      "I215": 1
      },
      "lines": [
       {
@@ -15302,11 +15302,11 @@
   },
   {
    "scenario": {
-    "id": "4.9_+_UP_FREEZER_BODY_2~L8.2~W2.6~H2.56~all_eps",
+    "id": "4.9_+_UP_FREEZER_BODY_2~L8.2~W2.6~H2.56~roof_floor_eps",
     "pack": "freezers",
     "sheet": " 4.9 & UP FREEZER BODY (2",
     "trailer_id": 21,
-    "variant": "all_eps",
+    "variant": "roof_floor_eps",
     "length": 8.2,
     "width": 2.6,
     "height": 2.56,
@@ -15314,11 +15314,11 @@
     "foam": "32D",
     "panels": {
      "FRONT": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "DRD": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "SRD": {
@@ -15326,7 +15326,7 @@
       "thickness": 0.0
      },
      "SIDES": {
-      "insulation": "eps",
+      "insulation": "pu",
       "thickness": 0.06
      },
      "ROOF": {
@@ -15348,17 +15348,17 @@
     "section_map": {},
     "foam_explicit": false
    },
-   "grand_total": 120106.261709827,
+   "grand_total": 132925.612366257,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 4043.588126,
-     "raw_total": 4043.58812636375,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 5506.601017,
+     "raw_total": 5506.60101699463,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I31": 1,
-      "I32": 0
+      "I31": 0,
+      "I32": 1
      },
      "lines": [
       {
@@ -15385,8 +15385,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 1463.01289063087,
        "stale": false
       },
       {
@@ -15645,15 +15645,15 @@
      "multiplier": 1.0
     },
     "DRD": {
-     "total": 4807.917059,
-     "raw_total": 4807.91705895034,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 6270.92995,
+     "raw_total": 6270.92994958121,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I83": 1,
-      "I84": 0,
-      "I91": 1,
-      "I92": 0
+      "I83": 0,
+      "I84": 1,
+      "I91": 0,
+      "I92": 1
      },
      "lines": [
       {
@@ -15680,8 +15680,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 1463.01289063087,
        "stale": false
       },
       {
@@ -15728,8 +15728,8 @@
      "status": "OK",
      "reason": null,
      "gates": {
-      "I110": 1,
-      "I111": 0
+      "I110": 0,
+      "I111": 1
      },
      "lines": [
       {
@@ -15834,13 +15834,13 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 25550.017445,
-     "raw_total": 12775.0087226301,
-     "status": "UNVERIFIABLE",
-     "reason": "EXCEL_NO_PRICE:EPS",
+     "total": 35443.34232,
+     "raw_total": 17721.671160214,
+     "status": "OK",
+     "reason": null,
      "gates": {
-      "I117": 1,
-      "I118": 0
+      "I117": 0,
+      "I118": 1
      },
      "lines": [
       {
@@ -15867,8 +15867,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 0.0,
-       "total": 0.0,
+       "price": 245.735838926174,
+       "total": 4946.66243758389,
        "stale": false
       },
       {
@@ -16336,8 +16336,8 @@
      "status": "OK",
      "reason": null,
      "gates": {
-      "I214": 1,
-      "I215": 0
+      "I214": 0,
+      "I215": 1
      },
      "lines": [
       {

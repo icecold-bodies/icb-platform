@@ -1,0 +1,6172 @@
+{
+ "sheet": "Manni RIGIDS CB",
+ "trailer_id": 3,
+ "sheet_map": {
+  "label_col": "A",
+  "inputs": {
+   "LENGTH": "C4",
+   "WIDTH": "C5",
+   "HEIGHT": "C6"
+  },
+  "input_values": {
+   "LENGTH": 7.5,
+   "WIDTH": 2.6,
+   "HEIGHT": 2.6
+  },
+  "control_panel": false,
+  "selfcheck_ok": true,
+  "flags": [
+   {
+    "label": "FRONT EPS",
+    "thickness": 0.0,
+    "flag": "N"
+   },
+   {
+    "label": "FRONT PU",
+    "thickness": 0.062,
+    "flag": "Y"
+   },
+   {
+    "label": "DRD EPS",
+    "thickness": 0.0,
+    "flag": "N"
+   },
+   {
+    "label": "DRD PU",
+    "thickness": 0.038,
+    "flag": "Y"
+   },
+   {
+    "label": "SRD EPS",
+    "thickness": 0.0,
+    "flag": "N"
+   },
+   {
+    "label": "SRD PU",
+    "thickness": 0.0,
+    "flag": "N"
+   },
+   {
+    "label": "SIDES EPS",
+    "thickness": 0.0,
+    "flag": "N"
+   },
+   {
+    "label": "SIDES PU",
+    "thickness": 0.038,
+    "flag": "Y"
+   },
+   {
+    "label": "ROOF EPS",
+    "thickness": 0.0,
+    "flag": "N"
+   },
+   {
+    "label": "ROOF PU",
+    "thickness": 0.038,
+    "flag": "Y"
+   },
+   {
+    "label": "FLOOR EPS",
+    "thickness": 0.0,
+    "flag": "N"
+   },
+   {
+    "label": "FLOOR PU",
+    "thickness": 0.076,
+    "flag": "Y"
+   },
+   {
+    "label": "18MM PHENO PLY",
+    "thickness": null,
+    "flag": "N"
+   },
+   {
+    "label": "18MM FINN PLY FLOOR",
+    "thickness": null,
+    "flag": "Y"
+   },
+   {
+    "label": "12MM FINN PLYWOOD",
+    "thickness": null,
+    "flag": "N"
+   },
+   {
+    "label": "RICE GRAIN FLOOR",
+    "thickness": null,
+    "flag": "N"
+   },
+   {
+    "label": "ALU KICKPLATES",
+    "thickness": null,
+    "flag": "N"
+   },
+   {
+    "label": "2ND ROW ALU KICKPLATES",
+    "thickness": null,
+    "flag": "N"
+   }
+  ],
+  "sections": [
+   {
+    "name": "FRONT",
+    "label": "FRONT",
+    "rows": [
+     30,
+     40
+    ],
+    "gated_cells": [
+     "J37"
+    ],
+    "gates": [
+     {
+      "cell": "I32",
+      "flags": [
+       "FRONT PU"
+      ]
+     }
+    ],
+    "cached_total": 6769.659731,
+    "unverifiable": null
+   },
+   {
+    "name": "SRD",
+    "label": "SRD",
+    "rows": [
+     42,
+     49
+    ],
+    "gated_cells": [
+     "J48",
+     "J49"
+    ],
+    "gates": [
+     {
+      "cell": "I44",
+      "flags": [
+       "SRD PU"
+      ]
+     },
+     {
+      "cell": "I48",
+      "flags": [
+       "SRD EPS"
+      ]
+     },
+     {
+      "cell": "I49",
+      "flags": [
+       "SRD PU"
+      ]
+     }
+    ],
+    "cached_total": 0.0,
+    "unverifiable": null
+   },
+   {
+    "name": "SRD DOOR FITTINGS",
+    "label": "DOOR FITTINGS",
+    "rows": [
+     51,
+     72
+    ],
+    "gated_cells": [
+     "J70",
+     "J71"
+    ],
+    "gates": [
+     {
+      "cell": "I70",
+      "flags": [
+       "SRD EPS"
+      ]
+     },
+     {
+      "cell": "I71",
+      "flags": [
+       "SRD PU"
+      ]
+     }
+    ],
+    "cached_total": 0.0,
+    "unverifiable": null
+   },
+   {
+    "name": "DRD",
+    "label": "DRD",
+    "rows": [
+     74,
+     81
+    ],
+    "gated_cells": [
+     "J80",
+     "J81"
+    ],
+    "gates": [
+     {
+      "cell": "I76",
+      "flags": [
+       "DRD PU"
+      ]
+     },
+     {
+      "cell": "I80",
+      "flags": [
+       "DRD EPS"
+      ]
+     },
+     {
+      "cell": "I81",
+      "flags": [
+       "DRD PU"
+      ]
+     }
+    ],
+    "cached_total": 4860.489874,
+    "unverifiable": null
+   },
+   {
+    "name": "DRD DOOR FITTINGS",
+    "label": "DOOR FITTINGS",
+    "rows": [
+     83,
+     100
+    ],
+    "gated_cells": [
+     "J98",
+     "J99"
+    ],
+    "gates": [
+     {
+      "cell": "I98",
+      "flags": [
+       "DRD EPS"
+      ]
+     },
+     {
+      "cell": "I99",
+      "flags": [
+       "DRD PU"
+      ]
+     }
+    ],
+    "cached_total": 6111.09422,
+    "unverifiable": null
+   },
+   {
+    "name": "SIDES",
+    "label": "SIDES",
+    "rows": [
+     102,
+     110
+    ],
+    "gated_cells": [
+     "J109"
+    ],
+    "gates": [
+     {
+      "cell": "I104",
+      "flags": [
+       "SIDES PU"
+      ]
+     }
+    ],
+    "cached_total": 26818.960315,
+    "unverifiable": null
+   },
+   {
+    "name": "ROOF",
+    "label": "ROOF",
+    "rows": [
+     112,
+     119
+    ],
+    "gated_cells": [
+     "J118"
+    ],
+    "gates": [
+     {
+      "cell": "I114",
+      "flags": [
+       "ROOF PU"
+      ]
+     }
+    ],
+    "cached_total": 11867.882619,
+    "unverifiable": null
+   },
+   {
+    "name": "FLOOR",
+    "label": "FLOOR",
+    "rows": [
+     121,
+     137
+    ],
+    "gated_cells": [
+     "J136"
+    ],
+    "gates": [
+     {
+      "cell": "I123",
+      "flags": [
+       "FLOOR PU"
+      ]
+     },
+     {
+      "cell": "I124",
+      "flags": [
+       "18MM PHENO PLY"
+      ]
+     },
+     {
+      "cell": "I125",
+      "flags": [
+       "18MM FINN PLY FLOOR"
+      ]
+     },
+     {
+      "cell": "I126",
+      "flags": [
+       "12MM FINN PLYWOOD"
+      ]
+     },
+     {
+      "cell": "I127",
+      "flags": [
+       "RICE GRAIN FLOOR"
+      ]
+     },
+     {
+      "cell": "I128",
+      "flags": [
+       "ALU KICKPLATES"
+      ]
+     },
+     {
+      "cell": "I129",
+      "flags": [
+       "2ND ROW ALU KICKPLATES"
+      ]
+     },
+     {
+      "cell": "I133",
+      "flags": []
+     },
+     {
+      "cell": "I134",
+      "flags": []
+     }
+    ],
+    "cached_total": 31406.674513,
+    "unverifiable": null
+   },
+   {
+    "name": "ALUMINIUM",
+    "label": "ALUMINIUM",
+    "rows": [
+     139,
+     148
+    ],
+    "gated_cells": [
+     "J147"
+    ],
+    "gates": [],
+    "cached_total": 13646.146,
+    "unverifiable": null
+   },
+   {
+    "name": "SUB FRAME + LIGHT BOX ASSY",
+    "label": "SUB FRAME + LIGHT BOX ASSY",
+    "rows": [
+     150,
+     178
+    ],
+    "gated_cells": [
+     "J177"
+    ],
+    "gates": [],
+    "cached_total": 9554.913396,
+    "unverifiable": null
+   },
+   {
+    "name": "REAR FRAME + FLOOR PLATE",
+    "label": "REAR FRAME + FLOOR PLATE",
+    "rows": [
+     180,
+     194
+    ],
+    "gated_cells": [
+     "J193",
+     "J194"
+    ],
+    "gates": [
+     {
+      "cell": "I193",
+      "flags": [
+       "DRD EPS"
+      ]
+     },
+     {
+      "cell": "I194",
+      "flags": [
+       "DRD PU"
+      ]
+     }
+    ],
+    "cached_total": 5081.02272,
+    "unverifiable": null
+   },
+   {
+    "name": "SPRAY PAINTING",
+    "label": "SPRAY PAINTING",
+    "rows": [
+     196,
+     198
+    ],
+    "gated_cells": [
+     "J197"
+    ],
+    "gates": [],
+    "cached_total": 750.0,
+    "unverifiable": null
+   },
+   {
+    "name": "REFLEXITE TAPE",
+    "label": "REFLEXITE TAPE",
+    "rows": [
+     200,
+     204
+    ],
+    "gated_cells": [
+     "J203"
+    ],
+    "gates": [],
+    "cached_total": 316.8,
+    "unverifiable": null
+   }
+  ],
+  "warnings": []
+ },
+ "scenarios": [
+  {
+   "scenario": {
+    "id": "MANNI_RIGIDS_CB~L7.5~W2.6~H2.6~as_sheet",
+    "pack": "manni_gap",
+    "sheet": "Manni RIGIDS CB",
+    "trailer_id": 3,
+    "variant": "as_sheet",
+    "length": 7.5,
+    "width": 2.6,
+    "height": 2.6,
+    "door": "drd",
+    "foam": "32D",
+    "panels": {
+     "FRONT": {
+      "insulation": "pu",
+      "thickness": 0.062
+     },
+     "DRD": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "SRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SIDES": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "ROOF": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "FLOOR": {
+      "insulation": "pu",
+      "thickness": 0.076
+     }
+    },
+    "flags": {
+     "18MM PHENO PLY": "N",
+     "18MM FINN PLY FLOOR": "Y",
+     "12MM FINN PLYWOOD": "N",
+     "RICE GRAIN FLOOR": "N",
+     "ALU KICKPLATES": "N",
+     "2ND ROW ALU KICKPLATES": "N"
+    },
+    "gate_mode": "as_sheet",
+    "section_map": {},
+    "foam_explicit": false
+   },
+   "grand_total": 117183.643388821,
+   "findings": [],
+   "sections": {
+    "FRONT": {
+     "total": 6769.659731,
+     "raw_total": 6769.65973095134,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I32": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 22.040876,
+       "price": 56.6190476190476,
+       "total": 1247.93340780952,
+       "stale": false
+      },
+      {
+       "desc": "FRIDGE FRAME LVL",
+       "qty": 10.3,
+       "price": 148.727272727273,
+       "total": 1531.89090909091,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 2.6,
+       "price": 148.727272727273,
+       "total": 386.690909090909,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 0.0,
+     "raw_total": 3727.76900496,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I44": 0,
+      "I48": 0,
+      "I49": 0
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 1.05,
+       "price": 118.69,
+       "total": 124.6245,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 7487.78738,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I70": 0,
+      "I71": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.924,
+       "price": 149.08,
+       "total": 1032.22992,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 6.074,
+       "price": 132.13,
+       "total": 802.55762,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 24.72,
+       "total": 171.16128,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 60.18,
+       "total": 416.68632,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 5.2,
+       "price": 240.58,
+       "total": 1251.016,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 125.2,
+       "price": 0.515,
+       "total": 64.478,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 5.2,
+       "price": 116.15,
+       "total": 603.98,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 4860.489874,
+     "raw_total": 4860.48987436,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I76": 1,
+      "I80": 0,
+      "I81": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.369132,
+       "price": 263.65,
+       "total": 1679.2216518,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 13.31148588,
+       "price": 56.6190476190476,
+       "total": 753.68365292,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.369132,
+       "price": 272.27,
+       "total": 1734.12356964,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 4.3,
+       "price": 161.27,
+       "total": 693.461,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 6111.09422,
+     "raw_total": 6111.09422,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I98": 0,
+      "I99": 1
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 6.0,
+       "price": 146.73,
+       "total": 880.38,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 12.582,
+       "price": 149.08,
+       "total": 1875.72456,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 2.486,
+       "price": 132.13,
+       "total": 328.47518,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 24.72,
+       "total": 311.02704,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 60.18,
+       "total": 757.18476,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 26818.960315,
+     "raw_total": 13409.4801573593,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 263.65,
+       "total": 4915.75425,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 38.96805,
+       "price": 56.6190476190476,
+       "total": 2206.33387857143,
+       "stale": false
+      },
+      {
+       "desc": "LVL BOTTOM BEAM",
+       "qty": 7.5,
+       "price": 148.727272727273,
+       "total": 1115.45454545455,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 272.27,
+       "total": 5076.47415,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.4972,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 11867.882619,
+     "raw_total": 11867.8826190476,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I114": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 213.11,
+       "total": 4155.645,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 40.755,
+       "price": 56.6190476190476,
+       "total": 2307.50928571429,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 272.27,
+       "total": 5309.265,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.26,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 31406.674513,
+     "raw_total": 31406.674513394,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I123": 1,
+      "I124": 0,
+      "I125": 1,
+      "I126": 0,
+      "I127": 0,
+      "I128": 0,
+      "I129": 0,
+      "I133": 1,
+      "I134": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 222.76,
+       "total": 4343.82,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 111.15,
+       "price": 56.6190476190476,
+       "total": 6293.20714285714,
+       "stale": false
+      },
+      {
+       "desc": "PLYWOOD",
+       "qty": 19.5,
+       "price": 735.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "18MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 375.838926174497,
+       "total": 7328.85906040268,
+       "stale": false
+      },
+      {
+       "desc": "12MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 798.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "RICE GRAIN FLOOR",
+       "qty": 7.5,
+       "price": 3163.14935064935,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "2ND ROW ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 RT TUBE",
+       "qty": 6.14754098360656,
+       "price": 102.23,
+       "total": 1885.3893442623,
+       "stale": false
+      },
+      {
+       "desc": "40*16 TAPPING FLAT BAR",
+       "qty": 4.91803278688525,
+       "price": 97.0,
+       "total": 477.049180327869,
+       "stale": false
+      },
+      {
+       "desc": "76*50 LVL BEAMS",
+       "qty": 18.4426229508197,
+       "price": 148.727272727273,
+       "total": 7268.74068554396,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 52.14,
+       "price": 50.154,
+       "total": 2615.02956,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 26.07,
+       "price": 45.822,
+       "total": 1194.57954,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 13646.146,
+     "raw_total": 13646.146,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 SMALL HORIZONTALE CAP",
+       "qty": 35.2,
+       "price": 242.9,
+       "total": 8550.08,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 824.0,
+       "price": 0.515,
+       "total": 424.36,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 15.0,
+       "price": 116.15,
+       "total": 1742.25,
+       "stale": false
+      },
+      {
+       "desc": "BIG ALU CORNERS",
+       "qty": 4.0,
+       "price": 496.05,
+       "total": 1984.2,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 9554.913396,
+     "raw_total": 9554.91339634899,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "178X54 RSC CHANNEL",
+       "qty": 15.0,
+       "price": 243.0,
+       "total": 3645.0,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 6.0,
+       "price": 243.0,
+       "total": 1458.0,
+       "stale": false
+      },
+      {
+       "desc": "SPRING MOUNTING",
+       "qty": 2.0,
+       "price": 380.63802,
+       "total": 761.27604,
+       "stale": false
+      },
+      {
+       "desc": "BIG MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "TOP CLEAT",
+       "qty": 4.0,
+       "price": 33.499856,
+       "total": 133.999424,
+       "stale": false
+      },
+      {
+       "desc": "BOTTOM CLEAT",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL FISH PLATE",
+       "qty": 0.0,
+       "price": 54.8568,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.8052,
+       "price": 384.41610738255,
+       "total": 309.53184966443,
+       "stale": false
+      },
+      {
+       "desc": "76*38 TAPER CHANNEL",
+       "qty": null,
+       "price": 124.68,
+       "total": 548.592,
+       "stale": false
+      },
+      {
+       "desc": "100*50 RCS CHANNEL BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 503.76,
+       "stale": false
+      },
+      {
+       "desc": "2MM CHEVRON PLATE",
+       "qty": 0.3784,
+       "price": 260.681208053691,
+       "total": 98.6417691275168,
+       "stale": false
+      },
+      {
+       "desc": "1.7 MTR CHEVRON BOARD",
+       "qty": 1.0,
+       "price": 165.0,
+       "total": 165.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO.PLATE LIGHTS",
+       "qty": 1.0,
+       "price": 50.0,
+       "total": 50.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM MUD FLAP PLATES",
+       "qty": 0.3721,
+       "price": 384.41610738255,
+       "total": 143.041233557047,
+       "stale": false
+      },
+      {
+       "desc": "40*5MM FAT BAR",
+       "qty": null,
+       "price": 37.21,
+       "total": 45.3962,
+       "stale": false
+      },
+      {
+       "desc": "M10*30 GALV BOLTS",
+       "qty": 6.0,
+       "price": 0.5,
+       "total": 3.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.7374,
+       "total": 4.4244,
+       "stale": false
+      },
+      {
+       "desc": "ICB MUDFLAP",
+       "qty": 1.0,
+       "price": 267.08,
+       "total": 267.08,
+       "stale": false
+      },
+      {
+       "desc": "1.2MM GALV PLATE",
+       "qty": 0.74725,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 32.0,
+       "price": 0.515,
+       "total": 16.48,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 5081.02272,
+     "raw_total": 5081.02272,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I193": 0,
+      "I194": 1
+     },
+     "lines": [
+      {
+       "desc": "3MM 3CR12 REAR FRAME",
+       "qty": 1.04,
+       "price": 965.76,
+       "total": 1004.3904,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.572,
+       "price": 965.76,
+       "total": 552.41472,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 3.125,
+       "price": 965.76,
+       "total": 3018.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 5.0,
+       "price": 2.5,
+       "total": 12.5,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 5.0,
+       "price": 0.2124,
+       "total": 1.062,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 5.0,
+       "price": 0.3352,
+       "total": 1.676,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REFLEXITE TAPE": {
+     "total": 316.8,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "50MM REFLEXITE TAPE",
+       "qty": 17.6,
+       "price": 18.0,
+       "total": 316.8,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  },
+  {
+   "scenario": {
+    "id": "MANNI_RIGIDS_CB~L7.5~W2.6~H2.6~all_eps",
+    "pack": "manni_gap",
+    "sheet": "Manni RIGIDS CB",
+    "trailer_id": 3,
+    "variant": "all_eps",
+    "length": 7.5,
+    "width": 2.6,
+    "height": 2.6,
+    "door": "drd",
+    "foam": "32D",
+    "panels": {
+     "FRONT": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "DRD": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "SRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SIDES": {
+      "insulation": "eps",
+      "thickness": 0.06
+     },
+     "ROOF": {
+      "insulation": "eps",
+      "thickness": 0.076
+     },
+     "FLOOR": {
+      "insulation": "eps",
+      "thickness": 0.076
+     }
+    },
+    "flags": {
+     "18MM PHENO PLY": "N",
+     "18MM FINN PLY FLOOR": "Y",
+     "12MM FINN PLYWOOD": "N",
+     "RICE GRAIN FLOOR": "N",
+     "ALU KICKPLATES": "N",
+     "2ND ROW ALU KICKPLATES": "N"
+    },
+    "gate_mode": "as_sheet",
+    "section_map": {},
+    "foam_explicit": false
+   },
+   "grand_total": 103079.562400777,
+   "findings": [],
+   "sections": {
+    "FRONT": {
+     "total": 5305.564063,
+     "raw_total": 5305.56406298182,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I32": 0
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.31994,
+       "price": 263.65,
+       "total": 1666.252181,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "FRIDGE FRAME LVL",
+       "qty": 10.3,
+       "price": 148.727272727273,
+       "total": 1531.89090909091,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 2.6,
+       "price": 148.727272727273,
+       "total": 386.690909090909,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.31994,
+       "price": 272.27,
+       "total": 1720.7300638,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 0.0,
+     "raw_total": 3511.6067448,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I44": 0,
+      "I48": 0,
+      "I49": 0
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.31994,
+       "price": 263.65,
+       "total": 1666.252181,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.31994,
+       "price": 272.27,
+       "total": 1720.7300638,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 1.05,
+       "price": 118.69,
+       "total": 124.6245,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 7404.3143,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I70": 0,
+      "I71": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.696,
+       "price": 149.08,
+       "total": 998.23968,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 5.846,
+       "price": 132.13,
+       "total": 772.43198,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.696,
+       "price": 24.72,
+       "total": 165.52512,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.696,
+       "price": 60.18,
+       "total": 402.96528,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 5.2,
+       "price": 240.58,
+       "total": 1251.016,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 125.2,
+       "price": 0.515,
+       "total": 64.478,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 5.2,
+       "price": 116.15,
+       "total": 603.98,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 4232.67668,
+     "raw_total": 4232.67668,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I76": 0,
+      "I80": 1,
+      "I81": 0
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.604,
+       "price": 263.65,
+       "total": 1741.1446,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.604,
+       "price": 272.27,
+       "total": 1798.07108,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 4.3,
+       "price": 161.27,
+       "total": 693.461,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 6195.88308,
+     "raw_total": 6195.88308,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I98": 1,
+      "I99": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 6.0,
+       "price": 146.73,
+       "total": 880.38,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 12.88,
+       "price": 149.08,
+       "total": 1920.1504,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 2.6,
+       "price": 132.13,
+       "total": 343.538,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 12.88,
+       "price": 24.72,
+       "total": 318.3936,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 12.88,
+       "price": 60.18,
+       "total": 775.1184,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 23322.715758,
+     "raw_total": 11661.3578787879,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 0
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 263.65,
+       "total": 5141.175,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "LVL BOTTOM BEAM",
+       "qty": 7.5,
+       "price": 148.727272727273,
+       "total": 1115.45454545455,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 272.27,
+       "total": 5309.265,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.52,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 9560.373333,
+     "raw_total": 9560.37333333333,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I114": 0
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 213.11,
+       "total": 4155.645,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 272.27,
+       "total": 5309.265,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.26,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 25113.467371,
+     "raw_total": 25113.4673705368,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I123": 0,
+      "I124": 0,
+      "I125": 1,
+      "I126": 0,
+      "I127": 0,
+      "I128": 0,
+      "I129": 0,
+      "I133": 1,
+      "I134": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 222.76,
+       "total": 4343.82,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "PLYWOOD",
+       "qty": 19.5,
+       "price": 735.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "18MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 375.838926174497,
+       "total": 7328.85906040268,
+       "stale": false
+      },
+      {
+       "desc": "12MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 798.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "RICE GRAIN FLOOR",
+       "qty": 7.5,
+       "price": 3163.14935064935,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "2ND ROW ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 RT TUBE",
+       "qty": 6.14754098360656,
+       "price": 102.23,
+       "total": 1885.3893442623,
+       "stale": false
+      },
+      {
+       "desc": "40*16 TAPPING FLAT BAR",
+       "qty": 4.91803278688525,
+       "price": 97.0,
+       "total": 477.049180327869,
+       "stale": false
+      },
+      {
+       "desc": "76*50 LVL BEAMS",
+       "qty": 18.4426229508197,
+       "price": 148.727272727273,
+       "total": 7268.74068554396,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 52.14,
+       "price": 50.154,
+       "total": 2615.02956,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 26.07,
+       "price": 45.822,
+       "total": 1194.57954,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 13646.146,
+     "raw_total": 13646.146,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 SMALL HORIZONTALE CAP",
+       "qty": 35.2,
+       "price": 242.9,
+       "total": 8550.08,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 824.0,
+       "price": 0.515,
+       "total": 424.36,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 15.0,
+       "price": 116.15,
+       "total": 1742.25,
+       "stale": false
+      },
+      {
+       "desc": "BIG ALU CORNERS",
+       "qty": 4.0,
+       "price": 496.05,
+       "total": 1984.2,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 9554.913396,
+     "raw_total": 9554.91339634899,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "178X54 RSC CHANNEL",
+       "qty": 15.0,
+       "price": 243.0,
+       "total": 3645.0,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 6.0,
+       "price": 243.0,
+       "total": 1458.0,
+       "stale": false
+      },
+      {
+       "desc": "SPRING MOUNTING",
+       "qty": 2.0,
+       "price": 380.63802,
+       "total": 761.27604,
+       "stale": false
+      },
+      {
+       "desc": "BIG MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "TOP CLEAT",
+       "qty": 4.0,
+       "price": 33.499856,
+       "total": 133.999424,
+       "stale": false
+      },
+      {
+       "desc": "BOTTOM CLEAT",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL FISH PLATE",
+       "qty": 0.0,
+       "price": 54.8568,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.8052,
+       "price": 384.41610738255,
+       "total": 309.53184966443,
+       "stale": false
+      },
+      {
+       "desc": "76*38 TAPER CHANNEL",
+       "qty": null,
+       "price": 124.68,
+       "total": 548.592,
+       "stale": false
+      },
+      {
+       "desc": "100*50 RCS CHANNEL BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 503.76,
+       "stale": false
+      },
+      {
+       "desc": "2MM CHEVRON PLATE",
+       "qty": 0.3784,
+       "price": 260.681208053691,
+       "total": 98.6417691275168,
+       "stale": false
+      },
+      {
+       "desc": "1.7 MTR CHEVRON BOARD",
+       "qty": 1.0,
+       "price": 165.0,
+       "total": 165.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO.PLATE LIGHTS",
+       "qty": 1.0,
+       "price": 50.0,
+       "total": 50.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM MUD FLAP PLATES",
+       "qty": 0.3721,
+       "price": 384.41610738255,
+       "total": 143.041233557047,
+       "stale": false
+      },
+      {
+       "desc": "40*5MM FAT BAR",
+       "qty": null,
+       "price": 37.21,
+       "total": 45.3962,
+       "stale": false
+      },
+      {
+       "desc": "M10*30 GALV BOLTS",
+       "qty": 6.0,
+       "price": 0.5,
+       "total": 3.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.7374,
+       "total": 4.4244,
+       "stale": false
+      },
+      {
+       "desc": "ICB MUDFLAP",
+       "qty": 1.0,
+       "price": 267.08,
+       "total": 267.08,
+       "stale": false
+      },
+      {
+       "desc": "1.2MM GALV PLATE",
+       "qty": 0.74725,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 32.0,
+       "price": 0.515,
+       "total": 16.48,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 5081.02272,
+     "raw_total": 5081.02272,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I193": 1,
+      "I194": 0
+     },
+     "lines": [
+      {
+       "desc": "3MM 3CR12 REAR FRAME",
+       "qty": 1.04,
+       "price": 965.76,
+       "total": 1004.3904,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.572,
+       "price": 965.76,
+       "total": 552.41472,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 3.125,
+       "price": 965.76,
+       "total": 3018.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 5.0,
+       "price": 2.5,
+       "total": 12.5,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 5.0,
+       "price": 0.2124,
+       "total": 1.062,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 5.0,
+       "price": 0.3352,
+       "total": 1.676,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REFLEXITE TAPE": {
+     "total": 316.8,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "50MM REFLEXITE TAPE",
+       "qty": 17.6,
+       "price": 18.0,
+       "total": 316.8,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  },
+  {
+   "scenario": {
+    "id": "MANNI_RIGIDS_CB~L7.5~W2.6~H2.6~all_pu",
+    "pack": "manni_gap",
+    "sheet": "Manni RIGIDS CB",
+    "trailer_id": 3,
+    "variant": "all_pu",
+    "length": 7.5,
+    "width": 2.6,
+    "height": 2.6,
+    "door": "drd",
+    "foam": "32D",
+    "panels": {
+     "FRONT": {
+      "insulation": "pu",
+      "thickness": 0.062
+     },
+     "DRD": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "SRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SIDES": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "ROOF": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "FLOOR": {
+      "insulation": "pu",
+      "thickness": 0.076
+     }
+    },
+    "flags": {
+     "18MM PHENO PLY": "N",
+     "18MM FINN PLY FLOOR": "Y",
+     "12MM FINN PLYWOOD": "N",
+     "RICE GRAIN FLOOR": "N",
+     "ALU KICKPLATES": "N",
+     "2ND ROW ALU KICKPLATES": "N"
+    },
+    "gate_mode": "as_sheet",
+    "section_map": {},
+    "foam_explicit": false
+   },
+   "grand_total": 117183.643388821,
+   "findings": [],
+   "sections": {
+    "FRONT": {
+     "total": 6769.659731,
+     "raw_total": 6769.65973095134,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I32": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 22.040876,
+       "price": 56.6190476190476,
+       "total": 1247.93340780952,
+       "stale": false
+      },
+      {
+       "desc": "FRIDGE FRAME LVL",
+       "qty": 10.3,
+       "price": 148.727272727273,
+       "total": 1531.89090909091,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 2.6,
+       "price": 148.727272727273,
+       "total": 386.690909090909,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 0.0,
+     "raw_total": 3727.76900496,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I44": 0,
+      "I48": 0,
+      "I49": 0
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 1.05,
+       "price": 118.69,
+       "total": 124.6245,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 7487.78738,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I70": 0,
+      "I71": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.924,
+       "price": 149.08,
+       "total": 1032.22992,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 6.074,
+       "price": 132.13,
+       "total": 802.55762,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 24.72,
+       "total": 171.16128,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 60.18,
+       "total": 416.68632,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 5.2,
+       "price": 240.58,
+       "total": 1251.016,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 125.2,
+       "price": 0.515,
+       "total": 64.478,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 5.2,
+       "price": 116.15,
+       "total": 603.98,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 4860.489874,
+     "raw_total": 4860.48987436,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I76": 1,
+      "I80": 0,
+      "I81": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.369132,
+       "price": 263.65,
+       "total": 1679.2216518,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 13.31148588,
+       "price": 56.6190476190476,
+       "total": 753.68365292,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.369132,
+       "price": 272.27,
+       "total": 1734.12356964,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 4.3,
+       "price": 161.27,
+       "total": 693.461,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 6111.09422,
+     "raw_total": 6111.09422,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I98": 0,
+      "I99": 1
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 6.0,
+       "price": 146.73,
+       "total": 880.38,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 12.582,
+       "price": 149.08,
+       "total": 1875.72456,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 2.486,
+       "price": 132.13,
+       "total": 328.47518,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 24.72,
+       "total": 311.02704,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 60.18,
+       "total": 757.18476,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 26818.960315,
+     "raw_total": 13409.4801573593,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 263.65,
+       "total": 4915.75425,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 38.96805,
+       "price": 56.6190476190476,
+       "total": 2206.33387857143,
+       "stale": false
+      },
+      {
+       "desc": "LVL BOTTOM BEAM",
+       "qty": 7.5,
+       "price": 148.727272727273,
+       "total": 1115.45454545455,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 272.27,
+       "total": 5076.47415,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.4972,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 11867.882619,
+     "raw_total": 11867.8826190476,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I114": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 213.11,
+       "total": 4155.645,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 40.755,
+       "price": 56.6190476190476,
+       "total": 2307.50928571429,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 272.27,
+       "total": 5309.265,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.26,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 31406.674513,
+     "raw_total": 31406.674513394,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I123": 1,
+      "I124": 0,
+      "I125": 1,
+      "I126": 0,
+      "I127": 0,
+      "I128": 0,
+      "I129": 0,
+      "I133": 1,
+      "I134": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 222.76,
+       "total": 4343.82,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 111.15,
+       "price": 56.6190476190476,
+       "total": 6293.20714285714,
+       "stale": false
+      },
+      {
+       "desc": "PLYWOOD",
+       "qty": 19.5,
+       "price": 735.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "18MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 375.838926174497,
+       "total": 7328.85906040268,
+       "stale": false
+      },
+      {
+       "desc": "12MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 798.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "RICE GRAIN FLOOR",
+       "qty": 7.5,
+       "price": 3163.14935064935,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "2ND ROW ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 RT TUBE",
+       "qty": 6.14754098360656,
+       "price": 102.23,
+       "total": 1885.3893442623,
+       "stale": false
+      },
+      {
+       "desc": "40*16 TAPPING FLAT BAR",
+       "qty": 4.91803278688525,
+       "price": 97.0,
+       "total": 477.049180327869,
+       "stale": false
+      },
+      {
+       "desc": "76*50 LVL BEAMS",
+       "qty": 18.4426229508197,
+       "price": 148.727272727273,
+       "total": 7268.74068554396,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 52.14,
+       "price": 50.154,
+       "total": 2615.02956,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 26.07,
+       "price": 45.822,
+       "total": 1194.57954,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 13646.146,
+     "raw_total": 13646.146,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 SMALL HORIZONTALE CAP",
+       "qty": 35.2,
+       "price": 242.9,
+       "total": 8550.08,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 824.0,
+       "price": 0.515,
+       "total": 424.36,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 15.0,
+       "price": 116.15,
+       "total": 1742.25,
+       "stale": false
+      },
+      {
+       "desc": "BIG ALU CORNERS",
+       "qty": 4.0,
+       "price": 496.05,
+       "total": 1984.2,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 9554.913396,
+     "raw_total": 9554.91339634899,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "178X54 RSC CHANNEL",
+       "qty": 15.0,
+       "price": 243.0,
+       "total": 3645.0,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 6.0,
+       "price": 243.0,
+       "total": 1458.0,
+       "stale": false
+      },
+      {
+       "desc": "SPRING MOUNTING",
+       "qty": 2.0,
+       "price": 380.63802,
+       "total": 761.27604,
+       "stale": false
+      },
+      {
+       "desc": "BIG MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "TOP CLEAT",
+       "qty": 4.0,
+       "price": 33.499856,
+       "total": 133.999424,
+       "stale": false
+      },
+      {
+       "desc": "BOTTOM CLEAT",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL FISH PLATE",
+       "qty": 0.0,
+       "price": 54.8568,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.8052,
+       "price": 384.41610738255,
+       "total": 309.53184966443,
+       "stale": false
+      },
+      {
+       "desc": "76*38 TAPER CHANNEL",
+       "qty": null,
+       "price": 124.68,
+       "total": 548.592,
+       "stale": false
+      },
+      {
+       "desc": "100*50 RCS CHANNEL BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 503.76,
+       "stale": false
+      },
+      {
+       "desc": "2MM CHEVRON PLATE",
+       "qty": 0.3784,
+       "price": 260.681208053691,
+       "total": 98.6417691275168,
+       "stale": false
+      },
+      {
+       "desc": "1.7 MTR CHEVRON BOARD",
+       "qty": 1.0,
+       "price": 165.0,
+       "total": 165.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO.PLATE LIGHTS",
+       "qty": 1.0,
+       "price": 50.0,
+       "total": 50.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM MUD FLAP PLATES",
+       "qty": 0.3721,
+       "price": 384.41610738255,
+       "total": 143.041233557047,
+       "stale": false
+      },
+      {
+       "desc": "40*5MM FAT BAR",
+       "qty": null,
+       "price": 37.21,
+       "total": 45.3962,
+       "stale": false
+      },
+      {
+       "desc": "M10*30 GALV BOLTS",
+       "qty": 6.0,
+       "price": 0.5,
+       "total": 3.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.7374,
+       "total": 4.4244,
+       "stale": false
+      },
+      {
+       "desc": "ICB MUDFLAP",
+       "qty": 1.0,
+       "price": 267.08,
+       "total": 267.08,
+       "stale": false
+      },
+      {
+       "desc": "1.2MM GALV PLATE",
+       "qty": 0.74725,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 32.0,
+       "price": 0.515,
+       "total": 16.48,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 5081.02272,
+     "raw_total": 5081.02272,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I193": 0,
+      "I194": 1
+     },
+     "lines": [
+      {
+       "desc": "3MM 3CR12 REAR FRAME",
+       "qty": 1.04,
+       "price": 965.76,
+       "total": 1004.3904,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.572,
+       "price": 965.76,
+       "total": 552.41472,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 3.125,
+       "price": 965.76,
+       "total": 3018.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 5.0,
+       "price": 2.5,
+       "total": 12.5,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 5.0,
+       "price": 0.2124,
+       "total": 1.062,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 5.0,
+       "price": 0.3352,
+       "total": 1.676,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REFLEXITE TAPE": {
+     "total": 316.8,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "50MM REFLEXITE TAPE",
+       "qty": 17.6,
+       "price": 18.0,
+       "total": 316.8,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  },
+  {
+   "scenario": {
+    "id": "MANNI_RIGIDS_CB~L7.5~W2.6~H2.6~srd",
+    "pack": "manni_gap",
+    "sheet": "Manni RIGIDS CB",
+    "trailer_id": 3,
+    "variant": "srd",
+    "length": 7.5,
+    "width": 2.6,
+    "height": 2.6,
+    "door": "srd",
+    "foam": "32D",
+    "panels": {
+     "FRONT": {
+      "insulation": "pu",
+      "thickness": 0.062
+     },
+     "DRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SRD": {
+      "insulation": "pu",
+      "thickness": 0.06
+     },
+     "SIDES": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "ROOF": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "FLOOR": {
+      "insulation": "pu",
+      "thickness": 0.076
+     }
+    },
+    "flags": {
+     "18MM PHENO PLY": "N",
+     "18MM FINN PLY FLOOR": "Y",
+     "12MM FINN PLYWOOD": "N",
+     "RICE GRAIN FLOOR": "N",
+     "ALU KICKPLATES": "N",
+     "2ND ROW ALU KICKPLATES": "N"
+    },
+    "gate_mode": "as_sheet",
+    "section_map": {},
+    "foam_explicit": false
+   },
+   "grand_total": 113351.551630872,
+   "findings": [],
+   "sections": {
+    "FRONT": {
+     "total": 6769.659731,
+     "raw_total": 6769.65973095134,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I32": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 22.040876,
+       "price": 56.6190476190476,
+       "total": 1247.93340780952,
+       "stale": false
+      },
+      {
+       "desc": "FRIDGE FRAME LVL",
+       "qty": 10.3,
+       "price": 148.727272727273,
+       "total": 1531.89090909091,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 2.6,
+       "price": 148.727272727273,
+       "total": 386.690909090909,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 4732.727676,
+     "raw_total": 4732.72767641143,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I44": 1,
+      "I48": 0,
+      "I49": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 17.74948032,
+       "price": 56.6190476190476,
+       "total": 1004.95867145143,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 1.05,
+       "price": 118.69,
+       "total": 124.6245,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 7487.78738,
+     "raw_total": 7487.78738,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I70": 0,
+      "I71": 1
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.924,
+       "price": 149.08,
+       "total": 1032.22992,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 6.074,
+       "price": 132.13,
+       "total": 802.55762,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 24.72,
+       "total": 171.16128,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 60.18,
+       "total": 416.68632,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 5.2,
+       "price": 240.58,
+       "total": 1251.016,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 125.2,
+       "price": 0.515,
+       "total": 64.478,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 5.2,
+       "price": 116.15,
+       "total": 603.98,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 0.0,
+     "raw_total": 4106.80622144,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I76": 0,
+      "I80": 0,
+      "I81": 0
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.369132,
+       "price": 263.65,
+       "total": 1679.2216518,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.369132,
+       "price": 272.27,
+       "total": 1734.12356964,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 4.3,
+       "price": 161.27,
+       "total": 693.461,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 6111.09422,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I98": 0,
+      "I99": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 6.0,
+       "price": 146.73,
+       "total": 880.38,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 12.582,
+       "price": 149.08,
+       "total": 1875.72456,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 2.486,
+       "price": 132.13,
+       "total": 328.47518,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 24.72,
+       "total": 311.02704,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 60.18,
+       "total": 757.18476,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 26818.960315,
+     "raw_total": 13409.4801573593,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 263.65,
+       "total": 4915.75425,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 38.96805,
+       "price": 56.6190476190476,
+       "total": 2206.33387857143,
+       "stale": false
+      },
+      {
+       "desc": "LVL BOTTOM BEAM",
+       "qty": 7.5,
+       "price": 148.727272727273,
+       "total": 1115.45454545455,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 272.27,
+       "total": 5076.47415,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.4972,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 11867.882619,
+     "raw_total": 11867.8826190476,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I114": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 213.11,
+       "total": 4155.645,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 40.755,
+       "price": 56.6190476190476,
+       "total": 2307.50928571429,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 272.27,
+       "total": 5309.265,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.26,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 31406.674513,
+     "raw_total": 31406.674513394,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I123": 1,
+      "I124": 0,
+      "I125": 1,
+      "I126": 0,
+      "I127": 0,
+      "I128": 0,
+      "I129": 0,
+      "I133": 1,
+      "I134": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 222.76,
+       "total": 4343.82,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 111.15,
+       "price": 56.6190476190476,
+       "total": 6293.20714285714,
+       "stale": false
+      },
+      {
+       "desc": "PLYWOOD",
+       "qty": 19.5,
+       "price": 735.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "18MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 375.838926174497,
+       "total": 7328.85906040268,
+       "stale": false
+      },
+      {
+       "desc": "12MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 798.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "RICE GRAIN FLOOR",
+       "qty": 7.5,
+       "price": 3163.14935064935,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "2ND ROW ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 RT TUBE",
+       "qty": 6.14754098360656,
+       "price": 102.23,
+       "total": 1885.3893442623,
+       "stale": false
+      },
+      {
+       "desc": "40*16 TAPPING FLAT BAR",
+       "qty": 4.91803278688525,
+       "price": 97.0,
+       "total": 477.049180327869,
+       "stale": false
+      },
+      {
+       "desc": "76*50 LVL BEAMS",
+       "qty": 18.4426229508197,
+       "price": 148.727272727273,
+       "total": 7268.74068554396,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 52.14,
+       "price": 50.154,
+       "total": 2615.02956,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 26.07,
+       "price": 45.822,
+       "total": 1194.57954,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 13646.146,
+     "raw_total": 13646.146,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 SMALL HORIZONTALE CAP",
+       "qty": 35.2,
+       "price": 242.9,
+       "total": 8550.08,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 824.0,
+       "price": 0.515,
+       "total": 424.36,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 15.0,
+       "price": 116.15,
+       "total": 1742.25,
+       "stale": false
+      },
+      {
+       "desc": "BIG ALU CORNERS",
+       "qty": 4.0,
+       "price": 496.05,
+       "total": 1984.2,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 9554.913396,
+     "raw_total": 9554.91339634899,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "178X54 RSC CHANNEL",
+       "qty": 15.0,
+       "price": 243.0,
+       "total": 3645.0,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 6.0,
+       "price": 243.0,
+       "total": 1458.0,
+       "stale": false
+      },
+      {
+       "desc": "SPRING MOUNTING",
+       "qty": 2.0,
+       "price": 380.63802,
+       "total": 761.27604,
+       "stale": false
+      },
+      {
+       "desc": "BIG MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "TOP CLEAT",
+       "qty": 4.0,
+       "price": 33.499856,
+       "total": 133.999424,
+       "stale": false
+      },
+      {
+       "desc": "BOTTOM CLEAT",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL FISH PLATE",
+       "qty": 0.0,
+       "price": 54.8568,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.8052,
+       "price": 384.41610738255,
+       "total": 309.53184966443,
+       "stale": false
+      },
+      {
+       "desc": "76*38 TAPER CHANNEL",
+       "qty": null,
+       "price": 124.68,
+       "total": 548.592,
+       "stale": false
+      },
+      {
+       "desc": "100*50 RCS CHANNEL BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 503.76,
+       "stale": false
+      },
+      {
+       "desc": "2MM CHEVRON PLATE",
+       "qty": 0.3784,
+       "price": 260.681208053691,
+       "total": 98.6417691275168,
+       "stale": false
+      },
+      {
+       "desc": "1.7 MTR CHEVRON BOARD",
+       "qty": 1.0,
+       "price": 165.0,
+       "total": 165.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO.PLATE LIGHTS",
+       "qty": 1.0,
+       "price": 50.0,
+       "total": 50.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM MUD FLAP PLATES",
+       "qty": 0.3721,
+       "price": 384.41610738255,
+       "total": 143.041233557047,
+       "stale": false
+      },
+      {
+       "desc": "40*5MM FAT BAR",
+       "qty": null,
+       "price": 37.21,
+       "total": 45.3962,
+       "stale": false
+      },
+      {
+       "desc": "M10*30 GALV BOLTS",
+       "qty": 6.0,
+       "price": 0.5,
+       "total": 3.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.7374,
+       "total": 4.4244,
+       "stale": false
+      },
+      {
+       "desc": "ICB MUDFLAP",
+       "qty": 1.0,
+       "price": 267.08,
+       "total": 267.08,
+       "stale": false
+      },
+      {
+       "desc": "1.2MM GALV PLATE",
+       "qty": 0.74725,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 32.0,
+       "price": 0.515,
+       "total": 16.48,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 0.0,
+     "raw_total": 5081.02272,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I193": 0,
+      "I194": 0
+     },
+     "lines": [
+      {
+       "desc": "3MM 3CR12 REAR FRAME",
+       "qty": 1.04,
+       "price": 965.76,
+       "total": 1004.3904,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.572,
+       "price": 965.76,
+       "total": 552.41472,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 3.125,
+       "price": 965.76,
+       "total": 3018.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 5.0,
+       "price": 2.5,
+       "total": 12.5,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 5.0,
+       "price": 0.2124,
+       "total": 1.062,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 5.0,
+       "price": 0.3352,
+       "total": 1.676,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REFLEXITE TAPE": {
+     "total": 316.8,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "50MM REFLEXITE TAPE",
+       "qty": 17.6,
+       "price": 18.0,
+       "total": 316.8,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  },
+  {
+   "scenario": {
+    "id": "MANNI_RIGIDS_CB~L7.5~W2.6~H2.6~drd",
+    "pack": "manni_gap",
+    "sheet": "Manni RIGIDS CB",
+    "trailer_id": 3,
+    "variant": "drd",
+    "length": 7.5,
+    "width": 2.6,
+    "height": 2.6,
+    "door": "drd",
+    "foam": "32D",
+    "panels": {
+     "FRONT": {
+      "insulation": "pu",
+      "thickness": 0.062
+     },
+     "DRD": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "SRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SIDES": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "ROOF": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "FLOOR": {
+      "insulation": "pu",
+      "thickness": 0.076
+     }
+    },
+    "flags": {
+     "18MM PHENO PLY": "N",
+     "18MM FINN PLY FLOOR": "Y",
+     "12MM FINN PLYWOOD": "N",
+     "RICE GRAIN FLOOR": "N",
+     "ALU KICKPLATES": "N",
+     "2ND ROW ALU KICKPLATES": "N"
+    },
+    "gate_mode": "as_sheet",
+    "section_map": {},
+    "foam_explicit": false
+   },
+   "grand_total": 117183.643388821,
+   "findings": [],
+   "sections": {
+    "FRONT": {
+     "total": 6769.659731,
+     "raw_total": 6769.65973095134,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I32": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 22.040876,
+       "price": 56.6190476190476,
+       "total": 1247.93340780952,
+       "stale": false
+      },
+      {
+       "desc": "FRIDGE FRAME LVL",
+       "qty": 10.3,
+       "price": 148.727272727273,
+       "total": 1531.89090909091,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 2.6,
+       "price": 148.727272727273,
+       "total": 386.690909090909,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 0.0,
+     "raw_total": 3727.76900496,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I44": 0,
+      "I48": 0,
+      "I49": 0
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 1.05,
+       "price": 118.69,
+       "total": 124.6245,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 7487.78738,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I70": 0,
+      "I71": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.924,
+       "price": 149.08,
+       "total": 1032.22992,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 6.074,
+       "price": 132.13,
+       "total": 802.55762,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 24.72,
+       "total": 171.16128,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 60.18,
+       "total": 416.68632,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 5.2,
+       "price": 240.58,
+       "total": 1251.016,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 125.2,
+       "price": 0.515,
+       "total": 64.478,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 5.2,
+       "price": 116.15,
+       "total": 603.98,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 4860.489874,
+     "raw_total": 4860.48987436,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I76": 1,
+      "I80": 0,
+      "I81": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.369132,
+       "price": 263.65,
+       "total": 1679.2216518,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 13.31148588,
+       "price": 56.6190476190476,
+       "total": 753.68365292,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.369132,
+       "price": 272.27,
+       "total": 1734.12356964,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 4.3,
+       "price": 161.27,
+       "total": 693.461,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 6111.09422,
+     "raw_total": 6111.09422,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I98": 0,
+      "I99": 1
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 6.0,
+       "price": 146.73,
+       "total": 880.38,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 12.582,
+       "price": 149.08,
+       "total": 1875.72456,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 2.486,
+       "price": 132.13,
+       "total": 328.47518,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 24.72,
+       "total": 311.02704,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 60.18,
+       "total": 757.18476,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 26818.960315,
+     "raw_total": 13409.4801573593,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 263.65,
+       "total": 4915.75425,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 38.96805,
+       "price": 56.6190476190476,
+       "total": 2206.33387857143,
+       "stale": false
+      },
+      {
+       "desc": "LVL BOTTOM BEAM",
+       "qty": 7.5,
+       "price": 148.727272727273,
+       "total": 1115.45454545455,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 272.27,
+       "total": 5076.47415,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.4972,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 11867.882619,
+     "raw_total": 11867.8826190476,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I114": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 213.11,
+       "total": 4155.645,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 40.755,
+       "price": 56.6190476190476,
+       "total": 2307.50928571429,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 272.27,
+       "total": 5309.265,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.26,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 31406.674513,
+     "raw_total": 31406.674513394,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I123": 1,
+      "I124": 0,
+      "I125": 1,
+      "I126": 0,
+      "I127": 0,
+      "I128": 0,
+      "I129": 0,
+      "I133": 1,
+      "I134": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 222.76,
+       "total": 4343.82,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 111.15,
+       "price": 56.6190476190476,
+       "total": 6293.20714285714,
+       "stale": false
+      },
+      {
+       "desc": "PLYWOOD",
+       "qty": 19.5,
+       "price": 735.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "18MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 375.838926174497,
+       "total": 7328.85906040268,
+       "stale": false
+      },
+      {
+       "desc": "12MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 798.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "RICE GRAIN FLOOR",
+       "qty": 7.5,
+       "price": 3163.14935064935,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "2ND ROW ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 RT TUBE",
+       "qty": 6.14754098360656,
+       "price": 102.23,
+       "total": 1885.3893442623,
+       "stale": false
+      },
+      {
+       "desc": "40*16 TAPPING FLAT BAR",
+       "qty": 4.91803278688525,
+       "price": 97.0,
+       "total": 477.049180327869,
+       "stale": false
+      },
+      {
+       "desc": "76*50 LVL BEAMS",
+       "qty": 18.4426229508197,
+       "price": 148.727272727273,
+       "total": 7268.74068554396,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 52.14,
+       "price": 50.154,
+       "total": 2615.02956,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 26.07,
+       "price": 45.822,
+       "total": 1194.57954,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 13646.146,
+     "raw_total": 13646.146,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 SMALL HORIZONTALE CAP",
+       "qty": 35.2,
+       "price": 242.9,
+       "total": 8550.08,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 824.0,
+       "price": 0.515,
+       "total": 424.36,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 15.0,
+       "price": 116.15,
+       "total": 1742.25,
+       "stale": false
+      },
+      {
+       "desc": "BIG ALU CORNERS",
+       "qty": 4.0,
+       "price": 496.05,
+       "total": 1984.2,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 9554.913396,
+     "raw_total": 9554.91339634899,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "178X54 RSC CHANNEL",
+       "qty": 15.0,
+       "price": 243.0,
+       "total": 3645.0,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 6.0,
+       "price": 243.0,
+       "total": 1458.0,
+       "stale": false
+      },
+      {
+       "desc": "SPRING MOUNTING",
+       "qty": 2.0,
+       "price": 380.63802,
+       "total": 761.27604,
+       "stale": false
+      },
+      {
+       "desc": "BIG MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "TOP CLEAT",
+       "qty": 4.0,
+       "price": 33.499856,
+       "total": 133.999424,
+       "stale": false
+      },
+      {
+       "desc": "BOTTOM CLEAT",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL FISH PLATE",
+       "qty": 0.0,
+       "price": 54.8568,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.8052,
+       "price": 384.41610738255,
+       "total": 309.53184966443,
+       "stale": false
+      },
+      {
+       "desc": "76*38 TAPER CHANNEL",
+       "qty": null,
+       "price": 124.68,
+       "total": 548.592,
+       "stale": false
+      },
+      {
+       "desc": "100*50 RCS CHANNEL BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 503.76,
+       "stale": false
+      },
+      {
+       "desc": "2MM CHEVRON PLATE",
+       "qty": 0.3784,
+       "price": 260.681208053691,
+       "total": 98.6417691275168,
+       "stale": false
+      },
+      {
+       "desc": "1.7 MTR CHEVRON BOARD",
+       "qty": 1.0,
+       "price": 165.0,
+       "total": 165.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO.PLATE LIGHTS",
+       "qty": 1.0,
+       "price": 50.0,
+       "total": 50.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM MUD FLAP PLATES",
+       "qty": 0.3721,
+       "price": 384.41610738255,
+       "total": 143.041233557047,
+       "stale": false
+      },
+      {
+       "desc": "40*5MM FAT BAR",
+       "qty": null,
+       "price": 37.21,
+       "total": 45.3962,
+       "stale": false
+      },
+      {
+       "desc": "M10*30 GALV BOLTS",
+       "qty": 6.0,
+       "price": 0.5,
+       "total": 3.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.7374,
+       "total": 4.4244,
+       "stale": false
+      },
+      {
+       "desc": "ICB MUDFLAP",
+       "qty": 1.0,
+       "price": 267.08,
+       "total": 267.08,
+       "stale": false
+      },
+      {
+       "desc": "1.2MM GALV PLATE",
+       "qty": 0.74725,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 32.0,
+       "price": 0.515,
+       "total": 16.48,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 5081.02272,
+     "raw_total": 5081.02272,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I193": 0,
+      "I194": 1
+     },
+     "lines": [
+      {
+       "desc": "3MM 3CR12 REAR FRAME",
+       "qty": 1.04,
+       "price": 965.76,
+       "total": 1004.3904,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.572,
+       "price": 965.76,
+       "total": 552.41472,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 3.125,
+       "price": 965.76,
+       "total": 3018.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 5.0,
+       "price": 2.5,
+       "total": 12.5,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 5.0,
+       "price": 0.2124,
+       "total": 1.062,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 5.0,
+       "price": 0.3352,
+       "total": 1.676,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REFLEXITE TAPE": {
+     "total": 316.8,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "50MM REFLEXITE TAPE",
+       "qty": 17.6,
+       "price": 18.0,
+       "total": 316.8,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  },
+  {
+   "scenario": {
+    "id": "MANNI_RIGIDS_CB~L7.5~W2.6~H2.6~foam_4g",
+    "pack": "manni_gap",
+    "sheet": "Manni RIGIDS CB",
+    "trailer_id": 3,
+    "variant": "foam_4g",
+    "length": 7.5,
+    "width": 2.6,
+    "height": 2.6,
+    "door": "drd",
+    "foam": "4G",
+    "panels": {
+     "FRONT": {
+      "insulation": "pu",
+      "thickness": 0.062
+     },
+     "DRD": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "SRD": {
+      "insulation": "none",
+      "thickness": 0.0
+     },
+     "SIDES": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "ROOF": {
+      "insulation": "pu",
+      "thickness": 0.038
+     },
+     "FLOOR": {
+      "insulation": "pu",
+      "thickness": 0.076
+     }
+    },
+    "flags": {
+     "18MM PHENO PLY": "N",
+     "18MM FINN PLY FLOOR": "Y",
+     "12MM FINN PLYWOOD": "N",
+     "RICE GRAIN FLOOR": "N",
+     "ALU KICKPLATES": "N",
+     "2ND ROW ALU KICKPLATES": "N"
+    },
+    "gate_mode": "as_sheet",
+    "section_map": {},
+    "foam_explicit": true
+   },
+   "grand_total": 117183.643388821,
+   "findings": [
+    "NO_4G_REFERENCE: the PU lines hard-code a rate (no [1]PU! reference) \u2014 4G cannot be expressed on this sheet"
+   ],
+   "sections": {
+    "FRONT": {
+     "total": 6769.659731,
+     "raw_total": 6769.65973095134,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I32": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 22.040876,
+       "price": 56.6190476190476,
+       "total": 1247.93340780952,
+       "stale": false
+      },
+      {
+       "desc": "FRIDGE FRAME LVL",
+       "qty": 10.3,
+       "price": 148.727272727273,
+       "total": 1531.89090909091,
+       "stale": false
+      },
+      {
+       "desc": "58MM PICTURE FRAME",
+       "qty": 2.6,
+       "price": 148.727272727273,
+       "total": 386.690909090909,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD": {
+     "total": 0.0,
+     "raw_total": 3727.76900496,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I44": 0,
+      "I48": 0,
+      "I49": 0
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 263.65,
+       "total": 1772.5948812,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 0.0,
+       "price": 56.6190476190476,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 6.723288,
+       "price": 272.27,
+       "total": 1830.54962376,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 1.05,
+       "price": 118.69,
+       "total": 124.6245,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SRD DOOR FITTINGS": {
+     "total": 0.0,
+     "raw_total": 7487.78738,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I70": 0,
+      "I71": 0
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 2.0,
+       "price": 146.73,
+       "total": 293.46,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 1.0,
+       "price": 506.91,
+       "total": 506.91,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 6.924,
+       "price": 149.08,
+       "total": 1032.22992,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 6.074,
+       "price": 132.13,
+       "total": 802.55762,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 24.72,
+       "total": 171.16128,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 6.924,
+       "price": 60.18,
+       "total": 416.68632,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 26.0,
+       "price": 0.5,
+       "total": 13.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 25.0,
+       "price": 0.1341,
+       "total": 3.3525,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 50.0,
+       "price": 0.515,
+       "total": 25.75,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 1.0,
+       "price": 1040.1563,
+       "total": 1040.1563,
+       "stale": false
+      },
+      {
+       "desc": "28781 SMALL HORIZ CAPPING",
+       "qty": 5.2,
+       "price": 240.58,
+       "total": 1251.016,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 125.2,
+       "price": 0.515,
+       "total": 64.478,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 5.2,
+       "price": 116.15,
+       "total": 603.98,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD": {
+     "total": 4860.489874,
+     "raw_total": 4860.48987436,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I76": 1,
+      "I80": 0,
+      "I81": 1
+     },
+     "lines": [
+      {
+       "desc": "RHINO PANEL",
+       "qty": 6.369132,
+       "price": 263.65,
+       "total": 1679.2216518,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 13.31148588,
+       "price": 56.6190476190476,
+       "total": 753.68365292,
+       "stale": false
+      },
+      {
+       "desc": "Rhinotex Bioshield",
+       "qty": 6.369132,
+       "price": 272.27,
+       "total": 1734.12356964,
+       "stale": false
+      },
+      {
+       "desc": "8MM TAPPING PLATE",
+       "qty": 4.3,
+       "price": 161.27,
+       "total": 693.461,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "DRD DOOR FITTINGS": {
+     "total": 6111.09422,
+     "raw_total": 6111.09422,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I98": 0,
+      "I99": 1
+     },
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 6.0,
+       "price": 146.73,
+       "total": 880.38,
+       "stale": false
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "stale": false
+      },
+      {
+       "desc": "28779 DOOR CAPPING",
+       "qty": 12.582,
+       "price": 149.08,
+       "total": 1875.72456,
+       "stale": false
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 2.486,
+       "price": 132.13,
+       "total": 328.47518,
+       "stale": false
+      },
+      {
+       "desc": "2316 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 24.72,
+       "total": 311.02704,
+       "stale": false
+      },
+      {
+       "desc": "2317 DOOR RUBBER",
+       "qty": 12.582,
+       "price": 60.18,
+       "total": 757.18476,
+       "stale": false
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 40.0,
+       "price": 0.5,
+       "total": 20.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 38.0,
+       "price": 0.1341,
+       "total": 5.0958,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "stale": false
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "stale": false
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SIDES": {
+     "total": 26818.960315,
+     "raw_total": 13409.4801573593,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I104": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 263.65,
+       "total": 4915.75425,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 38.96805,
+       "price": 56.6190476190476,
+       "total": 2206.33387857143,
+       "stale": false
+      },
+      {
+       "desc": "LVL BOTTOM BEAM",
+       "qty": 7.5,
+       "price": 148.727272727273,
+       "total": 1115.45454545455,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 18.645,
+       "price": 272.27,
+       "total": 5076.47415,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.4972,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 2.0
+    },
+    "ROOF": {
+     "total": 11867.882619,
+     "raw_total": 11867.8826190476,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I114": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 213.11,
+       "total": 4155.645,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 40.755,
+       "price": 56.6190476190476,
+       "total": 2307.50928571429,
+       "stale": false
+      },
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 272.27,
+       "total": 5309.265,
+       "stale": false
+      },
+      {
+       "desc": "3MM MILD STEEL PLATE",
+       "qty": 0.26,
+       "price": 95.4633333333333,
+       "total": 95.4633333333333,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "FLOOR": {
+     "total": 31406.674513,
+     "raw_total": 31406.674513394,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I123": 1,
+      "I124": 0,
+      "I125": 1,
+      "I126": 0,
+      "I127": 0,
+      "I128": 0,
+      "I129": 0,
+      "I133": 1,
+      "I134": 1
+     },
+     "lines": [
+      {
+       "desc": "WOVEX SKIN",
+       "qty": 19.5,
+       "price": 222.76,
+       "total": 4343.82,
+       "stale": false
+      },
+      {
+       "desc": "PU INJECTION",
+       "qty": 111.15,
+       "price": 56.6190476190476,
+       "total": 6293.20714285714,
+       "stale": false
+      },
+      {
+       "desc": "PLYWOOD",
+       "qty": 19.5,
+       "price": 735.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "18MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 375.838926174497,
+       "total": 7328.85906040268,
+       "stale": false
+      },
+      {
+       "desc": "12MM FINN PLY FLOOR",
+       "qty": 19.5,
+       "price": 798.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "RICE GRAIN FLOOR",
+       "qty": 7.5,
+       "price": 3163.14935064935,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "2ND ROW ALU KICK PLATES",
+       "qty": 17.6,
+       "price": 496.05,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "76*50*3 RT TUBE",
+       "qty": 6.14754098360656,
+       "price": 102.23,
+       "total": 1885.3893442623,
+       "stale": false
+      },
+      {
+       "desc": "40*16 TAPPING FLAT BAR",
+       "qty": 4.91803278688525,
+       "price": 97.0,
+       "total": 477.049180327869,
+       "stale": false
+      },
+      {
+       "desc": "76*50 LVL BEAMS",
+       "qty": 18.4426229508197,
+       "price": 148.727272727273,
+       "total": 7268.74068554396,
+       "stale": false
+      },
+      {
+       "desc": "2*300 INT LAMINATION",
+       "qty": 52.14,
+       "price": 50.154,
+       "total": 2615.02956,
+       "stale": false
+      },
+      {
+       "desc": "ANTI-SKID FINAL COAT",
+       "qty": 26.07,
+       "price": 45.822,
+       "total": 1194.57954,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "ALUMINIUM": {
+     "total": 13646.146,
+     "raw_total": 13646.146,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "28782 SMALL HORIZONTALE CAP",
+       "qty": 35.2,
+       "price": 242.9,
+       "total": 8550.08,
+       "stale": false
+      },
+      {
+       "desc": "28780 SMALL VERTICAL",
+       "qty": 5.2,
+       "price": 181.78,
+       "total": 945.256,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 824.0,
+       "price": 0.515,
+       "total": 424.36,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS - X WHITE",
+       "qty": 15.0,
+       "price": 116.15,
+       "total": 1742.25,
+       "stale": false
+      },
+      {
+       "desc": "BIG ALU CORNERS",
+       "qty": 4.0,
+       "price": 496.05,
+       "total": 1984.2,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SUB FRAME + LIGHT BOX ASSY": {
+     "total": 9554.913396,
+     "raw_total": 9554.91339634899,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "178X54 RSC CHANNEL",
+       "qty": 15.0,
+       "price": 243.0,
+       "total": 3645.0,
+       "stale": false
+      },
+      {
+       "desc": "100*50*3MM CROSS MEMBER",
+       "qty": 6.0,
+       "price": 243.0,
+       "total": 1458.0,
+       "stale": false
+      },
+      {
+       "desc": "SPRING MOUNTING",
+       "qty": 2.0,
+       "price": 380.63802,
+       "total": 761.27604,
+       "stale": false
+      },
+      {
+       "desc": "BIG MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL MOUNTING BRACKET",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "TOP CLEAT",
+       "qty": 4.0,
+       "price": 33.499856,
+       "total": 133.999424,
+       "stale": false
+      },
+      {
+       "desc": "BOTTOM CLEAT",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "stale": false
+      },
+      {
+       "desc": "SMALL FISH PLATE",
+       "qty": 0.0,
+       "price": 54.8568,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.8052,
+       "price": 384.41610738255,
+       "total": 309.53184966443,
+       "stale": false
+      },
+      {
+       "desc": "76*38 TAPER CHANNEL",
+       "qty": null,
+       "price": 124.68,
+       "total": 548.592,
+       "stale": false
+      },
+      {
+       "desc": "100*50 RCS CHANNEL BUMPER",
+       "qty": null,
+       "price": 167.92,
+       "total": 503.76,
+       "stale": false
+      },
+      {
+       "desc": "2MM CHEVRON PLATE",
+       "qty": 0.3784,
+       "price": 260.681208053691,
+       "total": 98.6417691275168,
+       "stale": false
+      },
+      {
+       "desc": "1.7 MTR CHEVRON BOARD",
+       "qty": 1.0,
+       "price": 165.0,
+       "total": 165.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "stale": false
+      },
+      {
+       "desc": "CROME NO.PLATE LIGHTS",
+       "qty": 1.0,
+       "price": 50.0,
+       "total": 50.0,
+       "stale": false
+      },
+      {
+       "desc": "3MM MUD FLAP PLATES",
+       "qty": 0.3721,
+       "price": 384.41610738255,
+       "total": 143.041233557047,
+       "stale": false
+      },
+      {
+       "desc": "40*5MM FAT BAR",
+       "qty": null,
+       "price": 37.21,
+       "total": 45.3962,
+       "stale": false
+      },
+      {
+       "desc": "M10*30 GALV BOLTS",
+       "qty": 6.0,
+       "price": 0.5,
+       "total": 3.0,
+       "stale": false
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.7374,
+       "total": 4.4244,
+       "stale": false
+      },
+      {
+       "desc": "ICB MUDFLAP",
+       "qty": 1.0,
+       "price": 267.08,
+       "total": 267.08,
+       "stale": false
+      },
+      {
+       "desc": "1.2MM GALV PLATE",
+       "qty": 0.74725,
+       "price": 0.0,
+       "total": 0.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 1.0,
+       "price": 116.15,
+       "total": 116.15,
+       "stale": false
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 32.0,
+       "price": 0.515,
+       "total": 16.48,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REAR FRAME + FLOOR PLATE": {
+     "total": 5081.02272,
+     "raw_total": 5081.02272,
+     "status": "OK",
+     "reason": null,
+     "gates": {
+      "I193": 0,
+      "I194": 1
+     },
+     "lines": [
+      {
+       "desc": "3MM 3CR12 REAR FRAME",
+       "qty": 1.04,
+       "price": 965.76,
+       "total": 1004.3904,
+       "stale": false
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.572,
+       "price": 965.76,
+       "total": 552.41472,
+       "stale": false
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 3.125,
+       "price": 965.76,
+       "total": 3018.0,
+       "stale": false
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "stale": false
+      },
+      {
+       "desc": "M8*150 GALV. CUP SQUARES",
+       "qty": 5.0,
+       "price": 2.5,
+       "total": 12.5,
+       "stale": false
+      },
+      {
+       "desc": "M8*45*3 FENDER WASHER",
+       "qty": 5.0,
+       "price": 0.2124,
+       "total": 1.062,
+       "stale": false
+      },
+      {
+       "desc": "M8 NYLOCK NUT",
+       "qty": 5.0,
+       "price": 0.3352,
+       "total": 1.676,
+       "stale": false
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "stale": false
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "SPRAY PAINTING": {
+     "total": 750.0,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": null,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    },
+    "REFLEXITE TAPE": {
+     "total": 316.8,
+     "raw_total": null,
+     "status": "OK",
+     "reason": null,
+     "gates": {},
+     "lines": [
+      {
+       "desc": "50MM REFLEXITE TAPE",
+       "qty": 17.6,
+       "price": 18.0,
+       "total": 316.8,
+       "stale": false
+      }
+     ],
+     "multiplier": 1.0
+    }
+   }
+  }
+ ]
+}

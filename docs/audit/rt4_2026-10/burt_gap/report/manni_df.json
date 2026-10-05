@@ -1,0 +1,7082 @@
+{
+ "sheet": "Manni DF",
+ "trailer_id": 7,
+ "default_size": [
+  12.2,
+  2.6,
+  3.0
+ ],
+ "workbook_dir": "C:\\Users\\micge\\AppData\\Local\\Temp\\claude\\C--Users-micge-Documents-icb-platform\\96846c7a-1d84-4c48-b66e-600bbc6e4e57\\scratchpad\\burtset\\corrected",
+ "excel": {
+  "saved": {
+   "options": {
+    "DRD": "Y",
+    "DRD INTO REAR PANEL": "N",
+    "2MM3CR12 FLOOR": "N",
+    "3MM3CR12 FLOOR": "N",
+    "3MM MILD STEEL FLOOR": "N",
+    "5MM MILD STEEL FLOOR": "N",
+    "24MM WISA TRANS FLOOR": "Y",
+    "REFLEXITE TAPE": "Y",
+    "DRY FREIGHT": "N",
+    "19MM PLYWOOD PANELS": "N",
+    "BAKERY BODY": "N",
+    "RICE GRAIN FLOOR": "N",
+    "1ST ROW ALU KICK PLATE": "N",
+    "2ND ROW ALU KICK PLATE": "N",
+    "80 DV COMPOSITE PANELS": "N",
+    "LOAD LOCK RAIL": "N",
+    "TOP HAT SECTION": "N",
+    "ESCAPE HATCH": "N",
+    "INTERIOR LIGHTS": "N",
+    "DRAIN HOLES": "N",
+    "NOSE CONE": "N",
+    "2MM3CR12 KICK PLATES": "N"
+   },
+   "sections": [
+    {
+     "name": "FRONT",
+     "row": 33,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 7.02,
+       "price": 213.11,
+       "total": 1496.0322,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30MM PU INJECTION",
+       "qty": 16.06176,
+       "price": 56.6190476190476,
+       "total": 909.401554285715,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "100*19mm PICTURE FRAME",
+       "qty": 10.6,
+       "price": 25.1024590163934,
+       "total": 266.086065573771,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "CHINESE INTERNAL HIGH IMPACT",
+       "qty": 7.02,
+       "price": 213.11,
+       "total": 1496.0322,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 4167.55201985949,
+     "gate": null,
+     "gated": 4167.55201985949
+    },
+    {
+     "name": "DRD",
+     "row": 42,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 7.02,
+       "price": 213.11,
+       "total": 1496.0322,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30MM PU INJECTION",
+       "qty": 16.06176,
+       "price": 56.6190476190476,
+       "total": 909.401554285715,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "CHINESE INTERNAL HIGH IMPACT",
+       "qty": 7.02,
+       "price": 213.11,
+       "total": 1496.0322,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "DOOR BLOCKS",
+       "qty": 119.119,
+       "price": 587.119,
+       "total": 587.119,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 4488.58495428572,
+     "gate": 1.0,
+     "gated": 4488.58495428572
+    },
+    {
+     "name": "DRD DOOR FITTINGS",
+     "row": 51,
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 8.0,
+       "price": 146.73,
+       "total": 1173.84,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "34MM LOCKING POLE",
+       "qty": 6.0,
+       "price": 42.0,
+       "total": 252.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30258 NEW DOOR CAPPING",
+       "qty": 5.05,
+       "price": 106.14,
+       "total": 536.007,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30258 NEW DOOR CAPPING",
+       "qty": 10.8,
+       "price": 106.14,
+       "total": 1146.312,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2316 INNER DOOR RUBBER",
+       "qty": 15.85,
+       "price": 24.72,
+       "total": 391.812,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2317 OUTER DOOR RUBBER",
+       "qty": 15.85,
+       "price": 60.18,
+       "total": 953.853,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10*45 *3 FENDER WASHER",
+       "qty": 40.0,
+       "price": 1.4749,
+       "total": 58.996,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M 10 NYLOCK NUT",
+       "qty": 15.85,
+       "price": 0.7374,
+       "total": 11.68779,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 6457.71467,
+     "gate": 1.0,
+     "gated": 6457.71467
+    },
+    {
+     "name": "DRD INTO REAR PANEL",
+     "row": 70,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 7.02,
+       "price": 213.11,
+       "total": 1496.0322,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30MM PU INJECTION",
+       "qty": 16.06176,
+       "price": 56.6190476190476,
+       "total": 909.401554285715,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "CHINESE INTERNAL HIGH IMPACT",
+       "qty": 7.02,
+       "price": 213.11,
+       "total": 1496.0322,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "DOOR BLOCKS",
+       "qty": 119.119,
+       "price": 587.119,
+       "total": 587.119,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 4488.58495428572,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "DRD INTO REAR PANEL DOOR FITTINGS",
+     "row": 79,
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 6.0,
+       "price": 146.73,
+       "total": 880.38,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "34MM LOCKING POLE",
+       "qty": 6.0,
+       "price": 42.0,
+       "total": 252.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 12.0,
+       "price": 106.14,
+       "total": 1273.68,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30258 NEW DOOR CAPPING",
+       "qty": 13.8,
+       "price": 106.14,
+       "total": 1464.732,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2136 INNER DOOR RUBBER",
+       "qty": 14.2,
+       "price": 24.72,
+       "total": 351.024,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2317 OUTER DOOR RUBBER",
+       "qty": 14.2,
+       "price": 60.18,
+       "total": 854.556,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 52.0,
+       "price": 0.5,
+       "total": 26.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 50.0,
+       "price": 0.1341,
+       "total": 6.705,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 220.0,
+       "price": 0.515,
+       "total": 113.3,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL HORIZONTAL",
+       "qty": 5.2,
+       "price": 240.58,
+       "total": 1251.016,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL VERTICAL",
+       "qty": 5.4,
+       "price": 181.78,
+       "total": 981.612,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL ALU CORNERS",
+       "qty": 4.0,
+       "price": 54.9,
+       "total": 219.6,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILICONE",
+       "qty": 5.3,
+       "price": 116.15,
+       "total": 615.595,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 228.0,
+       "price": 0.515,
+       "total": 117.42,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 9971.53344,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "SIDES",
+     "row": 103,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 19.575,
+       "price": 213.11,
+       "total": 4171.62825,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30MM PU INJECTION",
+       "qty": 44.7876,
+       "price": 56.6190476190476,
+       "total": 2535.83125714286,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "100*19 PICTURE FRAME",
+       "qty": 34.4,
+       "price": 25.1024590163934,
+       "total": 863.524590163934,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "CHINESE INTERNAL HIGH IMPACT",
+       "qty": 19.575,
+       "price": 213.11,
+       "total": 4171.62825,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 11742.6123473068,
+     "gate": null,
+     "gated": 23485.2246946136
+    },
+    {
+     "name": "ROOF",
+     "row": 112,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 19.2125,
+       "price": 213.11,
+       "total": 4094.375875,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "41MM PU INJECTION",
+       "qty": 52.2003625,
+       "price": 56.6190476190476,
+       "total": 2955.53481011905,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 19.2125,
+       "price": 213.11,
+       "total": 4094.375875,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 11144.286560119,
+     "gate": null,
+     "gated": 11144.286560119
+    },
+    {
+     "name": "2MM 3CR12 S/STEEL FLOOR",
+     "row": 120,
+     "lines": [
+      {
+       "desc": "5MM BEND UP SUB FRAME",
+       "qty": 14.5,
+       "price": 243.0,
+       "total": 3523.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMEBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 8891.11475409836,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2MM PLATE",
+       "qty": 4.83333333333333,
+       "price": 1920.0,
+       "total": 9280.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 21821.4720695346,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "3MM 3CR12 S/STEEL FLOOR",
+     "row": 129,
+     "lines": [
+      {
+       "desc": "4 MM BEND UP SUB FRAME",
+       "qty": 14.5,
+       "price": 243.0,
+       "total": 3523.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 8891.11475409836,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM PLATE",
+       "qty": 4.83333333333333,
+       "price": 3018.0,
+       "total": 14587.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 27128.4720695346,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "3MM MILD STEEL FLOOR",
+     "row": 138,
+     "lines": [
+      {
+       "desc": "4 MM BEND UP SUB FRAME",
+       "qty": 14.5,
+       "price": 243.0,
+       "total": 3523.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 8891.11475409836,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM PLATE",
+       "qty": 4.83333333333333,
+       "price": 1145.56,
+       "total": 5536.87333333333,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 18078.3454028679,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "5MM 300 WA PLATE",
+     "row": 147,
+     "lines": [
+      {
+       "desc": "4 MM BEND UP SUB FRAME",
+       "qty": 14.5,
+       "price": 243.0,
+       "total": 3523.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 8891.11475409836,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "5MM PLATE",
+       "qty": 4.83333333333333,
+       "price": 2326.21,
+       "total": 11243.3483333333,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 23784.8204028679,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "24MM WISA TRANS FLOOR",
+     "row": 156,
+     "lines": [
+      {
+       "desc": "4 MM BEND UP SUB FRAME",
+       "qty": 14.5,
+       "price": 243.0,
+       "total": 3523.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 8891.11475409836,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "24 MM WISA TRANS PLYWOOD",
+       "qty": 5.9016393442623,
+       "price": 4295.0,
+       "total": 25347.5409836066,
+       "gated_row": null,
+       "gate_row": 1.0
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "GRP SKIN",
+       "qty": 19.2125,
+       "price": 142.0,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "GLUE",
+       "qty": 19.2125,
+       "price": 28.5833333333333,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "RICE GRAIN ALU FLOOR",
+       "qty": 7.2,
+       "price": 54.9,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "1ST ROW ALU KICK PLATE",
+       "qty": 7.2,
+       "price": 93.33,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "2ND ROW ALU KICK PLATE",
+       "qty": 7.2,
+       "price": 93.33,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      }
+     ],
+     "f_total": 37889.0130531412,
+     "gate": 1.0,
+     "gated": 37889.0130531412
+    },
+    {
+     "name": "ALUMINIUM",
+     "row": 170,
+     "lines": [
+      {
+       "desc": "SMALL HORIZONTALE",
+       "qty": 34.0,
+       "price": 203.25,
+       "total": 6910.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL VERTICAL",
+       "qty": 5.4,
+       "price": 149.08,
+       "total": 805.032,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 700.0,
+       "price": 0.515,
+       "total": 360.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 14.4,
+       "price": 116.15,
+       "total": 1672.56,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL ALU CORNERS",
+       "qty": 4.0,
+       "price": 54.9,
+       "total": 219.6,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10*40 CUP SQ BOLTS",
+       "qty": 28.7272727272727,
+       "price": 1.5,
+       "total": 43.0909090909091,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 28.7272727272727,
+       "price": 0.7374,
+       "total": 21.1834909090909,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 10032.4664,
+     "gate": null,
+     "gated": 10032.4664
+    },
+    {
+     "name": "SUB FRAME + LIGHT BOX ASSY",
+     "row": 182,
+     "lines": [
+      {
+       "desc": "MOUNTING CLEATS TOP",
+       "qty": 4.0,
+       "price": 33.499856,
+       "total": 133.999424,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "MOUNTING CLEAT BOTTOM",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SPRING MOUNTING CLEATS",
+       "qty": 2.0,
+       "price": 380.63802,
+       "total": 761.27604,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "8 MM SMALL FISH PLATE",
+       "qty": 2.0,
+       "price": 54.8568,
+       "total": 109.7136,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.8052,
+       "price": 384.41610738255,
+       "total": 309.53184966443,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "100*50 TAPER CHANNEL",
+       "qty": 4.4,
+       "price": 124.68,
+       "total": 548.592,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "100*100*3 SQ TUBE",
+       "qty": 3.0,
+       "price": 167.92,
+       "total": 503.76,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2MM CHEVRON PLATE",
+       "qty": 0.5368,
+       "price": 260.681208053691,
+       "total": 139.933672483221,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "1.7 MTR CHEVRON BOARD",
+       "qty": 1.0,
+       "price": 165.0,
+       "total": 165.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "CROME NO.PLATE LIGHTS",
+       "qty": 1.0,
+       "price": 50.0,
+       "total": 50.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM MUD FLAP PLATES",
+       "qty": 0.3721,
+       "price": 384.41610738255,
+       "total": 143.041233557047,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "40*5MM FAT BAR",
+       "qty": null,
+       "price": 37.21,
+       "total": 45.3962,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10*30 GALV BOLTS",
+       "qty": 6.0,
+       "price": 0.5,
+       "total": 3.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.7374,
+       "total": 4.4244,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "ICB MUDFLAP",
+       "qty": 1.0,
+       "price": 267.08,
+       "total": 267.08,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 32.0,
+       "price": 0.515,
+       "total": 16.48,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 3936.4085797047,
+     "gate": null,
+     "gated": 3936.4085797047
+    },
+    {
+     "name": "REFLEXITE TAPE",
+     "row": 205,
+     "lines": [
+      {
+       "desc": "TAPE",
+       "qty": 17.0,
+       "price": 18.0,
+       "total": 306.0,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 306.0,
+     "gate": 1.0,
+     "gated": 306.0
+    },
+    {
+     "name": "REAR FRAME + FLOOR PLATE",
+     "row": 211,
+     "lines": [
+      {
+       "desc": "3MM 3CR12 REAR FRAME",
+       "qty": 0.5434,
+       "price": 965.76,
+       "total": 524.793984,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.793,
+       "price": 965.76,
+       "total": 765.84768,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 0.338,
+       "price": 965.76,
+       "total": 326.42688,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 3.0,
+       "price": 116.15,
+       "total": 348.45,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 2224.198144,
+     "gate": 1.0,
+     "gated": 2224.198144
+    },
+    {
+     "name": "SPRAY PAINTING",
+     "row": 222,
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": 1250.0,
+       "gated_row": 1250.0,
+       "gate_row": null
+      }
+     ],
+     "f_total": null,
+     "gate": null,
+     "gated": 1250.0
+    },
+    {
+     "name": "LOAD LOCK RAILS",
+     "row": 226,
+     "lines": [
+      {
+       "desc": "120*1,2 MM GLAV BACKING PLATE",
+       "qty": 7.2,
+       "price": 0.0,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "LOAD LOCK RAIL",
+       "qty": 7.2,
+       "price": 70.0,
+       "total": 1008.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "RIVETS BACKING PLATE",
+       "qty": 14.4,
+       "price": 0.2798,
+       "total": 40.2912,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "RIVETS LOAD LOCK RAIL",
+       "qty": 14.4,
+       "price": 0.2798,
+       "total": 13.4304,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 1061.7216,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "TOPHAT SECTON",
+     "row": 236,
+     "lines": [
+      {
+       "desc": "2MM 3 CR12 PLATE",
+       "qty": null,
+       "price": 128.0,
+       "total": 1843.2,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "RIVETS",
+       "qty": 48.0,
+       "price": 0.2798,
+       "total": 13.4304,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 1856.6304,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "ESCAPE HATCH",
+     "row": 244,
+     "lines": [],
+     "f_total": null,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "INTERIOR LIGHTS",
+     "row": 246,
+     "lines": [
+      {
+       "desc": "INTERIOR LIGHTS",
+       "qty": null,
+       "price": 140.0,
+       "total": 140.0,
+       "gated_row": 0.0,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "2 CORE CABLE",
+       "qty": 34.0,
+       "price": null,
+       "total": null,
+       "gated_row": 0.0,
+       "gate_row": 0.0
+      }
+     ],
+     "f_total": null,
+     "gate": null,
+     "gated": 0.0
+    },
+    {
+     "name": "2MM 3CR12 KICK PLATES",
+     "row": 253,
+     "lines": [
+      {
+       "desc": "2 mm 3 CR 12 plate",
+       "qty": 17.0,
+       "price": 192.0,
+       "total": 3264.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "silicone",
+       "qty": 3.4,
+       "price": 116.15,
+       "total": 394.91,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "rivets",
+       "qty": 272.0,
+       "price": 0.2798,
+       "total": 76.1056,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 3735.0156,
+     "gate": 0.0,
+     "gated": 0.0
+    }
+   ],
+   "grand": 105381.449075724,
+   "sum_gated": 105381.45
+  },
+  "default": {
+   "options": {
+    "DRD": "Y",
+    "DRD INTO REAR PANEL": "N",
+    "2MM3CR12 FLOOR": "N",
+    "3MM3CR12 FLOOR": "N",
+    "3MM MILD STEEL FLOOR": "N",
+    "5MM MILD STEEL FLOOR": "N",
+    "24MM WISA TRANS FLOOR": "Y",
+    "REFLEXITE TAPE": "Y",
+    "DRY FREIGHT": "N",
+    "19MM PLYWOOD PANELS": "N",
+    "BAKERY BODY": "N",
+    "RICE GRAIN FLOOR": "N",
+    "1ST ROW ALU KICK PLATE": "N",
+    "2ND ROW ALU KICK PLATE": "N",
+    "80 DV COMPOSITE PANELS": "N",
+    "LOAD LOCK RAIL": "N",
+    "TOP HAT SECTION": "N",
+    "ESCAPE HATCH": "N",
+    "INTERIOR LIGHTS": "N",
+    "DRAIN HOLES": "N",
+    "NOSE CONE": "N",
+    "2MM3CR12 KICK PLATES": "N"
+   },
+   "sections": [
+    {
+     "name": "FRONT",
+     "row": 33,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 7.8,
+       "price": 213.11,
+       "total": 1662.258,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30MM PU INJECTION",
+       "qty": 17.8464,
+       "price": 56.6190476190476,
+       "total": 1010.44617142857,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "100*19mm PICTURE FRAME",
+       "qty": 11.2,
+       "price": 25.1024590163934,
+       "total": 281.147540983607,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "CHINESE INTERNAL HIGH IMPACT",
+       "qty": 7.8,
+       "price": 213.11,
+       "total": 1662.258,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 4616.10971241218,
+     "gate": null,
+     "gated": 4616.10971241218
+    },
+    {
+     "name": "DRD",
+     "row": 42,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 7.8,
+       "price": 213.11,
+       "total": 1662.258,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30MM PU INJECTION",
+       "qty": 17.8464,
+       "price": 56.6190476190476,
+       "total": 1010.44617142857,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "CHINESE INTERNAL HIGH IMPACT",
+       "qty": 7.8,
+       "price": 213.11,
+       "total": 1662.258,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "DOOR BLOCKS",
+       "qty": 119.119,
+       "price": 587.119,
+       "total": 587.119,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 4922.08117142857,
+     "gate": 1.0,
+     "gated": 4922.08117142857
+    },
+    {
+     "name": "DRD DOOR FITTINGS",
+     "row": 51,
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 8.0,
+       "price": 146.73,
+       "total": 1173.84,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "34MM LOCKING POLE",
+       "qty": 6.0,
+       "price": 42.0,
+       "total": 252.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30258 NEW DOOR CAPPING",
+       "qty": 5.05,
+       "price": 106.14,
+       "total": 536.007,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30258 NEW DOOR CAPPING",
+       "qty": 12.0,
+       "price": 106.14,
+       "total": 1273.68,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2316 INNER DOOR RUBBER",
+       "qty": 17.05,
+       "price": 24.72,
+       "total": 421.476,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2317 OUTER DOOR RUBBER",
+       "qty": 17.05,
+       "price": 60.18,
+       "total": 1026.069,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10*45 *3 FENDER WASHER",
+       "qty": 40.0,
+       "price": 1.4749,
+       "total": 58.996,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M 10 NYLOCK NUT",
+       "qty": 17.05,
+       "price": 0.7374,
+       "total": 12.57267,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 100.0,
+       "price": 0.515,
+       "total": 51.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 2.0,
+       "price": 164.575,
+       "total": 329.15,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 2.0,
+       "price": 56.0,
+       "total": 112.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 2.0,
+       "price": 97.21844,
+       "total": 194.43688,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 6687.84755,
+     "gate": 1.0,
+     "gated": 6687.84755
+    },
+    {
+     "name": "DRD INTO REAR PANEL",
+     "row": 70,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 7.8,
+       "price": 213.11,
+       "total": 1662.258,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30MM PU INJECTION",
+       "qty": 17.8464,
+       "price": 56.6190476190476,
+       "total": 1010.44617142857,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "CHINESE INTERNAL HIGH IMPACT",
+       "qty": 7.8,
+       "price": 213.11,
+       "total": 1662.258,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "DOOR BLOCKS",
+       "qty": 119.119,
+       "price": 587.119,
+       "total": 587.119,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 4922.08117142857,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "DRD INTO REAR PANEL DOOR FITTINGS",
+     "row": 79,
+     "lines": [
+      {
+       "desc": "CSLB HINGES",
+       "qty": 6.0,
+       "price": 146.73,
+       "total": 880.38,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SB 51111 DOOR SET",
+       "qty": 2.0,
+       "price": 506.91,
+       "total": 1013.82,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "34MM LOCKING POLE",
+       "qty": 6.0,
+       "price": 42.0,
+       "total": 252.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "28777 DOOR CAPPING",
+       "qty": 12.0,
+       "price": 106.14,
+       "total": 1273.68,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30258 NEW DOOR CAPPING",
+       "qty": 13.8,
+       "price": 106.14,
+       "total": 1464.732,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2136 INNER DOOR RUBBER",
+       "qty": 14.2,
+       "price": 24.72,
+       "total": 351.024,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2317 OUTER DOOR RUBBER",
+       "qty": 14.2,
+       "price": 60.18,
+       "total": 854.556,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10*40 GALV. BOLTS",
+       "qty": 52.0,
+       "price": 0.5,
+       "total": 26.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10 SPRING WASHERS",
+       "qty": 50.0,
+       "price": 0.1341,
+       "total": 6.705,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 220.0,
+       "price": 0.515,
+       "total": 113.3,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILPLUS X WHITE SILICONE",
+       "qty": 2.0,
+       "price": 116.15,
+       "total": 232.3,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL HORIZONTAL",
+       "qty": 5.2,
+       "price": 240.58,
+       "total": 1251.016,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL VERTICAL",
+       "qty": 6.0,
+       "price": 181.78,
+       "total": 1090.68,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL ALU CORNERS",
+       "qty": 4.0,
+       "price": 54.9,
+       "total": 219.6,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILICONE",
+       "qty": 5.6,
+       "price": 116.15,
+       "total": 650.44,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 LONG RIVETS",
+       "qty": 240.0,
+       "price": 0.515,
+       "total": 123.6,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM ALU BUFFER PLATE",
+       "qty": 1.0,
+       "price": 164.575,
+       "total": 164.575,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "T-BAR CATCH",
+       "qty": 1.0,
+       "price": 56.0,
+       "total": 56.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "D-RUBBER",
+       "qty": 1.0,
+       "price": 97.21844,
+       "total": 97.21844,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 10121.62644,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "SIDES",
+     "row": 103,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 36.75,
+       "price": 213.11,
+       "total": 7831.7925,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "30MM PU INJECTION",
+       "qty": 84.084,
+       "price": 56.6190476190476,
+       "total": 4760.756,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "100*19 PICTURE FRAME",
+       "qty": 55.0,
+       "price": 25.1024590163934,
+       "total": 1380.63524590164,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "CHINESE INTERNAL HIGH IMPACT",
+       "qty": 36.75,
+       "price": 213.11,
+       "total": 7831.7925,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 21804.9762459016,
+     "gate": null,
+     "gated": 43609.9524918033
+    },
+    {
+     "name": "ROOF",
+     "row": 112,
+     "lines": [
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 32.4625,
+       "price": 213.11,
+       "total": 6918.083375,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "41MM PU INJECTION",
+       "qty": 88.2006125,
+       "price": 56.6190476190476,
+       "total": 4993.83467916667,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "CHINESE EXTERNAL HIGH GLOSS",
+       "qty": 32.4625,
+       "price": 213.11,
+       "total": 6918.083375,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 18830.0014291667,
+     "gate": null,
+     "gated": 18830.0014291667
+    },
+    {
+     "name": "2MM 3CR12 S/STEEL FLOOR",
+     "row": 120,
+     "lines": [
+      {
+       "desc": "5MM BEND UP SUB FRAME",
+       "qty": 24.5,
+       "price": 243.0,
+       "total": 5953.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMEBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 15022.9180327869,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2MM PLATE",
+       "qty": 8.16666666666667,
+       "price": 1920.0,
+       "total": 15680.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 36783.2753482231,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "3MM 3CR12 S/STEEL FLOOR",
+     "row": 129,
+     "lines": [
+      {
+       "desc": "4 MM BEND UP SUB FRAME",
+       "qty": 24.5,
+       "price": 243.0,
+       "total": 5953.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 15022.9180327869,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM PLATE",
+       "qty": 8.16666666666667,
+       "price": 3018.0,
+       "total": 24647.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 45750.2753482231,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "3MM MILD STEEL FLOOR",
+     "row": 138,
+     "lines": [
+      {
+       "desc": "4 MM BEND UP SUB FRAME",
+       "qty": 24.5,
+       "price": 243.0,
+       "total": 5953.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 15022.9180327869,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM PLATE",
+       "qty": 8.16666666666667,
+       "price": 1145.56,
+       "total": 9355.40666666667,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 30458.6820148898,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "5MM 300 WA PLATE",
+     "row": 147,
+     "lines": [
+      {
+       "desc": "4 MM BEND UP SUB FRAME",
+       "qty": 24.5,
+       "price": 243.0,
+       "total": 5953.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 15022.9180327869,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "5MM PLATE",
+       "qty": 8.16666666666667,
+       "price": 2326.21,
+       "total": 18997.3816666667,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 40100.6570148898,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "24MM WISA TRANS FLOOR",
+     "row": 156,
+     "lines": [
+      {
+       "desc": "4 MM BEND UP SUB FRAME",
+       "qty": 24.5,
+       "price": 243.0,
+       "total": 5953.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "80*50*3 CROSSMEMBERS",
+       "qty": 0.45,
+       "price": 124.68,
+       "total": 15022.9180327869,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "24 MM WISA TRANS PLYWOOD",
+       "qty": 10.0,
+       "price": 4295.0,
+       "total": 42950.0,
+       "gated_row": null,
+       "gate_row": 1.0
+      },
+      {
+       "desc": "3MM GUSSETS",
+       "qty": 0.0275,
+       "price": 384.41610738255,
+       "total": 126.857315436242,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "GRP SKIN",
+       "qty": 32.4625,
+       "price": 142.0,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "GLUE",
+       "qty": 32.4625,
+       "price": 28.5833333333333,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "RICE GRAIN ALU FLOOR",
+       "qty": 12.2,
+       "price": 54.9,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "1ST ROW ALU KICK PLATE",
+       "qty": 12.2,
+       "price": 93.33,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "2ND ROW ALU KICK PLATE",
+       "qty": 12.2,
+       "price": 93.33,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": 0.0
+      }
+     ],
+     "f_total": 64053.2753482231,
+     "gate": 1.0,
+     "gated": 64053.2753482231
+    },
+    {
+     "name": "ALUMINIUM",
+     "row": 170,
+     "lines": [
+      {
+       "desc": "SMALL HORIZONTALE",
+       "qty": 54.0,
+       "price": 203.25,
+       "total": 10975.5,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL VERTICAL",
+       "qty": 6.0,
+       "price": 149.08,
+       "total": 894.48,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 1112.0,
+       "price": 0.515,
+       "total": 572.68,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 24.4,
+       "price": 116.15,
+       "total": 2834.06,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SMALL ALU CORNERS",
+       "qty": 4.0,
+       "price": 54.9,
+       "total": 219.6,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10*40 CUP SQ BOLTS",
+       "qty": 45.3939393939394,
+       "price": 1.5,
+       "total": 68.0909090909091,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 45.3939393939394,
+       "price": 0.7374,
+       "total": 33.4734909090909,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 15597.8844,
+     "gate": null,
+     "gated": 15597.8844
+    },
+    {
+     "name": "SUB FRAME + LIGHT BOX ASSY",
+     "row": 182,
+     "lines": [
+      {
+       "desc": "MOUNTING CLEATS TOP",
+       "qty": 4.0,
+       "price": 33.499856,
+       "total": 133.999424,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "MOUNTING CLEAT BOTTOM",
+       "qty": 4.0,
+       "price": 68.79504,
+       "total": 275.18016,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SPRING MOUNTING CLEATS",
+       "qty": 2.0,
+       "price": 380.63802,
+       "total": 761.27604,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "8 MM SMALL FISH PLATE",
+       "qty": 2.0,
+       "price": 54.8568,
+       "total": 109.7136,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM LIGHT BOX",
+       "qty": 0.8052,
+       "price": 384.41610738255,
+       "total": 309.53184966443,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "100*50 TAPER CHANNEL",
+       "qty": 4.4,
+       "price": 124.68,
+       "total": 548.592,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "100*100*3 SQ TUBE",
+       "qty": 3.0,
+       "price": 167.92,
+       "total": 503.76,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2MM CHEVRON PLATE",
+       "qty": 0.5368,
+       "price": 260.681208053691,
+       "total": 139.933672483221,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "1.7 MTR CHEVRON BOARD",
+       "qty": 1.0,
+       "price": 165.0,
+       "total": 165.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "115MM RED TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "115MM AMBER TRUCK LIGHTS",
+       "qty": 2.0,
+       "price": 115.0,
+       "total": 230.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "CROME NO.PLATE LIGHTS",
+       "qty": 1.0,
+       "price": 50.0,
+       "total": 50.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM MUD FLAP PLATES",
+       "qty": 0.3721,
+       "price": 384.41610738255,
+       "total": 143.041233557047,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "40*5MM FAT BAR",
+       "qty": null,
+       "price": 37.21,
+       "total": 45.3962,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10*30 GALV BOLTS",
+       "qty": 6.0,
+       "price": 0.5,
+       "total": 3.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "M10 NYLOCK NUT",
+       "qty": 6.0,
+       "price": 0.7374,
+       "total": 4.4244,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "ICB MUDFLAP",
+       "qty": 1.0,
+       "price": 267.08,
+       "total": 267.08,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "0661-0631 RIVETS",
+       "qty": 32.0,
+       "price": 0.515,
+       "total": 16.48,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 3936.4085797047,
+     "gate": null,
+     "gated": 3936.4085797047
+    },
+    {
+     "name": "REFLEXITE TAPE",
+     "row": 205,
+     "lines": [
+      {
+       "desc": "TAPE",
+       "qty": 27.0,
+       "price": 18.0,
+       "total": 486.0,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 486.0,
+     "gate": 1.0,
+     "gated": 486.0
+    },
+    {
+     "name": "REAR FRAME + FLOOR PLATE",
+     "row": 211,
+     "lines": [
+      {
+       "desc": "3MM 3CR12 REAR FRAME",
+       "qty": 0.5434,
+       "price": 965.76,
+       "total": 524.793984,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "TOP FRAME RAIN GUTTER",
+       "qty": 0.793,
+       "price": 965.76,
+       "total": 765.84768,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "3MM 3CR12 FLOOR PLATE",
+       "qty": 0.338,
+       "price": 965.76,
+       "total": 326.42688,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "SILPLUS X-WHITE",
+       "qty": 3.0,
+       "price": 116.15,
+       "total": 348.45,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "5MM CORNER GUSSET",
+       "qty": 2.0,
+       "price": 89.2008,
+       "total": 178.4016,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "2771-0824 MONOBOLTS",
+       "qty": 22.0,
+       "price": 3.649,
+       "total": 80.278,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 2224.198144,
+     "gate": 1.0,
+     "gated": 2224.198144
+    },
+    {
+     "name": "SPRAY PAINTING",
+     "row": 222,
+     "lines": [
+      {
+       "desc": "PAINTING OF SUB FRAME + REAR FRAME",
+       "qty": null,
+       "price": null,
+       "total": 1250.0,
+       "gated_row": 1250.0,
+       "gate_row": null
+      }
+     ],
+     "f_total": null,
+     "gate": null,
+     "gated": 1250.0
+    },
+    {
+     "name": "LOAD LOCK RAILS",
+     "row": 226,
+     "lines": [
+      {
+       "desc": "120*1,2 MM GLAV BACKING PLATE",
+       "qty": 12.2,
+       "price": 0.0,
+       "total": 0.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "LOAD LOCK RAIL",
+       "qty": 12.2,
+       "price": 70.0,
+       "total": 1708.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "RIVETS BACKING PLATE",
+       "qty": 24.4,
+       "price": 0.2798,
+       "total": 68.2712,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "RIVETS LOAD LOCK RAIL",
+       "qty": 24.4,
+       "price": 0.2798,
+       "total": 22.7570666666667,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 1799.02826666667,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "TOPHAT SECTON",
+     "row": 236,
+     "lines": [
+      {
+       "desc": "2MM 3 CR12 PLATE",
+       "qty": null,
+       "price": 128.0,
+       "total": 3123.2,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "RIVETS",
+       "qty": 81.3333333333333,
+       "price": 0.2798,
+       "total": 22.7570666666667,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 3145.95706666667,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "ESCAPE HATCH",
+     "row": 244,
+     "lines": [],
+     "f_total": null,
+     "gate": 0.0,
+     "gated": 0.0
+    },
+    {
+     "name": "INTERIOR LIGHTS",
+     "row": 246,
+     "lines": [
+      {
+       "desc": "INTERIOR LIGHTS",
+       "qty": null,
+       "price": 140.0,
+       "total": 140.0,
+       "gated_row": 0.0,
+       "gate_row": 0.0
+      },
+      {
+       "desc": "2 CORE CABLE",
+       "qty": 54.0,
+       "price": null,
+       "total": null,
+       "gated_row": 0.0,
+       "gate_row": 0.0
+      }
+     ],
+     "f_total": null,
+     "gate": null,
+     "gated": 0.0
+    },
+    {
+     "name": "2MM 3CR12 KICK PLATES",
+     "row": 253,
+     "lines": [
+      {
+       "desc": "2 mm 3 CR 12 plate",
+       "qty": 27.0,
+       "price": 192.0,
+       "total": 5184.0,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "silicone",
+       "qty": 5.4,
+       "price": 116.15,
+       "total": 627.21,
+       "gated_row": null,
+       "gate_row": null
+      },
+      {
+       "desc": "rivets",
+       "qty": 432.0,
+       "price": 0.2798,
+       "total": 120.8736,
+       "gated_row": null,
+       "gate_row": null
+      }
+     ],
+     "f_total": 5932.0836,
+     "gate": 0.0,
+     "gated": 0.0
+    }
+   ],
+   "grand": 166213.758826739,
+   "sum_gated": 166213.76
+  }
+ },
+ "mes": {
+  "DRD": {
+   "grand_total": 7168862.47,
+   "excluded_categories": [
+    "SRD",
+    "SRD DOOR FITTINGS"
+   ],
+   "items": [
+    {
+     "category": "FRONT",
+     "bom_id": 733,
+     "material": "WOVEX SKIN",
+     "formula": "(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})",
+     "quantity": 8.0825,
+     "unit_price": 223.0,
+     "line_cost": 1802.4,
+     "excluded": false
+    },
+    {
+     "category": "FRONT",
+     "bom_id": 734,
+     "material": "30MM PU INJECTION",
+     "formula": "width*height*0.032*50",
+     "quantity": 12.48,
+     "unit_price": 60.0,
+     "line_cost": 748.8,
+     "excluded": false
+    },
+    {
+     "category": "FRONT",
+     "bom_id": 735,
+     "material": "100*19mm PICTURE FRAME",
+     "formula": "(height*2+width*2)",
+     "quantity": 11.2,
+     "unit_price": 524.932,
+     "line_cost": 5879.24,
+     "excluded": false
+    },
+    {
+     "category": "FRONT",
+     "bom_id": 736,
+     "material": "WOVEX SKIN",
+     "formula": "(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})",
+     "quantity": 8.0825,
+     "unit_price": 223.0,
+     "line_cost": 1802.4,
+     "excluded": false
+    },
+    {
+     "category": "DRD",
+     "bom_id": 737,
+     "material": "WOVEX SKIN",
+     "formula": "(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})",
+     "quantity": 8.0825,
+     "unit_price": 223.0,
+     "line_cost": 1802.4,
+     "excluded": false
+    },
+    {
+     "category": "DRD",
+     "bom_id": 738,
+     "material": "30MM PU INJECTION",
+     "formula": "width*height*0.032*50",
+     "quantity": 12.48,
+     "unit_price": 60.0,
+     "line_cost": 748.8,
+     "excluded": false
+    },
+    {
+     "category": "DRD",
+     "bom_id": 739,
+     "material": "WOVEX SKIN",
+     "formula": "(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})",
+     "quantity": 8.0825,
+     "unit_price": 223.0,
+     "line_cost": 1802.4,
+     "excluded": false
+    },
+    {
+     "category": "DRD",
+     "bom_id": 740,
+     "material": "DOOR BLOCKS",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 78.0,
+     "line_cost": 78.0,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 741,
+     "material": "CSLB HINGES",
+     "formula": "8",
+     "quantity": 8.0,
+     "unit_price": 146.73,
+     "line_cost": 1173.84,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 742,
+     "material": "SB 51111 DOOR SET",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 506.91,
+     "line_cost": 1013.82,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 743,
+     "material": "34MM LOCKING POLE",
+     "formula": "6",
+     "quantity": 6.0,
+     "unit_price": 252.0,
+     "line_cost": 1512.0,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 744,
+     "material": "30258 NEW DOOR CAPPING",
+     "formula": "(width*2-0.15)",
+     "quantity": 5.05,
+     "unit_price": 87.0,
+     "line_cost": 439.35,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 745,
+     "material": "30258 NEW DOOR CAPPING",
+     "formula": "height*4",
+     "quantity": 12.0,
+     "unit_price": 87.0,
+     "line_cost": 1044.0,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 746,
+     "material": "2316 INNER DOOR RUBBER",
+     "formula": "((width*2-0.15)+height*4)",
+     "quantity": 17.05,
+     "unit_price": 391.812,
+     "line_cost": 6680.39,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 747,
+     "material": "2317 OUTER DOOR RUBBER",
+     "formula": "((width*2-0.15)+height*4)",
+     "quantity": 17.05,
+     "unit_price": 953.853,
+     "line_cost": 16263.19,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 748,
+     "material": "M10*45 *3 FENDER WASHER",
+     "formula": "40",
+     "quantity": 40.0,
+     "unit_price": 58.996,
+     "line_cost": 2359.84,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 749,
+     "material": "M 10 NYLOCK NUT",
+     "formula": "((width*2-0.15)+height*4)",
+     "quantity": 17.05,
+     "unit_price": 29.496,
+     "line_cost": 502.91,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 750,
+     "material": "0661-0631 LONG RIVETS",
+     "formula": "100",
+     "quantity": 100.0,
+     "unit_price": 0.515,
+     "line_cost": 51.5,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 751,
+     "material": "SILPLUS X WHITE SILICONE",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 116.15,
+     "line_cost": 232.3,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 752,
+     "material": "3MM ALU BUFFER PLATE",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 164.575,
+     "line_cost": 329.15,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 753,
+     "material": "T-BAR CATCH",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 56.0,
+     "line_cost": 112.0,
+     "excluded": false
+    },
+    {
+     "category": "DRD DOOR FITTINGS",
+     "bom_id": 754,
+     "material": "D-RUBBER",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 97.2184,
+     "line_cost": 194.44,
+     "excluded": false
+    },
+    {
+     "category": "SIDES",
+     "bom_id": 778,
+     "material": "WOVEX SKIN",
+     "formula": "height*(length+{Waste})",
+     "quantity": 73.5,
+     "unit_price": 272.27,
+     "line_cost": 20011.84,
+     "excluded": false
+    },
+    {
+     "category": "SIDES",
+     "bom_id": 779,
+     "material": "30MM PU INJECTION",
+     "formula": "(length+{Waste})*height*0.032*50",
+     "quantity": 117.6,
+     "unit_price": 60.0,
+     "line_cost": 7056.0,
+     "excluded": false
+    },
+    {
+     "category": "SIDES",
+     "bom_id": 780,
+     "material": "100*19 PICTURE  FRAME",
+     "formula": "(height*2+(length+{Waste})*4)",
+     "quantity": 110.0,
+     "unit_price": 1703.55,
+     "line_cost": 187390.5,
+     "excluded": false
+    },
+    {
+     "category": "SIDES",
+     "bom_id": 781,
+     "material": "WOVEX SKIN",
+     "formula": "height*(length+{Waste})",
+     "quantity": 73.5,
+     "unit_price": 272.27,
+     "line_cost": 20011.84,
+     "excluded": false
+    },
+    {
+     "category": "ROOF",
+     "bom_id": 782,
+     "material": "WOVEX SKIN",
+     "formula": "(width+{Waste})*(length+{Waste})",
+     "quantity": 32.4625,
+     "unit_price": 272.27,
+     "line_cost": 8838.56,
+     "excluded": false
+    },
+    {
+     "category": "ROOF",
+     "bom_id": 783,
+     "material": "45MM PU INJECTION",
+     "formula": "(length+{Waste})*(width+{Waste})*0.062*50",
+     "quantity": 100.6337,
+     "unit_price": 60.0,
+     "line_cost": 6038.02,
+     "excluded": false
+    },
+    {
+     "category": "ROOF",
+     "bom_id": 784,
+     "material": "WOVEX SKIN",
+     "formula": "(width+{Waste})*(length+{Waste})",
+     "quantity": 32.4625,
+     "unit_price": 272.27,
+     "line_cost": 8838.56,
+     "excluded": false
+    },
+    {
+     "category": "2MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 785,
+     "material": "5MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "2MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 786,
+     "material": "80*50*3 CROSSMEMEBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "2MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 787,
+     "material": "2MM PLATE",
+     "formula": "(length+{Waste})*2/2/1.5",
+     "quantity": 8.1667,
+     "unit_price": 13364.2,
+     "line_cost": 109140.97,
+     "excluded": false
+    },
+    {
+     "category": "2MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 788,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "3MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 789,
+     "material": "4 MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "3MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 790,
+     "material": "80*50*3 CROSSMEMBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "3MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 791,
+     "material": "3MM PLATE",
+     "formula": "(length+{Waste})*2/2/1.5",
+     "quantity": 8.1667,
+     "unit_price": 21000.8,
+     "line_cost": 171506.53,
+     "excluded": false
+    },
+    {
+     "category": "3MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 792,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "3MM MILD STEEL FLOOR",
+     "bom_id": 793,
+     "material": "4 MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "3MM MILD STEEL FLOOR",
+     "bom_id": 794,
+     "material": "80*50*3 CROSSMEMBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "3MM MILD STEEL FLOOR",
+     "bom_id": 795,
+     "material": "3MM PLATE",
+     "formula": "(length+{Waste})*2/2/1.5",
+     "quantity": 8.1667,
+     "unit_price": 6807.63,
+     "line_cost": 55595.64,
+     "excluded": false
+    },
+    {
+     "category": "3MM MILD STEEL FLOOR",
+     "bom_id": 796,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "5MM 300 WA PLATE",
+     "bom_id": 797,
+     "material": "4 MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "5MM 300 WA PLATE",
+     "bom_id": 798,
+     "material": "80*50*3 CROSSMEMBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "5MM 300 WA PLATE",
+     "bom_id": 799,
+     "material": "5MM PLATE",
+     "formula": "(length+{Waste})*2/2/1.5",
+     "quantity": 8.1667,
+     "unit_price": 14726.5,
+     "line_cost": 120266.42,
+     "excluded": false
+    },
+    {
+     "category": "5MM 300 WA PLATE",
+     "bom_id": 800,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 801,
+     "material": "4 MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 802,
+     "material": "80*50*3 CROSSMEMBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 803,
+     "material": "24 MM WISA TRANS PLYWOOD",
+     "formula": "length/1.22",
+     "quantity": 10.0,
+     "unit_price": 4195.0,
+     "line_cost": 41950.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 804,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 805,
+     "material": "GRP SKIN",
+     "formula": "(width+{Waste})*(length+{Waste})*0",
+     "quantity": 0.0,
+     "unit_price": 142.0,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 806,
+     "material": "GLUE",
+     "formula": "(width+{Waste})*(length+{Waste})*2*0",
+     "quantity": 0.0,
+     "unit_price": 28.5833,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 807,
+     "material": "RICE GRAIN ALU FLOOR",
+     "formula": "1/7.3*length*0",
+     "quantity": 0.0,
+     "unit_price": 45.0,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 808,
+     "material": "1ST ROW ALU KICK PLATE",
+     "formula": "(length*2+2.6)*0",
+     "quantity": 0.0,
+     "unit_price": 76.5,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 809,
+     "material": "2ND ROW ALU KICK PLATE",
+     "formula": "(length*2+2.6)*0",
+     "quantity": 0.0,
+     "unit_price": 76.5,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 810,
+     "material": "SMALL HORIZONTALE",
+     "formula": "(length*4+width*2)",
+     "quantity": 54.0,
+     "unit_price": 166.6,
+     "line_cost": 8996.4,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 811,
+     "material": "28778 BIG VERTICAL",
+     "formula": "(0+height*2)",
+     "quantity": 6.0,
+     "unit_price": 181.78,
+     "line_cost": 1090.68,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 812,
+     "material": "0661-0631 RIVETS",
+     "formula": "(0+length*4*20+height*2*20+16)",
+     "quantity": 1112.0,
+     "unit_price": 360.5,
+     "line_cost": 400876.0,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 813,
+     "material": "SILPLUS X-WHITE",
+     "formula": "length*2",
+     "quantity": 24.4,
+     "unit_price": 1672.56,
+     "line_cost": 40810.46,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 814,
+     "material": "SMALL ALU CORNERS",
+     "formula": "4",
+     "quantity": 4.0,
+     "unit_price": 45.0,
+     "line_cost": 180.0,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 815,
+     "material": "M10*40 CUP SQ BOLTS",
+     "formula": "(width/0.55+length/0.6*2)",
+     "quantity": 45.3939,
+     "unit_price": 43.0909,
+     "line_cost": 1956.07,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 816,
+     "material": "M10 NYLOCK NUT",
+     "formula": "(width/0.55+length/0.6*2)",
+     "quantity": 45.3939,
+     "unit_price": 21.1835,
+     "line_cost": 961.6,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 817,
+     "material": "MOUNTING CLEATS TOP",
+     "formula": "4",
+     "quantity": 4.0,
+     "unit_price": 33.4999,
+     "line_cost": 134.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 818,
+     "material": "MOUNTING CLEAT BOTTOM",
+     "formula": "4",
+     "quantity": 4.0,
+     "unit_price": 68.795,
+     "line_cost": 275.18,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 819,
+     "material": "SPRING MOUNTING CLEATS",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 380.638,
+     "line_cost": 761.28,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 820,
+     "material": "8 MM SMALL FISH PLATE",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 109.714,
+     "line_cost": 219.43,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 821,
+     "material": "3MM LIGHT BOX",
+     "formula": "0.33*2.44",
+     "quantity": 0.8052,
+     "unit_price": 384.4161073825503,
+     "line_cost": 309.53,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 822,
+     "material": "100*50 TAPER CHANNEL",
+     "formula": "4.4",
+     "quantity": 4.4,
+     "unit_price": 124.68,
+     "line_cost": 548.59,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 823,
+     "material": "100*100*3 SQ TUBE",
+     "formula": "3",
+     "quantity": 3.0,
+     "unit_price": 167.92,
+     "line_cost": 503.76,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 824,
+     "material": "2MM CHEVRON PLATE",
+     "formula": "0.22*2.44",
+     "quantity": 0.5368,
+     "unit_price": 260.6812080536913,
+     "line_cost": 139.93,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 825,
+     "material": "1.7 MTR CHEVRON BOARD",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 165.0,
+     "line_cost": 165.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 826,
+     "material": "115MM RED TRUCK LIGHTS",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 115.0,
+     "line_cost": 230.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 827,
+     "material": "115MM AMBER TRUCK LIGHTS",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 115.0,
+     "line_cost": 230.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 828,
+     "material": "CROME NO.PLATE LIGHTS",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 50.0,
+     "line_cost": 50.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 829,
+     "material": "3MM MUD FLAP PLATES",
+     "formula": "0.61*0.61",
+     "quantity": 0.3721,
+     "unit_price": 384.4161073825503,
+     "line_cost": 143.04,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 830,
+     "material": "40*5MM FAT BAR",
+     "formula": "0.61*2",
+     "quantity": 1.22,
+     "unit_price": 37.21,
+     "line_cost": 45.4,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 831,
+     "material": "M10*30 GALV BOLTS",
+     "formula": "6",
+     "quantity": 6.0,
+     "unit_price": 0.5,
+     "line_cost": 3.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 832,
+     "material": "M10 NYLOCK NUT",
+     "formula": "6",
+     "quantity": 6.0,
+     "unit_price": 0.7374,
+     "line_cost": 4.42,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 833,
+     "material": "ICB MUDFLAP",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 267.08,
+     "line_cost": 267.08,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 834,
+     "material": "0661-0631 RIVETS",
+     "formula": "32",
+     "quantity": 32.0,
+     "unit_price": 0.515,
+     "line_cost": 16.48,
+     "excluded": false
+    },
+    {
+     "category": "REFLEXITE TAPE",
+     "bom_id": 835,
+     "material": "TAPE",
+     "formula": "(width+length*2)",
+     "quantity": 27.0,
+     "unit_price": 306.0,
+     "line_cost": 8262.0,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 836,
+     "material": "3MM 3CR12 REAR FRAME",
+     "formula": "0.209*width",
+     "quantity": 0.5434,
+     "unit_price": 965.76,
+     "line_cost": 524.79,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 837,
+     "material": "TOP FRAME RAIN GUTTER",
+     "formula": "0.305*width",
+     "quantity": 0.793,
+     "unit_price": 965.76,
+     "line_cost": 765.85,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 838,
+     "material": "3MM 3CR12 FLOOR PLATE",
+     "formula": "0.13*width",
+     "quantity": 0.338,
+     "unit_price": 965.76,
+     "line_cost": 326.43,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 839,
+     "material": "SILPLUS X-WHITE",
+     "formula": "3",
+     "quantity": 3.0,
+     "unit_price": 116.15,
+     "line_cost": 348.45,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 840,
+     "material": "5MM CORNER GUSSET",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 89.2008,
+     "line_cost": 178.4,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 841,
+     "material": "2771-0824 MONOBOLTS",
+     "formula": "22",
+     "quantity": 22.0,
+     "unit_price": 3.649,
+     "line_cost": 80.28,
+     "excluded": false
+    },
+    {
+     "category": "SPRAY PAINTING",
+     "bom_id": 842,
+     "material": "PAINTING OF SUB FRAME + REAR FRAME",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 750.0,
+     "line_cost": 750.0,
+     "excluded": false
+    },
+    {
+     "category": "LOAD LOCK RAILS",
+     "bom_id": 843,
+     "material": "LOAD LOCK RAIL",
+     "formula": "length*2",
+     "quantity": 24.4,
+     "unit_price": 1008.0,
+     "line_cost": 24595.2,
+     "excluded": false
+    },
+    {
+     "category": "LOAD LOCK RAILS",
+     "bom_id": 844,
+     "material": "RIVETS BACKING PLATE",
+     "formula": "length*2/0.1",
+     "quantity": 244.0,
+     "unit_price": 40.2912,
+     "line_cost": 9831.05,
+     "excluded": false
+    },
+    {
+     "category": "LOAD LOCK RAILS",
+     "bom_id": 845,
+     "material": "RIVETS LOAD LOCK RAIL",
+     "formula": "length*2/0.3",
+     "quantity": 81.3333,
+     "unit_price": 13.4304,
+     "line_cost": 1092.34,
+     "excluded": false
+    },
+    {
+     "category": "TOPHAT SECTON",
+     "bom_id": 846,
+     "material": "2MM 3 CR12 PLATE",
+     "formula": "length*2",
+     "quantity": 24.4,
+     "unit_price": 1843.2,
+     "line_cost": 44974.08,
+     "excluded": false
+    },
+    {
+     "category": "TOPHAT SECTON",
+     "bom_id": 847,
+     "material": "RIVETS",
+     "formula": "length*2/0.3",
+     "quantity": 81.3333,
+     "unit_price": 13.4304,
+     "line_cost": 1092.34,
+     "excluded": false
+    },
+    {
+     "category": "ESCAPE HATCH",
+     "bom_id": 848,
+     "material": "INTERIOR LIGHTS",
+     "formula": "140",
+     "quantity": 140.0,
+     "unit_price": 140.0,
+     "line_cost": 19600.0,
+     "excluded": false
+    },
+    {
+     "category": "NOSE CONE",
+     "bom_id": 849,
+     "material": "2MM 3 CR12 PLATE",
+     "formula": "(width+length*2)",
+     "quantity": 27.0,
+     "unit_price": 192.0,
+     "line_cost": 5184.0,
+     "excluded": false
+    },
+    {
+     "category": "NOSE CONE",
+     "bom_id": 850,
+     "material": "RIVETS",
+     "formula": "(width+length*2)/5",
+     "quantity": 5.4,
+     "unit_price": 116.15,
+     "line_cost": 627.21,
+     "excluded": false
+    },
+    {
+     "category": "NOSE CONE",
+     "bom_id": 851,
+     "material": "SILICONE",
+     "formula": "(width+length*2)*16",
+     "quantity": 432.0,
+     "unit_price": 0.2798,
+     "line_cost": 120.87,
+     "excluded": false
+    },
+    {
+     "category": "BODY OPTIONS",
+     "bom_id": 852,
+     "material": "DRD",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.3,
+     "line_cost": 0.3,
+     "excluded": false
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8245,
+     "material": "Stainless steel catwalk",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2570.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8246,
+     "material": "Stainless steel access ladder",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1930.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8247,
+     "material": "Stainless steel evaporator protector",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2570.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8248,
+     "material": "Interior lights - each",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 405.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8249,
+     "material": "Micro switch at door",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 520.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8250,
+     "material": "Marker lights - each",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 502.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8251,
+     "material": "Emergency hatch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 750.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8252,
+     "material": "Two drain holes",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 578.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8253,
+     "material": "Side doors with access step - Single",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 8600.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8254,
+     "material": "Side doors with access step - Double",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 26500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8255,
+     "material": "Side doors with access step - Dry Freight Side Door",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 17200.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8256,
+     "material": "Load lock rails",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 205.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8257,
+     "material": "Shoring bar",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 750.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8258,
+     "material": "Fixed strip curtains - SRD",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2657.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8259,
+     "material": "Fixed strip curtains - DRD",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4043.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8260,
+     "material": "3mm Galvanised mild steel kickplate (300mm high)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 520.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8261,
+     "material": "2mm Galvanised mild steel kick plate",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 420.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8262,
+     "material": "3mm Galvanised kickplates - 600mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 735.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8263,
+     "material": "Shelves (per meter per row)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1470.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8264,
+     "material": "Shelves with expanded metal doors (Cages)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1770.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8265,
+     "material": "Fixed bulkheads - Small",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 11207.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8266,
+     "material": "Fixed bulkheads - Large",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 12680.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8267,
+     "material": "Flexible bulkheads",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8268,
+     "material": "Fuel Saver Faring",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 5850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8269,
+     "material": "Money safe / Drop safe",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 6245.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8270,
+     "material": "Painting per meter",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8271,
+     "material": "3CR12 Overlay on floor",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4440.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8272,
+     "material": "3CR12 OVERLAY WITH RICE GRAIN EMBOSSED PATTERN",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8273,
+     "material": "Bun Bulkhead (excluding load lock rails)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 20925.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8274,
+     "material": "3CR12 internal kick plates - 400mm High",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 900.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8275,
+     "material": "3CR12 internal kick plates - 600mm High",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1475.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8276,
+     "material": "1.5mm thick 3CR12 internal kick plates - 400mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 435.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8277,
+     "material": "Internal Bulkhead Protector - Normal",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 5093.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8278,
+     "material": "Internal Bulkhead Protector - Extra beam",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 6093.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8279,
+     "material": "LED truck lights",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1090.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8280,
+     "material": "Lockable battery cover",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1160.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8281,
+     "material": "Lockable toolbox",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8282,
+     "material": "Ball & pin tow bar",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3700.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8283,
+     "material": "ICB SS top hat sections complete with backing plates",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 555.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8284,
+     "material": "2mm galvanised top hat sections with backing plates (Double top hat)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 405.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8285,
+     "material": "Double top hat section + F-track",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 245.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8286,
+     "material": "Double top hat section + normal LLR",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 275.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8287,
+     "material": "ICB heavy duty shoring bar (For F-track)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8288,
+     "material": "Spare wheel carrier",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8289,
+     "material": "Collapsible ladder at rear",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 8305.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8290,
+     "material": "Rear impact bar with H1 pommier roller",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 10222.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8291,
+     "material": "Rear impact bar only - without the rollers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3280.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8292,
+     "material": "Door stopper plate at bottom of left rear door",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 980.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8293,
+     "material": "2.5kg Fire extinguisher",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1080.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8294,
+     "material": "4.5kg Fire extinguisher",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1680.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8295,
+     "material": "9kg Fire extinguisher",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8296,
+     "material": "Reverse luton",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 8500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8297,
+     "material": "Jost RO400 / Avmark - Complete Hitch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 47405.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8298,
+     "material": "Jost RO400 / Avmark - Cup Section only",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 15760.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8299,
+     "material": "Jost RO400 / Avmark - Ball Section only",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 10990.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8300,
+     "material": "Hazchem - Small",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8301,
+     "material": "Hazchem - Bakkie",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8302,
+     "material": "Hazchem - Large",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 20345.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8303,
+     "material": "Medical Waste - Spill kit",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8304,
+     "material": "Provision for Transfrig kooltube units",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2020.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8305,
+     "material": "Provision for multi temp units - Beams",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8306,
+     "material": "Provision for multi temp units - Condute",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1480.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8307,
+     "material": "Provision for multi temp units - Cover Plate",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8308,
+     "material": "2mm 3CR12 internal kick plates 1500mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1960.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8309,
+     "material": "Trolley & Bracket",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1430.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8310,
+     "material": "1.2m stainless steel plate fitted ext on rear doors",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1710.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8311,
+     "material": "Tapered corners",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8312,
+     "material": "Movable bulkhead on tracks",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 34900.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8313,
+     "material": "Movable bun on tracks",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 32900.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8314,
+     "material": "F-Track load lock rails - only",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 345.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8315,
+     "material": "Square alu shoring bar - buy out",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1400.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8316,
+     "material": "1.2mm galvanized internal kick plates",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1810.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8317,
+     "material": "Meat hook - each - normal",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 158.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8318,
+     "material": "Meat hook - 300mm W-type",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 200.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8319,
+     "material": "Insulated Panelvan - Side door & double rear doors",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 45000.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8320,
+     "material": "Insulated Panelvan - Double side doors & double rear doors",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 65000.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8321,
+     "material": "Chock Block & Holder",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1800.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8322,
+     "material": "Chequer Plate on Under run bumper",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1090.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8323,
+     "material": "4mm ply laminated internal kick plates",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 410.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8324,
+     "material": "Double stacking system",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 215000.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8325,
+     "material": "Provision for double stacking system",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 30195.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8326,
+     "material": "Sliding steps on side door (Bidfood)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8327,
+     "material": "Rear access ladder",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8328,
+     "material": "Underslung door retainers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1055.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8329,
+     "material": "Rear bumper support / reinforcing",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1090.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8330,
+     "material": "2-pole isolator switch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 795.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8331,
+     "material": "4-pole isolator switch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2040.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8332,
+     "material": "Flag Holders",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1820.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8333,
+     "material": "Reveal toe",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8334,
+     "material": "Z-sections (per meter per side)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 750.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8335,
+     "material": "H1 Rollers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3260.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8336,
+     "material": "V2 Rollers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8337,
+     "material": "H2 Rollers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 5746.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8338,
+     "material": "Condute",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1630.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8339,
+     "material": "2x Rear steps",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 680.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8340,
+     "material": "Timer switch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1822.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8341,
+     "material": "D-rubber on under run bumper",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1150.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8342,
+     "material": "Anti-Theft light protection",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1090.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8343,
+     "material": "Speed sticker",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 60.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8344,
+     "material": "Half-moon Cups",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 495.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8345,
+     "material": "Lashing hooks / rings (Tie Downs)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 395.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8346,
+     "material": "Insulated roller doors",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 52900.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8347,
+     "material": "3CR12 Kick plate: 2.5mm, 350mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 695.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8348,
+     "material": "Kick plate - Value",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 636.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8349,
+     "material": "Kick plate - Vital 2mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 620.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8350,
+     "material": "Fit a recessed box at rear for tail lift switch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 980.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8351,
+     "material": "Fit recessed box at front for camera connections",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1080.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8352,
+     "material": "Spray rims - each",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8353,
+     "material": "Paint fuel saver",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1360.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8354,
+     "material": "ICB V3R Black roller",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1030.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8355,
+     "material": "ICB V2R Black roller",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 690.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8356,
+     "material": "ICB S160R Black roller",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8357,
+     "material": "Concertina rear doors fitted on front body",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 16815.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8358,
+     "material": "Concertina front doors fitted on follower",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 18861.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8359,
+     "material": "Laminate on sides: 3xlayers 600mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 650.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8360,
+     "material": "Vital Top hat section",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 6777.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8361,
+     "material": "Galvanised subframe, lightbox & under run bumper",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 15000.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8362,
+     "material": "Rachet type straps",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 205.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8363,
+     "material": "Extended meat rail",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8364,
+     "material": "Rear end reinforcement",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4350.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8365,
+     "material": "Horizontal roller rubbers (Bracket with 2 rollers)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1480.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8366,
+     "material": "Upright capping",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1730.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8367,
+     "material": "Rear chassis extensions 100-300mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1940.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8368,
+     "material": "Rear chassis extensions 400-600mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2840.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8369,
+     "material": "Rear chassis extensions 700-900mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4620.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8370,
+     "material": "Rear chassis extensions 1000-1400mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 6720.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8371,
+     "material": "Rear chassis extensions 1500-2000mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 9200.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8372,
+     "material": "300mm Platform at rear",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8373,
+     "material": "Platform & ladder on side door",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 7100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8374,
+     "material": "Reverse Buzzer",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 565.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8375,
+     "material": "Rotating amber light",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 225.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8376,
+     "material": "Stainless Steel channels in sides",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1050.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8377,
+     "material": "Raive rails",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 610.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8378,
+     "material": "Anti-Syphon Devise",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3490.0,
+     "line_cost": 0.0,
+     "excluded": true
+    }
+   ]
+  },
+  "SRD": {
+   "grand_total": 7150772.55,
+   "excluded_categories": [
+    "DRD",
+    "DRD DOOR FITTINGS"
+   ],
+   "items": [
+    {
+     "category": "FRONT",
+     "bom_id": 733,
+     "material": "WOVEX SKIN",
+     "formula": "(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})",
+     "quantity": 8.0825,
+     "unit_price": 223.0,
+     "line_cost": 1802.4,
+     "excluded": false
+    },
+    {
+     "category": "FRONT",
+     "bom_id": 734,
+     "material": "30MM PU INJECTION",
+     "formula": "width*height*0.032*50",
+     "quantity": 12.48,
+     "unit_price": 60.0,
+     "line_cost": 748.8,
+     "excluded": false
+    },
+    {
+     "category": "FRONT",
+     "bom_id": 735,
+     "material": "100*19mm PICTURE FRAME",
+     "formula": "(height*2+width*2)",
+     "quantity": 11.2,
+     "unit_price": 524.932,
+     "line_cost": 5879.24,
+     "excluded": false
+    },
+    {
+     "category": "FRONT",
+     "bom_id": 736,
+     "material": "WOVEX SKIN",
+     "formula": "(width-{SIDES EPS}-{SIDES PU}-{SIDES EPS}-{SIDES PU}+{Waste})*(height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste})",
+     "quantity": 8.0825,
+     "unit_price": 223.0,
+     "line_cost": 1802.4,
+     "excluded": false
+    },
+    {
+     "category": "SRD",
+     "bom_id": 755,
+     "material": "WOVEX SKIN",
+     "formula": "height*width",
+     "quantity": 7.8,
+     "unit_price": 272.27,
+     "line_cost": 2123.71,
+     "excluded": false
+    },
+    {
+     "category": "SRD",
+     "bom_id": 756,
+     "material": "30MM PU INJECTION",
+     "formula": "width*height*0.03*40",
+     "quantity": 9.36,
+     "unit_price": 60.0,
+     "line_cost": 561.6,
+     "excluded": false
+    },
+    {
+     "category": "SRD",
+     "bom_id": 757,
+     "material": "WOVEX SKIN",
+     "formula": "height*width",
+     "quantity": 7.8,
+     "unit_price": 272.27,
+     "line_cost": 2123.71,
+     "excluded": false
+    },
+    {
+     "category": "SRD",
+     "bom_id": 758,
+     "material": "DOOR BLOCKS",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 78.0,
+     "line_cost": 78.0,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 759,
+     "material": "CSLB HINGES",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 146.73,
+     "line_cost": 293.46,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 760,
+     "material": "SB 51111 DOOR SET",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 506.91,
+     "line_cost": 506.91,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 761,
+     "material": "34MM LOCKING POLE",
+     "formula": "3",
+     "quantity": 3.0,
+     "unit_price": 42.0,
+     "line_cost": 126.0,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 762,
+     "material": "28777 DOOR CAPPING",
+     "formula": "(height*2+0.85)",
+     "quantity": 6.85,
+     "unit_price": 108.3,
+     "line_cost": 741.85,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 763,
+     "material": "30258 NEW DOOR CAPPING",
+     "formula": "(height*2+0.85+0.85)",
+     "quantity": 7.7,
+     "unit_price": 87.0,
+     "line_cost": 669.9,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 764,
+     "material": "2136 INNER DOOR RUBBER",
+     "formula": "(height*2+1.9)",
+     "quantity": 7.9,
+     "unit_price": 180.456,
+     "line_cost": 1425.6,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 765,
+     "material": "2317 OUTER DOOR RUBBER",
+     "formula": "(height*2+1.9)",
+     "quantity": 7.9,
+     "unit_price": 439.314,
+     "line_cost": 3470.58,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 766,
+     "material": "M10*40 GALV. BOLTS",
+     "formula": "26",
+     "quantity": 26.0,
+     "unit_price": 0.5,
+     "line_cost": 13.0,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 767,
+     "material": "M10 SPRING WASHERS",
+     "formula": "25",
+     "quantity": 25.0,
+     "unit_price": 0.1341,
+     "line_cost": 3.35,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 768,
+     "material": "0661-0631 LONG RIVETS",
+     "formula": "110",
+     "quantity": 110.0,
+     "unit_price": 0.515,
+     "line_cost": 56.65,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 769,
+     "material": "SILPLUS X WHITE SILICONE",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 116.15,
+     "line_cost": 232.3,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 770,
+     "material": "SMALL HORIZONTAL",
+     "formula": "width*2",
+     "quantity": 5.2,
+     "unit_price": 197.2,
+     "line_cost": 1025.44,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 771,
+     "material": "28778 BIG VERTICAL",
+     "formula": "height*2",
+     "quantity": 6.0,
+     "unit_price": 149.0,
+     "line_cost": 894.0,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 772,
+     "material": "SMALL ALU CORNERS",
+     "formula": "4",
+     "quantity": 4.0,
+     "unit_price": 45.0,
+     "line_cost": 180.0,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 773,
+     "material": "SILICONE",
+     "formula": "(width*2+height*2)/2",
+     "quantity": 5.6,
+     "unit_price": 615.595,
+     "line_cost": 3447.33,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 774,
+     "material": "0661-0631 LONG RIVETS",
+     "formula": "(height*2*20+width*2*20+16)",
+     "quantity": 240.0,
+     "unit_price": 0.515,
+     "line_cost": 123.6,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 776,
+     "material": "T-BAR CATCH",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 56.0,
+     "line_cost": 56.0,
+     "excluded": false
+    },
+    {
+     "category": "SRD DOOR FITTINGS",
+     "bom_id": 777,
+     "material": "D-RUBBER",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 97.2184,
+     "line_cost": 97.22,
+     "excluded": false
+    },
+    {
+     "category": "SIDES",
+     "bom_id": 778,
+     "material": "WOVEX SKIN",
+     "formula": "height*(length+{Waste})",
+     "quantity": 73.5,
+     "unit_price": 272.27,
+     "line_cost": 20011.84,
+     "excluded": false
+    },
+    {
+     "category": "SIDES",
+     "bom_id": 779,
+     "material": "30MM PU INJECTION",
+     "formula": "(length+{Waste})*height*0.032*50",
+     "quantity": 117.6,
+     "unit_price": 60.0,
+     "line_cost": 7056.0,
+     "excluded": false
+    },
+    {
+     "category": "SIDES",
+     "bom_id": 780,
+     "material": "100*19 PICTURE  FRAME",
+     "formula": "(height*2+(length+{Waste})*4)",
+     "quantity": 110.0,
+     "unit_price": 1703.55,
+     "line_cost": 187390.5,
+     "excluded": false
+    },
+    {
+     "category": "SIDES",
+     "bom_id": 781,
+     "material": "WOVEX SKIN",
+     "formula": "height*(length+{Waste})",
+     "quantity": 73.5,
+     "unit_price": 272.27,
+     "line_cost": 20011.84,
+     "excluded": false
+    },
+    {
+     "category": "ROOF",
+     "bom_id": 782,
+     "material": "WOVEX SKIN",
+     "formula": "(width+{Waste})*(length+{Waste})",
+     "quantity": 32.4625,
+     "unit_price": 272.27,
+     "line_cost": 8838.56,
+     "excluded": false
+    },
+    {
+     "category": "ROOF",
+     "bom_id": 783,
+     "material": "45MM PU INJECTION",
+     "formula": "(length+{Waste})*(width+{Waste})*0.062*50",
+     "quantity": 100.6337,
+     "unit_price": 60.0,
+     "line_cost": 6038.02,
+     "excluded": false
+    },
+    {
+     "category": "ROOF",
+     "bom_id": 784,
+     "material": "WOVEX SKIN",
+     "formula": "(width+{Waste})*(length+{Waste})",
+     "quantity": 32.4625,
+     "unit_price": 272.27,
+     "line_cost": 8838.56,
+     "excluded": false
+    },
+    {
+     "category": "2MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 785,
+     "material": "5MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "2MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 786,
+     "material": "80*50*3 CROSSMEMEBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "2MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 787,
+     "material": "2MM PLATE",
+     "formula": "(length+{Waste})*2/2/1.5",
+     "quantity": 8.1667,
+     "unit_price": 13364.2,
+     "line_cost": 109140.97,
+     "excluded": false
+    },
+    {
+     "category": "2MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 788,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "3MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 789,
+     "material": "4 MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "3MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 790,
+     "material": "80*50*3 CROSSMEMBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "3MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 791,
+     "material": "3MM PLATE",
+     "formula": "(length+{Waste})*2/2/1.5",
+     "quantity": 8.1667,
+     "unit_price": 21000.8,
+     "line_cost": 171506.53,
+     "excluded": false
+    },
+    {
+     "category": "3MM 3CR12 S/STEEL FLOOR",
+     "bom_id": 792,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "3MM MILD STEEL FLOOR",
+     "bom_id": 793,
+     "material": "4 MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "3MM MILD STEEL FLOOR",
+     "bom_id": 794,
+     "material": "80*50*3 CROSSMEMBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "3MM MILD STEEL FLOOR",
+     "bom_id": 795,
+     "material": "3MM PLATE",
+     "formula": "(length+{Waste})*2/2/1.5",
+     "quantity": 8.1667,
+     "unit_price": 6807.63,
+     "line_cost": 55595.64,
+     "excluded": false
+    },
+    {
+     "category": "3MM MILD STEEL FLOOR",
+     "bom_id": 796,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "5MM 300 WA PLATE",
+     "bom_id": 797,
+     "material": "4 MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "5MM 300 WA PLATE",
+     "bom_id": 798,
+     "material": "80*50*3 CROSSMEMBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "5MM 300 WA PLATE",
+     "bom_id": 799,
+     "material": "5MM PLATE",
+     "formula": "(length+{Waste})*2/2/1.5",
+     "quantity": 8.1667,
+     "unit_price": 14726.5,
+     "line_cost": 120266.42,
+     "excluded": false
+    },
+    {
+     "category": "5MM 300 WA PLATE",
+     "bom_id": 800,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 801,
+     "material": "4 MM BEND UP SUB FRAME",
+     "formula": "(length+{Waste})*2",
+     "quantity": 24.5,
+     "unit_price": 3523.5,
+     "line_cost": 86325.75,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 802,
+     "material": "80*50*3 CROSSMEMBERS",
+     "formula": "3*(length+{Waste})*2/2/0.305",
+     "quantity": 120.4918,
+     "unit_price": 8891.12,
+     "line_cost": 1071307.08,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 803,
+     "material": "24 MM WISA TRANS PLYWOOD",
+     "formula": "length/1.22",
+     "quantity": 10.0,
+     "unit_price": 4195.0,
+     "line_cost": 41950.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 804,
+     "material": "3MM GUSSETS",
+     "formula": "0.11*0.25*12",
+     "quantity": 0.33,
+     "unit_price": 126.857,
+     "line_cost": 41.86,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 805,
+     "material": "GRP SKIN",
+     "formula": "(width+{Waste})*(length+{Waste})*0",
+     "quantity": 0.0,
+     "unit_price": 142.0,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 806,
+     "material": "GLUE",
+     "formula": "(width+{Waste})*(length+{Waste})*2*0",
+     "quantity": 0.0,
+     "unit_price": 28.5833,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 807,
+     "material": "RICE GRAIN ALU FLOOR",
+     "formula": "1/7.3*length*0",
+     "quantity": 0.0,
+     "unit_price": 45.0,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 808,
+     "material": "1ST ROW ALU KICK PLATE",
+     "formula": "(length*2+2.6)*0",
+     "quantity": 0.0,
+     "unit_price": 76.5,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "24MM WISA TRANS FLOOR",
+     "bom_id": 809,
+     "material": "2ND ROW ALU KICK PLATE",
+     "formula": "(length*2+2.6)*0",
+     "quantity": 0.0,
+     "unit_price": 76.5,
+     "line_cost": 0.0,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 810,
+     "material": "SMALL HORIZONTALE",
+     "formula": "(length*4+width*2)",
+     "quantity": 54.0,
+     "unit_price": 166.6,
+     "line_cost": 8996.4,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 811,
+     "material": "28778 BIG VERTICAL",
+     "formula": "(0+height*2)",
+     "quantity": 6.0,
+     "unit_price": 181.78,
+     "line_cost": 1090.68,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 812,
+     "material": "0661-0631 RIVETS",
+     "formula": "(0+length*4*20+height*2*20+16)",
+     "quantity": 1112.0,
+     "unit_price": 360.5,
+     "line_cost": 400876.0,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 813,
+     "material": "SILPLUS X-WHITE",
+     "formula": "length*2",
+     "quantity": 24.4,
+     "unit_price": 1672.56,
+     "line_cost": 40810.46,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 814,
+     "material": "SMALL ALU CORNERS",
+     "formula": "4",
+     "quantity": 4.0,
+     "unit_price": 45.0,
+     "line_cost": 180.0,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 815,
+     "material": "M10*40 CUP SQ BOLTS",
+     "formula": "(width/0.55+length/0.6*2)",
+     "quantity": 45.3939,
+     "unit_price": 43.0909,
+     "line_cost": 1956.07,
+     "excluded": false
+    },
+    {
+     "category": "ALUMINIUM",
+     "bom_id": 816,
+     "material": "M10 NYLOCK NUT",
+     "formula": "(width/0.55+length/0.6*2)",
+     "quantity": 45.3939,
+     "unit_price": 21.1835,
+     "line_cost": 961.6,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 817,
+     "material": "MOUNTING CLEATS TOP",
+     "formula": "4",
+     "quantity": 4.0,
+     "unit_price": 33.4999,
+     "line_cost": 134.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 818,
+     "material": "MOUNTING CLEAT BOTTOM",
+     "formula": "4",
+     "quantity": 4.0,
+     "unit_price": 68.795,
+     "line_cost": 275.18,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 819,
+     "material": "SPRING MOUNTING CLEATS",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 380.638,
+     "line_cost": 761.28,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 820,
+     "material": "8 MM SMALL FISH PLATE",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 109.714,
+     "line_cost": 219.43,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 821,
+     "material": "3MM LIGHT BOX",
+     "formula": "0.33*2.44",
+     "quantity": 0.8052,
+     "unit_price": 384.4161073825503,
+     "line_cost": 309.53,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 822,
+     "material": "100*50 TAPER CHANNEL",
+     "formula": "4.4",
+     "quantity": 4.4,
+     "unit_price": 124.68,
+     "line_cost": 548.59,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 823,
+     "material": "100*100*3 SQ TUBE",
+     "formula": "3",
+     "quantity": 3.0,
+     "unit_price": 167.92,
+     "line_cost": 503.76,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 824,
+     "material": "2MM CHEVRON PLATE",
+     "formula": "0.22*2.44",
+     "quantity": 0.5368,
+     "unit_price": 260.6812080536913,
+     "line_cost": 139.93,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 825,
+     "material": "1.7 MTR CHEVRON BOARD",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 165.0,
+     "line_cost": 165.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 826,
+     "material": "115MM RED TRUCK LIGHTS",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 115.0,
+     "line_cost": 230.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 827,
+     "material": "115MM AMBER TRUCK LIGHTS",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 115.0,
+     "line_cost": 230.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 828,
+     "material": "CROME NO.PLATE LIGHTS",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 50.0,
+     "line_cost": 50.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 829,
+     "material": "3MM MUD FLAP PLATES",
+     "formula": "0.61*0.61",
+     "quantity": 0.3721,
+     "unit_price": 384.4161073825503,
+     "line_cost": 143.04,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 830,
+     "material": "40*5MM FAT BAR",
+     "formula": "0.61*2",
+     "quantity": 1.22,
+     "unit_price": 37.21,
+     "line_cost": 45.4,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 831,
+     "material": "M10*30 GALV BOLTS",
+     "formula": "6",
+     "quantity": 6.0,
+     "unit_price": 0.5,
+     "line_cost": 3.0,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 832,
+     "material": "M10 NYLOCK NUT",
+     "formula": "6",
+     "quantity": 6.0,
+     "unit_price": 0.7374,
+     "line_cost": 4.42,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 833,
+     "material": "ICB MUDFLAP",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 267.08,
+     "line_cost": 267.08,
+     "excluded": false
+    },
+    {
+     "category": "SUB FRAME + LIGHT BOX ASSY",
+     "bom_id": 834,
+     "material": "0661-0631 RIVETS",
+     "formula": "32",
+     "quantity": 32.0,
+     "unit_price": 0.515,
+     "line_cost": 16.48,
+     "excluded": false
+    },
+    {
+     "category": "REFLEXITE TAPE",
+     "bom_id": 835,
+     "material": "TAPE",
+     "formula": "(width+length*2)",
+     "quantity": 27.0,
+     "unit_price": 306.0,
+     "line_cost": 8262.0,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 836,
+     "material": "3MM 3CR12 REAR FRAME",
+     "formula": "0.209*width",
+     "quantity": 0.5434,
+     "unit_price": 965.76,
+     "line_cost": 524.79,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 837,
+     "material": "TOP FRAME RAIN GUTTER",
+     "formula": "0.305*width",
+     "quantity": 0.793,
+     "unit_price": 965.76,
+     "line_cost": 765.85,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 838,
+     "material": "3MM 3CR12 FLOOR PLATE",
+     "formula": "0.13*width",
+     "quantity": 0.338,
+     "unit_price": 965.76,
+     "line_cost": 326.43,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 839,
+     "material": "SILPLUS X-WHITE",
+     "formula": "3",
+     "quantity": 3.0,
+     "unit_price": 116.15,
+     "line_cost": 348.45,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 840,
+     "material": "5MM CORNER GUSSET",
+     "formula": "2",
+     "quantity": 2.0,
+     "unit_price": 89.2008,
+     "line_cost": 178.4,
+     "excluded": false
+    },
+    {
+     "category": "REAR FRAME & FLOOR PLATE",
+     "bom_id": 841,
+     "material": "2771-0824 MONOBOLTS",
+     "formula": "22",
+     "quantity": 22.0,
+     "unit_price": 3.649,
+     "line_cost": 80.28,
+     "excluded": false
+    },
+    {
+     "category": "SPRAY PAINTING",
+     "bom_id": 842,
+     "material": "PAINTING OF SUB FRAME + REAR FRAME",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 750.0,
+     "line_cost": 750.0,
+     "excluded": false
+    },
+    {
+     "category": "LOAD LOCK RAILS",
+     "bom_id": 843,
+     "material": "LOAD LOCK RAIL",
+     "formula": "length*2",
+     "quantity": 24.4,
+     "unit_price": 1008.0,
+     "line_cost": 24595.2,
+     "excluded": false
+    },
+    {
+     "category": "LOAD LOCK RAILS",
+     "bom_id": 844,
+     "material": "RIVETS BACKING PLATE",
+     "formula": "length*2/0.1",
+     "quantity": 244.0,
+     "unit_price": 40.2912,
+     "line_cost": 9831.05,
+     "excluded": false
+    },
+    {
+     "category": "LOAD LOCK RAILS",
+     "bom_id": 845,
+     "material": "RIVETS LOAD LOCK RAIL",
+     "formula": "length*2/0.3",
+     "quantity": 81.3333,
+     "unit_price": 13.4304,
+     "line_cost": 1092.34,
+     "excluded": false
+    },
+    {
+     "category": "TOPHAT SECTON",
+     "bom_id": 846,
+     "material": "2MM 3 CR12 PLATE",
+     "formula": "length*2",
+     "quantity": 24.4,
+     "unit_price": 1843.2,
+     "line_cost": 44974.08,
+     "excluded": false
+    },
+    {
+     "category": "TOPHAT SECTON",
+     "bom_id": 847,
+     "material": "RIVETS",
+     "formula": "length*2/0.3",
+     "quantity": 81.3333,
+     "unit_price": 13.4304,
+     "line_cost": 1092.34,
+     "excluded": false
+    },
+    {
+     "category": "ESCAPE HATCH",
+     "bom_id": 848,
+     "material": "INTERIOR LIGHTS",
+     "formula": "140",
+     "quantity": 140.0,
+     "unit_price": 140.0,
+     "line_cost": 19600.0,
+     "excluded": false
+    },
+    {
+     "category": "NOSE CONE",
+     "bom_id": 849,
+     "material": "2MM 3 CR12 PLATE",
+     "formula": "(width+length*2)",
+     "quantity": 27.0,
+     "unit_price": 192.0,
+     "line_cost": 5184.0,
+     "excluded": false
+    },
+    {
+     "category": "NOSE CONE",
+     "bom_id": 850,
+     "material": "RIVETS",
+     "formula": "(width+length*2)/5",
+     "quantity": 5.4,
+     "unit_price": 116.15,
+     "line_cost": 627.21,
+     "excluded": false
+    },
+    {
+     "category": "NOSE CONE",
+     "bom_id": 851,
+     "material": "SILICONE",
+     "formula": "(width+length*2)*16",
+     "quantity": 432.0,
+     "unit_price": 0.2798,
+     "line_cost": 120.87,
+     "excluded": false
+    },
+    {
+     "category": "BODY OPTIONS",
+     "bom_id": 853,
+     "material": "SRD",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.5,
+     "line_cost": 0.5,
+     "excluded": false
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8245,
+     "material": "Stainless steel catwalk",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2570.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8246,
+     "material": "Stainless steel access ladder",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1930.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8247,
+     "material": "Stainless steel evaporator protector",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2570.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8248,
+     "material": "Interior lights - each",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 405.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8249,
+     "material": "Micro switch at door",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 520.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8250,
+     "material": "Marker lights - each",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 502.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8251,
+     "material": "Emergency hatch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 750.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8252,
+     "material": "Two drain holes",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 578.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8253,
+     "material": "Side doors with access step - Single",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 8600.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8254,
+     "material": "Side doors with access step - Double",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 26500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8255,
+     "material": "Side doors with access step - Dry Freight Side Door",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 17200.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8256,
+     "material": "Load lock rails",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 205.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8257,
+     "material": "Shoring bar",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 750.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8258,
+     "material": "Fixed strip curtains - SRD",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2657.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8259,
+     "material": "Fixed strip curtains - DRD",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4043.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8260,
+     "material": "3mm Galvanised mild steel kickplate (300mm high)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 520.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8261,
+     "material": "2mm Galvanised mild steel kick plate",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 420.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8262,
+     "material": "3mm Galvanised kickplates - 600mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 735.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8263,
+     "material": "Shelves (per meter per row)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1470.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8264,
+     "material": "Shelves with expanded metal doors (Cages)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1770.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8265,
+     "material": "Fixed bulkheads - Small",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 11207.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8266,
+     "material": "Fixed bulkheads - Large",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 12680.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8267,
+     "material": "Flexible bulkheads",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8268,
+     "material": "Fuel Saver Faring",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 5850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8269,
+     "material": "Money safe / Drop safe",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 6245.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8270,
+     "material": "Painting per meter",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8271,
+     "material": "3CR12 Overlay on floor",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4440.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8272,
+     "material": "3CR12 OVERLAY WITH RICE GRAIN EMBOSSED PATTERN",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8273,
+     "material": "Bun Bulkhead (excluding load lock rails)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 20925.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8274,
+     "material": "3CR12 internal kick plates - 400mm High",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 900.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8275,
+     "material": "3CR12 internal kick plates - 600mm High",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1475.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8276,
+     "material": "1.5mm thick 3CR12 internal kick plates - 400mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 435.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8277,
+     "material": "Internal Bulkhead Protector - Normal",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 5093.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8278,
+     "material": "Internal Bulkhead Protector - Extra beam",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 6093.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8279,
+     "material": "LED truck lights",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1090.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8280,
+     "material": "Lockable battery cover",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1160.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8281,
+     "material": "Lockable toolbox",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8282,
+     "material": "Ball & pin tow bar",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3700.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8283,
+     "material": "ICB SS top hat sections complete with backing plates",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 555.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8284,
+     "material": "2mm galvanised top hat sections with backing plates (Double top hat)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 405.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8285,
+     "material": "Double top hat section + F-track",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 245.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8286,
+     "material": "Double top hat section + normal LLR",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 275.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8287,
+     "material": "ICB heavy duty shoring bar (For F-track)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8288,
+     "material": "Spare wheel carrier",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8289,
+     "material": "Collapsible ladder at rear",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 8305.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8290,
+     "material": "Rear impact bar with H1 pommier roller",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 10222.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8291,
+     "material": "Rear impact bar only - without the rollers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3280.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8292,
+     "material": "Door stopper plate at bottom of left rear door",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 980.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8293,
+     "material": "2.5kg Fire extinguisher",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1080.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8294,
+     "material": "4.5kg Fire extinguisher",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1680.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8295,
+     "material": "9kg Fire extinguisher",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8296,
+     "material": "Reverse luton",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 8500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8297,
+     "material": "Jost RO400 / Avmark - Complete Hitch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 47405.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8298,
+     "material": "Jost RO400 / Avmark - Cup Section only",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 15760.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8299,
+     "material": "Jost RO400 / Avmark - Ball Section only",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 10990.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8300,
+     "material": "Hazchem - Small",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8301,
+     "material": "Hazchem - Bakkie",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 0.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8302,
+     "material": "Hazchem - Large",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 20345.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8303,
+     "material": "Medical Waste - Spill kit",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8304,
+     "material": "Provision for Transfrig kooltube units",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2020.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8305,
+     "material": "Provision for multi temp units - Beams",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8306,
+     "material": "Provision for multi temp units - Condute",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1480.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8307,
+     "material": "Provision for multi temp units - Cover Plate",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8308,
+     "material": "2mm 3CR12 internal kick plates 1500mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1960.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8309,
+     "material": "Trolley & Bracket",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1430.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8310,
+     "material": "1.2m stainless steel plate fitted ext on rear doors",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1710.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8311,
+     "material": "Tapered corners",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8312,
+     "material": "Movable bulkhead on tracks",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 34900.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8313,
+     "material": "Movable bun on tracks",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 32900.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8314,
+     "material": "F-Track load lock rails - only",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 345.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8315,
+     "material": "Square alu shoring bar - buy out",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1400.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8316,
+     "material": "1.2mm galvanized internal kick plates",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1810.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8317,
+     "material": "Meat hook - each - normal",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 158.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8318,
+     "material": "Meat hook - 300mm W-type",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 200.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8319,
+     "material": "Insulated Panelvan - Side door & double rear doors",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 45000.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8320,
+     "material": "Insulated Panelvan - Double side doors & double rear doors",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 65000.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8321,
+     "material": "Chock Block & Holder",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1800.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8322,
+     "material": "Chequer Plate on Under run bumper",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1090.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8323,
+     "material": "4mm ply laminated internal kick plates",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 410.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8324,
+     "material": "Double stacking system",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 215000.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8325,
+     "material": "Provision for double stacking system",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 30195.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8326,
+     "material": "Sliding steps on side door (Bidfood)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8327,
+     "material": "Rear access ladder",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8328,
+     "material": "Underslung door retainers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1055.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8329,
+     "material": "Rear bumper support / reinforcing",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1090.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8330,
+     "material": "2-pole isolator switch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 795.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8331,
+     "material": "4-pole isolator switch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2040.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8332,
+     "material": "Flag Holders",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1820.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8333,
+     "material": "Reveal toe",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8334,
+     "material": "Z-sections (per meter per side)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 750.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8335,
+     "material": "H1 Rollers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3260.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8336,
+     "material": "V2 Rollers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8337,
+     "material": "H2 Rollers",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 5746.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8338,
+     "material": "Condute",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1630.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8339,
+     "material": "2x Rear steps",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 680.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8340,
+     "material": "Timer switch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1822.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8341,
+     "material": "D-rubber on under run bumper",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1150.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8342,
+     "material": "Anti-Theft light protection",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1090.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8343,
+     "material": "Speed sticker",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 60.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8344,
+     "material": "Half-moon Cups",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 495.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8345,
+     "material": "Lashing hooks / rings (Tie Downs)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 395.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8346,
+     "material": "Insulated roller doors",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 52900.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8347,
+     "material": "3CR12 Kick plate: 2.5mm, 350mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 695.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8348,
+     "material": "Kick plate - Value",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 636.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8349,
+     "material": "Kick plate - Vital 2mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 620.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8350,
+     "material": "Fit a recessed box at rear for tail lift switch",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 980.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8351,
+     "material": "Fit recessed box at front for camera connections",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1080.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8352,
+     "material": "Spray rims - each",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8353,
+     "material": "Paint fuel saver",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1360.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8354,
+     "material": "ICB V3R Black roller",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1030.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8355,
+     "material": "ICB V2R Black roller",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 690.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8356,
+     "material": "ICB S160R Black roller",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 500.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8357,
+     "material": "Concertina rear doors fitted on front body",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 16815.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8358,
+     "material": "Concertina front doors fitted on follower",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 18861.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8359,
+     "material": "Laminate on sides: 3xlayers 600mm high",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 650.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8360,
+     "material": "Vital Top hat section",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 6777.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8361,
+     "material": "Galvanised subframe, lightbox & under run bumper",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 15000.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8362,
+     "material": "Rachet type straps",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 205.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8363,
+     "material": "Extended meat rail",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8364,
+     "material": "Rear end reinforcement",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4350.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8365,
+     "material": "Horizontal roller rubbers (Bracket with 2 rollers)",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1480.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8366,
+     "material": "Upright capping",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1730.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8367,
+     "material": "Rear chassis extensions 100-300mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1940.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8368,
+     "material": "Rear chassis extensions 400-600mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2840.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8369,
+     "material": "Rear chassis extensions 700-900mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 4620.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8370,
+     "material": "Rear chassis extensions 1000-1400mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 6720.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8371,
+     "material": "Rear chassis extensions 1500-2000mm",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 9200.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8372,
+     "material": "300mm Platform at rear",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 2850.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8373,
+     "material": "Platform & ladder on side door",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 7100.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8374,
+     "material": "Reverse Buzzer",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 565.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8375,
+     "material": "Rotating amber light",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 225.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8376,
+     "material": "Stainless Steel channels in sides",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 1050.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8377,
+     "material": "Raive rails",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 610.0,
+     "line_cost": 0.0,
+     "excluded": true
+    },
+    {
+     "category": "OPTIONAL EXTRAS",
+     "bom_id": 8378,
+     "material": "Anti-Syphon Devise",
+     "formula": "1",
+     "quantity": 1.0,
+     "unit_price": 3490.0,
+     "line_cost": 0.0,
+     "excluded": true
+    }
+   ]
+  }
+ }
+}

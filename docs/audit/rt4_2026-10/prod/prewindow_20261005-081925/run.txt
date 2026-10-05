@@ -1,0 +1,206 @@
+== prod: db=icb_platform alembic=0051 code=682a6cc staged=5b17bb3 baseline run #33  2026-10-05T08:19:26+02:00
+
+== (a)+(b) what changed, and Manifest A's rules (read-only session; the audit tool's own exporter)
+   gate ok: test_the_gates_catch_a_known_hit
+   gate ok: test_snapshot_tables_are_pricing_definitions_only
+   gate ok: test_snapshot_has_no_personal_columns
+   gate ok: test_snapshot_has_no_email_addresses
+   gate ok: no email-shaped value in the facts
+== scope: every chiller and freezer body (by name or family), and the 15 snapshot bodies
+== (a1) pricing rows of the 15 snapshot bodies: NOW against all.json (prod, 2 Oct 17:33)
+   -- bill_of_materials: removed 6 · added 7 · changed 13
+   -- materials: removed 7 · added 7 · changed 10
+== (a2) per chiller / freezer body: its drafts and its insulation masters
+   #19 FREEZER 2.3 METER (FREEZER) · draft: unchanged since 3 Oct (saved 2026-09-29 12:37) · 30 nodes · backups 1
+      Burt's ruling, read from the draft: EPS offered on FLOOR, ROOF only (as ruled)
+   #20 FREEZER MEDIUM (FREEZER) · draft: unchanged since 3 Oct (saved 2026-09-29 12:39) · 31 nodes · backups 1
+      Burt's ruling, read from the draft: EPS offered on FLOOR, ROOF only (as ruled)
+   #21 FREEZER LARGE (FREEZER) · draft: unchanged since 3 Oct (saved 2026-10-02 17:42) · 31 nodes · backups 1
+      Burt's ruling, read from the draft: EPS offered on FLOOR, ROOF only (as ruled)
+   #25 CHILLER 2.3 METER (CHILLER) · draft: unchanged since 3 Oct (saved 2026-10-01 13:06) · 21 nodes · backups 1
+      Burt's ruling, read from the draft: no PU offered (as ruled)
+   #26 CHILLER MEDIUM (CHILLER) · draft: unchanged since 3 Oct (saved 2026-10-01 10:12) · 28 nodes · backups 1
+      Burt's ruling, read from the draft: no PU offered (as ruled)
+   #27 CHILLER LARGE (CHILLER) · draft: unchanged since 3 Oct (saved 2026-10-01 10:07) · 27 nodes · backups 1
+      Burt's ruling, read from the draft: no PU offered (as ruled)
+== (a3) every per-line rule on these bodies that names a master which is not on the body now
+== (b) Manifest A's REAR FRAME & FLOOR PLATE rules (the 3 chillers and 3 freezers first, then the other 8)
+      engine: DRD EPS REAR FRAME    2210.64  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    2210.64  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #25: OK — the rule holds
+      engine: DRD EPS REAR FRAME    3129.76  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    3129.76  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #26: OK — the rule holds
+      engine: DRD EPS REAR FRAME    5518.57  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    5518.57  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD = N  OK
+      VERDICT #27: OK — the rule holds
+      engine: DRD EPS REAR FRAME    2390.25  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    2390.25  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #19: OK — the rule holds
+      engine: DRD EPS REAR FRAME    4633.78  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    4633.78  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #20: OK — the rule holds
+      engine: DRD EPS REAR FRAME    5452.98  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    5452.98  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #21: OK — the rule holds
+      engine: DRD EPS REAR FRAME    5792.63  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    5792.63  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #12: OK — the rule holds
+      engine: DRD EPS REAR FRAME    2834.12  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    2834.12  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #16: OK — the rule holds
+      engine: DRD EPS REAR FRAME    3535.80  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    3535.80  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #17: OK — the rule holds
+      engine: DRD EPS REAR FRAME    5799.95  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    5799.95  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #18: OK — the rule holds
+      engine: DRD EPS REAR FRAME   10501.60  excluded 0/6  -  OK
+      engine: DRD PU  REAR FRAME   10501.60  excluded 0/6  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 6/6  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 6/6  SRD PU = N  OK
+      VERDICT #24: OK — the rule holds
+      engine: DRD EPS REAR FRAME    2454.15  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    2454.15  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #34: OK — the rule holds
+      engine: DRD EPS REAR FRAME    4038.80  excluded 0/9  -  OK
+      engine: DRD PU  REAR FRAME    4038.80  excluded 0/9  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 9/9  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 9/9  SRD PU = N  OK
+      VERDICT #36: OK — the rule holds
+      engine: DRD EPS REAR FRAME    3664.05  excluded 0/6  -  OK
+      engine: DRD PU  REAR FRAME    3664.05  excluded 0/6  -  OK
+      engine: SRD EPS REAR FRAME       0.00  excluded 6/6  SRD EPS = N  OK
+      engine: SRD PU  REAR FRAME       0.00  excluded 6/6  SRD PU = N  OK
+      VERDICT #37: OK — the rule holds
+
+== (c) the door report (RT1's rt1_door_report.py, unchanged; read-only session)
+then = committed snapshot all.json generated 2026-10-02T15:33:46+00:00
+read_only session: on
+
+body | draft saved | opens with | template door | DRD EPS / DRD PU / SRD EPS / SRD PU (then -> now) | verdict
+ 25 CHILLER 2.3 METER          | 2026-10-01 13:06 | DRD [door folder (folderValue 1)] | DRD | 3795:0.06 / 3796:0.0 / 3797:0.0 / 3798:0.0 | OK
+ 27 CHILLER LARGE              | 2026-10-01 10:07 | DRD [door folder (folderValue 1)] | DRD | 3433:0.06 / 3434:0.0 / 3435:0.0 / 3436:0.0 | OK  (DOOR TYPE masters ['7232:DRD*', '7233:SRD'])
+ 26 CHILLER MEDIUM             | 2026-10-01 10:12 | DRD [door folder (folderValue 1)] | DRD | 3294:0.06 / 3295:0.0 / 3296:0.0 / 3297:0.0 | OK
+ 37 EXPLOSIVE 2.7 TO 4.8       | 2026-08-05 08:22 | DRD [door folder (folderValue 1)] | DRD | 6452:0.0 / 6453:0.041 / 6454:0.0 / 6455:0.0 | OK
+ 24 EXPLOSIVE 4.9 AND UP       | 2026-07-20 13:26 | DRD [door folder (no folder marked: the first in draft order)] | DRD | 4055:0.0 / 4056:0.042 / 4057:0.0 / 4058:0.0 | OK
+ 34 EXPLOSIVE UP TO 2.7        | 2026-08-05 08:21 | DRD [door folder (folderValue 1)] | DRD | 5283:0.0 / 5284:0.041 / 5285:0.0 / 5286:0.0 | OK
+ 19 FREEZER 2.3 METER          | 2026-09-29 12:37 | DRD [door folder (folderValue 1)] | DRD | 3675:0.0 / 3676:0.06 / 3677:0.0 / 3678:0.0 | OK
+ 21 FREEZER LARGE              | 2026-10-02 17:42 | DRD [door folder (folderValue 1)] | DRD | 2682:0.0 / 2683:0.06 / 2684:0.0 / 2685:0.0 | OK
+ 20 FREEZER MEDIUM             | 2026-09-29 12:39 | DRD [door folder (no folder marked: the first in draft order)] | DRD | 2534:0.0 / 2535:0.06 / 2536:0.0 / 2537:0.0 | OK
+ 18 ICECREAM BODY LARGE        | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5425:0.0 / 5426:0.12 / 5427:0.0 / 5428:0.0 | OK
+ 17 ICECREAM BODY MEDIUM       | 2026-09-29 12:33 | DRD [door folder (folderValue 1)] | DRD | 5703:0.0 / 5704:0.12 / 5705:0.0 / 5706:0.0 | OK
+ 16 ICECREAM BODY SMALL        | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5825:0.0 / 5826:0.1 / 5827:0.0 / 5828:0.0 | OK
+ 12 MEAT HANGER LARGE          | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 5978:0.0 / 5979:0.062 / 5980:0.0 / 5981:0.0 | OK
+ 36 MEAT HANGER SMALL-MEDIUM   | 2026-07-20 13:27 | DRD [door folder (folderValue 1)] | DRD | 6286:0.06 / 6287:0.0 / 6288:0.0 / 6289:0.0 | OK
+
+SUMMARY: 14 OK; no exceptions
+
+== (d) the five packs (the deployed code, --env prod, read-only sessions) against page run #33
+   smoke exit=0  - Cells: UNVERIFIABLE 9, ACCEPTED 21, PASS 159, SKIP 45
+   chillers exit=0  - Cells: ACCEPTED 9, PASS 581, SKIP 126
+   freezers exit=0  - Cells: UNVERIFIABLE 27, ACCEPTED 24, PASS 522, SKIP 117
+   icecream exit=0  - Cells: UNVERIFIABLE 40, ACCEPTED 43, PASS 413, SKIP 116
+   explosive exit=0  - Cells: UNVERIFIABLE 36, ACCEPTED 60, PASS 471, SKIP 117
+baseline: page run #33 pack=all passed started 2026-10-03 06:03:42.377541+02 finished 2026-10-03 06:03:47.657136+02
+   stored counts PASS 1948 FLAG 0 ACCEPTED 175 EXPIRED 0 UNVERIFIABLE 103 · golden 04c774e2a7de6314
+page runs after #33: 3
+   #34 explosive passed   started 2026-10-03 06:19:09.150274+02  PASS 432 FLAG 0 ACCEPTED 99 UNVERIFIABLE 36
+   #35 all       flagged  started 2026-10-04 11:37:48.405095+02  PASS 1963 FLAG 24 ACCEPTED 136 UNVERIFIABLE 103
+   #36 all       passed   started 2026-10-04 11:48:17.852116+02  PASS 1987 FLAG 0 ACCEPTED 136 UNVERIFIABLE 103
+CLI now (the deployed code, --env prod), per pack:
+   chillers   PASS 581  ACCEPTED 9  SKIP 126  (cells 716)
+   freezers   PASS 522  ACCEPTED 24  SKIP 117  UNVERIFIABLE 27  (cells 690)
+   icecream   PASS 413  ACCEPTED 43  SKIP 116  UNVERIFIABLE 40  (cells 612)
+   explosive  PASS 471  ACCEPTED 60  SKIP 117  UNVERIFIABLE 36  (cells 684)
+   page #33  PASS 1948  ACCEPTED 175  SKIP 476  UNVERIFIABLE 103  (cells 2702)
+cells: baseline 2702, now 2702, identical 2546, MOVED 156, only in the baseline 0, only now 0
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~all_eps | DRD: ('UNVERIFIABLE', None, 5275.18, 5320.25) -> ('UNVERIFIABLE', None, 5275.18, 5275.15)  (MES -45.10)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~all_eps | ROOF: ('UNVERIFIABLE', None, 4376.14, 5446.42) -> ('UNVERIFIABLE', None, 4376.14, 5387.87)  (MES -58.55)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~all_eps | SIDES: ('UNVERIFIABLE', None, 8314.1, 10049.99) -> ('UNVERIFIABLE', None, 8314.1, 9939.94)  (MES -110.05)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~all_pu | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~all_pu | ROOF: ('ACCEPTED', 'FLAG', 5502.88, 5561.39) -> ('PASS', None, 5502.88, 5502.84)  (MES -58.55)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~all_pu | SIDES: ('ACCEPTED', 'FLAG', 10641.78, 10751.73) -> ('PASS', None, 10641.78, 10641.69)  (MES -110.04)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~as_sheet | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~as_sheet | ROOF: ('ACCEPTED', 'FLAG', 5502.88, 5561.39) -> ('PASS', None, 5502.88, 5502.84)  (MES -58.55)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~as_sheet | SIDES: ('ACCEPTED', 'FLAG', 10641.78, 10751.73) -> ('PASS', None, 10641.78, 10641.69)  (MES -110.04)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~drd | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~drd | ROOF: ('ACCEPTED', 'FLAG', 5502.88, 5561.39) -> ('PASS', None, 5502.88, 5502.84)  (MES -58.55)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~drd | SIDES: ('ACCEPTED', 'FLAG', 10641.78, 10751.73) -> ('PASS', None, 10641.78, 10641.69)  (MES -110.04)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~foam_4g | DRD: ('PASS', None, 6683.1, 6729.27) -> ('PASS', None, 6683.1, 6683.06)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~foam_4g | ROOF: ('PASS', None, 5909.88, 5968.39) -> ('PASS', None, 5909.88, 5909.84)  (MES -58.55)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~foam_4g | SIDES: ('PASS', None, 11455.78, 11565.73) -> ('PASS', None, 11455.78, 11455.69)  (MES -110.04)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~srd | ROOF: ('ACCEPTED', 'FLAG', 5502.88, 5561.39) -> ('PASS', None, 5502.88, 5502.84)  (MES -58.55)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L2.7~W2.3~H2.2~srd | SIDES: ('ACCEPTED', 'FLAG', 10641.78, 10751.73) -> ('PASS', None, 10641.78, 10641.69)  (MES -110.04)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~all_eps | DRD: ('UNVERIFIABLE', None, 5275.18, 5320.25) -> ('UNVERIFIABLE', None, 5275.18, 5275.15)  (MES -45.10)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~all_eps | ROOF: ('UNVERIFIABLE', None, 6711.06, 8365.12) -> ('UNVERIFIABLE', None, 6711.06, 8274.63)  (MES -90.49)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~all_eps | SIDES: ('UNVERIFIABLE', None, 12780.42, 15463.16) -> ('UNVERIFIABLE', None, 12780.42, 15293.09)  (MES -170.07)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~all_pu | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~all_pu | ROOF: ('ACCEPTED', 'FLAG', 8452.38, 8542.8) -> ('PASS', None, 8452.38, 8452.31)  (MES -90.49)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~all_pu | SIDES: ('ACCEPTED', 'FLAG', 16377.74, 16547.67) -> ('PASS', None, 16377.74, 16377.6)  (MES -170.07)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~as_sheet | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~as_sheet | ROOF: ('ACCEPTED', 'FLAG', 8452.38, 8542.8) -> ('PASS', None, 8452.38, 8452.31)  (MES -90.49)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~as_sheet | SIDES: ('ACCEPTED', 'FLAG', 16377.74, 16547.67) -> ('PASS', None, 16377.74, 16377.6)  (MES -170.07)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~drd | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~drd | ROOF: ('ACCEPTED', 'FLAG', 8452.38, 8542.8) -> ('PASS', None, 8452.38, 8452.31)  (MES -90.49)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~drd | SIDES: ('ACCEPTED', 'FLAG', 16377.74, 16547.67) -> ('PASS', None, 16377.74, 16377.6)  (MES -170.07)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~foam_4g | DRD: ('PASS', None, 6683.1, 6729.27) -> ('PASS', None, 6683.1, 6683.06)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~foam_4g | ROOF: ('PASS', None, 9081.38, 9171.8) -> ('PASS', None, 9081.38, 9081.31)  (MES -90.49)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~foam_4g | SIDES: ('PASS', None, 17635.74, 17805.67) -> ('PASS', None, 17635.74, 17635.6)  (MES -170.07)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~srd | ROOF: ('ACCEPTED', 'FLAG', 8452.38, 8542.8) -> ('PASS', None, 8452.38, 8452.31)  (MES -90.49)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.2~W2.3~H2.2~srd | SIDES: ('ACCEPTED', 'FLAG', 16377.74, 16547.67) -> ('PASS', None, 16377.74, 16377.6)  (MES -170.07)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~all_eps | DRD: ('UNVERIFIABLE', None, 5275.18, 5320.25) -> ('UNVERIFIABLE', None, 5275.18, 5275.15)  (MES -45.10)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~all_eps | ROOF: ('UNVERIFIABLE', None, 7645.03, 9532.6) -> ('UNVERIFIABLE', None, 7645.03, 9429.34)  (MES -103.26)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~all_eps | SIDES: ('UNVERIFIABLE', None, 14566.95, 17628.43) -> ('UNVERIFIABLE', None, 14566.95, 17434.35)  (MES -194.08)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~all_pu | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~all_pu | ROOF: ('ACCEPTED', 'FLAG', 9632.18, 9735.36) -> ('PASS', None, 9632.18, 9632.1)  (MES -103.26)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~all_pu | SIDES: ('ACCEPTED', 'FLAG', 18672.12, 18866.05) -> ('PASS', None, 18672.12, 18671.97)  (MES -194.08)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~as_sheet | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~as_sheet | ROOF: ('ACCEPTED', 'FLAG', 9632.18, 9735.36) -> ('PASS', None, 9632.18, 9632.1)  (MES -103.26)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~as_sheet | SIDES: ('ACCEPTED', 'FLAG', 18672.12, 18866.05) -> ('PASS', None, 18672.12, 18671.97)  (MES -194.08)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~drd | DRD: ('PASS', None, 6321.98, 6368.15) -> ('PASS', None, 6321.98, 6321.94)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~drd | ROOF: ('ACCEPTED', 'FLAG', 9632.18, 9735.36) -> ('PASS', None, 9632.18, 9632.1)  (MES -103.26)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~drd | SIDES: ('ACCEPTED', 'FLAG', 18672.12, 18866.05) -> ('PASS', None, 18672.12, 18671.97)  (MES -194.08)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~foam_4g | DRD: ('PASS', None, 6683.1, 6729.27) -> ('PASS', None, 6683.1, 6683.06)  (MES -46.21)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~foam_4g | ROOF: ('PASS', None, 10349.99, 10453.16) -> ('PASS', None, 10349.99, 10349.9)  (MES -103.26)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~foam_4g | SIDES: ('PASS', None, 20107.72, 20301.65) -> ('PASS', None, 20107.72, 20107.57)  (MES -194.08)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~srd | ROOF: ('ACCEPTED', 'FLAG', 9632.18, 9735.36) -> ('PASS', None, 9632.18, 9632.1)  (MES -103.26)
+   MOVED EXPLOSIVE_2.7_TO_4.8~L4.8~W2.3~H2.2~srd | SIDES: ('ACCEPTED', 'FLAG', 18672.12, 18866.05) -> ('PASS', None, 18672.12, 18671.97)  (MES -194.08)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~all_eps | DRD: ('UNVERIFIABLE', None, 5308.54, 5160.77) -> ('UNVERIFIABLE', None, 5308.54, 5312.11)  (MES +151.34)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~all_eps | ROOF: ('UNVERIFIABLE', None, 27372.17, 27726.03) -> ('UNVERIFIABLE', None, 27372.17, 27371.89)  (MES -354.14)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~all_pu | DRD: ('ACCEPTED', 'FLAG', 6790.51, 6640.28) -> ('PASS', None, 6790.51, 6790.47)  (MES +150.19)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~all_pu | ROOF: ('PASS', None, 35799.24, 36153.1) -> ('PASS', None, 35799.24, 35798.96)  (MES -354.14)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~as_sheet | DRD: ('ACCEPTED', 'FLAG', 6790.51, 6640.28) -> ('PASS', None, 6790.51, 6790.47)  (MES +150.19)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~as_sheet | ROOF: ('PASS', None, 35799.24, 36153.1) -> ('PASS', None, 35799.24, 35798.96)  (MES -354.14)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~drd | DRD: ('ACCEPTED', 'FLAG', 6790.51, 6640.28) -> ('PASS', None, 6790.51, 6790.47)  (MES +150.19)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~drd | ROOF: ('PASS', None, 35799.24, 36153.1) -> ('PASS', None, 35799.24, 35798.96)  (MES -354.14)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~foam_4g | DRD: ('ACCEPTED', 'FLAG', 6790.51, 6640.28) -> ('PASS', None, 6790.51, 6790.47)  (MES +150.19)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~foam_4g | ROOF: ('PASS', None, 35799.24, 36153.1) -> ('PASS', None, 35799.24, 35798.96)  (MES -354.14)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~srd | ROOF: ('PASS', None, 35799.24, 36153.1) -> ('PASS', None, 35799.24, 35798.96)  (MES -354.14)
+   MOVED EXPLOSIVE_4.9_AND_UP~L14.7~W2.6~H2.1~srd | SRD: ('ACCEPTED', 'FLAG', 6546.17, 6419.64) -> ('PASS', None, 6546.17, 6519.64)  (MES +100.00)
+   MOVED EXPLOSIVE_4.9_AND_UP~L4.9~W2.6~H2.1~all_eps | DRD: ('UNVERIFIABLE', None, 5308.54, 5160.77) -> ('UNVERIFIABLE', None, 5308.54, 5312.11)  (MES +151.34)
+   MOVED EXPLOSIVE_4.9_AND_UP~L4.9~W2.6~H2.1~all_eps | ROOF: ('UNVERIFIABLE', None, 9249.34, 9368.09) -> ('UNVERIFIABLE', None, 9249.34, 9249.25)  (MES -118.84)
+   MOVED EXPLOSIVE_4.9_AND_UP~L4.9~W2.6~H2.1~all_pu | DRD: ('ACCEPTED', 'FLAG', 6790.51, 6640.28) -> ('PASS', None, 6790.51, 6790.47)  (MES +150.19)
+   MOVED EXPLOSIVE_4.9_AND_UP~L4.9~W2.6~H2.1~all_pu | ROOF: ('PASS', None, 12077.41, 12196.16) -> ('PASS', None, 12077.41, 12077.32)  (MES -118.84)

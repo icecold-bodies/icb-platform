@@ -13,7 +13,7 @@ row() { # $1 scenario, $2 regex over the whole log
   local log; log=$(bash "$RUN" "$1" "$KIT" 2>&1)
   if [[ "$log" =~ $2 ]]; then echo "PASS  $1"; P=$((P+1)); else echo "FAIL  $1"; F=$((F+1)); echo "$log" | tail -n 40 | sed 's/^/      | /'; fi
 }
-row happy        'PREFLIGHT PASSED.*######## VERIFY: [0-9]+ check\(s\) failed.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed.*######## ALREADY DEPLOYED.*pg_dump ran at alembic 0051.*npm builds: 0'
+row happy        'PREFLIGHT PASSED.*######## VERIFY: 15 check\(s\) failed.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed.*######## ALREADY DEPLOYED.*pg_dump ran at alembic 0051.*npm builds: 0'
 row notag        'STOP \[TAG_ON_ORIGIN\]|PREFLIGHT: [0-9]+ check\(s\) FAILED.*STOP \[TAG\]'
 row moved        'STOP \[ANCHORS\]'
 # icb-deploy.sh's own verify catches a failed bootstrap first (STOP DEPLOY)

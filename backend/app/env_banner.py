@@ -58,7 +58,7 @@ def inject(body: bytes, host: str) -> bytes:
     return body
 
 
-class TestServerBanner:
+class EnvBanner:
     """ASGI middleware: a no-op on prod; elsewhere it injects the bar into text/html responses."""
 
     def __init__(self, app):

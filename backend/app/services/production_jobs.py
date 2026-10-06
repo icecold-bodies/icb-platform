@@ -172,6 +172,10 @@ def accept_calculation(db: Session, calculation_id: int, user,
     if calc.status != "accepted":
         raise CalculationNotAcceptedError(
             f"calculation {calculation_id} has status '{calc.status}'; must be 'accepted'")
+    # RT6 (RT6_RULING_1 Q3) — a costing that breaches its family's CURRENT insulation rule does not become a job
+    # (409, naming the breach); a job that already exists for it is returned below untouched only if it passes
+    from app.services import rule_guard
+    rule_guard.refuse_saved(db, calc, "sent to production")
 
     existing = db.execute(
         select(ProductionJob).where(ProductionJob.calculation_record_id == calculation_id)
@@ -213,6 +217,9 @@ def send_pre_job_card(db: Session, job_id: int, user, commit: bool = True) -> Jo
     # §3.2: the Pre-Job submit owns one commit covering card flip + job transition + chassis insert
     # atomically). The standalone router path keeps commit=True.
     job, calc, _, _ = get_with_costing(db, job_id)
+    # RT6 (RT6_RULING_1 Q3) — the pre-job card is the path to the floor: refused for a breaching costing (409)
+    from app.services import rule_guard
+    rule_guard.refuse_saved(db, calc, "sent to the floor")
     if calc.is_repair:
         raise RepairQuoteCannotSendPreJobError(
             f"job {job_id} is a repair quote; repairs skip the pre-job card")

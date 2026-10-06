@@ -107,7 +107,7 @@ def message(panel: str, insulation: str) -> str:
 def canonical_rule(rule) -> str | None:
     """The stored form: panels in PANELS order, insulations in INSULATIONS order, compact JSON. None = no rule.
     Raises ValueError for a malformed rule (normalise_rule)."""
-    allowed = normalise_rule(rule) if not isinstance(rule, dict) or "allowed" in rule else rule
+    allowed = _allowed(rule)
     if not allowed:
         return None
     return json.dumps({"allowed": {p: [i for i in INSULATIONS if i in allowed[p]] for p in PANELS}},
@@ -118,7 +118,7 @@ def draft_offers(rule, cls: Classification, nodes: dict) -> list[dict]:
     """The forbidden choices a Settings-draft tree OFFERS (the draft save / restore warning): a flag bound to a
     forbidden master (by id), an unbound flag named after a forbidden choice, or a category keyed on one (which forces
     it on). [{panel, insulation, node, label}] sorted by panel order."""
-    allowed = normalise_rule(rule) if not isinstance(rule, dict) or "allowed" in rule else rule
+    allowed = _allowed(rule)
     if not allowed or not isinstance(nodes, dict):
         return []
     bad = lambda pi: pi is not None and pi[1] not in allowed.get(pi[0], frozenset(INSULATIONS))  # noqa: E731
@@ -293,6 +293,36 @@ def selections(cls: Classification, payload: dict) -> list[tuple[str, str, str, 
     return out
 
 
+def saved_costing_payload(result: dict, cls: Classification) -> dict:
+    """A SAVED costing's choices as the payload the check reads (Accept, pre-job, the window's breach count). It is
+    judged by its selection snapshot (input_state, else the UI snapshot) and its draft-flag aliases. A costing that kept
+    none (saved before input_state, or by Calculator 2) is judged by what it PRICED: its included lines, read as
+    include_all_items."""
+    st = (result or {}).get("input_state") or {}
+    snap = st.get("ui_snapshot") if isinstance(st.get("ui_snapshot"), dict) else {}
+    sel = st.get("body_option_selections") or (snap or {}).get("body_option_selections") or {}
+    flags = st.get("flag_overrides") or {}
+    if sel or flags:
+        return {"body_option_selections": sel, "flag_overrides": flags}
+    included = set()
+    for it in (result or {}).get("items") or []:
+        if isinstance(it, dict) and not it.get("excluded"):
+            bid = it.get("bom_id", it.get("id"))
+            if bid is not None:
+                included.add(str(bid))
+    return {"include_all_items": True,
+            "user_excluded_bom_ids": [lid for lid in cls.lines if str(lid) not in included]}
+
+
+def _allowed(rule) -> dict[str, frozenset] | None:
+    """A rule in any accepted form (stored JSON text, {"allowed": ...}, or an already-normalised {panel: frozenset})
+    -> {panel: frozenset(allowed)}; None = no rule. Anything else raises ValueError (normalise_rule)."""
+    if (isinstance(rule, dict) and rule and set(rule) == set(PANELS)
+            and all(isinstance(v, (set, frozenset)) for v in rule.values())):
+        return rule
+    return normalise_rule(rule)
+
+
 def normalise_rule(raw) -> dict[str, frozenset] | None:
     """The stored rule -> {panel: allowed insulations}; None = no rule. Raises ValueError on a malformed rule (the
     editor and the data step refuse to store one)."""
@@ -313,7 +343,7 @@ def normalise_rule(raw) -> dict[str, frozenset] | None:
 def breaches(rule, cls: Classification, payload: dict) -> list[Breach]:
     """The selected insulations the rule forbids — one per (panel, insulation), first mechanism wins. No rule, no
     breach: a family without a rule is never blocked."""
-    allowed = normalise_rule(rule) if not isinstance(rule, dict) or "allowed" in rule else rule
+    allowed = _allowed(rule)
     if not allowed:
         return []
     seen, out = set(), []
@@ -327,7 +357,7 @@ def breaches(rule, cls: Classification, payload: dict) -> list[Breach]:
 
 def forbidden_choices(rule, cls: Classification) -> dict:
     """What the panels grey out: {'master_ids': [...], 'names': [...]} — every classified choice the rule forbids."""
-    allowed = normalise_rule(rule) if not isinstance(rule, dict) or "allowed" in rule else rule
+    allowed = _allowed(rule)
     if not allowed:
         return {"master_ids": [], "names": []}
     bad = lambda pi: pi[1] not in allowed.get(pi[0], frozenset(INSULATIONS))  # noqa: E731

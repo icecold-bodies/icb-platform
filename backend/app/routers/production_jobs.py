@@ -27,7 +27,6 @@ from ..services import chassis as chassis_svc
 from ..services import plan_status as plan_status_svc
 from ..services import planning as planning_svc
 from ..services import production_jobs as svc
-from ..services import rule_guard   # RT6 — the insulation rule closes the path to the floor (RT6_RULING_1 Q3)
 
 router = APIRouter(prefix="/api/production-jobs", tags=["production-jobs"])
 
@@ -201,17 +200,6 @@ def get_production_job(job_id: int, db: Session = Depends(get_db), user: User = 
     return detail
 
 
-def _refuse_breaching_costing(db: Session, calculation_id) -> None:
-    """RT6 (RT6_RULING_1 Q3) — a costing that breaches its family's CURRENT insulation rule does not go to the floor:
-    409, naming the breach. A job with no originating costing (workbook-imported) has nothing to check."""
-    if calculation_id is None:
-        return
-    from ..database import CalculationRecord
-    rec = db.query(CalculationRecord).filter_by(id=int(calculation_id)).first()
-    if rec is not None:
-        rule_guard.refuse_saved(db, rec, "sent to production")
-
-
 @router.post("/from-calculation/{calculation_id}", response_model=ProductionJobDetail)
 def accept_from_calculation(
     calculation_id: int, response: Response,
@@ -221,7 +209,6 @@ def accept_from_calculation(
     """Accept an already-accepted calculation into production. Idempotent:
     201 if a new job is created, 200 if one already exists for that calculation.
     The session's active branch covers calcs with no branch_id (WO v4.29 D1)."""
-    _refuse_breaching_costing(db, calculation_id)
     try:
         row, created = svc.accept_calculation(
             db, calculation_id, user,
@@ -239,10 +226,6 @@ def accept_from_calculation(
 def send_pre_job_card(job_id: int, db: Session = Depends(get_db),
                       user: User = Depends(require_permission("production.pre_job_card"))):
     """Send the pre-job card (status -> pre_job_sent). 422 for repair quotes."""
-    from ..models.mes import ProductionJob
-    _job = db.get(ProductionJob, job_id)
-    if _job is not None:
-        _refuse_breaching_costing(db, _job.calculation_record_id)
     try:
         return _detail(svc.send_pre_job_card(db, job_id, user))
     except svc.NotFoundError as e:

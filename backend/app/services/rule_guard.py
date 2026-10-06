@@ -88,43 +88,23 @@ def unclassified(tt, bom_rows) -> list[dict]:
     return ir.classify_body(_views(bom_rows)).unclassified
 
 
-def saved_payload(result: dict) -> dict:
-    """A saved costing's choices as the payload the check reads. A costing that kept no selection snapshot (saved
-    before input_state, or by Calculator 2) is judged by what it PRICED: its included lines, as include_all_items."""
-    st = (result or {}).get("input_state") or {}
-    snap = st.get("ui_snapshot") if isinstance(st.get("ui_snapshot"), dict) else {}
-    sel = st.get("body_option_selections") or (snap or {}).get("body_option_selections") or {}
-    flags = st.get("flag_overrides") or {}
-    if sel or flags:
-        return {"body_option_selections": sel, "flag_overrides": flags}
-    included = set()
-    for it in (result or {}).get("items") or []:
-        if isinstance(it, dict) and not it.get("excluded"):
-            bid = it.get("bom_id", it.get("id"))
-            if bid is not None:
-                included.add(str(bid))
-    return {"include_all_items": True, "_included": included}
-
-
 def saved_breaches(db, rec) -> list[dict]:
-    """A SAVED body costing against its family's CURRENT rule. Repairs (no body) and unruled families: []."""
+    """A SAVED body costing against its family's CURRENT rule. Repairs (no body) and unruled families: []. The saved
+    choices are read by insulation_rules.saved_costing_payload (the same reading the window's breach count uses)."""
     if rec is None or rec.trailer_type_id is None:
         return []
     from ..database import BillOfMaterial, TrailerType
     tt = db.query(TrailerType).filter_by(id=rec.trailer_type_id).first()
-    if not family_rule(tt):
+    rule = family_rule(tt)
+    if not rule:
         return []
     try:
         result = json.loads(rec.result_json) if rec.result_json else {}
     except (TypeError, ValueError):
         result = {}
     rows = db.query(BillOfMaterial).filter_by(trailer_type_id=tt.id).all()
-    payload = saved_payload(result)
-    if payload.get("include_all_items"):
-        cls = ir.classify_body(_views(rows))
-        payload = {"include_all_items": True,
-                   "user_excluded_bom_ids": [lid for lid in cls.lines if str(lid) not in payload["_included"]]}
-    return body_breaches(tt, rows, payload)
+    cls = ir.classify_body(_views(rows))
+    return [b.as_dict() for b in ir.breaches(rule, cls, ir.saved_costing_payload(result, cls))]
 
 
 def refusal(breaches: list[dict], what: str, hint: str) -> dict:

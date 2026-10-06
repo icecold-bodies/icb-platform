@@ -460,6 +460,10 @@ def submit_for_check(db: Session, card_id: int, user, waive_body_gap: bool = Fal
             status_code=422,
             detail="Body Gap is pending (awaiting chassis VCL) — enter it or explicitly "
                    "waive to submit (§0.8)")
+    # RT6 (RT6_RULING_1 Q3) — the pre-job card is the path to the floor: a costing that breaches its family's CURRENT
+    # insulation rule is refused (409, naming the breach), before anything on the card changes
+    from app.services import rule_guard
+    rule_guard.refuse_saved(db, db.get(CalculationRecord, card.calculation_id), "sent to the floor")
     card.status = "sent_for_check"
     card.sent_for_check_at = _now()
     card.reject_reason = None                          # §0.14 — re-submit clears the old reason

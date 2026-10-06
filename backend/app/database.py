@@ -82,7 +82,7 @@ def get_db_info():
     db_detail is the database host / name. RT6 (RT6_RULING_1 Q6): PROD vs not is the server's DECLARED environment
     (settings.ICB_ENVIRONMENT, the key the TEST SERVER banner reads) — no longer guessed from the database host,
     which labelled prod (its database on 127.0.0.1) "DEV"."""
-    from .test_banner import environment_name
+    from .env_banner import environment_name
     env = environment_name()
     url = DATABASE_URL
     host = ""

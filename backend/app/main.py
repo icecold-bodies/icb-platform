@@ -191,8 +191,8 @@ p{{margin:8px 0}} .muted{{color:#6b7280;font-size:13px}} a{{color:#2563eb}}</sty
     return JSONResponse({"detail": exc.detail}, status_code=409)
 # RT6 — the TEST SERVER banner (off only when ICB_ENVIRONMENT is exactly "prod"). Added BEFORE GZip so it sits
 # INSIDE it and sees each page uncompressed (Starlette: the middleware added last is the outermost).
-from .test_banner import TestServerBanner, environment_name  # noqa: E402
-app.add_middleware(TestServerBanner)
+from .env_banner import EnvBanner, environment_name  # noqa: E402
+app.add_middleware(EnvBanner)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 # CORS for the Icecold Bodies MES React mockup (Vite dev 5173, Vite preview 4173).
 # Lets the mockup fetch /api/calculations + the new pre-job-card endpoints during

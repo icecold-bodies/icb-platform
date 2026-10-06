@@ -277,15 +277,26 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
       if (cId == null) return
       const row = costings.find((c) => c.quote_number === quote)
       setStage(quote, 'accepting')
+      let accepted = !!row && row.status !== 'Pending'
       try {
-        if (!row || row.status === 'Pending') {
+        if (!accepted) {
           await apiPost(`/api/calculations/${cId}/accept`) // step 1 — skip if already accepted (retry)
+          accepted = true
         }
         setStage(quote, 'creating_job')
         await apiPost(`/api/production-jobs/from-calculation/${cId}`) // step 2
         setStage(quote, 'done')
         await refetch()
       } catch (e) {
+        // RT6 — a 409 is the body family's insulation rule refusing this costing (accept, or its job): show the
+        // sentence ("Re-open it, Remove, save, then accept."). A refused accept leaves the costing Pending — not a
+        // partial row.
+        if (e instanceof ApiError && e.status === 409) {
+          setStage(quote, accepted ? 'partial' : 'idle')
+          toast.push({ kind: 'error', message: e.detail || 'This costing cannot be accepted.' })
+          await refetch()
+          return
+        }
         setStage(quote, 'partial') // step 1 ok but step 2 failed → accepted calc, no job
         handleApiError(e, toast.push)
         await refetch() // reflect the partial state so the Retry button renders

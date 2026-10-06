@@ -407,7 +407,8 @@ function onInsFoamChange(grade) {
  *  draft flag, configurator tree row), or a draft flag named after one. Read from the panel itself, so it follows
  *  the draft (a chiller whose draft offers no PU) and not the body's family. */
 function _puInsulationOffered(items) {
-  const pu = (items || []).filter(it => it.is_body_option
+  // RT6 (RT6_DISPATCH default 4) — a choice the family's rule forbids is greyed out, and counts as NOT offered
+  const pu = (items || []).filter(it => it.is_body_option && !it.rule_forbidden
     && String(it.body_option_subgroup || '').toUpperCase() === 'INSULATION'
     && String(it.material_name || '').trim().toUpperCase().endsWith(' PU'));
   if (!pu.length) return false;
@@ -1031,8 +1032,12 @@ function _showInsulationSwitchModal(fromType, toType) {
   const icon = toType === 'PU' ? '🔵' : '🟡';
   document.getElementById('insulation-switch-title').innerHTML =
     `${icon} Switch Insulation to ${toType}`;
+  // RT6 — a panel whose toType side the family's rule forbids is SKIPPED (it keeps what it has), and the user is told
+  const skipped = [...new Set((bomData || []).filter(it => it.is_body_option && it.rule_forbidden && it.rule_class
+    && it.rule_class.kind === 'master' && it.rule_class.insulation === toType).map(it => it.rule_class.panel))];
   document.getElementById('insulation-switch-body').textContent =
-    `Switch ALL insulation categories from ${fromType} to ${toType}?`;
+    `Switch ALL insulation categories from ${fromType} to ${toType}?`
+    + (skipped.length ? `\n\n${skipped.join(', ')} will be skipped: ${_ruleNoteOfBody() || `${toType} is not allowed there`}.` : '');
 
   const yesBtn = document.getElementById('insulation-switch-yes');
   // Clone to remove previous listener
@@ -1045,11 +1050,15 @@ function _showInsulationSwitchModal(fromType, toType) {
       if (!it.is_body_option || it.body_option_subgroup !== 'INSULATION') return;
       const n = (it.material_name || '').toUpperCase();
       if (!n.includes('EPS') && !n.includes('PU')) return;
+      if (it.rule_class && skipped.includes(it.rule_class.panel)) return;   // RT6 — leave that panel as it is
       const on = n.includes(toType);
       bodyOptionSelections[String(it.id)] = on;
       if (on) selectedToType.push(it.id);
     });
     saveBodyOptSel();
+    if (skipped.length) {
+      toast(`Skipped ${skipped.join(', ')}: ${_ruleNoteOfBody() || `${toType} is not allowed there`}`, 'warn');
+    }
     // Carry each location's thickness onto its newly-selected side.
     for (const mid of selectedToType) await _applyInsulationCopyZero(mid);
     renderBodyOptions(bomData);
@@ -5360,6 +5369,7 @@ function _bindTreeHandlers(tree, tid, collapsed) {
 function renderBodyOptions(bomItems) {
   renderBodyRuleNote();   // RT5 — outside #body-options-list: drawn from the OUTER function, like the foam block
   _renderBodyOptionsInner(bomItems);
+  _greyRuleForbidden();   // RT6 — every renderer's forbidden choice, greyed with the family's rule as its tooltip
   _enforceInsulationInvariant();
   _enforceRearDoorInvariant();
   validateInsulationPairs();
@@ -5384,6 +5394,148 @@ function renderBodyRuleNote() {
   txt.textContent = note;
   box.hidden = !note;
   box.style.display = note ? 'flex' : 'none';
+}
+
+// ── RT6 — Burt's insulation rules, enforced (RT6_RULING_1) ───────────────────────────────────────────────────
+// The BOM rows carry each insulation master's and cost line's class (rule_class {kind, panel, insulation}) and, when
+// the family's rule forbids it, rule_forbidden (the reason) — from the server's one check
+// (services/insulation_rules.py). The page never decides a rule itself: it greys what the server says is forbidden,
+// shows /api/calculate's breaches, and the server refuses a save or an accept that still carries one.
+function _ruleNoteOfBody() {
+  const tid = document.getElementById('trailer-select')?.value;
+  const t = (tid && typeof trailerDefaults !== 'undefined') ? trailerDefaults[+tid] : null;
+  return (t && typeof t.rule_note === 'string') ? t.rule_note.trim() : '';
+}
+
+const _RULE_PANEL_LABEL = { DRD: 'the DRD (double rear doors)', SRD: 'the SRD (single rear door)' };
+function _rulePanelLabel(panel) { return _RULE_PANEL_LABEL[panel] || `the ${panel}`; }
+
+/** The controls bound to a master in any of the three renderers (flat input, Settings-draft flag, configurator tree
+ *  row), plus an unbound draft flag named after it. */
+function _ruleControlsFor(row) {
+  const list = document.getElementById('body-options-list');
+  if (!list) return [];
+  const id = String(row.id), nm = String(row.material_name || '').trim().toUpperCase();
+  const els = [...list.querySelectorAll(`input[data-bom-id="${id}"]`),
+               ...[...list.querySelectorAll('input[data-draft-flag-mids]')]
+                  .filter(el => (el.dataset.draftFlagMids || '').split(',').includes(id)),
+               ...list.querySelectorAll(`.bot-opt-row[data-mid="${id}"] input`)];
+  list.querySelectorAll('input[data-draft-flag]').forEach(el => {
+    if (String(el.dataset.draftFlag || '').trim().toUpperCase() === nm) els.push(el);
+  });
+  return [...new Set(els)];
+}
+
+/** A forbidden choice is greyed out, with the rule as its tooltip — even when a draft still offers it. A greyed
+ *  choice counts as NOT offered for the foam-picker rule (_puInsulationOffered). */
+function _greyRuleForbidden() {
+  const note = _ruleNoteOfBody();
+  const list = document.getElementById('body-options-list');
+  (bomData || []).filter(r => r.is_body_option && r.rule_forbidden).forEach(r => {
+    _ruleControlsFor(r).forEach(inp => {
+      inp.disabled = true;
+      inp.dataset.ruleForbidden = '1';
+      const lab = inp.closest('label') || inp.closest('.bot-opt-row') || inp.parentElement;
+      if (lab) { lab.classList.add('rule-forbidden'); lab.title = note || r.rule_forbidden; }
+    });
+    // the configurator tree selects on a click anywhere on the ROW: block it there (capture, before its handler)
+    (list ? list.querySelectorAll(`.bot-opt-row[data-mid="${String(r.id)}"]`) : []).forEach(row => {
+      row.classList.add('rule-forbidden');
+      row.title = note || r.rule_forbidden;
+      if (row.dataset.ruleBlocked) return;
+      row.dataset.ruleBlocked = '1';
+      row.addEventListener('click', e => { e.preventDefault(); e.stopImmediatePropagation(); }, true);
+    });
+  });
+}
+
+/** Red, under the note: each breach in THIS quote, naming the panel — also a panel the quote does not use (a
+ *  forbidden door insulation on the door that is not quoted: RT6_RULING_1 Q8) — each with a Remove. */
+function renderRuleBreaches(breaches) {
+  const box = document.getElementById('body-rule-breaches');
+  if (!box) return;
+  const list = Array.isArray(breaches) ? breaches : [];
+  box.innerHTML = '';
+  box.hidden = !list.length;
+  box.style.display = list.length ? 'block' : 'none';
+  if (!list.length) return;
+  const head = document.createElement('div');
+  head.style.fontWeight = '700';
+  head.textContent = `This quote breaks the rule above (${list.length}). It cannot be saved until each is removed:`;
+  box.appendChild(head);
+  const door = _selectedRearDoor();
+  list.forEach(b => {
+    const row = document.createElement('div');
+    row.className = 'rb-row';
+    row.dataset.panel = b.panel;
+    row.dataset.insulation = b.insulation;
+    const unused = _DRDSR_TOGGLE_GROUPS.includes(b.panel) && door && door !== b.panel;
+    const where = _rulePanelLabel(b.panel);
+    const txt = document.createElement('span');
+    txt.textContent = `✖ ${b.insulation} insulation on ${where}` + (unused ? ' — not used on this quote' : '');
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'rb-remove'; btn.textContent = 'Remove';
+    btn.title = `Clears ${b.insulation} on ${where} in this quote only. The saved costing changes only when you save.`;
+    btn.addEventListener('click', () => removeRuleBreach(b));
+    row.append(txt, btn);
+    box.appendChild(row);
+  });
+}
+
+/** Admins only: insulation choices on a ruled body that the check cannot read — reported, never passed silently. */
+function renderRuleUnclassified(items) {
+  const box = document.getElementById('body-rule-unclassified');
+  if (!box) return;
+  const list = (typeof isAdmin !== 'undefined' && isAdmin && Array.isArray(items)) ? items : [];
+  box.hidden = !list.length;
+  box.style.display = list.length ? 'block' : 'none';
+  box.textContent = list.length
+    ? `Admin: the insulation rule cannot read ${list.length} choice(s) on this body — `
+      + list.map(u => `${u.name} (${u.reason})`).join('; ') + '. Fix them in Body Templates.'
+    : '';
+}
+
+/** Remove one breach from the quote being edited (RT6_RULING_1 Q2): untick the forbidden choice (its master and a
+ *  draft-flag alias of its name); when the panel has exactly one allowed insulation, select it the way a click on it
+ *  would — the thickness carries over in the quote's overlay AND the edit pins; with none, clear and unpin. A
+ *  snapshot-less re-open (edit replay) excludes the forbidden line and brings in the allowed one. Nothing is written
+ *  until the user saves — and the save is checked again on the server. */
+async function removeRuleBreach(b) {
+  const panel = b.panel, ins = b.insulation;
+  const masters = (bomData || []).filter(r => r.is_body_option && r.rule_class && r.rule_class.kind === 'master'
+                                              && r.rule_class.panel === panel);
+  const bad = masters.filter(r => r.rule_class.insulation === ins);
+  const ok  = masters.filter(r => r.rule_class.insulation !== ins && !r.rule_forbidden);
+  const prevT = Math.max(0, ...bad.map(r => Number(r.variable_value) || 0),
+                         ...bad.map(r => Number((editBodyVarOverrides || {})[r.material_name]) || 0));
+  bad.forEach(r => {
+    bodyOptionSelections[String(r.id)] = false;
+    if (draftFlagState && r.material_name in draftFlagState) draftFlagState[r.material_name] = false;
+  });
+  if (b.via === 'flag' && draftFlagState && b.ref in draftFlagState) draftFlagState[b.ref] = false;
+  if (editReplay) {
+    // the replay prices the saved lines as they were: swap the forbidden line for the allowed one
+    const lines = (bomData || []).filter(r => !r.is_body_option && r.rule_class && r.rule_class.panel === panel);
+    const excl = new Set((editReplay.userExcluded || []).map(Number));
+    lines.forEach(r => {
+      if (r.rule_class.insulation === ins) excl.add(+r.id);
+      else if (!r.rule_forbidden && ok.length === 1) excl.delete(+r.id);
+    });
+    editReplay.userExcluded = [...excl];
+  }
+  if (ok.length === 1) {
+    bodyOptionSelections[String(ok[0].id)] = true;
+    if (prevT > 0 && !(Number(ok[0].variable_value) > 0)) {
+      _setQuoteVar(ok[0], prevT);
+      _pinBodyVar(ok[0], prevT);
+    }
+    await _applyInsulationCopyZero(ok[0].id);     // the click path: carries the thickness, zeroes the forbidden side
+  }
+  bad.forEach(r => { _setQuoteVar(r, 0); _pinBodyVar(r, 0); });
+  saveBodyOptSel();
+  renderBodyOptions(bomData);
+  refreshBomDisplay();
+  scheduleCalc();
 }
 
 // ── WO v1.39.10 — the GENERAL insulation invariant (Michael, 2 Jul) ─────────
@@ -6108,6 +6260,8 @@ async function runCalc() {
     _publishHelpContext(result);  // exposes liveResult + body for the AI Help chat
     renderSummary(result);
     renderBOMWithCosts(result.items, bomData);
+    renderRuleBreaches(result.rule_breaches);          // RT6 — calculate WARNS (red, under the note, with Remove)
+    renderRuleUnclassified(result.rule_unclassified);  // RT6 — admins: choices the rule cannot read
     _setDisabled('approve-btn', false);   // v1.49 - routes through the saved-once gate
     status.textContent = '';
     saveLastSession();
@@ -8704,6 +8858,18 @@ function _xpDoorFromLabel(text) {
 // folder nodes by name; matched ones apply through the rendered panel's own
 // inputs so radio clearing, branch restore, door carry and persistence behave
 // exactly as manual clicks (the _xpEnsureDoor precedent).
+// RT6 — Paste from Excel refuses a row that would select a choice the body family's insulation rule forbids: it is
+// listed as skipped with the rule (the family's note) as its reason; every other row still applies.
+function _xpRuleRefusal(label) {
+  return { label, why: `refused — ${_ruleNoteOfBody() || "the body family's insulation rule forbids it"}`, refused: true };
+}
+function _xpFlagForbidden(fnode) {
+  const bad = (bomData || []).filter(r => r.is_body_option && r.rule_forbidden);
+  if (fnode.flagBindingId != null && bad.some(r => String(r.id) === String(fnode.flagBindingId))) return true;
+  const nm = String(fnode.flagBindingName || fnode.label || '').trim().toUpperCase();
+  return !!nm && bad.some(r => String(r.material_name || '').trim().toUpperCase() === nm);
+}
+
 function buildExcelPastePlan(rows) {
   const plan = { tid: document.getElementById('trailer-select')?.value || '',
                  dims: [], door: null, pairs: [], radios: [], ticks: [],
@@ -8802,6 +8968,8 @@ function buildExcelPastePlan(rows) {
       const fnode = _dvLookup(draftFlagsByName, rw.label);
       if (fnode) {
         if (rw.yn == null) { plan.skipped.push({ label: rw.label, why: 'no Y/N cell — skipped' }); return; }
+        // RT6 — a draft flag that selects a choice the family's rule forbids (bound to it, or named after it)
+        if (rw.yn === 'Y' && _xpFlagForbidden(fnode)) { plan.skipped.push(_xpRuleRefusal(rw.label)); return; }
         const name = fnode.flagBindingName || fnode.label || '';
         // v1.53 — pasted thickness lands in draftFlagVars when some formula
         // on this body references {NAME}; otherwise the honest keep-note (a
@@ -8876,6 +9044,8 @@ function buildExcelPastePlan(rows) {
       return;
     }
     if (rw.yn == null) { plan.skipped.push({ label: rw.label, why: 'no Y/N cell — skipped' }); return; }
+    // RT6 — a Y on a choice the family's rule forbids is refused (an N on it changes nothing, so it applies)
+    if (rw.yn === 'Y' && matches.some(r => r.rule_forbidden)) { plan.skipped.push(_xpRuleRefusal(rw.label)); return; }
     // Non-pair rows inside a mutex subgroup (radio semantics in both renderers)
     // must not be applied as independent ticks — collect and resolve per group.
     const gkey = _boSubgroupKey(row);
@@ -8897,6 +9067,8 @@ function buildExcelPastePlan(rows) {
     const isDoor = _DRDSR_TOGGLE_GROUPS.includes(rec.group);
     if (yes.length === 2) { plan.errors.push({ label: `${rec.group} insulation`, why: 'both EPS and PU marked Y — group skipped' }); return; }
     if (yes.length === 0) { plan.skipped.push({ label: `${rec.group} insulation`, why: 'no Y side — left unchanged' }); return; }
+    // RT6 — a side the family's rule forbids is REFUSED: listed as skipped, with the rule as its reason
+    if (rec.sides[yes[0]].row.rule_forbidden) { plan.skipped.push(_xpRuleRefusal(`${rec.group} ${yes[0]}`)); return; }
     const chosen = rec.sides[yes[0]];
     const action = { group: rec.group, side: yes[0], row: chosen.row, thickness: chosen.val };
     if (isDoor) doorActions.push(action); else plan.pairs.push(action);
@@ -9271,7 +9443,8 @@ function _xpRenderPreview() {
        <span style="color:var(--text)">${escHtml(e.label)}</span><span style="color:var(--text-dim)">${escHtml(e.why)}</span>
      </div>`;
   });
-  plan.skipped.forEach(s => { html += line('skip', s.label, escHtml(s.why)); });
+  // RT6 — a row the insulation rule refuses reads in the rule's red (the wording stays "refused — <the rule>")
+  plan.skipped.forEach(s => { html += line(s.refused ? 'refused' : 'skip', s.label, escHtml(s.why), s.refused ? '#D12424' : undefined); });
   if (!html) html = `<div data-xp-row="empty" style="font-size:11px;color:var(--text-dim);padding:4px 6px">Nothing recognised in the pasted text.</div>`;
 
   const head = `<div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">Preview — nothing is applied until you click Apply.</div>`;

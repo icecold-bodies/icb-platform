@@ -32,6 +32,10 @@ class Settings(BaseSettings):
 
     # ── Deployment ──
     DEPLOYMENT_MODE: str = "cloud"            # cloud | on_prem  (surfaces in the UI footer)
+    # RT6 — which server this is. ONLY exactly "prod" (any case) is prod: anything else, unset included, shows the
+    # "TEST SERVER" banner (app/test_banner.py) and the dashboard badge reads TEST. Prod sets it in
+    # /etc/icb/backend.env (the v1.61.0 release kit, by merge); :8000 leaves it unset. Not a secret.
+    ICB_ENVIRONMENT: str = ""
     APP_PORT: int = 8000
 
     # ── Database (REQUIRED — no default) ──

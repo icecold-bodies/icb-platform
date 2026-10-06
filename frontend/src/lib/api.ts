@@ -43,6 +43,9 @@ function normalizeDetail(d: unknown): string | undefined {
       return loc ? `${loc}: ${msg}` : msg
     }).join('; ')
   }
+  // RT6 — a structured refusal ({code, message, ...}, e.g. the body family's insulation rule) reads as its sentence
+  const m = (d as { message?: unknown })?.message
+  if (typeof m === 'string' && m) return m
   try { return JSON.stringify(d) } catch { return String(d) }
 }
 

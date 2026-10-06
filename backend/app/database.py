@@ -79,8 +79,11 @@ def switch_db(new_url: str):
 
 def get_db_info():
     """Return (db_env_label, db_detail, db_is_prod) for the active connection.
-    PostgreSQL-only: a localhost connection is treated as DEV, anything else as
-    PROD (drives the UI footer banner)."""
+    db_detail is the database host / name. RT6 (RT6_RULING_1 Q6): PROD vs not is the server's DECLARED environment
+    (settings.ICB_ENVIRONMENT, the key the TEST SERVER banner reads) — no longer guessed from the database host,
+    which labelled prod (its database on 127.0.0.1) "DEV"."""
+    from .test_banner import environment_name
+    env = environment_name()
     url = DATABASE_URL
     host = ""
     try:
@@ -90,9 +93,9 @@ def get_db_info():
         detail = f"{host} / {dbname}"
     except Exception:
         detail = "PostgreSQL"
-    if host in ("localhost", "127.0.0.1", "::1", ""):
-        return "DEV (PostgreSQL)", detail, False
-    return "PROD (PostgreSQL)", detail, True
+    if env == "prod":
+        return "PROD (PostgreSQL)", detail, True
+    return f"TEST — {env or 'unset'} (PostgreSQL)", detail, False
 
 
 class Branch(Base):
@@ -760,6 +763,9 @@ class TrailerGroup(Base):
     # RT5 (migration 0052) — the family's rule note (Burt's product rule), plain text, shown in red under BODY
     # OPTIONS for every body of the family and in Body Templates; NULL = none. services/body_family.rule_note_of.
     rule_note          = Column(Text, nullable=True)
+    # RT6 (migration 0053) — the family's insulation rule as DATA: canonical JSON {"allowed": {panel: [EPS|PU,...]}}
+    # for all six panels; NULL = no rule. services/rule_guard reads it; the routers enforce it.
+    insulation_rule    = Column(Text, nullable=True)
     report_template = relationship("ReportTemplate", foreign_keys=[report_template_id])
     trailer_types   = relationship("TrailerType", back_populates="group", foreign_keys="TrailerType.group_id")
 

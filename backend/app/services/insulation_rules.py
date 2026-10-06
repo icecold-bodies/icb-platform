@@ -94,10 +94,55 @@ class Breach:
                 "message": message(self.panel, self.insulation)}
 
 
+def panel_label(panel: str) -> str:
+    """How a sales user reads the panel: the doors are named in full (RT6_RULING_1 Q8)."""
+    return {"DRD": "the DRD (double rear doors)", "SRD": "the SRD (single rear door)"}.get(panel, f"the {panel}")
+
+
 def message(panel: str, insulation: str) -> str:
     """The plain-English reason, one panel at a time."""
-    where = {"DRD": "the double rear doors", "SRD": "the single rear door"}.get(panel, f"the {panel}")
-    return f"{insulation} insulation is not allowed on {where} for this body's family."
+    return f"{insulation} insulation is not allowed on {panel_label(panel)} for this body's family."
+
+
+def canonical_rule(rule) -> str | None:
+    """The stored form: panels in PANELS order, insulations in INSULATIONS order, compact JSON. None = no rule.
+    Raises ValueError for a malformed rule (normalise_rule)."""
+    allowed = normalise_rule(rule) if not isinstance(rule, dict) or "allowed" in rule else rule
+    if not allowed:
+        return None
+    return json.dumps({"allowed": {p: [i for i in INSULATIONS if i in allowed[p]] for p in PANELS}},
+                      separators=(",", ":"))
+
+
+def draft_offers(rule, cls: Classification, nodes: dict) -> list[dict]:
+    """The forbidden choices a Settings-draft tree OFFERS (the draft save / restore warning): a flag bound to a
+    forbidden master (by id), an unbound flag named after a forbidden choice, or a category keyed on one (which forces
+    it on). [{panel, insulation, node, label}] sorted by panel order."""
+    allowed = normalise_rule(rule) if not isinstance(rule, dict) or "allowed" in rule else rule
+    if not allowed or not isinstance(nodes, dict):
+        return []
+    bad = lambda pi: pi is not None and pi[1] not in allowed.get(pi[0], frozenset(INSULATIONS))  # noqa: E731
+    by_uname = {_u(n): pi for n, pi in cls.by_name.items()}
+    out = []
+    for key, n in nodes.items():
+        if not isinstance(n, dict):
+            continue
+        t, bid, pi = n.get("type"), n.get("flagBindingId"), None
+        if t == "flag":
+            if bid not in (None, ""):
+                try:
+                    pi = cls.by_master_id.get(int(bid))
+                except (TypeError, ValueError):
+                    pi = None
+            else:
+                pi = by_uname.get(_u(n.get("flagBindingName") or n.get("label")))
+        elif t == "category":
+            pi = by_uname.get(_u(n.get("sourceCategoryKey")))
+        if bad(pi):
+            out.append({"panel": pi[0], "insulation": pi[1], "node": str(n.get("id") or key),
+                        "label": str(n.get("label") or n.get("flagBindingName") or n.get("sourceCategoryKey") or key)})
+    out.sort(key=lambda o: (PANELS.index(o["panel"]), o["insulation"], o["label"]))
+    return out
 
 
 def row_view(row) -> dict:

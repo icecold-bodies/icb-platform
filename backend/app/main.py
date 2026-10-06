@@ -189,6 +189,10 @@ p{{margin:8px 0}} .muted{{color:#6b7280;font-size:13px}} a{{color:#2563eb}}</sty
 </div></body></html>"""
         return HTMLResponse(body, status_code=409)
     return JSONResponse({"detail": exc.detail}, status_code=409)
+# RT6 — the TEST SERVER banner (off only when ICB_ENVIRONMENT is exactly "prod"). Added BEFORE GZip so it sits
+# INSIDE it and sees each page uncompressed (Starlette: the middleware added last is the outermost).
+from .test_banner import TestServerBanner, environment_name  # noqa: E402
+app.add_middleware(TestServerBanner)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 # CORS for the Icecold Bodies MES React mockup (Vite dev 5173, Vite preview 4173).
 # Lets the mockup fetch /api/calculations + the new pre-job-card endpoints during
@@ -649,7 +653,8 @@ async def health_version():
     """RT4 (RT4_RULING_1 Q9) — the one harmless probe, public: the version this process started with and nothing
     else. Read once at startup, so it moves only when the NEW process is up — the release kits compare it on the
     three doors (it replaces every kit's use of /openapi.json)."""
-    return {"version": _APP_VERSION}
+    # RT6 (RT6_RULING_1 Q6) — and which server this is: "prod" only when ICB_ENVIRONMENT says so exactly
+    return {"version": _APP_VERSION, "environment": environment_name() or "unset"}
 
 
 @app.get("/openapi.json", include_in_schema=False)

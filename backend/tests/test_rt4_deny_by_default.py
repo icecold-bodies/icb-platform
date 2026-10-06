@@ -74,7 +74,8 @@ def test_the_public_routes_still_answer(client):
     h = client.get("/health")
     assert h.status_code == 200 and h.json() == {"status": "ok"}
     v = client.get("/health/version")
-    assert v.status_code == 200 and set(v.json()) == {"version"} and v.json()["version"]
+    # RT6_RULING_1 Q6 — the probe also says which server this is (the TEST SERVER banner's key); still nothing else
+    assert v.status_code == 200 and set(v.json()) == {"version", "environment"} and v.json()["version"]
     assert client.get("/debug/health/ping").status_code == 200
     assert client.get("/login").status_code == 200
     root = client.get("/", follow_redirects=False)

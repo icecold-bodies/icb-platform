@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# ── RETIRED (RT6, 6 Oct 2026 — RT6_RULING_1 Q7) ─────────────────────────────────────────────────────────────────────
+# This kit's reviewed plan is applied on prod, and later releases and data steps build on what it wrote. It no longer
+# runs: its apply backed up with a bare `pg_dump … | gzip` (gzip's exit status only — a failed dump passed), and its
+# revert would now undo work done since. The file stays as the record its runbook cites. A new data step uses
+# ops/lib/icb_backup.sh (checked backup) and ops/lib/icb_where.sh (the safe-paste first line).
+echo "RETIRED (RT6, 2026-10-06): $(basename "$0") no longer runs — see its header. Nothing was done." >&2; exit 3
 # RT1 — the stored PU 4G factor on PROD, one admin setting, admin_settings['costings.pu_foam_4g_factor']. One kit per
 # manifest; the kit's expected.env names it (F_MANIFEST) and pins its before -> after:
 #   F   (RT1 ruling 2 §2a)        1.3170731707317074 (5 400 / 4 100)  ->  1.362881562881563 (5 581 / 4 095)  /tmp/icb-rt1-factor

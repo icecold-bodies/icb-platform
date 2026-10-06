@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# ── RETIRED (RT6, 6 Oct 2026 — RT6_RULING_1 Q7) ─────────────────────────────────────────────────────────────────────
+# This kit's reviewed plan is applied on prod, and later releases and data steps build on what it wrote. It no longer
+# runs: its apply backed up with a bare `pg_dump … | gzip` (gzip's exit status only — a failed dump passed), and its
+# revert would now undo work done since. The file stays as the record its runbook cites. A new data step uses
+# ops/lib/icb_backup.sh (checked backup) and ops/lib/icb_where.sh (the safe-paste first line).
+echo "RETIRED (RT6, 2026-10-06): $(basename "$0") no longer runs — see its header. Nothing was done." >&2; exit 3
 # RT1 — the data manifests on PROD, one paste each (RT1 ruling 3; ruling 1 §1 for M):
 #   A  docs/audit/srd_rear_frame_2026-09/manifest_a.yaml  REAR FRAME & FLOOR PLATE not costed on a single rear door —
 #                                                         only over the v1.59.2 code (the Designer must keep the rules)

@@ -22,6 +22,20 @@ TS=$(date +%Y%m%d-%H%M%S)
 OUT=$BASE/out-$LABEL-$TS
 MAX_AGE_MIN=45
 
+# RT6 safe paste (RT6_DISPATCH default 8): when the staging carries ops/lib/icb_where.sh (every RT6 staging does), the
+# FIRST output line names the machine, the database (name @ host) and the git HEAD, and a wrong place is refused.
+if [ -f "$BASE/lib/icb_where.sh" ]; then
+  _U=''
+  if [ "$(id -u)" = 0 ] && [ -r /etc/icb/backend.env ]; then
+    _U=$( set -a; . /etc/icb/backend.env >/dev/null 2>&1; printf '%s' "${DATABASE_URL:-}" ); _U=${_U/postgresql+psycopg:/postgresql:}
+  fi
+  # shellcheck disable=SC1091
+  . "$BASE/lib/icb_where.sh"; . "$BASE/expected.env" 2>/dev/null
+  export PGOPTIONS='-c default_transaction_read_only=on'
+  icb_where "All $LABEL (read only)" "$REPO" "$_U"
+  if [ -n "${EXPECT_MACHINE:-}" ]; then icb_where_check || { echo; echo "######## STOP [WHERE]: $WHERE_WHY"; exit 1; }; fi
+fi
+
 [ -e "$OUT" ] && { echo "STOP: $OUT already exists (two runs in one second?): run again"; exit 1; }
 mkdir -p "$OUT/reports" || { echo "STOP: cannot create $OUT"; exit 1; }
 chmod 700 "$OUT"

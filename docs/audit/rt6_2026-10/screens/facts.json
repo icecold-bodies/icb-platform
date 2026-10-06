@@ -1,0 +1,56 @@
+{
+ "reopen_calculate_breaches": [
+  {
+   "panel": "SIDES",
+   "insulation": "EPS",
+   "via": "selection",
+   "ref": "2538",
+   "message": "EPS insulation is not allowed on the SIDES for this body's family."
+  }
+ ],
+ "after_remove_calculate_breaches": [],
+ "after_remove_selection": {
+  "2538": false,
+  "2539": true
+ },
+ "after_remove_pinned": {
+  "SIDES EPS": 0,
+  "SIDES PU": 0.06
+ },
+ "after_remove_box_hidden": true,
+ "chiller_new_breaches": [],
+ "chiller_greyed": [
+  {
+   "text": "FRONT PU (0.000 m)",
+   "disabled": true,
+   "title": "No PU insulation for Chillers"
+  },
+  {
+   "text": "DRD PU (0.000 m)",
+   "disabled": true,
+   "title": "No PU insulation for Chillers"
+  },
+  {
+   "text": "SRD PU (0.000 m)",
+   "disabled": true,
+   "title": "No PU insulation for Chillers"
+  },
+  {
+   "text": "SIDES PU (0.000 m)",
+   "disabled": true,
+   "title": "No PU insulation for Chillers"
+  },
+  {
+   "text": "ROOF PU (0.000 m)",
+   "disabled": true,
+   "title": "No PU insulation for Chillers"
+  },
+  {
+   "text": "FLOOR PU (0.000 m)",
+   "disabled": true,
+   "title": "No PU insulation for Chillers"
+  }
+ ],
+ "foam_picker_shown": "none",
+ "paste_preview_text": "Preview \u2014 nothing is applied until you click Apply.\nSIDES insulation\nEPS 60 mm\nFRONT PU\nrefused \u2014 No PU insulation for Chillers"
+}

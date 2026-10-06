@@ -181,9 +181,15 @@ async function api(method, url, body) {
   }
   if (!res.ok) {
     const txt = await res.text();
-    let msg;
-    try { msg = JSON.parse(txt).detail || txt; } catch (_) { msg = txt; }
-    throw new Error(msg || `HTTP ${res.status}`);
+    let msg, detail;
+    try { detail = JSON.parse(txt).detail; msg = detail || txt; } catch (_) { msg = txt; }
+    // RT6 — a structured refusal ({code, message, ...}, e.g. the insulation rule's 409) reads as its sentence; the
+    // structure rides the error for a caller that wants it (err.detail / err.status)
+    if (detail && typeof detail === 'object' && !Array.isArray(detail) && detail.message) msg = detail.message;
+    const err = new Error(msg || `HTTP ${res.status}`);
+    err.status = res.status;
+    err.detail = detail;
+    throw err;
   }
   return res.json();
 }

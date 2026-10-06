@@ -31,6 +31,7 @@ grep -m1 '^staged' "$OUTDIR/mkstage_release.log"
 
 N="$OUTDIR/icb-rt5-notes"; mkdir -p "$N" || exit 1
 for f in rt5_notes.sh rt5_notes.py; do git cat-file blob "$SHA:ops/prod-rt5/$f" > "$N/$f" || exit 1; done
+mkdir -p "$N/lib" && git cat-file blob "$SHA:ops/lib/icb_backup.sh" > "$N/lib/icb_backup.sh" || exit 1   # RT6
 cat > "$N/expected.env" <<EOF
 # written by ops/prod-rt5/mkstage_window.sh on $(date -Is) — the two rule notes, over v1.60.2 only
 EXPECT_HEAD=$NEXT
@@ -39,7 +40,7 @@ PLAN_TODO=2
 TOOL_SHA=$(sha256sum "$N/rt5_notes.py" | cut -d' ' -f1)
 STAGED_FROM=$SHA
 EOF
-( cd "$N" && sha256sum rt5_notes.sh rt5_notes.py expected.env > SHA256SUMS ) || exit 1
+( cd "$N" && sha256sum rt5_notes.sh rt5_notes.py lib/icb_backup.sh expected.env > SHA256SUMS ) || exit 1
 
 S="$OUTDIR/icb-rt2-all"; mkdir -p "$S" || exit 1
 for f in rt2_all.sh rt2_all_compare.py; do git cat-file blob "$SHA:ops/prod-rt2/$f" > "$S/$f" || exit 1; done

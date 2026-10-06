@@ -79,6 +79,10 @@
       style="display:none;gap:6px;align-items:flex-start;padding:8px 16px;border-bottom:1px solid var(--border);color:{{ rule_note_ink }};font-size:12px;font-weight:600;line-height:1.35">
       <span aria-hidden="true">&#9888;</span><span id="tt-rule-note-text" style="white-space:pre-line"></span>
     </div>
+    <!-- RT6 — on a body whose family has an insulation rule: the insulation choices the rule's check cannot read
+         (/api/trailers/{id}/insulation-rule-check). Reported here for the admin, never silently passed. -->
+    <div id="tt-rule-unclassified" role="note" hidden
+      style="display:none;padding:6px 16px;border-bottom:1px solid var(--border);background:#FFFBEB;color:#92400E;font-size:11px;line-height:1.4"></div>
     <!-- Default dimensions bar -->
     <div id="dims-bar" class="hidden" style="padding:10px 16px;background:var(--bg-panel);
       border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -748,7 +752,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/admin_templates.js?v=22"></script>
+<script src="/static/js/admin_templates.js?v=23"></script>
 <script src="/static/js/driver.js.iife.js"></script>
 <script>
 (function () {

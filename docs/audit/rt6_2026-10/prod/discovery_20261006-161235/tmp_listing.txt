@@ -1,0 +1,100 @@
+# /tmp on icb-mes-prod at 2026-10-06T16:12:36+02:00 — listed only; nothing moved
+# class  mtime  owner  type  bytes  files  name
+OS-STAYS 2026-09-07 06:50 root directory 0 0 .ICE-unix
+OS-STAYS 2026-09-07 06:50 root directory 0 0 .X11-unix
+OS-STAYS 2026-09-07 06:50 root directory 0 0 .XIM-unix
+OS-STAYS 2026-09-07 06:50 root directory 0 0 .font-unix
+MOVE?    2026-09-07 16:42 mickeyger regular_file 12 1 alembic-after-v1521.txt
+MOVE?    2026-09-07 16:41 mickeyger regular_file 12 1 alembic-before-v1521.txt
+MOVE?    2026-09-07 17:28 mickeyger regular_file 133 1 allpairs-apply.txt
+MOVE?    2026-09-07 17:28 mickeyger regular_file 165 1 allpairs-dryrun.txt
+MOVE?    2026-09-07 17:28 mickeyger regular_file 165 1 allpairs-recheck.txt
+MOVE?    2026-09-07 17:28 mickeyger regular_file 1353 1 allpairs-verify.txt
+MOVE?    2026-09-26 09:18 mickeyger directory 2300994 8 explosive-golden
+MOVE?    2026-09-07 16:56 mickeyger regular_file 2265 1 icb-allpairs-v1522.sh
+MOVE?    2026-09-07 16:38 mickeyger regular_file 5061 1 icb-deploy-v1521.sh
+MOVE?    2026-09-07 16:09 mickeyger regular_file 1948 1 icb-reardoor-v152.sh
+MOVE?    2026-09-15 14:55 icb regular_file 41 1 icb-rollback-20260915-145559.txt
+MOVE?    2026-09-15 16:42 icb regular_file 41 1 icb-rollback-20260915-164241.txt
+MOVE?    2026-09-16 10:51 icb regular_file 41 1 icb-rollback-20260916-105138.txt
+MOVE?    2026-09-28 15:28 icb regular_file 41 1 icb-rollback-20260928-152820.txt
+MOVE?    2026-09-30 20:51 icb regular_file 41 1 icb-rollback-20260930-205119.txt
+MOVE?    2026-10-02 11:11 icb regular_file 41 1 icb-rollback-20261002-111127.txt
+MOVE?    2026-10-03 06:04 icb regular_file 41 1 icb-rollback-20261003-060452.txt
+MOVE?    2026-10-05 08:56 icb regular_file 41 1 icb-rollback-20261005-085609.txt
+MOVE?    2026-10-06 07:19 icb regular_file 41 1 icb-rollback-20261006-071951.txt
+MOVE?    2026-09-07 16:38 mickeyger regular_file 779 1 icb-rollback-v1521.sh
+RT6-KIT  2026-10-06 16:12 mickeyger directory 109679 12 icb-rt6-discovery
+RT6-KIT  2026-10-06 16:12 mickeyger regular_file 51200 1 icb-rt6-discovery.tar
+MOVE?    2026-09-29 13:21 icb directory 45525 4 icb-srd-discovery
+MOVE?    2026-09-07 16:41 mickeyger regular_file 41 1 icb-v1521-rollback-anchor.txt
+MOVE?    2026-09-07 16:56 mickeyger regular_file 17498 1 icecream_pu_4100.py
+MOVE?    2026-09-07 16:56 mickeyger regular_file 13637 1 icecream_reardoor_thickness.py
+MOVE?    2026-09-08 13:13 mickeyger regular_file 821 1 manni_inspect.py
+MOVE?    2026-09-08 13:13 mickeyger regular_file 120 1 manni_inspect.sh
+MOVE?    2026-09-08 13:12 mickeyger regular_file 200 1 manni_migration_apply.sh
+MOVE?    2026-09-08 13:11 mickeyger regular_file 135 1 manni_migration_dry.sh
+STAYS    2026-09-15 14:56 icb directory 2349532 405 node-compile-cache
+MOVE?    2026-09-07 15:49 mickeyger regular_file 2066 1 prod_quote93.py
+MOVE?    2026-09-07 16:15 mickeyger regular_file 702 1 reardoor-apply.txt
+MOVE?    2026-09-07 16:15 mickeyger regular_file 636 1 reardoor-dryrun.txt
+MOVE?    2026-09-07 16:15 mickeyger regular_file 392 1 reardoor-recheck.txt
+MOVE?    2026-09-07 16:09 mickeyger regular_file 1908 1 reardoor_sheet_truth.json
+MOVE?    2026-09-07 17:53 root directory 179733 4 sept-recheck
+OS-STAYS 2026-09-07 06:50 root directory 0 0 snap-private-tmp
+OS-STAYS 2026-09-25 06:17 root directory 0 0 systemd-private-f0b5e7b64c034ed2922b5fd0764fbd2c-ModemManager.service-xdH65g
+OS-STAYS 2026-09-11 06:16 root directory 0 0 systemd-private-f0b5e7b64c034ed2922b5fd0764fbd2c-chrony.service-5Rdvy6
+OS-STAYS 2026-09-30 06:24 root directory 0 0 systemd-private-f0b5e7b64c034ed2922b5fd0764fbd2c-fwupd.service-H8kp5a
+OS-STAYS 2026-10-06 07:20 root directory 0 0 systemd-private-f0b5e7b64c034ed2922b5fd0764fbd2c-icb-backend.service-JIQDBJ
+OS-STAYS 2026-09-25 06:17 root directory 0 0 systemd-private-f0b5e7b64c034ed2922b5fd0764fbd2c-polkit.service-h2w3eR
+OS-STAYS 2026-09-07 06:50 root directory 0 0 systemd-private-f0b5e7b64c034ed2922b5fd0764fbd2c-systemd-logind.service-fTSnqc
+OS-STAYS 2026-09-30 06:24 root directory 0 0 systemd-private-f0b5e7b64c034ed2922b5fd0764fbd2c-systemd-resolved.service-Hj4lQN
+OS-STAYS 2026-09-30 06:24 root directory 0 0 systemd-private-f0b5e7b64c034ed2922b5fd0764fbd2c-upower.service-klXdDA
+# sha256 of every file under a MOVE? item (the archive will carry the same list)
+9e049b08ea80881979d100ed4a7b74a842c7e1e39dc26fce67f53ff1f664cd0a  /tmp/alembic-after-v1521.txt
+9e049b08ea80881979d100ed4a7b74a842c7e1e39dc26fce67f53ff1f664cd0a  /tmp/alembic-before-v1521.txt
+3a38ff69a35ea6b144e4a4e2ac098d358e6e32ec7b0cf2f9a37b6d29f495fb0c  /tmp/allpairs-apply.txt
+133ba491e2bc5c8ad50e9f10ad34797339d1e77d1979c44fa596edd275b27c3d  /tmp/allpairs-dryrun.txt
+133ba491e2bc5c8ad50e9f10ad34797339d1e77d1979c44fa596edd275b27c3d  /tmp/allpairs-recheck.txt
+d918b393b68a24cf665238a7a4eae4e737af7d61a8eb0bfc350fdcd6a49d68b8  /tmp/allpairs-verify.txt
+6bd486238cbdd36f1bc5a5ffe6cdc8aed2d45c3baf33ae8c6710a7a50a16d85b  /tmp/explosive-golden/_manifest.json
+6bd486238cbdd36f1bc5a5ffe6cdc8aed2d45c3baf33ae8c6710a7a50a16d85b  /tmp/explosive-golden/explosive/_manifest.json
+e31a16303935ce519c4bc8e179c75e9696587b31f2b10eb21cc0c644c1ad5994  /tmp/explosive-golden/explosive/explosive_2_7_to_4_8.json
+ea854d1df832027b313be47ca3b89c693abe2ef11fb18b96d4e55936cfc6f358  /tmp/explosive-golden/explosive/explosive_4_9_and_up.json
+629bf376fdb5b3dd3892bc3a1b990a3ab4cd0c40d07833c414643a167a8fcbd0  /tmp/explosive-golden/explosive/explosive_up_to_2_7.json
+e31a16303935ce519c4bc8e179c75e9696587b31f2b10eb21cc0c644c1ad5994  /tmp/explosive-golden/explosive_2_7_to_4_8.json
+ea854d1df832027b313be47ca3b89c693abe2ef11fb18b96d4e55936cfc6f358  /tmp/explosive-golden/explosive_4_9_and_up.json
+629bf376fdb5b3dd3892bc3a1b990a3ab4cd0c40d07833c414643a167a8fcbd0  /tmp/explosive-golden/explosive_up_to_2_7.json
+22c117fce5efa32728ffa3627dfb74af934ec91048b9433531b30feb69c95e89  /tmp/icb-allpairs-v1522.sh
+90f36ec4e65e5b331383426922b98bcabbde94a443d6e40782ed26e08cffc976  /tmp/icb-deploy-v1521.sh
+dbe52b7fc920443a26d89240e5aa55b65ad4695edadb96e852ffdde629ebbe6a  /tmp/icb-reardoor-v152.sh
+c34ae9927cd655464234f44a2399a1cd429e041b420b86738770abf4b8b24ee0  /tmp/icb-rollback-20260915-145559.txt
+80d8e6050438ed24ff0e18bfa3996392fd7a42cfe59543c3ae6f99eb27f31d1a  /tmp/icb-rollback-20260915-164241.txt
+cbdb05c8046aff72db87be3816922704475b15992ca4fd2dd23bbb44c7f6fa3a  /tmp/icb-rollback-20260916-105138.txt
+c0176e296e851e4d24e9309cbddebd82bd256f50205578fe2985ed2c434605ee  /tmp/icb-rollback-20260928-152820.txt
+246b9dd53f06c13beab7f734890abf4d843080b794be7fa79c3cafacd7a16877  /tmp/icb-rollback-20260930-205119.txt
+9d90384c01e8ed30dd479ada685def26eb706bb61b60d9adc9b9975a83e49992  /tmp/icb-rollback-20261002-111127.txt
+127b947a9bac2d83219264163ac1f2ff83a4f6620006ca89a721189cc22c42f5  /tmp/icb-rollback-20261003-060452.txt
+cb38776596ce63ac93f5aafc8df12c15aeff02b9036445df356366b4bc6bc38f  /tmp/icb-rollback-20261005-085609.txt
+3cc6119bc9d757c333e4d98e1dd689e47008905f27adb0f6511b41c5a1d4221e  /tmp/icb-rollback-20261006-071951.txt
+b659450a27de6840e518826c3616f0398a7de59976aaaf44f673df2d2f542721  /tmp/icb-rollback-v1521.sh
+a6be314de3d1b677e96d3e4f7878fe272556117d18a47276ae4848f56e8e36b7  /tmp/icb-srd-discovery/SHA256SUMS
+f42b4644155eb07da4850ef983b405da0e238e1cdc9ac7afc65427ab6693a9ae  /tmp/icb-srd-discovery/out-20260929T112139Z/discovery.txt
+7e627452dc0abb9f86ef4017c5d7a5d4a38ffb2cdc2634191fc5106ccc11826e  /tmp/icb-srd-discovery/srd_discovery.py
+77086f30f073159952728d1310a8925c60f69655e21684213b8b470c36a7bfb1  /tmp/icb-srd-discovery/srd_discovery.sh
+d476045517bb87ddb8786819937bcd3678d57364a5eeddf3f4a0d240f5a3f2d9  /tmp/icb-v1521-rollback-anchor.txt
+491e2c315defbb511b3f5b5cbcce7bacb1bb0aaeb882f958e4f5a5d2a4b320d8  /tmp/icecream_pu_4100.py
+b173716baaa1a8f18ed5338f596ab35cbe70384c079c5fd81c9269f31c09ba83  /tmp/icecream_reardoor_thickness.py
+0155f4a67ce1c1307bca2c6413930f4eb676b60c0e96fd756e3ad2033a5f0894  /tmp/manni_inspect.py
+5ba313c4a43682b8d6b40fd9a21200ae2ec0c17cfe8a4a696874ba6e4209b3d4  /tmp/manni_inspect.sh
+d0f360a855648093e59f52839ea6f7823483cd6205801c58dae6d5b6aa2374df  /tmp/manni_migration_apply.sh
+fbf5506dc1162bb4f573bc91c673bdf55fe1c9fa62b774353f160dee48c67870  /tmp/manni_migration_dry.sh
+1c655f8e0109ca93a826a524213e9c74d6157286c3a1af477b6ad6c7da8a3ed0  /tmp/prod_quote93.py
+7adf756683db77ae1c81a14e30ebc2b9287c25c5318421a4e29df52140af7864  /tmp/reardoor-apply.txt
+f7d601cef2f1021b10f757d6da8cb531ac0fb7f2228d3b017bd60c21ad5dd7f9  /tmp/reardoor-dryrun.txt
+a1cae08bde44481093df64ab8bab2c4f4eb79b15eedb3213669ae0a31f44a7a0  /tmp/reardoor-recheck.txt
+dffcbe1edd394a91346de127a8fa9ede5d9ef945f2afca6623016b1de0b2f48b  /tmp/reardoor_sheet_truth.json
+56efde4c7cf08fd2c178e705f014f543aefc53c9a55a05f21b9d0b365e9abf92  /tmp/sept-recheck/before_after_plan.csv
+44d25232f13ac41374bb720cde5f03df77ca099ae3803ff6aa0d4ce742683b9a  /tmp/sept-recheck/excluded_scope.csv
+34f48c4f1a3c30b7067cbc706370d0b208f6d6b76fe9c1c82fcaf58049d1c7e2  /tmp/sept-recheck/override_survivors.csv
+d654c997f5b7a8f29ed600985b0199f898ea8cc73c6e96383c9570c0b4a336d7  /tmp/sept-recheck/review_rows.csv

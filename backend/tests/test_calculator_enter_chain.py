@@ -158,5 +158,7 @@ def test_the_bundle_tag_moved_with_the_javascript():
     # rule badges) moved it 183 -> 184; RT2 v1.59.3 (a quote never writes the template,
     # the per-body default foam) moved it 184 -> 185; RT3 v1.60.0 (body families: the
     # closed box's family bar, the top-bar chip) moved it 185 -> 186; RT5 v1.60.2 (the family's
-    # rule note under BODY OPTIONS, the foam picker hidden when no PU is offered) moved it 186 -> 187.
-    assert "calculator.js?v=187" in tags[0], tags[0]
+    # rule note under BODY OPTIONS, the foam picker hidden when no PU is offered) moved it 186 -> 187; RT6 v1.61.0
+    # (Burt's rules enforced: greyed choices, the breaches with Remove, the paste refusal) moved it 187 -> 189 (188
+    # was served only by the CA's local, never-merged preview).
+    assert "calculator.js?v=189" in tags[0], tags[0]

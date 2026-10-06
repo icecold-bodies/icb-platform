@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# ── RETIRED (RT6, 6 Oct 2026 — RT6_RULING_1 Q7) ─────────────────────────────────────────────────────────────────────
+# This kit's reviewed plan is applied on prod, and later releases and data steps build on what it wrote. It no longer
+# runs: its apply backed up with a bare `pg_dump … | gzip` (gzip's exit status only — a failed dump passed), and its
+# revert would now undo work done since. The file stays as the record its runbook cites. A new data step uses
+# ops/lib/icb_backup.sh (checked backup) and ops/lib/icb_where.sh (the safe-paste first line).
+echo "RETIRED (RT6, 2026-10-06): $(basename "$0") no longer runs — see its header. Nothing was done." >&2; exit 3
 # RT2 — the data manifests on PROD, one paste each, in the v1.59.3 window (dispatch Part 4; RT2_RULING_1 R6 + Part 3):
 #   P  docs/audit/rt2_2026-10/manifest_p/manifest_p.yaml  ONE shared PU price: own-price removals + conversions to
 #                                                         Burt's row shape (tools/audit_pricing_corrections.py)

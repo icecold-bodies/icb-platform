@@ -54,6 +54,9 @@ for v in EXPECT_HEAD EXPECT_ALEMBIC PLAN_TODO TOOL_SHA STAGED_FROM; do
 done
 TOOL="$BASE/rt5_notes.py"
 [ "$(sha256sum "$TOOL" | cut -d' ' -f1)" = "$TOOL_SHA" ] || stop KIT "rt5_notes.py is not the reviewed bytes"
+# RT6 (RT6_RULING_1 Q7) — the one checked backup every kit uses (staged as lib/icb_backup.sh, covered by SHA256SUMS)
+# shellcheck disable=SC1091
+. "$BASE/lib/icb_backup.sh" || stop KIT "lib/icb_backup.sh missing: re-stage"
 [ -r /etc/icb/backend.env ] || stop KIT "/etc/icb/backend.env not readable"
 set -a; . /etc/icb/backend.env; set +a
 [ -n "${DATABASE_URL:-}" ] || stop KIT "DATABASE_URL not set"
@@ -103,12 +106,8 @@ if [ "$MODE" = dryrun ] || [ "$MODE" = apply ]; then
   mkdir -p "$KEEP" && chmod 700 "$KEEP" || stop BACKUP "cannot create $KEEP"
   BK="$KEEP/pre_apply_notes_$TS.sql.gz"
   say "pre-apply backup (data only): trailer_groups"
-  # a pipeline's status is gzip's alone: a failed pg_dump would leave a valid, EMPTY gzip — check both, then the content
-  pg_dump "$URL" --data-only -t icb_costings.trailer_groups | gzip > "$BK"; PS=("${PIPESTATUS[@]}")
-  [ "${PS[0]}" = 0 ] && [ "${PS[1]}" = 0 ] || stop BACKUP "pg_dump exited ${PS[0]}, gzip ${PS[1]} — nothing applied"
-  [ -s "$BK" ] && gzip -t "$BK" || stop BACKUP "$BK is empty or not gzip — nothing applied"
-  zcat "$BK" | grep -q '^COPY icb_costings.trailer_groups ' || stop BACKUP "$BK holds no trailer_groups data — nothing applied"
-  echo "   ok   $BK $(stat -c %s "$BK") bytes sha256 $(sha256sum "$BK" | cut -d' ' -f1)"
+  # RT6 — ops/lib/icb_backup.sh: every pipe stage's exit status, then the content (trailer_groups' data is in it)
+  icb_backup "$BK" data-gz "$URL" icb_costings.trailer_groups || stop BACKUP "$ICB_BACKUP_WHY — nothing applied"
 
   say "apply — one transaction"
   $PY "$TOOL" --target prod --apply --out-dir "$OUT" > "$OUT/apply.txt" 2>&1; rc=$?

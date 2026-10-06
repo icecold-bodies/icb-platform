@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import Request, APIRouter, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -18,6 +18,7 @@ from ..quote_numbering import (
 )
 from ..services import resolve_report_template
 from ..services import body_family
+from ..services import insulation_rules   # RT6 — the family's insulation rule (validated, canonical)
 from ..templates_config import templates
 
 router = APIRouter()
@@ -360,6 +361,9 @@ async def admin_quote_templates(request: Request, db: Session = Depends(get_db))
         "orphan_override_name": orphan_override_name,
         # RT3 — each group IS a body family: its colour, inks and dropdown order
         "families": {g.id: body_family.group_family(g) for g in groups},
+        # RT6 — each family's insulation rule as the grid reads it: {panel: [allowed]} or None (no rule)
+        "ins_rules": {g.id: _rule_grid(g.insulation_rule) for g in groups},
+        "ins_panels": insulation_rules.PANELS, "ins_kinds": insulation_rules.INSULATIONS,
     })
 
 
@@ -385,6 +389,64 @@ def _rule_note_field(rule_note: Optional[str]) -> Optional[str]:
         return body_family.normalise_rule_note(rule_note)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+def _rule_grid(raw) -> Optional[dict]:
+    """RT6 — a stored rule as the editor's grid: {panel: [allowed insulations]}; None = no rule (or unreadable)."""
+    try:
+        allowed = insulation_rules.normalise_rule(raw)
+    except (ValueError, TypeError):
+        return None
+    return {p: sorted(allowed[p]) for p in insulation_rules.PANELS} if allowed else None
+
+
+def _insulation_rule_field(present: Optional[str], on: Optional[str], allow: List[str]) -> tuple[bool, Optional[str]]:
+    """RT6 — the family editor's grid -> (touched, stored value). A form without the grid (an older page) leaves the
+    rule as it is (touched False). Off = None (no rule). On: every ticked 'PANEL:INSULATION' is ALLOWED; a panel with
+    nothing ticked is refused (400) — it would block every quote that insulates that panel."""
+    if present is None:
+        return False, None
+    if not on:
+        return True, None
+    grid = {p: [] for p in insulation_rules.PANELS}
+    for cell in allow or []:
+        panel, _, kind = str(cell).partition(":")
+        if panel in grid and kind in insulation_rules.INSULATIONS and kind not in grid[panel]:
+            grid[panel].append(kind)
+    empty = [p for p, v in grid.items() if not v]
+    if empty:
+        raise HTTPException(status_code=400, detail=(
+            f"Each panel needs at least one allowed insulation — {', '.join(empty)} has none. "
+            "Untick 'Enforce' to have no rule."))
+    try:
+        return True, insulation_rules.canonical_rule({"allowed": grid})
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/api/admin/body-families/{group_id}/insulation-rule")
+async def admin_body_family_insulation_rule(group_id: int, payload: dict, request: Request,
+                                            db: Session = Depends(get_db)):
+    """RT6 — set or clear a family's insulation rule: {"rule": {"allowed": {panel: [EPS|PU,...]}} | null}. Admin only
+    (403 otherwise). Validated (all six panels, at least one insulation each) and stored canonical."""
+    require_admin(request, db)
+    g = db.query(TrailerGroup).filter_by(id=group_id).first()
+    if not g:
+        raise HTTPException(status_code=404, detail="No such family")
+    rule = (payload or {}).get("rule")
+    if rule is None:
+        g.insulation_rule = None
+    else:
+        try:
+            allowed = insulation_rules.normalise_rule(rule)
+        except (ValueError, TypeError) as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        empty = [p for p in insulation_rules.PANELS if allowed and not allowed[p]]
+        if empty:
+            raise HTTPException(status_code=400, detail=f"Each panel needs at least one allowed insulation — {', '.join(empty)} has none.")
+        g.insulation_rule = insulation_rules.canonical_rule(allowed)
+    db.commit()
+    return {"id": g.id, "name": g.name, "insulation_rule": _rule_grid(g.insulation_rule)}
 
 
 @router.get("/api/admin/body-families")
@@ -414,8 +476,12 @@ async def admin_quote_group_new(request: Request,
                                 colour: Optional[str] = Form(None),
                                 sort_order: Optional[str] = Form(None),
                                 rule_note: Optional[str] = Form(None),
+                                ins_rule_present: Optional[str] = Form(None),
+                                ins_rule_on: Optional[str] = Form(None),
+                                ins_allow: List[str] = Form([]),
                                 db: Session = Depends(get_db)):
     require_admin(request, db)
+    _touched, _ins_rule = _insulation_rule_field(ins_rule_present, ins_rule_on, ins_allow)   # RT6
     name = name.strip()
     if not name:
         raise HTTPException(status_code=400, detail="Group name required.")
@@ -428,6 +494,7 @@ async def admin_quote_group_new(request: Request,
         report_template_id=int(report_template_id) if report_template_id else None,
         colour=c, sort_order=order,
         rule_note=_rule_note_field(rule_note),   # RT5
+        insulation_rule=_ins_rule,               # RT6
     )
     db.add(g); db.commit()
     return RedirectResponse(url="/admin/quote-templates", status_code=303)
@@ -441,8 +508,12 @@ async def admin_quote_group_edit(group_id: int, request: Request,
                                  colour: Optional[str] = Form(None),
                                  sort_order: Optional[str] = Form(None),
                                  rule_note: Optional[str] = Form(None),
+                                 ins_rule_present: Optional[str] = Form(None),
+                                 ins_rule_on: Optional[str] = Form(None),
+                                 ins_allow: List[str] = Form([]),
                                  db: Session = Depends(get_db)):
     require_admin(request, db)
+    _touched, _ins_rule = _insulation_rule_field(ins_rule_present, ins_rule_on, ins_allow)   # RT6 (400 before any write)
     g = db.query(TrailerGroup).filter_by(id=group_id).first()
     if not g:
         raise HTTPException(status_code=404)
@@ -464,6 +535,9 @@ async def admin_quote_group_edit(group_id: int, request: Request,
     # RT5 — the rule note; a form without the field (an older page) leaves it as it is; '' clears it
     if rule_note is not None:
         g.rule_note = _rule_note_field(rule_note)
+    # RT6 — the insulation rule grid; a form without it (an older page) leaves the rule as it is
+    if _touched:
+        g.insulation_rule = _ins_rule
     db.commit()
     return RedirectResponse(url="/admin/quote-templates", status_code=303)
 

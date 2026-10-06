@@ -1,0 +1,38 @@
+== prod: db=icb_platform alembic=0051 code=01751fa mode=verify target=a429404 (v1.60.2) 2026-10-06T07:16:22+02:00
+== code + tag + schema (0052: trailer_groups.rule_note TEXT NULL)
+   FAIL HEAD = '01751fa330f57526c15129892820013cdb5f8b17' (want a429404d468fb08d15ae42ec470d8b27eb72b1ba)
+   FAIL TAG_LOCAL = 'missing' (want c2ba11ffc0f7146dc10df52aec8a826a4e002d35)
+   FAIL DESCRIBE = 'v1.60.1' (want v1.60.2)
+   FAIL ALEMBIC = '0051' (want 0052)
+   FAIL COLUMN = 'none' (want rule_note:text:YES:NULL)
+   families with a rule note: ERROR:  column "rule_note" does not exist
+LINE 1: ...t count(*) from icb_costings.trailer_groups where rule_note ...
+                                                             ^ (0 right after the deploy; rt5_notes.sh sets the two)
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   FAIL TOOL_IMPORT = 'ImportError: cannot import name 'RULE_NOTE_INK' from 'app.services.body_family' (/opt/icb-platform/backend/app/services/body_family.py)' (want #D12424)
+== the version the running process reports, on the three doors (no session)
+   FAIL VERSION_LOCAL = 'v1.60.1' (want v1.60.2)
+   FAIL VERSION_LAN = 'v1.60.1' (want v1.60.2)
+   FAIL VERSION_CF = 'v1.60.1' (want v1.60.2)
+== no session, Accept JSON: every path in probe_paths.txt answers its listed status, on the three doors
+   PASS NOAUTH_LOCAL = all 44 as expected
+   PASS NOAUTH_LAN = all 44 as expected
+   PASS NOAUTH_CF = all 44 as expected
+== served bytes: each page loads its new ?v= and both doors serve the target blob; the SPA unchanged
+   FAIL V_calculator = '186' (want 187)
+   FAIL LOCAL_calculator = '0cadd8fc2e4c2833f41bc367dd5f7d41b0822d56f7015a3e0507027908d2f940' (want 8cec4576cbe57cf85618f69c0c366c80cb889be8760cef8f88e91b29133f416d)
+   FAIL LAN_calculator = '0cadd8fc2e4c2833f41bc367dd5f7d41b0822d56f7015a3e0507027908d2f940' (want 8cec4576cbe57cf85618f69c0c366c80cb889be8760cef8f88e91b29133f416d)
+   FAIL V_admin_templates = '21' (want 22)
+   FAIL LOCAL_admin_templates = 'da0224ce9656e8226b45d881fa60b9269f957cc275cc1bc2661ca9cab18b0e48' (want 107737590a76945921848c5ceb633890db3c5cac7cec8f030655cb7b90a392f6)
+   FAIL LAN_admin_templates = 'da0224ce9656e8226b45d881fa60b9269f957cc275cc1bc2661ca9cab18b0e48' (want 107737590a76945921848c5ceb633890db3c5cac7cec8f030655cb7b90a392f6)
+   PASS SPA_LOCAL = e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161
+   PASS SPA_LAN = e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161
+
+######## VERIFY: 15 check(s) failed — tell the CA: /tmp/icb-release-v1.60.2/out-verify-20261006-071622

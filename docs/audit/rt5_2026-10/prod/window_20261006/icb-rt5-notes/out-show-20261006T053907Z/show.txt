@@ -1,0 +1,7 @@
+database icb_platform (--target prod); every family's rule note (read only)
+   #1   EXPLOSIVE     3 active bodies · rule_note = None
+   #5   CHILLER       3 active bodies · rule_note = 'No PU insulation for Chillers'
+   #4   FREEZER       3 active bodies · rule_note = 'Freezers: EPS insulation in the ROOF and FLOOR only, never in the SIDES, FRONT or doors'
+   #3   MEAT          2 active bodies · rule_note = None
+   #6   ICE CREAM     3 active bodies · rule_note = None
+   #7   OTHER         2 active bodies · rule_note = None

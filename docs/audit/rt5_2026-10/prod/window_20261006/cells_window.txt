@@ -1,0 +1,9 @@
+RT5 window, 6 Oct 2026: the CLI All before the deploy (pre, 07:19, v1.60.1) against after the deploy + notes (post, 07:27, v1.60.2)
+smoke      pre 234 cells, post 234; common 195, identical 195, differ 0; only pre 39 ['all_eps'], only post 39 ['roof_floor_eps']
+chillers   pre 716 cells, post 716; common 716, identical 716, differ 0; only pre 0 [], only post 0 []
+freezers   pre 690 cells, post 690; common 575, identical 575, differ 0; only pre 115 ['all_eps'], only post 115 ['roof_floor_eps']
+icecream   pre 612 cells, post 612; common 612, identical 612, differ 0; only pre 0 [], only post 0 []
+explosive  pre 684 cells, post 684; common 684, identical 684, differ 0; only pre 0 [], only post 0 []
+ALL five packs: post 2936 cells; every common cell identical; the only cells that differ in name are the freezer/smoke all_eps -> roof_floor_eps swap
+freezers: roof_floor_eps cells after the window 115; equal to the 5 Oct discovery run on prod: 115; differ 0
+smoke: roof_floor_eps cells after the window 39; equal to the 5 Oct discovery run on prod: 39; differ 0

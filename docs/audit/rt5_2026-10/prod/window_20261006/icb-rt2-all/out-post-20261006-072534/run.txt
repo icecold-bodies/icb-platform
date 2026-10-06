@@ -1,0 +1,16 @@
+== prod: db=icb_platform alembic=0052 code=a429404 label=post staged=a429404  2026-10-06T07:25:34+02:00
+== 1. the five packs, --env prod (the deployed code, read-only sessions)
+   smoke exit=0  - Cells: ACCEPTED 21, PASS 168, SKIP 45
+   chillers exit=0  - Cells: ACCEPTED 9, PASS 581, SKIP 126
+   freezers exit=0  - Cells: ACCEPTED 24, PASS 549, SKIP 117
+   icecream exit=0  - Cells: UNVERIFIABLE 40, ACCEPTED 43, PASS 413, SKIP 116
+   explosive exit=0  - Cells: UNVERIFIABLE 36, ACCEPTED 60, PASS 471, SKIP 117
+== 2. the page's newest All against the CLI
+   last data change on prod (a data-kit apply or revert journal in /var/backups/icb-rt2-2026-10 /var/backups/icb-rt4-2026-10 /var/backups/icb-rt5-2026-10): 2026-10-06T07:22:43+02:00
+page run #40: All, passed, started 2026-10-06 07:17:05.821477+02, finished 2026-10-06 07:17:11.436005+02 (9 min ago)
+   environment prod · database icb_platform · accepted list accepted_differences.prod.yaml · golden 04c774e2a7de6314
+   stored counts: PASS 1987  FLAG 0  ACCEPTED 136  EXPIRED 0  UNVERIFIABLE 103
+PAGE_EQUALS_CLI: no — the newest page run started before the last data change (2026-10-06T07:22:43+02:00): click All first, then run again
+
+######## STOP [PAGE]: no usable page run (see above) — click All, wait for it to finish, run again
+######## tell the CA: /tmp/icb-rt2-all/out-post-20261006-072534

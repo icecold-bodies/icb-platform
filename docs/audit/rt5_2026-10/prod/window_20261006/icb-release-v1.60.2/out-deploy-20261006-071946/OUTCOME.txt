@@ -1,0 +1,13 @@
+deployed      01751fa -> a429404 (a429404d468fb08d15ae42ec470d8b27eb72b1ba)
+tag           v1.60.2 = c2ba11ffc0f7146dc10df52aec8a826a4e002d35 (local = origin, peels to the target); git describe = v1.60.2
+alembic       0051 -> 0052 (0052_trailer_group_rule_note.py); column rule_note:text:YES:NULL
+families      md5 4fc1e469ac6df12a569985e9d52f5500 before = 4fc1e469ac6df12a569985e9d52f5500 after; with a rule note: 0 (rt5_notes.sh sets the two)
+backup        /var/backups/postgres/icb_platform_pre-v1.60.2_20261006-071946.dump  3319542 bytes  sha256 9bf9cd7643ad37ba75295a0fd9de00aa3266222abebf304152b39b844f7cea91
+restart       Mon 2026-10-05 08:56:09 SAST -> Tue 2026-10-06 07:20:02 SAST (pid 212582 -> 222264), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+version       local v1.60.2 · lan v1.60.2 · cloudflare v1.60.2
+no session    local: all 44 as expected · lan: all 44 as expected · cloudflare: all 44 as expected
+static        calculator.js ?v=187 8cec4576cbe57cf8  admin_templates.js ?v=22 107737590a769459  (local = lan = the target blobs)
+spa           assets/index-Bd_exvgd.js e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161 (local = lan = disk; unchanged, no rebuild)
+finished      2026-10-06T07:20:48+02:00

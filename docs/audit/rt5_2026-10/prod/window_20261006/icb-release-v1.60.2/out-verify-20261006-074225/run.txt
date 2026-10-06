@@ -1,0 +1,36 @@
+== prod: db=icb_platform alembic=0052 code=a429404 mode=verify target=a429404 (v1.60.2) 2026-10-06T07:42:26+02:00
+== code + tag + schema (0052: trailer_groups.rule_note TEXT NULL)
+   PASS HEAD = a429404d468fb08d15ae42ec470d8b27eb72b1ba
+   PASS TAG_LOCAL = c2ba11ffc0f7146dc10df52aec8a826a4e002d35
+   PASS DESCRIBE = v1.60.2
+   PASS ALEMBIC = 0052
+   PASS COLUMN = rule_note:text:YES:NULL
+   families with a rule note: 2 (0 right after the deploy; rt5_notes.sh sets the two)
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   PASS TOOL_IMPORT = #D12424
+== the version the running process reports, on the three doors (no session)
+   PASS VERSION_LOCAL = v1.60.2
+   PASS VERSION_LAN = v1.60.2
+   PASS VERSION_CF = v1.60.2
+== no session, Accept JSON: every path in probe_paths.txt answers its listed status, on the three doors
+   PASS NOAUTH_LOCAL = all 44 as expected
+   PASS NOAUTH_LAN = all 44 as expected
+   PASS NOAUTH_CF = all 44 as expected
+== served bytes: each page loads its new ?v= and both doors serve the target blob; the SPA unchanged
+   PASS V_calculator = 187
+   PASS LOCAL_calculator = 8cec4576cbe57cf85618f69c0c366c80cb889be8760cef8f88e91b29133f416d
+   PASS LAN_calculator = 8cec4576cbe57cf85618f69c0c366c80cb889be8760cef8f88e91b29133f416d
+   PASS V_admin_templates = 22
+   PASS LOCAL_admin_templates = 107737590a76945921848c5ceb633890db3c5cac7cec8f030655cb7b90a392f6
+   PASS LAN_admin_templates = 107737590a76945921848c5ceb633890db3c5cac7cec8f030655cb7b90a392f6
+   PASS SPA_LOCAL = e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161
+   PASS SPA_LAN = e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161
+
+######## VERIFY: 0 check(s) failed — tell the CA: /tmp/icb-release-v1.60.2/out-verify-20261006-074225

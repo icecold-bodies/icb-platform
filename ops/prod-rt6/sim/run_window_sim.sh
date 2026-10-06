@@ -215,8 +215,8 @@ row "tidy: nothing moved so far" "$(ls -d "$SIM"/varbackups/icb-tmp-archive-* 2>
 log=$(run $T apply)
 row "tidy apply" "$log" "######## DONE \(apply: 34 items moved to /var/backups/icb-tmp-archive-$DAY, read back\)"
 left=0; while read -r n; do [ -e "$SIM/tmp/$n" ] && left=$((left+1)); done < <(sed -n 's/^ITEM //p' "$SIM/tmp/icb-rt6-tidy/tmp_tidy_manifest.txt")
-row "tidy result" "left=$left arch=$(stat -c '%U:%G %a' "$A") files=$(find "$A" -type f | wc -l) sums=$( cd "$A" && sha256sum -c --quiet SHA256SUMS && echo ok) own=$(stat -c '%u:%g %a' "$A/prod_quote93.py" "$A/explosive-golden" | tr '\n' ' ')stays=$(ls "$SIM/tmp" | grep -cE '^(node-compile-cache|systemd-private-abc-icb-backend\.service-x|snap-private-tmp|icb-rollback-20261007-061500\.txt|icb-rt6-rules|icb-rt6-tidy|icb-release-v1\.61\.0|icb-rt2-all|icb-rt2-doors)$')" \
-  "^left=0 arch=root:root 700 files=49 sums=ok own=${OWN_BEFORE}stays=9$"
+row "tidy result" "left=$left arch=$(stat -c '%U:%G %a' "$A") files=$(find "$A" -type f | wc -l) summed=$(wc -l < "$A/SHA256SUMS") sums=$( cd "$A" && sha256sum -c --quiet SHA256SUMS && echo ok) own=$(stat -c '%u:%g %a' "$A/prod_quote93.py" "$A/explosive-golden" | tr '\n' ' ')stays=$(ls "$SIM/tmp" | grep -cE '^(node-compile-cache|systemd-private-abc-icb-backend\.service-x|snap-private-tmp|icb-rollback-20261007-061500\.txt|icb-rt6-rules|icb-rt6-tidy|icb-release-v1\.61\.0|icb-rt2-all|icb-rt2-doors)$')" \
+  "^left=0 arch=root:root 700 files=49 summed=47 sums=ok own=${OWN_BEFORE}stays=9$"
 log=$(run $T apply)
 row "tidy apply again" "$log" "0 of 34 present, 34 missing.*already tidied.*SHA256SUMS: all match.*######## DONE \(apply: already tidied\)"
 log=$(run $T show)

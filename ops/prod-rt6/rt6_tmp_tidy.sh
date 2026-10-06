@@ -112,10 +112,10 @@ say "apply: move the $N_ITEMS items into $ARCH (root:root 700)"
 [ -e "$ARCH" ] && stop ARCHIVE "$ARCH already exists — never mixed into"
 mkdir -p "$ARCH" && chown root:root "$ARCH" && chmod 700 "$ARCH" || stop ARCHIVE "cannot create $ARCH"
 for n in "${ITEMS[@]}"; do mv "/tmp/$n" "$ARCH/$n" || stop MOVE "mv of $n failed — tell the CA (already moved items are in $ARCH)"; done
-( cd "$ARCH" && find . -type f ! -name SHA256SUMS ! -name LISTING.txt -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS ) \
+( cd "$ARCH" && find . -type f ! -path ./SHA256SUMS ! -path ./LISTING.txt -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS ) \
   || stop ARCHIVE "SHA256SUMS not written"
 { echo "# moved from /tmp by ops/prod-rt6/rt6_tmp_tidy.sh on $(date -Is) (RT6_RULING_1); owners, modes and dates kept"
-  ( cd "$ARCH" && find . -mindepth 1 ! -name SHA256SUMS ! -name LISTING.txt -printf '%M %u:%g %10s %TY-%Tm-%Td %TH:%TM %p\n' | LC_ALL=C sort -k6 ); } > "$ARCH/LISTING.txt"
+  ( cd "$ARCH" && find . -mindepth 1 ! -path ./SHA256SUMS ! -path ./LISTING.txt -printf '%M %u:%g %10s %TY-%Tm-%Td %TH:%TM %p\n' | LC_ALL=C sort -k6 ); } > "$ARCH/LISTING.txt"
 chmod 600 "$ARCH/SHA256SUMS" "$ARCH/LISTING.txt"
 
 say "read back"

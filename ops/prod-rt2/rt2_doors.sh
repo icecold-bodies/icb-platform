@@ -20,6 +20,20 @@ OUT=$BASE/out-$TS
 PY=/opt/icb-platform/.venv/bin/python
 stop() { echo; echo "######## STOP [$1]: $2"; exit 1; }
 
+# RT6 safe paste (RT6_DISPATCH default 8): when the staging carries ops/lib/icb_where.sh (every RT6 staging does), the
+# FIRST output line names the machine, the database (name @ host) and the git HEAD, and a wrong place is refused.
+if [ -f "$BASE/lib/icb_where.sh" ]; then
+  _U=''
+  if [ "$(id -u)" = 0 ] && [ -r /etc/icb/backend.env ]; then
+    _U=$( set -a; . /etc/icb/backend.env >/dev/null 2>&1; printf '%s' "${DATABASE_URL:-}" ); _U=${_U/postgresql+psycopg:/postgresql:}
+  fi
+  # shellcheck disable=SC1091
+  . "$BASE/lib/icb_where.sh"; . "$BASE/expected.env" 2>/dev/null
+  export PGOPTIONS='-c default_transaction_read_only=on'
+  icb_where "door report (read only)" /opt/icb-platform "$_U"
+  if [ -n "${EXPECT_MACHINE:-}" ]; then icb_where_check || stop WHERE "$WHERE_WHY"; fi
+fi
+
 [ "$(id -u)" = 0 ] || stop KIT "run with sudo (the env file is root-readable only)"
 ( cd "$BASE" && sha256sum -c --quiet SHA256SUMS ) || stop KIT "staged files do not match SHA256SUMS: re-stage"
 # shellcheck disable=SC1091

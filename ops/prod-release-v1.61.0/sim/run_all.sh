@@ -17,7 +17,7 @@ VB=${VB:-24}   # verify BEFORE the deploy (and before the env step): exactly the
 FIRST='######## RT6 release v1.61.0 preflight · machine icb-mes-prod · db icb_platform @ 127.0.0.1:5432 · head a429404'
 row happy        "$FIRST.*PREFLIGHT PASSED.*######## VERIFY: $VB check\(s\) failed.*DONE \(env: ICB_ENVIRONMENT=prod, read back.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed.*DONE \(env: already ICB_ENVIRONMENT=prod\).*######## ALREADY DEPLOYED.*1 line\(s\) added: ICB_ENVIRONMENT=prod .*earlier lines unchanged: yes; mode 600.*pg_dump ran at alembic 0052.*npm builds: [1-9]"
 row notag        'STOP \[TAG_ON_ORIGIN\]|PREFLIGHT: [0-9]+ check\(s\) FAILED.*STOP \[TAG\]'
-row moved        'STOP \[ANCHORS\]'
+row moved        'STOP \[WHERE\]: WRONG PLACE — code is at [0-9a-f]{7}, this step expects a429404 [0-9a-f]{7}; nothing was run.*sim state: prod HEAD [0-9a-f]+, describe v1\.60\.2, alembic 0052'   # RT6: the safe-paste line refuses before ANCHORS
 row bootfail     'BOOTSTRAP FAILED.*STOP \[DEPLOY\]'
 row traceback    'STOP \[TRACEBACKS\]'
 row stalecache   'STOP \[LOCAL_calculator\]'

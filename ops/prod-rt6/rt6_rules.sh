@@ -20,7 +20,8 @@
 #                  trailer_groups (ops/lib/icb_backup.sh), then the tool's apply: ONE transaction, every row re-read FOR
 #                  UPDATE and re-checked before the commit; journal + backup + provenance kept in
 #                  /var/backups/icb-rt6-2026-10/; a second dry-run must find nothing left to apply
-#   revert         puts every journaled row back; the tool refuses if a row moved since
+#   revert         a CHECKED backup of trailer_groups, then puts every journaled row back (the tool refuses if a row
+#                  moved since); the revert record is kept beside the journal
 # Nothing under /opt/icb-platform changes; no service is touched; nothing is a deploy; no price, formula, BOM row,
 # option, draft, draft backup or saved costing moves (the rules are trailer_groups.insulation_rule only).
 #
@@ -73,6 +74,7 @@ mkdir -p "$OUT" && chmod 700 "$OUT" || { OUT=''; stop KIT "cannot create $OUT_TM
 exec > >(tee -a "$OUT/run.txt") 2>&1
 echo "(the line above, as run: machine $WHERE_MACHINE, db $WHERE_DB @ $WHERE_DBHOST, head $WHERE_HEAD, mode $MODE)"
 q() { PGOPTIONS='-c default_transaction_read_only=on' psql "$URL" -XAtq -v ON_ERROR_STOP=1 -c "$1" 2>&1; }
+export DATABASE_URL="$URL"     # the tool reads it from its environment (and refuses without it)
 export PYTHONDONTWRITEBYTECODE=1
 ALEMBIC=$(q "select string_agg(version_num, ',') from alembic_version") || stop DB "cannot read alembic_version"
 [ "$ALEMBIC" = "$EXPECT_ALEMBIC" ] || stop DB "alembic_version is '$ALEMBIC', expected $EXPECT_ALEMBIC (the rules go over v1.61.0 only)"
@@ -143,10 +145,16 @@ fi
 
 # revert
 [ -f "$ARG" ] || stop REVERT "no journal at $ARG"
+mkdir -p "$KEEP" && chmod 700 "$KEEP" || stop BACKUP "cannot create $KEEP"
+say "pre-revert backup (data only, checked): trailer_groups"
+icb_backup "$KEEP/pre_revert_rules_$TS.sql.gz" data-gz "$URL" icb_costings.trailer_groups || stop BACKUP "$ICB_BACKUP_WHY — nothing reverted"
 say "revert from $ARG"
 $PY "$TOOL" --target prod --revert "$ARG" --out-dir "$OUT" > "$OUT/revert.txt" 2>&1; rc=$?
 cat "$OUT/revert.txt"
 [ $rc = 0 ] || stop REVERT "revert refused or failed (exit $rc): nothing changed"
+R=$(ls "$OUT"/rt6_rules_revert_prod_*.json 2>/dev/null | head -n1)
+[ -n "$R" ] && cp "$R" "$KEEP/revert_rules_$(basename "$R")" || stop REVERT "reverted, but the record was not kept in $KEEP — tell the CA"
+echo "   ok   record $KEEP/revert_rules_$(basename "$R")"
 show | tee "$OUT/show.txt"
 chmod -R a+rX "$OUT"
 echo; echo "######## DONE (revert) — tell the CA: $OUT"

@@ -1,0 +1,964 @@
+{
+ "rules": {
+  "CHILLER": {
+   "allowed": {
+    "FRONT": [
+     "EPS"
+    ],
+    "SIDES": [
+     "EPS"
+    ],
+    "ROOF": [
+     "EPS"
+    ],
+    "FLOOR": [
+     "EPS"
+    ],
+    "DRD": [
+     "EPS"
+    ],
+    "SRD": [
+     "EPS"
+    ]
+   }
+  },
+  "FREEZER": {
+   "allowed": {
+    "FRONT": [
+     "PU"
+    ],
+    "SIDES": [
+     "PU"
+    ],
+    "ROOF": [
+     "EPS",
+     "PU"
+    ],
+    "FLOOR": [
+     "EPS",
+     "PU"
+    ],
+    "DRD": [
+     "PU"
+    ],
+    "SRD": [
+     "PU"
+    ]
+   }
+  }
+ },
+ "database": "icb_prodmirror",
+ "classification": {
+  "25": {
+   "masters": [
+    {
+     "id": 3793,
+     "name": "FRONT EPS",
+     "panel": "FRONT",
+     "insulation": "EPS",
+     "how": "group FRONT + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3794,
+     "name": "FRONT PU",
+     "panel": "FRONT",
+     "insulation": "PU",
+     "how": "group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3799,
+     "name": "SIDES EPS",
+     "panel": "SIDES",
+     "insulation": "EPS",
+     "how": "group SIDES + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3800,
+     "name": "SIDES PU",
+     "panel": "SIDES",
+     "insulation": "PU",
+     "how": "group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3801,
+     "name": "ROOF EPS",
+     "panel": "ROOF",
+     "insulation": "EPS",
+     "how": "group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.076,
+     "default": true
+    },
+    {
+     "id": 3802,
+     "name": "ROOF PU",
+     "panel": "ROOF",
+     "insulation": "PU",
+     "how": "group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3803,
+     "name": "FLOOR EPS",
+     "panel": "FLOOR",
+     "insulation": "EPS",
+     "how": "group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.076,
+     "default": true
+    },
+    {
+     "id": 3804,
+     "name": "FLOOR PU",
+     "panel": "FLOOR",
+     "insulation": "PU",
+     "how": "group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3795,
+     "name": "DRD EPS",
+     "panel": "DRD",
+     "insulation": "EPS",
+     "how": "group DRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3796,
+     "name": "DRD PU",
+     "panel": "DRD",
+     "insulation": "PU",
+     "how": "group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3797,
+     "name": "SRD EPS",
+     "panel": "SRD",
+     "insulation": "EPS",
+     "how": "group SRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3798,
+     "name": "SRD PU",
+     "panel": "SRD",
+     "insulation": "PU",
+     "how": "group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    }
+   ],
+   "unclassified": [],
+   "forbidden": {
+    "master_ids": [
+     3794,
+     3796,
+     3798,
+     3800,
+     3802,
+     3804
+    ],
+    "names": [
+     "DRD PU",
+     "FLOOR PU",
+     "FRONT PU",
+     "ROOF PU",
+     "SIDES PU",
+     "SRD PU"
+    ]
+   },
+   "aliases": []
+  },
+  "26": {
+   "masters": [
+    {
+     "id": 3292,
+     "name": "FRONT EPS",
+     "panel": "FRONT",
+     "insulation": "EPS",
+     "how": "group FRONT + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3293,
+     "name": "FRONT PU",
+     "panel": "FRONT",
+     "insulation": "PU",
+     "how": "group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3298,
+     "name": "SIDES EPS",
+     "panel": "SIDES",
+     "insulation": "EPS",
+     "how": "group SIDES + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3299,
+     "name": "SIDES PU",
+     "panel": "SIDES",
+     "insulation": "PU",
+     "how": "group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3300,
+     "name": "ROOF EPS",
+     "panel": "ROOF",
+     "insulation": "EPS",
+     "how": "group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.076,
+     "default": true
+    },
+    {
+     "id": 3301,
+     "name": "ROOF PU",
+     "panel": "ROOF",
+     "insulation": "PU",
+     "how": "group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3302,
+     "name": "FLOOR EPS",
+     "panel": "FLOOR",
+     "insulation": "EPS",
+     "how": "group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.076,
+     "default": true
+    },
+    {
+     "id": 3303,
+     "name": "FLOOR PU",
+     "panel": "FLOOR",
+     "insulation": "PU",
+     "how": "group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3294,
+     "name": "DRD EPS",
+     "panel": "DRD",
+     "insulation": "EPS",
+     "how": "group DRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": true
+    },
+    {
+     "id": 3295,
+     "name": "DRD PU",
+     "panel": "DRD",
+     "insulation": "PU",
+     "how": "group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3296,
+     "name": "SRD EPS",
+     "panel": "SRD",
+     "insulation": "EPS",
+     "how": "group SRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": false
+    },
+    {
+     "id": 3297,
+     "name": "SRD PU",
+     "panel": "SRD",
+     "insulation": "PU",
+     "how": "group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    }
+   ],
+   "unclassified": [],
+   "forbidden": {
+    "master_ids": [
+     3293,
+     3295,
+     3297,
+     3299,
+     3301,
+     3303
+    ],
+    "names": [
+     "DRD PU",
+     "FLOOR PU",
+     "FRONT PU",
+     "ROOF PU",
+     "SIDES PU",
+     "SRD PU"
+    ]
+   },
+   "aliases": []
+  },
+  "27": {
+   "masters": [
+    {
+     "id": 3431,
+     "name": "FRONT EPS",
+     "panel": "FRONT",
+     "insulation": "EPS",
+     "how": "group FRONT + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3432,
+     "name": "FRONT PU",
+     "panel": "FRONT",
+     "insulation": "PU",
+     "how": "group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3437,
+     "name": "SIDES EPS",
+     "panel": "SIDES",
+     "insulation": "EPS",
+     "how": "group SIDES + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3438,
+     "name": "SIDES PU",
+     "panel": "SIDES",
+     "insulation": "PU",
+     "how": "group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3439,
+     "name": "ROOF EPS",
+     "panel": "ROOF",
+     "insulation": "EPS",
+     "how": "group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.1,
+     "default": true
+    },
+    {
+     "id": 3440,
+     "name": "ROOF PU",
+     "panel": "ROOF",
+     "insulation": "PU",
+     "how": "group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3441,
+     "name": "FLOOR EPS",
+     "panel": "FLOOR",
+     "insulation": "EPS",
+     "how": "group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.1,
+     "default": true
+    },
+    {
+     "id": 3442,
+     "name": "FLOOR PU",
+     "panel": "FLOOR",
+     "insulation": "PU",
+     "how": "group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3433,
+     "name": "DRD EPS",
+     "panel": "DRD",
+     "insulation": "EPS",
+     "how": "group DRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3434,
+     "name": "DRD PU",
+     "panel": "DRD",
+     "insulation": "PU",
+     "how": "group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3435,
+     "name": "SRD EPS",
+     "panel": "SRD",
+     "insulation": "EPS",
+     "how": "group SRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3436,
+     "name": "SRD PU",
+     "panel": "SRD",
+     "insulation": "PU",
+     "how": "group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    }
+   ],
+   "unclassified": [],
+   "forbidden": {
+    "master_ids": [
+     3432,
+     3434,
+     3436,
+     3438,
+     3440,
+     3442
+    ],
+    "names": [
+     "DRD PU",
+     "FLOOR PU",
+     "FRONT PU",
+     "ROOF PU",
+     "SIDES PU",
+     "SRD PU"
+    ]
+   },
+   "aliases": []
+  },
+  "19": {
+   "masters": [
+    {
+     "id": 3673,
+     "name": "FRONT EPS",
+     "panel": "FRONT",
+     "insulation": "EPS",
+     "how": "group FRONT + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3674,
+     "name": "FRONT PU",
+     "panel": "FRONT",
+     "insulation": "PU",
+     "how": "group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3679,
+     "name": "SIDES EPS",
+     "panel": "SIDES",
+     "insulation": "EPS",
+     "how": "group SIDES + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3680,
+     "name": "SIDES PU",
+     "panel": "SIDES",
+     "insulation": "PU",
+     "how": "group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3681,
+     "name": "ROOF EPS",
+     "panel": "ROOF",
+     "insulation": "EPS",
+     "how": "group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.076,
+     "default": true
+    },
+    {
+     "id": 3682,
+     "name": "ROOF PU",
+     "panel": "ROOF",
+     "insulation": "PU",
+     "how": "group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3683,
+     "name": "FLOOR EPS",
+     "panel": "FLOOR",
+     "insulation": "EPS",
+     "how": "group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.076,
+     "default": true
+    },
+    {
+     "id": 3684,
+     "name": "FLOOR PU",
+     "panel": "FLOOR",
+     "insulation": "PU",
+     "how": "group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3675,
+     "name": "DRD EPS",
+     "panel": "DRD",
+     "insulation": "EPS",
+     "how": "group DRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3676,
+     "name": "DRD PU",
+     "panel": "DRD",
+     "insulation": "PU",
+     "how": "group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 3677,
+     "name": "SRD EPS",
+     "panel": "SRD",
+     "insulation": "EPS",
+     "how": "group SRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 3678,
+     "name": "SRD PU",
+     "panel": "SRD",
+     "insulation": "PU",
+     "how": "group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    }
+   ],
+   "unclassified": [],
+   "forbidden": {
+    "master_ids": [
+     3673,
+     3675,
+     3677,
+     3679
+    ],
+    "names": [
+     "DRD EPS",
+     "FRONT EPS",
+     "SIDES EPS",
+     "SRD EPS"
+    ]
+   },
+   "aliases": []
+  },
+  "20": {
+   "masters": [
+    {
+     "id": 2532,
+     "name": "FRONT EPS",
+     "panel": "FRONT",
+     "insulation": "EPS",
+     "how": "group FRONT + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2533,
+     "name": "FRONT PU",
+     "panel": "FRONT",
+     "insulation": "PU",
+     "how": "group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 2538,
+     "name": "SIDES EPS",
+     "panel": "SIDES",
+     "insulation": "EPS",
+     "how": "group SIDES + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2539,
+     "name": "SIDES PU",
+     "panel": "SIDES",
+     "insulation": "PU",
+     "how": "group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 2540,
+     "name": "ROOF EPS",
+     "panel": "ROOF",
+     "insulation": "EPS",
+     "how": "group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2541,
+     "name": "ROOF PU",
+     "panel": "ROOF",
+     "insulation": "PU",
+     "how": "group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.076,
+     "default": true
+    },
+    {
+     "id": 2542,
+     "name": "FLOOR EPS",
+     "panel": "FLOOR",
+     "insulation": "EPS",
+     "how": "group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2543,
+     "name": "FLOOR PU",
+     "panel": "FLOOR",
+     "insulation": "PU",
+     "how": "group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.076,
+     "default": true
+    },
+    {
+     "id": 2534,
+     "name": "DRD EPS",
+     "panel": "DRD",
+     "insulation": "EPS",
+     "how": "group DRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2535,
+     "name": "DRD PU",
+     "panel": "DRD",
+     "insulation": "PU",
+     "how": "group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 2536,
+     "name": "SRD EPS",
+     "panel": "SRD",
+     "insulation": "EPS",
+     "how": "group SRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2537,
+     "name": "SRD PU",
+     "panel": "SRD",
+     "insulation": "PU",
+     "how": "group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    }
+   ],
+   "unclassified": [],
+   "forbidden": {
+    "master_ids": [
+     2532,
+     2534,
+     2536,
+     2538
+    ],
+    "names": [
+     "DRD EPS",
+     "FRONT EPS",
+     "SIDES EPS",
+     "SRD EPS"
+    ]
+   },
+   "aliases": []
+  },
+  "21": {
+   "masters": [
+    {
+     "id": 2680,
+     "name": "FRONT EPS",
+     "panel": "FRONT",
+     "insulation": "EPS",
+     "how": "group FRONT + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2681,
+     "name": "FRONT PU",
+     "panel": "FRONT",
+     "insulation": "PU",
+     "how": "group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 2686,
+     "name": "SIDES EPS",
+     "panel": "SIDES",
+     "insulation": "EPS",
+     "how": "group SIDES + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2687,
+     "name": "SIDES PU",
+     "panel": "SIDES",
+     "insulation": "PU",
+     "how": "group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 2688,
+     "name": "ROOF EPS",
+     "panel": "ROOF",
+     "insulation": "EPS",
+     "how": "group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.1,
+     "default": false
+    },
+    {
+     "id": 2689,
+     "name": "ROOF PU",
+     "panel": "ROOF",
+     "insulation": "PU",
+     "how": "group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": true
+    },
+    {
+     "id": 2690,
+     "name": "FLOOR EPS",
+     "panel": "FLOOR",
+     "insulation": "EPS",
+     "how": "group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)",
+     "forbidden": false,
+     "thickness": 0.1,
+     "default": false
+    },
+    {
+     "id": 2691,
+     "name": "FLOOR PU",
+     "panel": "FLOOR",
+     "insulation": "PU",
+     "how": "group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": true
+    },
+    {
+     "id": 2682,
+     "name": "DRD EPS",
+     "panel": "DRD",
+     "insulation": "EPS",
+     "how": "group DRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2683,
+     "name": "DRD PU",
+     "panel": "DRD",
+     "insulation": "PU",
+     "how": "group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.06,
+     "default": true
+    },
+    {
+     "id": 2684,
+     "name": "SRD EPS",
+     "panel": "SRD",
+     "insulation": "EPS",
+     "how": "group SRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)",
+     "forbidden": true,
+     "thickness": 0.0,
+     "default": false
+    },
+    {
+     "id": 2685,
+     "name": "SRD PU",
+     "panel": "SRD",
+     "insulation": "PU",
+     "how": "group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)",
+     "forbidden": false,
+     "thickness": 0.0,
+     "default": false
+    }
+   ],
+   "unclassified": [],
+   "forbidden": {
+    "master_ids": [
+     2680,
+     2682,
+     2684,
+     2686
+    ],
+    "names": [
+     "DRD EPS",
+     "FRONT EPS",
+     "SIDES EPS",
+     "SRD EPS"
+    ]
+   },
+   "aliases": []
+  }
+ },
+ "tally": {
+  "CHILLER:classified": 36,
+  "CHILLER:unclassified": 0,
+  "EXPLOSIVE:classified": 30,
+  "EXPLOSIVE:unclassified": 0,
+  "FREEZER:classified": 36,
+  "FREEZER:unclassified": 0,
+  "ICE CREAM:classified": 36,
+  "ICE CREAM:unclassified": 0,
+  "MEAT:classified": 24,
+  "MEAT:unclassified": 1,
+  "OTHER:classified": 12,
+  "OTHER:unclassified": 0
+ },
+ "side_doors": {
+  "19": {
+   "rows": 7,
+   "insulation_masters": [],
+   "insulation_lines": 0
+  },
+  "20": {
+   "rows": 7,
+   "insulation_masters": [],
+   "insulation_lines": 0
+  },
+  "21": {
+   "rows": 7,
+   "insulation_masters": [],
+   "insulation_lines": 0
+  }
+ },
+ "costings": [],
+ "references": [],
+ "drafts": {
+  "25": {
+   "live": [],
+   "backups": []
+  },
+  "26": {
+   "live": [],
+   "backups": []
+  },
+  "27": {
+   "live": [],
+   "backups": []
+  },
+  "19": {
+   "live": [],
+   "backups": []
+  },
+  "20": {
+   "live": [],
+   "backups": []
+  },
+  "21": {
+   "live": [],
+   "backups": []
+  }
+ }
+}

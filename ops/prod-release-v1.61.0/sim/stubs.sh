@@ -98,7 +98,7 @@ cat > "$B/psql" <<'EOF'
 # Answers exactly the read-only SQL release.sh (and ops/lib/icb_where.sh) sends; anything else is a loud failure.
 S=$SIMSTATE; sql=
 case "${PGOPTIONS:-}" in *default_transaction_read_only=on*) ;; *) echo "psql stub: NOT a read-only session" ; exit 3;; esac
-while [ $# -gt 0 ]; do [ "$1" = -c ] && sql=$2; shift; done
+while [ $# -gt 0 ]; do case "$1" in -c|-[A-Za-z]*c) sql=$2 ;; esac; shift; done   # -c, or combined like -XAtc
 mig=$(cat "$S/alembic")
 case "$sql" in
   *current_database*) cat "$S/dbname" 2>/dev/null || echo icb_platform ;;

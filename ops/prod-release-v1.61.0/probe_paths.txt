@@ -1,0 +1,55 @@
+# v1.61.0 (RT6): v1.60.2's probes, plus RT6's two new GET routes (deny-by-default: 401 with no session). The
+# release also checks /health/version reads {"version":"v1.61.0","environment":"prod"} and no TEST banner on the doors.
+# v1.60.2 (RT5): UNCHANGED from v1.60.1 — RT5 adds no route and changes no gate; the same probes, same statuses.
+# v1.60.1 — the no-session probe (RT4 Part C, RT4_RULING_1 window step 8). One path per line: <status> <path>.
+# <status> = what the v1.60.1 code answers with NO session and `Accept: application/json` (generated from the code
+# itself, read-only). release.sh probes every line on the three doors (127.0.0.1, LAN, Cloudflare) after the deploy:
+#   200/302/303  the public routes (/, /login, /health, /health/version, /debug/health/ping, the /mes-app shell)
+#   401          every route that answered without a session before (§3.0, all 32) and the controls
+#   404          the API docs, switched off
+302 /
+200 /login
+200 /health
+200 /health/version
+401 /health/commodity
+200 /debug/health/ping
+401 /openapi.json
+404 /docs
+404 /docs/oauth2-redirect
+404 /redoc
+401 /api/trailers
+401 /api/trailers/27/bom
+401 /api/trailers/27/ratios
+401 /api/materials
+401 /api/materials/bom-overrides/all
+401 /api/materials/95/bom-overrides
+401 /api/materials/95/history
+401 /api/materials/95/trailer-usage
+401 /api/categories
+401 /api/bom-sections
+401 /api/body-option-groups
+401 /api/bom/cross-body-copy-names
+401 /api/formulas
+401 /api/formulas/apply-targets
+401 /api/global-variables
+401 /api/global-variables/waste-migration-preview
+401 /api/skin-formulas
+401 /api/skin-formula-ingredients
+401 /api/taping-blocks
+401 /api/floor-plates
+401 /api/mounting-cleats
+401 /api/sap-item-codes
+401 /api/sap-item-codes/2785
+401 /api/session
+401 /api/calculations
+401 /api/trailers/27
+401 /api/trailers?include_inactive=1
+401 /api/configurator/trailers/27/draft
+401 /api/admin/body-families
+401 /debug/health
+303 /mes-app/
+401 /calculator
+401 /mes/calculator
+401 /admin/templates
+401 /api/trailers/27/insulation-rule-check
+401 /api/configurator/draft-snapshots/1/rule-warnings

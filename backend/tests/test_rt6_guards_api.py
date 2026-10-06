@@ -451,6 +451,16 @@ def test_a_draft_that_offers_a_forbidden_choice_is_saved_with_a_warning_and_so_i
     assert res.status_code == 200 and [x["panel"] for x in res.json()["rule_warnings"]] == ["FRONT"]
 
 
+def test_the_new_routes_are_closed_without_a_session(client, staged):
+    """RT4's deny-by-default covers RT6's routes too (the release's probe_paths.txt expects these 401s)."""
+    for path in (f"/api/trailers/{staged['bodies']['chill']}/insulation-rule-check",
+                 "/api/configurator/draft-snapshots/1/rule-warnings"):
+        assert client.get(path, headers={"Accept": "application/json"}).status_code == 401, path
+    r = client.put(f"/api/admin/body-families/{staged['groups'][0]}/insulation-rule", json={"rule": None},
+                   headers={"Accept": "application/json"})
+    assert r.status_code in (401, 403)
+
+
 # ── 8. the audit probe is never guarded ──────────────────────────────────────
 def test_the_check_is_in_the_routers_never_in_the_pricing_engine_or_the_audit():
     src = (ROOT / "backend/app/routers/calculator.py").read_text(encoding="utf-8")

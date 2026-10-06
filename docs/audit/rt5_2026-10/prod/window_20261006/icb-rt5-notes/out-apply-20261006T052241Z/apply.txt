@@ -1,0 +1,4 @@
+database icb_platform (--target prod); RT5 rule notes; plan sha256 36eda696b103ddac…; tool sha256 af1ae2354aafe7a2…
+APPLIED 2 note(s): #5 CHILLER; #4 FREEZER
+journal /tmp/icb-rt5-notes/out-apply-20261006T052241Z/rt5_notes_journal_prod_20261006T052243Z.json  sha256 c4398b8daa1b16b9f9c00cdd0672356787e296e97737703867da2e47e4435eb5
+Undo: python rt5_notes.py --target prod --revert /tmp/icb-rt5-notes/out-apply-20261006T052241Z/rt5_notes_journal_prod_20261006T052243Z.json --out-dir <dir>

@@ -1,0 +1,20 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  01751fa3  RT4 (v1.60.1): move into an existing section + honest renames, d
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  a429404d468fb08d15ae42ec470d8b27eb72b1ba already present - no fetch needed
+[32m  ok[0m  a429404d468fb08d15ae42ec470d8b27eb72b1ba = a429404d
+
+[1m== 2. plan[0m
+  01751fa3 -> a429404d   (2 commit(s), 136 file(s))
+    a429404 RT5 (v1.60.2): Burt's body rules in red — the family rule note (0052), the foam picker rule, roof_floor_eps; notes + dev families steps; release kit (#216)
+    8cdc804 docs(release): v1.60.1 OUTCOME + RT4 close — prod = 01751fa, Manifest S applied, nothing priced moved; the pre-window check; the Manni Burt gap table (#215)
+
+  DB migration     YES - 0052_trailer_group_rule_note.py 
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 16 Python file(s) changed
+
+[32m  ok[0m  dry run - nothing changed.

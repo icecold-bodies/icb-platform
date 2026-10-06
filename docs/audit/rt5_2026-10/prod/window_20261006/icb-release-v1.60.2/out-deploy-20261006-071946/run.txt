@@ -1,0 +1,418 @@
+== prod: db=icb_platform alembic=0051 code=01751fa mode=deploy target=a429404 (v1.60.2) 2026-10-06T07:19:46+02:00
+== 1. anchors
+   ok   fresh: code 01751fa, alembic 0051
+   ok   rollback anchor 01751fa -> /tmp/icb-release-v1.60.2/out-deploy-20261006-071946/rollback-anchor.txt
+   ok   families (id:name:colour:order:template) md5 4fc1e469ac6df12a569985e9d52f5500 — the migration and the restart must not move them
+== 2. served-bytes baseline
+   PASS V_calculator = 186
+   PASS LOCAL_calculator = 0cadd8fc2e4c2833f41bc367dd5f7d41b0822d56f7015a3e0507027908d2f940
+   PASS LAN_calculator = 0cadd8fc2e4c2833f41bc367dd5f7d41b0822d56f7015a3e0507027908d2f940
+   PASS V_admin_templates = 21
+   PASS LOCAL_admin_templates = da0224ce9656e8226b45d881fa60b9269f957cc275cc1bc2661ca9cab18b0e48
+   PASS LAN_admin_templates = da0224ce9656e8226b45d881fa60b9269f957cc275cc1bc2661ca9cab18b0e48
+   ok   SPA assets/index-Bd_exvgd.js e9a0abc231a131f5 (local = lan = disk)
+== 3. PyYAML 6.0.2 present (nothing is installed by this release)
+   ok   present (6.0.2)
+== 4. backup (the rollback for 0052, before the code, the schema and the data move)
+   ok   /var/backups/postgres/icb_platform_pre-v1.60.2_20261006-071946.dump  3319542 bytes  sha256 9bf9cd7643ad37ba75295a0fd9de00aa3266222abebf304152b39b844f7cea91  (101 table-data entries, incl. alembic_version, trailer_groups, trailer_types)
+== 5. fetch (with tags) + tag and range guards
+   remote: Enumerating objects: 302, done.        
+   remote: Counting objects:   0% (1/302)        remote: Counting objects:   1% (4/302)        remote: Counting objects:   2% (7/302)        remote: Counting objects:   3% (10/302)        remote: Counting objects:   4% (13/302)        remote: Counting objects:   5% (16/302)        remote: Counting objects:   6% (19/302)        remote: Counting objects:   7% (22/302)        remote: Counting objects:   8% (25/302)        remote: Counting objects:   9% (28/302)        remote: Counting objects:  10% (31/302)        remote: Counting objects:  11% (34/302)        remote: Counting objects:  12% (37/302)        remote: Counting objects:  13% (40/302)        remote: Counting objects:  14% (43/302)        remote: Counting objects:  15% (46/302)        remote: Counting objects:  16% (49/302)        remote: Counting objects:  17% (52/302)        remote: Counting objects:  18% (55/302)        remote: Counting objects:  19% (58/302)        remote: Counting objects:  20% (61/302)        remote: Counting objects:  21% (64/302)        remote: Counting objects:  22% (67/302)        remote: Counting objects:  23% (70/302)        remote: Counting objects:  24% (73/302)        remote: Counting objects:  25% (76/302)        remote: Counting objects:  26% (79/302)        remote: Counting objects:  27% (82/302)        remote: Counting objects:  28% (85/302)        remote: Counting objects:  29% (88/302)        remote: Counting objects:  30% (91/302)        remote: Counting objects:  31% (94/302)        remote: Counting objects:  32% (97/302)        remote: Counting objects:  33% (100/302)        remote: Counting objects:  34% (103/302)        remote: Counting objects:  35% (106/302)        remote: Counting objects:  36% (109/302)        remote: Counting objects:  37% (112/302)        remote: Counting objects:  38% (115/302)        remote: Counting objects:  39% (118/302)        remote: Counting objects:  40% (121/302)        remote: Counting objects:  41% (124/302)        remote: Counting objects:  42% (127/302)        remote: Counting objects:  43% (130/302)        remote: Counting objects:  44% (133/302)        remote: Counting objects:  45% (136/302)        remote: Counting objects:  46% (139/302)        remote: Counting objects:  47% (142/302)        remote: Counting objects:  48% (145/302)        remote: Counting objects:  49% (148/302)        remote: Counting objects:  50% (151/302)        remote: Counting objects:  51% (155/302)        remote: Counting objects:  52% (158/302)        remote: Counting objects:  53% (161/302)        remote: Counting objects:  54% (164/302)        remote: Counting objects:  55% (167/302)        remote: Counting objects:  56% (170/302)        remote: Counting objects:  57% (173/302)        remote: Counting objects:  58% (176/302)        remote: Counting objects:  59% (179/302)        remote: Counting objects:  60% (182/302)        remote: Counting objects:  61% (185/302)        remote: Counting objects:  62% (188/302)        remote: Counting objects:  63% (191/302)        remote: Counting objects:  64% (194/302)        remote: Counting objects:  65% (197/302)        remote: Counting objects:  66% (200/302)        remote: Counting objects:  67% (203/302)        remote: Counting objects:  68% (206/302)        remote: Counting objects:  69% (209/302)        remote: Counting objects:  70% (212/302)        remote: Counting objects:  71% (215/302)        remote: Counting objects:  72% (218/302)        remote: Counting objects:  73% (221/302)        remote: Counting objects:  74% (224/302)        remote: Counting objects:  75% (227/302)        remote: Counting objects:  76% (230/302)        remote: Counting objects:  77% (233/302)        remote: Counting objects:  78% (236/302)        remote: Counting objects:  79% (239/302)        remote: Counting objects:  80% (242/302)        remote: Counting objects:  81% (245/302)        remote: Counting objects:  82% (248/302)        remote: Counting objects:  83% (251/302)        remote: Counting objects:  84% (254/302)        remote: Counting objects:  85% (257/302)        remote: Counting objects:  86% (260/302)        remote: Counting objects:  87% (263/302)        remote: Counting objects:  88% (266/302)        remote: Counting objects:  89% (269/302)        remote: Counting objects:  90% (272/302)        remote: Counting objects:  91% (275/302)        remote: Counting objects:  92% (278/302)        remote: Counting objects:  93% (281/302)        remote: Counting objects:  94% (284/302)        remote: Counting objects:  95% (287/302)        remote: Counting objects:  96% (290/302)        remote: Counting objects:  97% (293/302)        remote: Counting objects:  98% (296/302)        remote: Counting objects:  99% (299/302)        remote: Counting objects: 100% (302/302)        remote: Counting objects: 100% (302/302), done.        
+   remote: Compressing objects:   0% (1/163)        remote: Compressing objects:   1% (2/163)        remote: Compressing objects:   2% (4/163)        remote: Compressing objects:   3% (5/163)        remote: Compressing objects:   4% (7/163)        remote: Compressing objects:   5% (9/163)        remote: Compressing objects:   6% (10/163)        remote: Compressing objects:   7% (12/163)        remote: Compressing objects:   8% (14/163)        remote: Compressing objects:   9% (15/163)        remote: Compressing objects:  10% (17/163)        remote: Compressing objects:  11% (18/163)        remote: Compressing objects:  12% (20/163)        remote: Compressing objects:  13% (22/163)        remote: Compressing objects:  14% (23/163)        remote: Compressing objects:  15% (25/163)        remote: Compressing objects:  16% (27/163)        remote: Compressing objects:  17% (28/163)        remote: Compressing objects:  18% (30/163)        remote: Compressing objects:  19% (31/163)        remote: Compressing objects:  20% (33/163)        remote: Compressing objects:  21% (35/163)        remote: Compressing objects:  22% (36/163)        remote: Compressing objects:  23% (38/163)        remote: Compressing objects:  24% (40/163)        remote: Compressing objects:  25% (41/163)        remote: Compressing objects:  26% (43/163)        remote: Compressing objects:  27% (45/163)        remote: Compressing objects:  28% (46/163)        remote: Compressing objects:  29% (48/163)        remote: Compressing objects:  30% (49/163)        remote: Compressing objects:  31% (51/163)        remote: Compressing objects:  32% (53/163)        remote: Compressing objects:  33% (54/163)        remote: Compressing objects:  34% (56/163)        remote: Compressing objects:  35% (58/163)        remote: Compressing objects:  36% (59/163)        remote: Compressing objects:  37% (61/163)        remote: Compressing objects:  38% (62/163)        remote: Compressing objects:  39% (64/163)        remote: Compressing objects:  40% (66/163)        remote: Compressing objects:  41% (67/163)        remote: Compressing objects:  42% (69/163)        remote: Compressing objects:  43% (71/163)        remote: Compressing objects:  44% (72/163)        remote: Compressing objects:  45% (74/163)        remote: Compressing objects:  46% (75/163)        remote: Compressing objects:  47% (77/163)        remote: Compressing objects:  48% (79/163)        remote: Compressing objects:  49% (80/163)        remote: Compressing objects:  50% (82/163)        remote: Compressing objects:  51% (84/163)        remote: Compressing objects:  52% (85/163)        remote: Compressing objects:  53% (87/163)        remote: Compressing objects:  54% (89/163)        remote: Compressing objects:  55% (90/163)        remote: Compressing objects:  56% (92/163)        remote: Compressing objects:  57% (93/163)        remote: Compressing objects:  58% (95/163)        remote: Compressing objects:  59% (97/163)        remote: Compressing objects:  60% (98/163)        remote: Compressing objects:  61% (100/163)        remote: Compressing objects:  62% (102/163)        remote: Compressing objects:  63% (103/163)        remote: Compressing objects:  64% (105/163)        remote: Compressing objects:  65% (106/163)        remote: Compressing objects:  66% (108/163)        remote: Compressing objects:  67% (110/163)        remote: Compressing objects:  68% (111/163)        remote: Compressing objects:  69% (113/163)        remote: Compressing objects:  70% (115/163)        remote: Compressing objects:  71% (116/163)        remote: Compressing objects:  72% (118/163)        remote: Compressing objects:  73% (119/163)        remote: Compressing objects:  74% (121/163)        remote: Compressing objects:  75% (123/163)        remote: Compressing objects:  76% (124/163)        remote: Compressing objects:  77% (126/163)        remote: Compressing objects:  78% (128/163)        remote: Compressing objects:  79% (129/163)        remote: Compressing objects:  80% (131/163)        remote: Compressing objects:  81% (133/163)        remote: Compressing objects:  82% (134/163)        remote: Compressing objects:  83% (136/163)        remote: Compressing objects:  84% (137/163)        remote: Compressing objects:  85% (139/163)        remote: Compressing objects:  86% (141/163)        remote: Compressing objects:  87% (142/163)        remote: Compressing objects:  88% (144/163)        remote: Compressing objects:  89% (146/163)        remote: Compressing objects:  90% (147/163)        remote: Compressing objects:  91% (149/163)        remote: Compressing objects:  92% (150/163)        remote: Compressing objects:  93% (152/163)        remote: Compressing objects:  94% (154/163)        remote: Compressing objects:  95% (155/163)        remote: Compressing objects:  96% (157/163)        remote: Compressing objects:  97% (159/163)        remote: Compressing objects:  98% (160/163)        remote: Compressing objects:  99% (162/163)        remote: Compressing objects: 100% (163/163)        remote: Compressing objects: 100% (163/163), done.        
+   Receiving objects:   0% (1/302)Receiving objects:   1% (4/302)Receiving objects:   2% (7/302)Receiving objects:   3% (10/302)Receiving objects:   4% (13/302)Receiving objects:   5% (16/302)Receiving objects:   6% (19/302)Receiving objects:   7% (22/302)Receiving objects:   8% (25/302)Receiving objects:   9% (28/302)Receiving objects:  10% (31/302)Receiving objects:  11% (34/302)Receiving objects:  12% (37/302)Receiving objects:  13% (40/302)Receiving objects:  14% (43/302)Receiving objects:  15% (46/302)Receiving objects:  16% (49/302)Receiving objects:  17% (52/302)Receiving objects:  18% (55/302)Receiving objects:  19% (58/302)Receiving objects:  20% (61/302)Receiving objects:  21% (64/302)Receiving objects:  22% (67/302)Receiving objects:  23% (70/302)Receiving objects:  24% (73/302)Receiving objects:  25% (76/302)Receiving objects:  26% (79/302)Receiving objects:  27% (82/302)Receiving objects:  28% (85/302)Receiving objects:  29% (88/302)Receiving objects:  30% (91/302)Receiving objects:  31% (94/302)Receiving objects:  32% (97/302)Receiving objects:  33% (100/302)Receiving objects:  34% (103/302)Receiving objects:  35% (106/302)Receiving objects:  36% (109/302)Receiving objects:  37% (112/302)Receiving objects:  38% (115/302)Receiving objects:  39% (118/302)Receiving objects:  40% (121/302)Receiving objects:  41% (124/302)Receiving objects:  42% (127/302)Receiving objects:  43% (130/302)Receiving objects:  44% (133/302)Receiving objects:  45% (136/302)Receiving objects:  46% (139/302)Receiving objects:  47% (142/302)Receiving objects:  48% (145/302)Receiving objects:  49% (148/302)Receiving objects:  50% (151/302)Receiving objects:  51% (155/302)Receiving objects:  52% (158/302)Receiving objects:  53% (161/302)Receiving objects:  54% (164/302)Receiving objects:  55% (167/302)Receiving objects:  56% (170/302)Receiving objects:  57% (173/302)Receiving objects:  58% (176/302)Receiving objects:  59% (179/302)Receiving objects:  60% (182/302)Receiving objects:  61% (185/302)Receiving objects:  62% (188/302)Receiving objects:  63% (191/302)Receiving objects:  64% (194/302)Receiving objects:  65% (197/302)Receiving objects:  66% (200/302)Receiving objects:  67% (203/302)Receiving objects:  68% (206/302)Receiving objects:  69% (209/302)Receiving objects:  70% (212/302)Receiving objects:  71% (215/302)Receiving objects:  72% (218/302)Receiving objects:  73% (221/302)Receiving objects:  74% (224/302)Receiving objects:  75% (227/302)Receiving objects:  76% (230/302)Receiving objects:  77% (233/302)Receiving objects:  78% (236/302)Receiving objects:  79% (239/302)Receiving objects:  80% (242/302)Receiving objects:  81% (245/302)Receiving objects:  82% (248/302)Receiving objects:  83% (251/302)Receiving objects:  84% (254/302)Receiving objects:  85% (257/302)Receiving objects:  86% (260/302)Receiving objects:  87% (263/302)Receiving objects:  88% (266/302)Receiving objects:  89% (269/302)Receiving objects:  90% (272/302)Receiving objects:  91% (275/302)Receiving objects:  92% (278/302)Receiving objects:  93% (281/302)Receiving objects:  94% (284/302)Receiving objects:  95% (287/302)Receiving objects:  96% (290/302)Receiving objects:  97% (293/302)Receiving objects:  98% (296/302)remote: Total 302 (delta 166), reused 263 (delta 130), pack-reused 0 (from 0)        
+   Receiving objects:  99% (299/302)Receiving objects: 100% (302/302)Receiving objects: 100% (302/302), 1.54 MiB | 25.44 MiB/s, done.
+   Resolving deltas:   0% (0/166)Resolving deltas:   1% (2/166)Resolving deltas:   2% (4/166)Resolving deltas:   3% (5/166)Resolving deltas:   4% (7/166)Resolving deltas:   6% (10/166)Resolving deltas:   7% (12/166)Resolving deltas:   8% (14/166)Resolving deltas:   9% (16/166)Resolving deltas:  10% (17/166)Resolving deltas:  11% (19/166)Resolving deltas:  12% (21/166)Resolving deltas:  13% (22/166)Resolving deltas:  14% (24/166)Resolving deltas:  15% (25/166)Resolving deltas:  16% (27/166)Resolving deltas:  17% (29/166)Resolving deltas:  18% (30/166)Resolving deltas:  19% (32/166)Resolving deltas:  20% (34/166)Resolving deltas:  21% (35/166)Resolving deltas:  22% (37/166)Resolving deltas:  23% (39/166)Resolving deltas:  24% (40/166)Resolving deltas:  25% (42/166)Resolving deltas:  26% (44/166)Resolving deltas:  27% (46/166)Resolving deltas:  28% (47/166)Resolving deltas:  29% (49/166)Resolving deltas:  30% (50/166)Resolving deltas:  31% (52/166)Resolving deltas:  32% (54/166)Resolving deltas:  33% (55/166)Resolving deltas:  34% (57/166)Resolving deltas:  35% (59/166)Resolving deltas:  36% (60/166)Resolving deltas:  37% (62/166)Resolving deltas:  38% (64/166)Resolving deltas:  39% (65/166)Resolving deltas:  40% (67/166)Resolving deltas:  41% (69/166)Resolving deltas:  42% (70/166)Resolving deltas:  43% (72/166)Resolving deltas:  44% (74/166)Resolving deltas:  45% (75/166)Resolving deltas:  46% (77/166)Resolving deltas:  47% (79/166)Resolving deltas:  48% (80/166)Resolving deltas:  49% (82/166)Resolving deltas:  50% (83/166)Resolving deltas:  51% (85/166)Resolving deltas:  52% (87/166)Resolving deltas:  53% (88/166)Resolving deltas:  54% (90/166)Resolving deltas:  55% (92/166)Resolving deltas:  56% (93/166)Resolving deltas:  57% (95/166)Resolving deltas:  58% (97/166)Resolving deltas:  59% (98/166)Resolving deltas:  60% (100/166)Resolving deltas:  61% (102/166)Resolving deltas:  62% (103/166)Resolving deltas:  63% (105/166)Resolving deltas:  64% (107/166)Resolving deltas:  65% (108/166)Resolving deltas:  66% (111/166)Resolving deltas:  67% (112/166)Resolving deltas:  68% (113/166)Resolving deltas:  69% (115/166)Resolving deltas:  70% (117/166)Resolving deltas:  71% (118/166)Resolving deltas:  72% (120/166)Resolving deltas:  73% (122/166)Resolving deltas:  74% (123/166)Resolving deltas:  75% (125/166)Resolving deltas:  76% (127/166)Resolving deltas:  77% (128/166)Resolving deltas:  78% (130/166)Resolving deltas:  79% (132/166)Resolving deltas:  80% (133/166)Resolving deltas:  81% (135/166)Resolving deltas:  82% (137/166)Resolving deltas:  83% (138/166)Resolving deltas:  84% (140/166)Resolving deltas:  85% (142/166)Resolving deltas:  86% (143/166)Resolving deltas:  87% (145/166)Resolving deltas:  88% (147/166)Resolving deltas:  89% (148/166)Resolving deltas:  90% (150/166)Resolving deltas:  91% (152/166)Resolving deltas:  92% (153/166)Resolving deltas:  93% (155/166)Resolving deltas:  94% (157/166)Resolving deltas:  95% (158/166)Resolving deltas:  96% (160/166)Resolving deltas:  97% (162/166)Resolving deltas:  98% (163/166)Resolving deltas:  99% (165/166)Resolving deltas: 100% (166/166)Resolving deltas: 100% (166/166), completed with 40 local objects.
+   From https://github.com/icecold-bodies/icb-platform
+      01751fa..a429404  backport/v1.39-base -> origin/backport/v1.39-base
+      2e8aac7..0d629f3  rt4/prewindow       -> origin/rt4/prewindow
+    * [new branch]      rt5/build           -> origin/rt5/build
+    * [new branch]      rt5/discovery       -> origin/rt5/discovery
+    ! [rejected]        v1.47.1             -> v1.47.1  (would clobber existing tag)
+    * [new tag]         v1.60.2             -> v1.60.2
+   ok   v1.60.2 = tag object c2ba11ffc0f7 -> a429404; git describe at the target = v1.60.2
+   ok   136 files (C-sorted sha256 461a1c2dde7195da): one migration (0052_trailer_group_rule_note.py), no dependency, frontend/ and deploy/ untouched
+== 6. the repo's deploy script — dry run
+   | 
+   | == 0. preflight
+   |   repo      /opt/icb-platform (branch HEAD)
+   |   deployed  01751fa3  RT4 (v1.60.1): move into an existing section + honest renames, d
+   |   ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+   | 
+   | == 1. fetch
+   |   ok  a429404d468fb08d15ae42ec470d8b27eb72b1ba already present - no fetch needed
+   |   ok  a429404d468fb08d15ae42ec470d8b27eb72b1ba = a429404d
+   | 
+   | == 2. plan
+   |   01751fa3 -> a429404d   (2 commit(s), 136 file(s))
+   |     a429404 RT5 (v1.60.2): Burt's body rules in red — the family rule note (0052), the foam picker rule, roof_floor_eps; notes + dev families steps; release kit (#216)
+   |     8cdc804 docs(release): v1.60.1 OUTCOME + RT4 close — prod = 01751fa, Manifest S applied, nothing priced moved; the pre-window check; the Manni Burt gap table (#215)
+   | 
+   |   DB migration     YES - 0052_trailer_group_rule_note.py 
+   |   SPA rebuild      no  (frontend/ untouched)
+   |   Service restart  YES - 16 Python file(s) changed
+   | 
+   |   ok  dry run - nothing changed.
+   ok   plan: migrate 0052_trailer_group_rule_note, no SPA rebuild, restart
+== 7. deploy (fast-forward, its own backup, alembic upgrade head, restart, health, completion record)
+   | 
+   | == 0. preflight
+   |   repo      /opt/icb-platform (branch HEAD)
+   |   deployed  01751fa3  RT4 (v1.60.1): move into an existing section + honest renames, d
+   |   ok  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+   | 
+   | == 1. fetch
+   |   ok  a429404d468fb08d15ae42ec470d8b27eb72b1ba already present - no fetch needed
+   |   ok  a429404d468fb08d15ae42ec470d8b27eb72b1ba = a429404d
+   | 
+   | == 2. plan
+   |   01751fa3 -> a429404d   (2 commit(s), 136 file(s))
+   |     a429404 RT5 (v1.60.2): Burt's body rules in red — the family rule note (0052), the foam picker rule, roof_floor_eps; notes + dev families steps; release kit (#216)
+   |     8cdc804 docs(release): v1.60.1 OUTCOME + RT4 close — prod = 01751fa, Manifest S applied, nothing priced moved; the pre-window check; the Manni Burt gap table (#215)
+   | 
+   |   DB migration     YES - 0052_trailer_group_rule_note.py 
+   |   SPA rebuild      no  (frontend/ untouched)
+   |   Service restart  YES - 16 Python file(s) changed
+   | 
+   |   rollback anchor 01751fa3 saved to /tmp/icb-rollback-20261006-071951.txt
+   | 
+   | == 3. database backup (a migration is about to run)
+   | Oct 06 07:19:52 icb-mes-prod runuser[222209]: pam_unix(runuser:session): session closed for user postgres
+   | Oct 06 07:19:52 icb-mes-prod icb-pg-backup[222206]: Backup complete: /var/backups/postgres/icb_platform_20261006-0719.dump.gz (3013024 bytes)
+   | Oct 06 07:19:52 icb-mes-prod systemd[1]: icb-pg-backup.service: Deactivated successfully.
+   | Oct 06 07:19:52 icb-mes-prod systemd[1]: Finished icb-pg-backup.service - ICB MES Postgres nightly backup.
+   |   ok  schema before: 0051 (head)
+   | 
+   | == 4. fast-forward the code
+   | Updating 01751fa..a429404
+   | Fast-forward
+   |  backend/VERSION                                    |     2 +-
+   |  .../versions/0052_trailer_group_rule_note.py       |    49 +
+   |  backend/app/database.py                            |     3 +
+   |  backend/app/routers/admin_settings.py              |    15 +
+   |  backend/app/routers/trailers.py                    |     5 +-
+   |  backend/app/services/body_family.py                |    40 +-
+   |  backend/app/static/js/admin_templates.js           |    14 +
+   |  backend/app/static/js/calculator.js                |    42 +
+   |  backend/app/templates/admin_quote_templates.html   |     9 +-
+   |  backend/app/templates/admin_templates.html         |     8 +-
+   |  backend/app/templates/calculator.html              |     9 +-
+   |  backend/app/templates_config.py                    |     2 +
+   |  .../golden/freezers/4_9_up_freezer_body_2.json     |   216 +-
+   |  .../costing_audit/golden/freezers/_manifest.json   |     4 +-
+   |  .../golden/freezers/up_to_2_3_mtr_freezer.json     |   144 +-
+   |  .../golden/freezers/up_to_4_8_mt_freezer_2.json    |   288 +-
+   |  .../costing_audit/golden/smoke/_manifest.json      |     4 +-
+   |  .../golden/smoke/up_to_4_8_mt_freezer_2.json       |   216 +-
+   |  backend/tests/costing_audit/packs/freezers.yaml    |     6 +-
+   |  backend/tests/costing_audit/packs/smoke.yaml       |     2 +-
+   |  backend/tests/costing_audit/test_report_layout.py  |     2 +-
+   |  .../test_rt5_packs_follow_burts_rules.py           |   114 +
+   |  .../tests/journeys/test_rt5_rule_notes_journey.py  |   326 +
+   |  backend/tests/test_calculator_enter_chain.py       |     5 +-
+   |  backend/tests/test_rt4_prewindow.py                |   281 +
+   |  backend/tests/test_rt5_dev_families_tool.py        |   139 +
+   |  backend/tests/test_rt5_notes_tool.py               |   132 +
+   |  backend/tests/test_rt5_rule_notes.py               |   379 +
+   |  backend/tools/costing_audit/README.md              |    13 +-
+   |  backend/tools/costing_audit/report.py              |     2 +-
+   |  backend/tools/costing_audit/scenarios.py           |    12 +-
+   |  docs/audit/rt4_2026-10/burt_gap/MANNI_GAP_TABLE.md |   446 +
+   |  .../rt4_2026-10/burt_gap/burt_pu_galv_cells.json   |  1722 ++
+   |  docs/audit/rt4_2026-10/burt_gap/discover.txt       |   157 +
+   |  docs/audit/rt4_2026-10/burt_gap/gap_table.py       |   336 +
+   |  .../burt_gap/golden/manni_gap/_manifest.json       |   157 +
+   |  .../golden/manni_gap/manni_bakkie_rigids.json      |  6118 ++++
+   |  .../burt_gap/golden/manni_gap/manni_rigids_cb.json |  6172 ++++
+   |  .../burt_gap/golden/manni_gap/manni_rigids_fb.json |  6130 ++++
+   |  .../burt_gap/golden/manni_gap/manni_trailers.json  |  6390 ++++
+   |  docs/audit/rt4_2026-10/burt_gap/manni_gap.py       |   320 +
+   |  docs/audit/rt4_2026-10/burt_gap/manni_gap.yaml     |    33 +
+   |  .../rt4_2026-10/burt_gap/report/manni_df.json      |  7082 +++++
+   |  .../rt4_2026-10/burt_gap/report/manni_gap.csv      |   327 +
+   |  .../rt4_2026-10/burt_gap/report/manni_gap.html     |   258 +
+   |  .../rt4_2026-10/burt_gap/report/manni_gap.json     | 27069 +++++++++++++++++
+   |  .../audit/rt4_2026-10/burt_gap/report/manni_gap.md |   206 +
+   |  .../close_20261005/close_check_20261005-123324.txt |    99 +
+   |  .../close_20261005/close_check_20261005-124452.txt |    82 +
+   |  .../close_20261005/step6_diag_20261005-123935.txt  |    35 +
+   |  .../prod/prewindow_20261005-081925/MANIFEST.txt    |     6 +
+   |  .../prod/prewindow_20261005-081925/SHA256SUMS.out  |    35 +
+   |  .../prod/prewindow_20261005-081925/cells.txt       |   171 +
+   |  .../prewindow_20261005-081925/cells_moved.json     |  2659 ++
+   |  .../prod/prewindow_20261005-081925/door_report.txt |    20 +
+   |  .../prod/prewindow_20261005-081925/facts.json      |   448 +
+   |  .../prod/prewindow_20261005-081925/facts.txt       |   439 +
+   |  .../reports/prod_chillers.md                       |    19 +
+   |  .../reports/prod_explosive.md                      |    42 +
+   |  .../reports/prod_freezers.md                       |    30 +
+   |  .../reports/prod_icecream.md                       |    49 +
+   |  .../reports/prod_smoke.md                          |    28 +
+   |  .../prod/prewindow_20261005-081925/run.txt         |   206 +
+   |  .../prewindow_20261005-081925/snapshot_diff.json   |  1218 +
+   |  .../prod/prewindow_20261005-081925/verdicts.txt    |     4 +
+   |  .../window_20261005/cells_window_identical.txt     |     8 +
+   |  .../out-deploy-20261005-085605/OUTCOME.txt         |    12 +
+   |  .../icb-deploy-dryrun.txt                          |    20 +
+   |  .../out-deploy-20261005-085605/icb-deploy.txt      |   250 +
+   |  .../out-deploy-20261005-085605/rollback-anchor.txt |     1 +
+   |  .../out-afterS-20261005-085836/SHA256SUMS.out      |     6 +
+   |  .../out-afterS-20261005-085836/compare.txt         |    14 +
+   |  .../out-post-20261005-085717/SHA256SUMS.out        |     6 +
+   |  .../out-post-20261005-085717/compare.txt           |    14 +
+   |  .../out-pre-20261005-085323/SHA256SUMS.out         |     6 +
+   |  .../out-pre-20261005-085323/compare.txt            |     4 +
+   |  .../out-pre-20261005-085505/SHA256SUMS.out         |     6 +
+   |  .../out-pre-20261005-085505/compare.txt            |    14 +
+   |  .../out-20261005-090116/door_report.txt            |    21 +
+   |  .../out-apply-S-20261005T065809Z/after.txt         |   153 +
+   |  .../out-apply-S-20261005T065809Z/apply.txt         |   154 +
+   |  .../out-apply-S-20261005T065809Z/dryrun.txt        |   153 +
+   |  ..._corrections_journal_prod_20261005T065813Z.json |  2430 ++
+   |  .../out-dryrun-S-20261005T065752Z/dryrun.txt       |   153 +
+   |  ...ns_journal_prod_20261005T065813Z.provenance.txt |     8 +
+   |  docs/audit/rt5_2026-10/README.md                   |    53 +
+   |  .../ci/ci_base/costing_audit_explosive.md          |    66 +
+   |  .../ci/ci_base/costing_audit_freezers.md           |    30 +
+   |  .../rt5_2026-10/ci/ci_base/costing_audit_smoke.md  |    27 +
+   |  .../ci/ci_new/costing_audit_explosive.md           |    66 +
+   |  .../ci/ci_new/costing_audit_freezers.md            |    18 +
+   |  .../rt5_2026-10/ci/ci_new/costing_audit_smoke.md   |    21 +
+   |  docs/audit/rt5_2026-10/ci/mirror_freezers.md       |    17 +
+   |  docs/audit/rt5_2026-10/ci/mirror_smoke.md          |    20 +
+   |  .../prod/discovery_20261005-160939/SHA256SUMS.out  |    14 +
+   |  .../prod/discovery_20261005-160939/discovery.json  |   786 +
+   |  .../prod/discovery_20261005-160939/discovery.txt   |    70 +
+   |  .../prod/discovery_20261005-160939/drafts.json     |    44 +
+   |  .../reports/prod_freezers.json                     | 29375 +++++++++++++++++++
+   |  .../reports/prod_freezers.md                       |    18 +
+   |  .../reports/prod_smoke.json                        | 11366 +++++++
+   |  .../reports/prod_smoke.md                          |    22 +
+   |  .../prod/discovery_20261005-160939/run.txt         |    64 +
+   |  .../screens/RT5_note_CHILLER_MEDIUM.jpg            |   Bin 0 -> 63354 bytes
+   |  .../screens/RT5_note_FREEZER_MEDIUM.jpg            |   Bin 0 -> 61230 bytes
+   |  docs/runbooks/prod-deploy-v1.60.1.md               |    93 +-
+   |  docs/runbooks/prod-deploy-v1.60.2.md               |   168 +
+   |  .../01-chiller-note-under-body-options.png         |   Bin 0 -> 28636 bytes
+   |  .../rt5_rule_notes/02-freezer-note-two-lines.png   |   Bin 0 -> 30360 bytes
+   |  .../rt5_rule_notes/03-no-note-on-a-plain-body.png  |   Bin 0 -> 26376 bytes
+   |  .../rt5_rule_notes/04-html-note-shows-as-text.png  |   Bin 0 -> 30292 bytes
+   |  .../05-body-templates-note-under-the-header.png    |   Bin 0 -> 48705 bytes
+   |  .../06-chiller-note-and-no-foam-picker.png         |   Bin 0 -> 23168 bytes
+   |  .../07-freezer-note-and-foam-picker.png            |   Bin 0 -> 30358 bytes
+   |  ...ed-chiller-costing-with-pu-shows-the-picker.png |   Bin 0 -> 27204 bytes
+   |  ops/dev-rt5/dev_families.py                        |   375 +
+   |  ops/prod-release-v1.60.2/mkstage.sh                |   109 +
+   |  ops/prod-release-v1.60.2/probe_paths.txt           |    51 +
+   |  ops/prod-release-v1.60.2/release.sh                |   357 +
+   |  ops/prod-release-v1.60.2/sim/run_all.sh            |    29 +
+   |  ops/prod-release-v1.60.2/sim/run_sim.sh            |   120 +
+   |  ops/prod-release-v1.60.2/sim/stubs.sh              |   129 +
+   |  ops/prod-rt4/mkstage_prewindow.sh                  |    60 +
+   |  ops/prod-rt4/rt4_close.sh                          |    49 +
+   |  ops/prod-rt4/rt4_prewindow.py                      |   775 +
+   |  ops/prod-rt4/rt4_prewindow.sh                      |   135 +
+   |  ops/prod-rt4/rt4_step6_diag.sh                     |    47 +
+   |  ops/prod-rt4/sim/run_prewindow_sim.sh              |   108 +
+   |  ops/prod-rt5/mkstage_discovery.sh                  |    49 +
+   |  ops/prod-rt5/mkstage_window.sh                     |    74 +
+   |  ops/prod-rt5/rt5_discovery.py                      |   271 +
+   |  ops/prod-rt5/rt5_discovery.sh                      |    83 +
+   |  ops/prod-rt5/rt5_notes.py                          |   209 +
+   |  ops/prod-rt5/rt5_notes.sh                          |   150 +
+   |  ops/prod-rt5/sim/run_discovery_sim.sh              |    97 +
+   |  ops/prod-rt5/sim/run_notes_sim.sh                  |   108 +
+   |  136 files changed, 119696 insertions(+), 456 deletions(-)
+   |  create mode 100644 backend/alembic/versions/0052_trailer_group_rule_note.py
+   |  create mode 100644 backend/tests/costing_audit/test_rt5_packs_follow_burts_rules.py
+   |  create mode 100644 backend/tests/journeys/test_rt5_rule_notes_journey.py
+   |  create mode 100644 backend/tests/test_rt4_prewindow.py
+   |  create mode 100644 backend/tests/test_rt5_dev_families_tool.py
+   |  create mode 100644 backend/tests/test_rt5_notes_tool.py
+   |  create mode 100644 backend/tests/test_rt5_rule_notes.py
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/MANNI_GAP_TABLE.md
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/burt_pu_galv_cells.json
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/discover.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/gap_table.py
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/golden/manni_gap/_manifest.json
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/golden/manni_gap/manni_bakkie_rigids.json
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/golden/manni_gap/manni_rigids_cb.json
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/golden/manni_gap/manni_rigids_fb.json
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/golden/manni_gap/manni_trailers.json
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/manni_gap.py
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/manni_gap.yaml
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/report/manni_df.json
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/report/manni_gap.csv
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/report/manni_gap.html
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/report/manni_gap.json
+   |  create mode 100644 docs/audit/rt4_2026-10/burt_gap/report/manni_gap.md
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/close_20261005/close_check_20261005-123324.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/close_20261005/close_check_20261005-124452.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/close_20261005/step6_diag_20261005-123935.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/MANIFEST.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/cells.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/cells_moved.json
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/door_report.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/facts.json
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/facts.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/reports/prod_chillers.md
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/reports/prod_explosive.md
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/reports/prod_freezers.md
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/reports/prod_icecream.md
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/reports/prod_smoke.md
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/run.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/snapshot_diff.json
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/prewindow_20261005-081925/verdicts.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/cells_window_identical.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-release-v1.60.1/out-deploy-20261005-085605/OUTCOME.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-release-v1.60.1/out-deploy-20261005-085605/icb-deploy-dryrun.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-release-v1.60.1/out-deploy-20261005-085605/icb-deploy.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-release-v1.60.1/out-deploy-20261005-085605/rollback-anchor.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-all/out-afterS-20261005-085836/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-all/out-afterS-20261005-085836/compare.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-all/out-post-20261005-085717/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-all/out-post-20261005-085717/compare.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-all/out-pre-20261005-085323/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-all/out-pre-20261005-085323/compare.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-all/out-pre-20261005-085505/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-all/out-pre-20261005-085505/compare.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt2-doors/out-20261005-090116/door_report.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt4-data/out-apply-S-20261005T065809Z/after.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt4-data/out-apply-S-20261005T065809Z/apply.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt4-data/out-apply-S-20261005T065809Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt4-data/out-apply-S-20261005T065809Z/pricing_corrections_journal_prod_20261005T065813Z.json
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/icb-rt4-data/out-dryrun-S-20261005T065752Z/dryrun.txt
+   |  create mode 100644 docs/audit/rt4_2026-10/prod/window_20261005/var-backups/journal_S_pricing_corrections_journal_prod_20261005T065813Z.provenance.txt
+   |  create mode 100644 docs/audit/rt5_2026-10/README.md
+   |  create mode 100644 docs/audit/rt5_2026-10/ci/ci_base/costing_audit_explosive.md
+   |  create mode 100644 docs/audit/rt5_2026-10/ci/ci_base/costing_audit_freezers.md
+   |  create mode 100644 docs/audit/rt5_2026-10/ci/ci_base/costing_audit_smoke.md
+   |  create mode 100644 docs/audit/rt5_2026-10/ci/ci_new/costing_audit_explosive.md
+   |  create mode 100644 docs/audit/rt5_2026-10/ci/ci_new/costing_audit_freezers.md
+   |  create mode 100644 docs/audit/rt5_2026-10/ci/ci_new/costing_audit_smoke.md
+   |  create mode 100644 docs/audit/rt5_2026-10/ci/mirror_freezers.md
+   |  create mode 100644 docs/audit/rt5_2026-10/ci/mirror_smoke.md
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/SHA256SUMS.out
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/discovery.json
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/discovery.txt
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/drafts.json
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/reports/prod_freezers.json
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/reports/prod_freezers.md
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/reports/prod_smoke.json
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/reports/prod_smoke.md
+   |  create mode 100644 docs/audit/rt5_2026-10/prod/discovery_20261005-160939/run.txt
+   |  create mode 100644 docs/audit/rt5_2026-10/screens/RT5_note_CHILLER_MEDIUM.jpg
+   |  create mode 100644 docs/audit/rt5_2026-10/screens/RT5_note_FREEZER_MEDIUM.jpg
+   |  create mode 100644 docs/runbooks/prod-deploy-v1.60.2.md
+   |  create mode 100644 docs/screenshots/journeys/rt5_rule_notes/01-chiller-note-under-body-options.png
+   |  create mode 100644 docs/screenshots/journeys/rt5_rule_notes/02-freezer-note-two-lines.png
+   |  create mode 100644 docs/screenshots/journeys/rt5_rule_notes/03-no-note-on-a-plain-body.png
+   |  create mode 100644 docs/screenshots/journeys/rt5_rule_notes/04-html-note-shows-as-text.png
+   |  create mode 100644 docs/screenshots/journeys/rt5_rule_notes/05-body-templates-note-under-the-header.png
+   |  create mode 100644 docs/screenshots/journeys/rt5_rule_notes/06-chiller-note-and-no-foam-picker.png
+   |  create mode 100644 docs/screenshots/journeys/rt5_rule_notes/07-freezer-note-and-foam-picker.png
+   |  create mode 100644 docs/screenshots/journeys/rt5_rule_notes/08-reopened-chiller-costing-with-pu-shows-the-picker.png
+   |  create mode 100644 ops/dev-rt5/dev_families.py
+   |  create mode 100644 ops/prod-release-v1.60.2/mkstage.sh
+   |  create mode 100644 ops/prod-release-v1.60.2/probe_paths.txt
+   |  create mode 100644 ops/prod-release-v1.60.2/release.sh
+   |  create mode 100644 ops/prod-release-v1.60.2/sim/run_all.sh
+   |  create mode 100644 ops/prod-release-v1.60.2/sim/run_sim.sh
+   |  create mode 100644 ops/prod-release-v1.60.2/sim/stubs.sh
+   |  create mode 100644 ops/prod-rt4/mkstage_prewindow.sh
+   |  create mode 100644 ops/prod-rt4/rt4_close.sh
+   |  create mode 100644 ops/prod-rt4/rt4_prewindow.py
+   |  create mode 100644 ops/prod-rt4/rt4_prewindow.sh
+   |  create mode 100644 ops/prod-rt4/rt4_step6_diag.sh
+   |  create mode 100644 ops/prod-rt4/sim/run_prewindow_sim.sh
+   |  create mode 100644 ops/prod-rt5/mkstage_discovery.sh
+   |  create mode 100644 ops/prod-rt5/mkstage_window.sh
+   |  create mode 100644 ops/prod-rt5/rt5_discovery.py
+   |  create mode 100644 ops/prod-rt5/rt5_discovery.sh
+   |  create mode 100644 ops/prod-rt5/rt5_notes.py
+   |  create mode 100644 ops/prod-rt5/rt5_notes.sh
+   |  create mode 100644 ops/prod-rt5/sim/run_discovery_sim.sh
+   |  create mode 100644 ops/prod-rt5/sim/run_notes_sim.sh
+   |   ok  at a429404d (verified by SHA, not by git describe)
+   | 
+   | == 5. alembic upgrade head
+   | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+   | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+   | INFO  [alembic.runtime.migration] Running upgrade 0051 -> 0052, Body families: a rule note on trailer_groups (Migration 0052).
+   |   ok  schema after: 0052 (head)
+   | 
+   | == 6. SPA build - skipped (frontend/ untouched in this range)
+   | 
+   | == 7. restart icb-backend
+   |   active since (before): Mon 2026-10-05 08:56:09 SAST
+   |   active since (after):  Tue 2026-10-06 07:20:02 SAST
+   |   ok  restarted
+   | 
+   | == 8. verify
+   |   workers started      4 (expected 4)
+   |   BOOTSTRAP FAILED     0 (expected 0)
+   |   https://127.0.0.1/health -> 200
+   |   ok  healthy
+   | 
+   | DEPLOYED  01751fa3 -> a429404d  (a429404d468fb08d15ae42ec470d8b27eb72b1ba)
+   | 
+   | Rollback (code-only - additive migrations are left in place deliberately):
+   |     /opt/icb-platform/deploy/prod/icb-rollback.sh 01751fa3
+   | 
+   |   or, without the script:
+   |     sudo -u icb git -C /opt/icb-platform reset --hard 01751fa3
+   |     sudo systemctl restart icb-backend
+   | 
+   ok   restart: Mon 2026-10-05 08:56:09 SAST -> Tue 2026-10-06 07:20:02 SAST (pid 212582 -> 222264)
+   ok   deploy record: completed a429404
+== 8. post-deploy asserts, the three doors included (waiting 20 s for all workers to log startup)
+== code + tag + schema (0052: trailer_groups.rule_note TEXT NULL)
+   PASS HEAD = a429404d468fb08d15ae42ec470d8b27eb72b1ba
+   PASS TAG_LOCAL = c2ba11ffc0f7146dc10df52aec8a826a4e002d35
+   PASS DESCRIBE = v1.60.2
+   PASS ALEMBIC = 0052
+   PASS COLUMN = rule_note:text:YES:NULL
+   PASS FAMILIES_UNCHANGED = 4fc1e469ac6df12a569985e9d52f5500
+   families with a rule note: 0 (0 right after the deploy; rt5_notes.sh sets the two)
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+   PASS TOOL_IMPORT = #D12424
+== the version the running process reports, on the three doors (no session)
+   PASS VERSION_LOCAL = v1.60.2
+   PASS VERSION_LAN = v1.60.2
+   PASS VERSION_CF = v1.60.2
+== no session, Accept JSON: every path in probe_paths.txt answers its listed status, on the three doors
+   PASS NOAUTH_LOCAL = all 44 as expected
+   PASS NOAUTH_LAN = all 44 as expected
+   PASS NOAUTH_CF = all 44 as expected
+== served bytes: each page loads its new ?v= and both doors serve the target blob; the SPA unchanged
+   PASS V_calculator = 187
+   PASS LOCAL_calculator = 8cec4576cbe57cf85618f69c0c366c80cb889be8760cef8f88e91b29133f416d
+   PASS LAN_calculator = 8cec4576cbe57cf85618f69c0c366c80cb889be8760cef8f88e91b29133f416d
+   PASS V_admin_templates = 22
+   PASS LOCAL_admin_templates = 107737590a76945921848c5ceb633890db3c5cac7cec8f030655cb7b90a392f6
+   PASS LAN_admin_templates = 107737590a76945921848c5ceb633890db3c5cac7cec8f030655cb7b90a392f6
+   PASS SPA_LOCAL = e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161
+   PASS SPA_LAN = e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161
+
+deployed      01751fa -> a429404 (a429404d468fb08d15ae42ec470d8b27eb72b1ba)
+tag           v1.60.2 = c2ba11ffc0f7146dc10df52aec8a826a4e002d35 (local = origin, peels to the target); git describe = v1.60.2
+alembic       0051 -> 0052 (0052_trailer_group_rule_note.py); column rule_note:text:YES:NULL
+families      md5 4fc1e469ac6df12a569985e9d52f5500 before = 4fc1e469ac6df12a569985e9d52f5500 after; with a rule note: 0 (rt5_notes.sh sets the two)
+backup        /var/backups/postgres/icb_platform_pre-v1.60.2_20261006-071946.dump  3319542 bytes  sha256 9bf9cd7643ad37ba75295a0fd9de00aa3266222abebf304152b39b844f7cea91
+restart       Mon 2026-10-05 08:56:09 SAST -> Tue 2026-10-06 07:20:02 SAST (pid 212582 -> 222264), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+version       local v1.60.2 · lan v1.60.2 · cloudflare v1.60.2
+no session    local: all 44 as expected · lan: all 44 as expected · cloudflare: all 44 as expected
+static        calculator.js ?v=187 8cec4576cbe57cf8  admin_templates.js ?v=22 107737590a769459  (local = lan = the target blobs)
+spa           assets/index-Bd_exvgd.js e9a0abc231a131f5a17945bb79659043f7a86dcdefa8f81fff1080f770741161 (local = lan = disk; unchanged, no rebuild)
+finished      2026-10-06T07:20:48+02:00
+
+######## DEPLOYED — tell the CA: /tmp/icb-release-v1.60.2/out-deploy-20261006-071946  (next: All on the audit page, then rt5_notes.sh dryrun)

@@ -1,6 +1,7 @@
 # Prod deploy: v1.60.2 (RT5): Burt's body rules shown in red, in one window
 
-**Status: NOT RUN — committed before the run (RT5_RULING_1); the OUTCOME is appended after it.**
+**Status: RUN 6 Oct 2026, 07:15–07:42 SAST — DEPLOYED; see the OUTCOME at the end.** This runbook was committed
+before the run (RT5_RULING_1); the OUTCOME is appended after it.
 (Before: v1.60.1 = `01751fa`, alembic 0051.) Michael runs every prod step. The CA stages the kits and reads the records
 back. **Every browser step names the prod address, and is read back from prod's database in the next paste**
 (RT5_RULING_0: RT4's step 6 ran on another server and left no trace).
@@ -159,10 +160,69 @@ editor instead.
 
 | kit | scenarios | result |
 |---|---|---|
-| `ops/prod-release-v1.60.2/sim/run_all.sh` | happy (verify before = exactly 15) · notag · moved · bootfail · traceback · stalecache · resume · migfail · nobackup · cfstale · famchanged | see `RT5_RETURN_2` |
+| `ops/prod-release-v1.60.2/sim/run_all.sh` | happy (verify before = exactly 15) · notag · moved · bootfail · traceback · stalecache · resume · migfail · nobackup · cfstale · famchanged | 11 / 11 |
 | `ops/prod-rt5/sim/run_notes_sim.sh` | dryrun · a failed backup (nothing applied) · apply (journal, provenance, backup, second dry-run) · already applied · show · revert · another note · alembic 0051 · tampered kit · code moved | 16 / 16 |
-| `ops/prod-rt5/rt5_notes.py` on the prod mirror | dry-run 2 → apply → 0 to apply, 2 already applied → show → revert exact → re-applied | `RT5_RETURN_2` |
+| `ops/prod-rt5/rt5_notes.py` on the prod mirror | dry-run 2 → apply → 0 to apply, 2 already applied → show → revert exact → re-applied | as planned |
 
 ## OUTCOME
 
-*(appended after the run)*
+**PROD = v1.60.2 = `a429404`:**
+- **tag:** object `c2ba11ff`; local = origin; peels to `a429404`;
+- **schema:** alembic **0052**;
+- **deployed:** 6 Oct 2026 07:19:46–07:20:48 SAST by Michael's `release.sh deploy`; service restart 07:20:02;
+- **restore point:** `icb_platform_pre-v1.60.2_20261006-071946.dump` (3 319 542 bytes, sha256 `9bf9cd76…`, 101
+  table-data entries). `icb-deploy.sh`'s own backup: `icb_platform_20261006-0719.dump.gz` (3 013 024 bytes).
+
+**The two notes are on prod, and nothing priced moved.** The evidence is under
+`docs/audit/rt5_2026-10/prod/window_20261006/`.
+
+| # | time | step | result |
+|---|---|---|---|
+| — | 07:15 / 07:16 | `release.sh preflight` / `verify` | **PREFLIGHT PASSED.** verify failed on **exactly the 15** expected checks; TRACEBACKS 0 |
+| 1 | 07:17 / 07:19 | All (page run #40) → `rt2_all.sh pre` | **PAGE = CLI**, 2 702 / 2 702; freezers 27 / 24 / 522 / 117 (the old `all_eps`) |
+| 2 | 07:19:46–07:20:48 | `release.sh deploy` | **`######## DEPLOYED`**: backup asserted; 0051 → **0052**; the column = `rule_note:text:YES:NULL`; the families unchanged by the migration and the restart (md5 `4fc1e469…` before = after); 4 workers, 0 bootstrap failures, 0 tracebacks; **`/health/version` = v1.60.2 on 127.0.0.1, LAN and Cloudflare**; all 44 no-session probes as listed on all three; `calculator.js?v=187` and `admin_templates.js?v=22` = the target blobs on both doors; the SPA unchanged |
+| 3 | 07:22 | `rt5_notes.sh dryrun` → `apply` → `show` | dry-run **2 to apply, 0 already applied** (CHILLER #5 on its 3 bodies, FREEZER #4 on its 3). Data-only backup `pre_apply_notes_20261006T052241Z.sql.gz` (783 bytes, sha256 `98e60327…`). `APPLIED 2 note(s)`; journal `journal_notes_rt5_notes_journal_prod_20261006T052243Z.json` (sha256 `c4398b8d…`). The second dry-run read **0 to apply, 2 already applied**. **`show`** read the two approved texts exactly, and every other family `None` |
+| 4 | 07:25 / 07:27 | All → `rt2_all.sh post` | The first `post` **STOPPED [PAGE]**, as designed: the newest page run (#40) predated the notes' journal. All was clicked again (#41), then **PAGE = CLI**, 2 702 / 2 702, 0 FLAG. **No change** on chillers, icecream and explosive; **freezers 0 / 24 / 549 / 117**; smoke 0 / 21 / 168 / 45 (CLI) |
+| 5 | — | browser, at `https://192.168.0.251/mes/calculator?stay=1` | Michael: **all four as expected**. CHILLER MEDIUM: the note and **no** foam picker. FREEZER MEDIUM: the note **and** the picker. EXPLOSIVE 4.9 AND UP and ICECREAM BODY MEDIUM: no note |
+| 6 | 07:37–07:39 | admin edit at `https://192.168.0.251/admin/quote-templates?skin=mes` | see the timeline below |
+| 7 | 07:42 | `rt2_doors.sh` | **SUMMARY: 14 OK**; no exceptions |
+| 8 | 07:42 | `release.sh verify` | **0 checks failed**; families with a rule note: **2** |
+
+**Step 6, read back from prod** (RT5_RULING_0). Every save reached prod: prod's own journal has each POST.
+
+| time | what | evidence |
+|---|---|---|
+| 07:37:48 | Save: ` (TEST)` added to FREEZER's note | prod journal: `POST /admin/quote-templates/groups/4/edit … 303` |
+| 07:37:58 | `rt5_notes.sh show` → FREEZER reads `…FRONT or doors (TEST)` | `icb-rt5-notes/out-show-20261006T053758Z/` |
+| 07:38:54 | Save: ` (TEST)` removed | prod journal: `POST …/groups/4/edit … 303` |
+| 07:39:07 | `show` → the approved text exactly | `out-show-20261006T053907Z/` |
+| 07:39:20 | `dryrun` → **0 to apply, 2 already applied** (this would catch a stray space) | `out-dryrun-20261006T053920Z/` |
+
+**No change, cell by cell** (`cells_window.txt`). This compares the CLI `pre` (v1.60.1) with `post` (v1.60.2 + the
+notes) over all five packs:
+- **every common cell is identical** (2 782): smoke 195, chillers 716, freezers 575, icecream 612, explosive 684;
+- the only other cells are the 154 swapped by design: freezers 115 and smoke 39, `all_eps` → `roof_floor_eps`;
+- those 154 `roof_floor_eps` cells equal, to the cent and status, the read-only prod run of the staged prototype
+  in §3.0 (5 Oct 16:09).
+
+**Seen in the run, outside RT5 (no action taken):**
+- The deploy's `git fetch` printed `! [rejected] v1.47.1 -> v1.47.1 (would clobber existing tag)`: an old tag
+  mismatch in prod's clone, which pre-dates RT5. `git describe` and every tag check read v1.60.2.
+- Before the deploy, `verify`'s info line "families with a rule note" printed a psql error, because the column did
+  not exist yet. It is not a check, it changed no count, and it reads `0` and then `2` once the column exists.
+
+**Closed:**
+- **`/tmp`:** RT5's staging folders and tars (the discovery, release, notes, All and door kits, and the evidence
+  tar) are removed. `/var/backups/icb-rt5-2026-10/` is kept. These pre-RT5 items remain in `/tmp`, untouched:
+  `icb-rollback-*.txt` (one per `icb-deploy.sh` run), three 7 Sep v1.52 scripts, `icb-srd-discovery/`
+  (29 Sep), `node-compile-cache/` and the service's systemd folder.
+- **Michael's :8000:**
+  - **the clone:** at `a429404`, with his local files unchanged;
+  - **dev:** at 0052 since 06:30 (backup first), with the six families (by name, with prod's colours) and the two
+    notes;
+  - **the service:** restarted 07:43:27, and `/health/version` = **v1.60.2**.
+- **Rollback stays ready:**
+  - **the notes:** `rt5_notes.sh revert /var/backups/icb-rt5-2026-10/journal_notes_rt5_notes_journal_prod_20261006T052243Z.json`
+    (re-stage the notes kit first);
+  - **the code:** `reset --hard 01751fa` + restart;
+  - **the dump:** above.

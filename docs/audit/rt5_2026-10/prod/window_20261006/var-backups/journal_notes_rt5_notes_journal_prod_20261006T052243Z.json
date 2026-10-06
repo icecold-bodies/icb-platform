@@ -1,0 +1,22 @@
+{
+ "tool": "rt5_notes",
+ "plan_sha256": "36eda696b103ddac54a50fa1e67222ca8f98d1b4c8aef9e308a68119c31bd4e4",
+ "tool_sha256": "af1ae2354aafe7a240dc6691172961e9d0431bf42c2597289f14844946777179",
+ "target": "prod",
+ "database": "icb_platform",
+ "applied_at": "2026-10-06T05:22:43.018306+00:00",
+ "rows": [
+  {
+   "id": 5,
+   "name": "CHILLER",
+   "before": null,
+   "after": "No PU insulation for Chillers"
+  },
+  {
+   "id": 4,
+   "name": "FREEZER",
+   "before": null,
+   "after": "Freezers: EPS insulation in the ROOF and FLOOR only, never in the SIDES, FRONT or doors"
+  }
+ ]
+}

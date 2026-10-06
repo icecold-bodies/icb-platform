@@ -51,3 +51,20 @@ this went unseen. It is RT6's job: the snapshot refresh and the re-judging of th
 on a side port over `icb_prodmirror` with prod's drafts. The note colour is `#D12424`, which is RT3's `ink()` of the
 skin's `--red` `#DC2626`. That red alone gives 4.50:1, short of 4.6; `#D12424` gives 4.91:1 on both `#FFFFFF` and
 `#F5F7FB`.
+
+## The window (6 Oct 2026, 07:15–07:42 SAST): `prod/window_20261006/`
+
+These are the records Michael brought back from the VM (tar sha256 `d799a925…`, 129 files). Logs are renamed
+`run.txt`, because the repo ignores `*.log`; the bulky HTML, CSV and JSON reports of the All runs stay out (their
+`.md` summaries are in).
+
+| folder | what |
+|---|---|
+| `icb-release-v1.60.2/` | preflight, verify before (exactly 15), **deploy** (OUTCOME, the icb-deploy dry run + run, the rollback anchor), verify after (0 failed) |
+| `icb-rt2-all/` | All `pre` (07:19); the first `post` (07:25, STOP [PAGE], as designed); `post` (07:27, PAGE = CLI) |
+| `icb-rt5-notes/` | dry-run, apply (with its journal and second dry-run), and three `show` read-backs, including the admin edit's ` (TEST)` |
+| `icb-rt2-doors/` | the door report: 14 OK |
+| `var-backups/` | the notes journal and its provenance (`/var/backups/icb-rt5-2026-10/`; the 783-byte data backup stays on the VM) |
+| `cells_window.txt` | pre against post, cell by cell: every common cell identical; 154 swapped by design, and equal to the 5 Oct read-only prod run |
+
+The runbook's OUTCOME (`docs/runbooks/prod-deploy-v1.60.2.md`) tells the run step by step.

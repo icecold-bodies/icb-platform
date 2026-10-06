@@ -1,0 +1,33 @@
+== prod: db=icb_platform alembic=0052 code=a429404 staged=a429404 mode=apply  2026-10-06T07:22:41+02:00
+== dry-run (READ ONLY)
+database icb_platform (--target prod); RT5 rule notes; plan sha256 36eda696b103ddac…; tool sha256 af1ae2354aafe7a2…
+   TODO    #5 CHILLER: None -> 'No PU insulation for Chillers'
+           shown on 3 bodies: CHILLER 2.3 METER, CHILLER LARGE, CHILLER MEDIUM
+   TODO    #4 FREEZER: None -> 'Freezers: EPS insulation in the ROOF and FLOOR only, never in the SIDES, FRONT or doors'
+           shown on 3 bodies: FREEZER 2.3 METER, FREEZER LARGE, FREEZER MEDIUM
+2 to apply, 0 already applied.
+== pre-apply backup (data only): trailer_groups
+   ok   /var/backups/icb-rt5-2026-10/pre_apply_notes_20261006T052241Z.sql.gz 783 bytes sha256 98e603273c6ed790d0d0b9128c4d416e94d2d3b79b2c4a6971f7cd2477654476
+== apply — one transaction
+database icb_platform (--target prod); RT5 rule notes; plan sha256 36eda696b103ddac…; tool sha256 af1ae2354aafe7a2…
+APPLIED 2 note(s): #5 CHILLER; #4 FREEZER
+journal /tmp/icb-rt5-notes/out-apply-20261006T052241Z/rt5_notes_journal_prod_20261006T052243Z.json  sha256 c4398b8daa1b16b9f9c00cdd0672356787e296e97737703867da2e47e4435eb5
+Undo: python rt5_notes.py --target prod --revert /tmp/icb-rt5-notes/out-apply-20261006T052241Z/rt5_notes_journal_prod_20261006T052243Z.json --out-dir <dir>
+   ok   journal /var/backups/icb-rt5-2026-10/journal_notes_rt5_notes_journal_prod_20261006T052243Z.json  sha256 c4398b8daa1b16b9f9c00cdd0672356787e296e97737703867da2e47e4435eb5
+== second dry-run (must find nothing left to apply)
+database icb_platform (--target prod); RT5 rule notes; plan sha256 36eda696b103ddac…; tool sha256 af1ae2354aafe7a2…
+   ALREADY #5 CHILLER: 'No PU insulation for Chillers' -> 'No PU insulation for Chillers'
+           shown on 3 bodies: CHILLER 2.3 METER, CHILLER LARGE, CHILLER MEDIUM
+   ALREADY #4 FREEZER: 'Freezers: EPS insulation in the ROOF and FLOOR only, never in the SIDES, FRONT or doors' -> 'Freezers: EPS insulation in the ROOF and FLOOR only, never in the SIDES, FRONT or doors'
+           shown on 3 bodies: FREEZER 2.3 METER, FREEZER LARGE, FREEZER MEDIUM
+0 to apply, 2 already applied.
+== the read-back (every family's note, exactly)
+database icb_platform (--target prod); every family's rule note (read only)
+   #1   EXPLOSIVE     3 active bodies · rule_note = None
+   #5   CHILLER       3 active bodies · rule_note = 'No PU insulation for Chillers'
+   #4   FREEZER       3 active bodies · rule_note = 'Freezers: EPS insulation in the ROOF and FLOOR only, never in the SIDES, FRONT or doors'
+   #3   MEAT          2 active bodies · rule_note = None
+   #6   ICE CREAM     3 active bodies · rule_note = None
+   #7   OTHER         2 active bodies · rule_note = None
+
+######## DONE (apply) — tell the CA: /tmp/icb-rt5-notes/out-apply-20261006T052241Z  (undo: sudo bash /tmp/icb-rt5-notes/rt5_notes.sh revert /var/backups/icb-rt5-2026-10/journal_notes_rt5_notes_journal_prod_20261006T052243Z.json)

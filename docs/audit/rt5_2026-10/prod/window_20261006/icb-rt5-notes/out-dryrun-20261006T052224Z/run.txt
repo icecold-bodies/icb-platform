@@ -1,0 +1,10 @@
+== prod: db=icb_platform alembic=0052 code=a429404 staged=a429404 mode=dryrun  2026-10-06T07:22:24+02:00
+== dry-run (READ ONLY)
+database icb_platform (--target prod); RT5 rule notes; plan sha256 36eda696b103ddac…; tool sha256 af1ae2354aafe7a2…
+   TODO    #5 CHILLER: None -> 'No PU insulation for Chillers'
+           shown on 3 bodies: CHILLER 2.3 METER, CHILLER LARGE, CHILLER MEDIUM
+   TODO    #4 FREEZER: None -> 'Freezers: EPS insulation in the ROOF and FLOOR only, never in the SIDES, FRONT or doors'
+           shown on 3 bodies: FREEZER 2.3 METER, FREEZER LARGE, FREEZER MEDIUM
+2 to apply, 0 already applied.
+
+######## DONE (dryrun: 2 to apply, 0 already applied.) — tell the CA: /tmp/icb-rt5-notes/out-dryrun-20261006T052224Z

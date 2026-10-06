@@ -402,10 +402,35 @@ function onInsFoamChange(grade) {
   scheduleCalc();
 }
 
+/** RT5 (RT5_RULING_1) — True when the options panel, as drawn right now, OFFERS a PU insulation choice: a control
+ *  bound to one of the body's PU insulation masters in any of the three renderers (flat radio / tick, Settings
+ *  draft flag, configurator tree row), or a draft flag named after one. Read from the panel itself, so it follows
+ *  the draft (a chiller whose draft offers no PU) and not the body's family. */
+function _puInsulationOffered(items) {
+  const pu = (items || []).filter(it => it.is_body_option
+    && String(it.body_option_subgroup || '').toUpperCase() === 'INSULATION'
+    && String(it.material_name || '').trim().toUpperCase().endsWith(' PU'));
+  if (!pu.length) return false;
+  const list = document.getElementById('body-options-list');
+  if (!list) return false;
+  if (pu.some(it => _xpRowRendered(it.id)
+      || list.querySelector(`.bot-opt-row[data-mid="${String(it.id)}"]`))) return true;
+  const names = new Set(pu.map(it => String(it.material_name).trim().toUpperCase()));
+  return [...list.querySelectorAll('[data-draft-flag]')]
+    .some(el => names.has(String(el.dataset.draftFlag || '').trim().toUpperCase()));
+}
+
 function renderInsulationFoam(items) {
   const host = document.getElementById('insulation-foam-block');
   if (!host) return;
   if (!_bodyUsesPuFoam(items)) { host.style.display = 'none'; host.innerHTML = ''; return; }
+  // RT5 (RT5_RULING_1) — no PU choice on the panel and none selected: the grade cannot apply here, so the picker
+  // is hidden (it contradicted "No PU insulation for Chillers"). DISPLAY ONLY: insulationFoam is untouched and
+  // every payload still carries it exactly as before. A PU choice offered, or one selected (an older costing
+  // re-opened with PU on it), shows the picker as today.
+  if (!_puInsulationOffered(items) && !_puInsulationSelected(items)) {
+    host.style.display = 'none'; host.innerHTML = ''; return;
+  }
   host.style.display = '';
   const live = _puInsulationSelected(items);
   // RT2 R6.3 — say where the opening grade came from: the body's default
@@ -5333,6 +5358,7 @@ function _bindTreeHandlers(tree, tid, collapsed) {
 // re-applies the insulation both-zero guard so red highlight + warning persist
 // across every re-render (radio switches, folder toggles, recalcs).
 function renderBodyOptions(bomItems) {
+  renderBodyRuleNote();   // RT5 — outside #body-options-list: drawn from the OUTER function, like the foam block
   _renderBodyOptionsInner(bomItems);
   _enforceInsulationInvariant();
   _enforceRearDoorInvariant();
@@ -5342,6 +5368,22 @@ function renderBodyOptions(bomItems) {
   // renders from the OUTER function: the three inner renderers (legacy flat,
   // settings draft, configurator tree) each return early on their own path.
   renderInsulationFoam(bomItems);
+}
+
+// RT5 — the body family's rule note (Burt's product rule) in red under BODY OPTIONS: the selected body's
+// /api/trailers row carries `rule_note` (its family's), so a new body of the family shows it with no code change.
+// Written as TEXT (textContent): an HTML string shows as typed. Hidden when the family has none, for REPAIRS, and
+// before a body is picked. Re-drawn on every renderBodyOptions: a body change, a re-open, a re-render.
+function renderBodyRuleNote() {
+  const box = document.getElementById('body-rule-note');
+  const txt = document.getElementById('body-rule-note-text');
+  if (!box || !txt) return;
+  const tid = document.getElementById('trailer-select')?.value;
+  const t = (tid && typeof trailerDefaults !== 'undefined') ? trailerDefaults[+tid] : null;
+  const note = (t && typeof t.rule_note === 'string') ? t.rule_note.trim() : '';
+  txt.textContent = note;
+  box.hidden = !note;
+  box.style.display = note ? 'flex' : 'none';
 }
 
 // ── WO v1.39.10 — the GENERAL insulation invariant (Michael, 2 Jul) ─────────

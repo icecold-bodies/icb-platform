@@ -324,6 +324,13 @@
           <button id="excel-paste-btn" class="btn btn-outline btn-sm" type="button"
             style="font-size:9px;padding:2px 8px;letter-spacing:.5px" onclick="openExcelPasteModal()">⧉ Paste from Excel</button>
         </div>
+        <!-- RT5 — the body family's rule note (Burt's product rule), in red under BODY OPTIONS. Plain text from the
+             body's /api/trailers row (rule_note); written with textContent, never as HTML; hidden when there is none.
+             Outside #body-options-list, so every re-render keeps it (like the paste button and the foam block). -->
+        <div id="body-rule-note" role="note" hidden
+          style="display:none;gap:6px;align-items:flex-start;margin:-4px 0 10px;color:{{ rule_note_ink }};font-size:12px;font-weight:600;line-height:1.35">
+          <span aria-hidden="true">&#9888;</span><span id="body-rule-note-text" style="white-space:pre-line"></span>
+        </div>
         <!-- v1.51 — PU insulation foam grade. A costing-level choice, not a BOM
              row, so it lives OUTSIDE #body-options-list and survives every
              re-render (same reasoning as the Excel-paste button above). -->
@@ -1683,7 +1690,7 @@ const canCaptureForUser = {{ 'true' if user_can(user, 'costings.capture_for_user
    v=172 rather than either of them: both 170 and 171 have already been
    served, so a fresh number is the only value guaranteed not to hit a
    stale cached copy of one lane's file. #}
-<script defer src="/static/js/calculator.js?v=186"></script>
+<script defer src="/static/js/calculator.js?v=187"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

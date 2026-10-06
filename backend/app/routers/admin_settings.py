@@ -378,6 +378,15 @@ def _family_fields(colour: Optional[str], sort_order: Optional[str]) -> tuple[Op
     return c, order
 
 
+def _rule_note_field(rule_note: Optional[str]) -> Optional[str]:
+    """RT5 — a family's rule note as stored: plain text, several lines allowed, '' = none
+    (services/body_family.normalise_rule_note). 400 when too long."""
+    try:
+        return body_family.normalise_rule_note(rule_note)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/api/admin/body-families")
 async def admin_body_families(request: Request, db: Session = Depends(get_db)):
     """RT3 — every family (trailer group) in dropdown order, with its colour, inks and active-body count."""
@@ -404,6 +413,7 @@ async def admin_quote_group_new(request: Request,
                                 report_template_id: Optional[str] = Form(None),
                                 colour: Optional[str] = Form(None),
                                 sort_order: Optional[str] = Form(None),
+                                rule_note: Optional[str] = Form(None),
                                 db: Session = Depends(get_db)):
     require_admin(request, db)
     name = name.strip()
@@ -417,6 +427,7 @@ async def admin_quote_group_new(request: Request,
         description=description.strip(),
         report_template_id=int(report_template_id) if report_template_id else None,
         colour=c, sort_order=order,
+        rule_note=_rule_note_field(rule_note),   # RT5
     )
     db.add(g); db.commit()
     return RedirectResponse(url="/admin/quote-templates", status_code=303)
@@ -429,6 +440,7 @@ async def admin_quote_group_edit(group_id: int, request: Request,
                                  report_template_id: Optional[str] = Form(None),
                                  colour: Optional[str] = Form(None),
                                  sort_order: Optional[str] = Form(None),
+                                 rule_note: Optional[str] = Form(None),
                                  db: Session = Depends(get_db)):
     require_admin(request, db)
     g = db.query(TrailerGroup).filter_by(id=group_id).first()
@@ -449,6 +461,9 @@ async def admin_quote_group_edit(group_id: int, request: Request,
         if colour is not None:
             g.colour = c
         g.sort_order = order
+    # RT5 — the rule note; a form without the field (an older page) leaves it as it is; '' clears it
+    if rule_note is not None:
+        g.rule_note = _rule_note_field(rule_note)
     db.commit()
     return RedirectResponse(url="/admin/quote-templates", status_code=303)
 

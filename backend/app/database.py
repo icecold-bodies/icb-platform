@@ -757,6 +757,9 @@ class TrailerGroup(Base):
     # fallback grey) and its place in the BODY TYPE dropdown. services/body_family.py reads both.
     colour             = Column(String(7), nullable=True)
     sort_order         = Column(Integer, nullable=False, default=100, server_default="100")
+    # RT5 (migration 0052) — the family's rule note (Burt's product rule), plain text, shown in red under BODY
+    # OPTIONS for every body of the family and in Body Templates; NULL = none. services/body_family.rule_note_of.
+    rule_note          = Column(Text, nullable=True)
     report_template = relationship("ReportTemplate", foreign_keys=[report_template_id])
     trailer_types   = relationship("TrailerType", back_populates="group", foreign_keys="TrailerType.group_id")
 

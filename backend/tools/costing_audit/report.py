@@ -170,7 +170,7 @@ details{margin-top:10px}pre{background:#fff;border:1px solid #d9dde3;padding:8px
 _JS = r"""
 const D = window.__AUDIT__;
 const RANK = {FLAG:0,PRESENCE:1,UNMAPPED:2,EXPIRED:3,NO_GOLDEN:4,UNVERIFIABLE:5,ACCEPTED:6,PASS:7,SKIP:8};
-const VARIANT_ORDER = ['as_sheet','all_eps','all_pu','srd','drd','foam_4g'];
+const VARIANT_ORDER = ['as_sheet','all_eps','all_pu','roof_floor_eps','srd','drd','foam_4g'];
 const SHORT = {UNVERIFIABLE:'UNVERIF.', NO_GOLDEN:'NO GOLDEN'};
 const fmt = v => (v==null? '' : (typeof v==='number'? v.toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2}) : String(v)));
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

@@ -73,6 +73,12 @@
         <button class="btn btn-primary btn-sm hidden" id="btn-add-bom" onclick="openAddBOM()">+ Add Item</button>
       </div>
     </div>
+    <!-- RT5 — the body family's rule note (Burt's product rule), in red under the body's header, so whoever edits the
+         template sees it. Plain text from /api/trailers (rule_note), written with textContent; hidden when none. -->
+    <div id="tt-rule-note" role="note" hidden
+      style="display:none;gap:6px;align-items:flex-start;padding:8px 16px;border-bottom:1px solid var(--border);color:{{ rule_note_ink }};font-size:12px;font-weight:600;line-height:1.35">
+      <span aria-hidden="true">&#9888;</span><span id="tt-rule-note-text" style="white-space:pre-line"></span>
+    </div>
     <!-- Default dimensions bar -->
     <div id="dims-bar" class="hidden" style="padding:10px 16px;background:var(--bg-panel);
       border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -742,7 +748,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/admin_templates.js?v=21"></script>
+<script src="/static/js/admin_templates.js?v=22"></script>
 <script src="/static/js/driver.js.iife.js"></script>
 <script>
 (function () {

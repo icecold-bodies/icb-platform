@@ -1,0 +1,786 @@
+{
+ "database": "icb_platform",
+ "bodies": [
+  {
+   "id": 25,
+   "name": "CHILLER 2.3 METER",
+   "is_active": true,
+   "v2": true,
+   "family": "CHILLER"
+  },
+  {
+   "id": 27,
+   "name": "CHILLER LARGE",
+   "is_active": true,
+   "v2": true,
+   "family": "CHILLER"
+  },
+  {
+   "id": 26,
+   "name": "CHILLER MEDIUM",
+   "is_active": true,
+   "v2": true,
+   "family": "CHILLER"
+  },
+  {
+   "id": 37,
+   "name": "EXPLOSIVE 2.7 TO 4.8",
+   "is_active": true,
+   "v2": true,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 23,
+   "name": "EXPLOSIVE 2.7 TO 4.8 OLD [deleted-23]",
+   "is_active": false,
+   "v2": false,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 24,
+   "name": "EXPLOSIVE 4.9 AND UP",
+   "is_active": true,
+   "v2": true,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 34,
+   "name": "EXPLOSIVE UP TO 2.7",
+   "is_active": true,
+   "v2": true,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 22,
+   "name": "EXPLOSIVE UP TO 2.7 [deleted-22]",
+   "is_active": false,
+   "v2": false,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 28,
+   "name": "EXPLOSIVE UP TO 2.7 [deleted-28]",
+   "is_active": false,
+   "v2": false,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 29,
+   "name": "EXPLOSIVE UP TO 2.7 [deleted-29]",
+   "is_active": false,
+   "v2": false,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 30,
+   "name": "EXPLOSIVE UP TO 2.7 [deleted-30]",
+   "is_active": false,
+   "v2": false,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 31,
+   "name": "EXPLOSIVE UP TO 2.7 [deleted-31]",
+   "is_active": false,
+   "v2": false,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 32,
+   "name": "EXPLOSIVE UP TO 2.7 [deleted-32]",
+   "is_active": false,
+   "v2": false,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 33,
+   "name": "EXPLOSIVE UP TO 2.7 [deleted-33]",
+   "is_active": false,
+   "v2": false,
+   "family": "EXPLOSIVE"
+  },
+  {
+   "id": 19,
+   "name": "FREEZER 2.3 METER",
+   "is_active": true,
+   "v2": true,
+   "family": "FREEZER"
+  },
+  {
+   "id": 21,
+   "name": "FREEZER LARGE",
+   "is_active": true,
+   "v2": true,
+   "family": "FREEZER"
+  },
+  {
+   "id": 20,
+   "name": "FREEZER MEDIUM",
+   "is_active": true,
+   "v2": true,
+   "family": "FREEZER"
+  },
+  {
+   "id": 18,
+   "name": "ICECREAM BODY LARGE",
+   "is_active": true,
+   "v2": true,
+   "family": "ICE CREAM"
+  },
+  {
+   "id": 17,
+   "name": "ICECREAM BODY MEDIUM",
+   "is_active": true,
+   "v2": true,
+   "family": "ICE CREAM"
+  },
+  {
+   "id": 16,
+   "name": "ICECREAM BODY SMALL",
+   "is_active": true,
+   "v2": true,
+   "family": "ICE CREAM"
+  },
+  {
+   "id": 10,
+   "name": "CHESTER SPEC MEAT BODY",
+   "is_active": false,
+   "v2": false,
+   "family": "MEAT"
+  },
+  {
+   "id": 12,
+   "name": "MEAT HANGER LARGE",
+   "is_active": true,
+   "v2": true,
+   "family": "MEAT"
+  },
+  {
+   "id": 36,
+   "name": "MEAT HANGER SMALL-MEDIUM",
+   "is_active": true,
+   "v2": true,
+   "family": "MEAT"
+  },
+  {
+   "id": 11,
+   "name": "SMALL MEAT BODY UP TO 5,2 [deleted-11]",
+   "is_active": false,
+   "v2": false,
+   "family": "MEAT"
+  },
+  {
+   "id": 35,
+   "name": "SMALL MEAT BODY UP TO 5,2 [deleted-35]",
+   "is_active": false,
+   "v2": false,
+   "family": "MEAT"
+  },
+  {
+   "id": 2,
+   "name": "ADVANTICA BODY",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 1,
+   "name": "ADV VACUUM PANELS",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 13,
+   "name": "DRY FREIGHT TRAILER",
+   "is_active": false,
+   "v2": true,
+   "family": "OTHER"
+  },
+  {
+   "id": 14,
+   "name": "GRP TRAILERS",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 4,
+   "name": "MANNI BAKKI RIGIDS",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 7,
+   "name": "MANNI DF",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 3,
+   "name": "MANNI RIGIDS CB",
+   "is_active": true,
+   "v2": true,
+   "family": "OTHER"
+  },
+  {
+   "id": 5,
+   "name": "MANNI RIGIDS FB",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 6,
+   "name": "MANNI TRAILERS",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 15,
+   "name": "RHINORANGE TRAILER",
+   "is_active": true,
+   "v2": true,
+   "family": "OTHER"
+  },
+  {
+   "id": 39,
+   "name": "RIGID DRY FREIGHT",
+   "is_active": false,
+   "v2": true,
+   "family": "OTHER"
+  },
+  {
+   "id": 38,
+   "name": "RIGID DRY FREIGHT [deleted-38]",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 8,
+   "name": "RIGID DRY FREIGHT [deleted-8]",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 9,
+   "name": "TAUT LINER RIGID",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 40,
+   "name": "TESTING EVERYTHING",
+   "is_active": false,
+   "v2": false,
+   "family": "OTHER"
+  },
+  {
+   "id": 41,
+   "name": "Manni RIGIDS CB [deleted-41]",
+   "is_active": false,
+   "v2": true,
+   "family": null
+  }
+ ],
+ "stray": [],
+ "masters": {
+  "25": [
+   {
+    "name": "FRONT PU",
+    "id": 3794,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#14 2026-05-23"
+    ]
+   },
+   {
+    "name": "SIDES PU",
+    "id": 3800,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#14 2026-05-23"
+    ]
+   },
+   {
+    "name": "ROOF PU",
+    "id": 3802,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#14 2026-05-23"
+    ]
+   },
+   {
+    "name": "FLOOR PU",
+    "id": 3804,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#14 2026-05-23"
+    ]
+   },
+   {
+    "name": "DRD PU",
+    "id": 3796,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#14 2026-05-23"
+    ]
+   },
+   {
+    "name": "SRD PU",
+    "id": 3798,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#14 2026-05-23"
+    ]
+   }
+  ],
+  "27": [
+   {
+    "name": "FRONT PU",
+    "id": 3432,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#2 2026-05-23"
+    ]
+   },
+   {
+    "name": "SIDES PU",
+    "id": 3438,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#2 2026-05-23"
+    ]
+   },
+   {
+    "name": "ROOF PU",
+    "id": 3440,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#2 2026-05-23"
+    ]
+   },
+   {
+    "name": "FLOOR PU",
+    "id": 3442,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#2 2026-05-23"
+    ]
+   },
+   {
+    "name": "DRD PU",
+    "id": 3434,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#2 2026-05-23"
+    ]
+   },
+   {
+    "name": "SRD PU",
+    "id": 3436,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#2 2026-05-23"
+    ]
+   }
+  ],
+  "26": [
+   {
+    "name": "FRONT PU",
+    "id": 3293,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#15 2026-05-23"
+    ]
+   },
+   {
+    "name": "SIDES PU",
+    "id": 3299,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#15 2026-05-23"
+    ]
+   },
+   {
+    "name": "ROOF PU",
+    "id": 3301,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#15 2026-05-23"
+    ]
+   },
+   {
+    "name": "FLOOR PU",
+    "id": 3303,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#15 2026-05-23"
+    ]
+   },
+   {
+    "name": "DRD PU",
+    "id": 3295,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#15 2026-05-23"
+    ]
+   },
+   {
+    "name": "SRD PU",
+    "id": 3297,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#15 2026-05-23"
+    ]
+   }
+  ],
+  "19": [
+   {
+    "name": "FRONT EPS",
+    "id": 3673,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#1 2026-05-23"
+    ]
+   },
+   {
+    "name": "SIDES EPS",
+    "id": 3679,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#1 2026-05-23"
+    ]
+   },
+   {
+    "name": "DRD EPS",
+    "id": 3675,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#1 2026-05-23"
+    ]
+   },
+   {
+    "name": "SRD EPS",
+    "id": 3677,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#1 2026-05-23"
+    ]
+   }
+  ],
+  "21": [
+   {
+    "name": "FRONT EPS",
+    "id": 2680,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#3 2026-05-23"
+    ]
+   },
+   {
+    "name": "SIDES EPS",
+    "id": 2686,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#3 2026-05-23"
+    ]
+   },
+   {
+    "name": "DRD EPS",
+    "id": 2682,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#3 2026-05-23"
+    ]
+   },
+   {
+    "name": "SRD EPS",
+    "id": 2684,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#3 2026-05-23"
+    ]
+   }
+  ],
+  "20": [
+   {
+    "name": "FRONT EPS",
+    "id": 2532,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#10 2026-05-23"
+    ]
+   },
+   {
+    "name": "SIDES EPS",
+    "id": 2538,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#10 2026-05-23"
+    ]
+   },
+   {
+    "name": "DRD EPS",
+    "id": 2534,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#10 2026-05-23"
+    ]
+   },
+   {
+    "name": "SRD EPS",
+    "id": 2536,
+    "thickness": 0.0,
+    "default": false,
+    "offered_live": [],
+    "offered_by_backups": [
+     "draft#10 2026-05-23"
+    ]
+   }
+  ]
+ },
+ "costings": [
+  {
+   "id": 45,
+   "quote_number": "N9937/07/2026",
+   "status": "pending",
+   "created": "2026-07-14",
+   "deleted": false,
+   "body": 26,
+   "body_name": "CHILLER MEDIUM",
+   "rule": "CHILLER",
+   "legacy": false,
+   "priced": [],
+   "thickness": [
+    "FRONT",
+    "SIDES",
+    "DRD"
+   ],
+   "selected": []
+  },
+  {
+   "id": 106,
+   "quote_number": "A9998/09/2026",
+   "status": "pending",
+   "created": "2026-09-15",
+   "deleted": false,
+   "body": 20,
+   "body_name": "FREEZER MEDIUM",
+   "rule": "FREEZER",
+   "legacy": false,
+   "priced": [
+    "SIDES"
+   ],
+   "thickness": [
+    "SIDES"
+   ],
+   "selected": [
+    "SIDES"
+   ]
+  }
+ ],
+ "costings_per_body": {
+  "26:live": 8,
+  "27:live": 7,
+  "25:live": 6,
+  "21:live": 7,
+  "20:live": 13,
+  "19:live": 6,
+  "26:deleted": 2,
+  "27:deleted": 1
+ },
+ "references": [],
+ "side_doors": [
+  {
+   "tid": 19,
+   "id": 9593,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Single"
+  },
+  {
+   "tid": 19,
+   "id": 9594,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Double"
+  },
+  {
+   "tid": 19,
+   "id": 9595,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Dry Freight Side Door"
+  },
+  {
+   "tid": 19,
+   "id": 9659,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Insulated Panelvan - Side door & double rear doors"
+  },
+  {
+   "tid": 19,
+   "id": 9660,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Insulated Panelvan - Double side doors & double rear doors"
+  },
+  {
+   "tid": 19,
+   "id": 9666,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Sliding steps on side door (Bidfood)"
+  },
+  {
+   "tid": 19,
+   "id": 9713,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Platform & ladder on side door"
+  },
+  {
+   "tid": 21,
+   "id": 9861,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Single"
+  },
+  {
+   "tid": 21,
+   "id": 9862,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Double"
+  },
+  {
+   "tid": 21,
+   "id": 9863,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Dry Freight Side Door"
+  },
+  {
+   "tid": 21,
+   "id": 9927,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Insulated Panelvan - Side door & double rear doors"
+  },
+  {
+   "tid": 21,
+   "id": 9928,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Insulated Panelvan - Double side doors & double rear doors"
+  },
+  {
+   "tid": 21,
+   "id": 9934,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Sliding steps on side door (Bidfood)"
+  },
+  {
+   "tid": 21,
+   "id": 9981,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Platform & ladder on side door"
+  },
+  {
+   "tid": 20,
+   "id": 9727,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Single"
+  },
+  {
+   "tid": 20,
+   "id": 9728,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Double"
+  },
+  {
+   "tid": 20,
+   "id": 9729,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Side doors with access step - Dry Freight Side Door"
+  },
+  {
+   "tid": 20,
+   "id": 9793,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Insulated Panelvan - Side door & double rear doors"
+  },
+  {
+   "tid": 20,
+   "id": 9794,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Insulated Panelvan - Double side doors & double rear doors"
+  },
+  {
+   "tid": 20,
+   "id": 9800,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Sliding steps on side door (Bidfood)"
+  },
+  {
+   "tid": 20,
+   "id": 9847,
+   "bom_section": "OPTIONAL EXTRAS",
+   "name": "Platform & ladder on side door"
+  }
+ ]
+}

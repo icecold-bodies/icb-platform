@@ -51,3 +51,5 @@ def family_vars(fam) -> str:
 templates.env.globals["family_groups"] = _body_family.group_bodies
 templates.env.globals["body_family"] = _body_family.body_family
 templates.env.globals["family_vars"] = family_vars
+# RT5 — the rule note's red on the light MES skin (services/body_family.RULE_NOTE_INK, >= INK_MIN on both backgrounds)
+templates.env.globals["rule_note_ink"] = _body_family.RULE_NOTE_INK

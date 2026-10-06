@@ -5265,6 +5265,8 @@ function renderBodyOptionsTree(tree) {
   list.innerHTML = html;
   section.style.display = '';
   _bindTreeHandlers(tree, tid, collapsed);
+  // RT6 — the tree re-renders itself (expand / collapse, a choice): grey every render, not only renderBodyOptions'
+  _greyRuleForbidden();
 }
 
 function _bindTreeHandlers(tree, tid, collapsed) {

@@ -13,7 +13,7 @@ row() { # $1 scenario, $2 regex over the whole log
   local log; log=$(bash "$RUN" "$1" "$KIT" 2>&1)
   if [[ "$log" =~ $2 ]]; then echo "PASS  $1"; P=$((P+1)); else echo "FAIL  $1"; F=$((F+1)); echo "$log" | tail -n 50 | sed 's/^/      | /'; fi
 }
-VB=${VB:-[0-9]+}
+VB=${VB:-24}   # verify BEFORE the deploy (and before the env step): exactly these 24 not-yet-deployed checks
 FIRST='######## RT6 release v1.61.0 preflight · machine icb-mes-prod · db icb_platform @ 127.0.0.1:5432 · head a429404'
 row happy        "$FIRST.*PREFLIGHT PASSED.*######## VERIFY: $VB check\(s\) failed.*DONE \(env: ICB_ENVIRONMENT=prod, read back.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed.*DONE \(env: already ICB_ENVIRONMENT=prod\).*######## ALREADY DEPLOYED.*1 line\(s\) added: ICB_ENVIRONMENT=prod .*earlier lines unchanged: yes; mode 600.*pg_dump ran at alembic 0052.*npm builds: [1-9]"
 row notag        'STOP \[TAG_ON_ORIGIN\]|PREFLIGHT: [0-9]+ check\(s\) FAILED.*STOP \[TAG\]'

@@ -45,7 +45,7 @@ icb_where_check() {
     && WHERE_WHY="$WHERE_WHY database host is '$WHERE_DBHOST', this step expects '$EXPECT_DBHOST';"
   if [ -n "${EXPECT_HEADS:-}" ]; then
     case " $EXPECT_HEADS " in *" $WHERE_HEAD "*) ;; *)
-      WHERE_WHY="$WHERE_WHY code is at ${WHERE_HEAD:0:7}, this step expects $(for h in $EXPECT_HEADS; do printf '%s ' "${h:0:7}"; done);" ;;
+      WHERE_WHY="$WHERE_WHY code is at ${WHERE_HEAD:0:7}, this step expects $(for h in $EXPECT_HEADS; do printf '%s\n' "${h:0:7}"; done | paste -sd' ');" ;;
     esac
   fi
   [ -z "$WHERE_WHY" ] && return 0

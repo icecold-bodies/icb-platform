@@ -24,3 +24,15 @@
 ## Prod
 
 `prod/discovery_<ts>/` is the VM run of `ops/prod-rt6/rt6_discovery.sh`, read only. It is added when it comes back.
+
+# RT6 build (v1.61.0): evidence for RT6_RETURN_2
+
+| file | what |
+|---|---|
+| `mirror/REHEARSAL_v1.61.0.md` | the prod-mirror rehearsal: backup → 0053 → the rules (dry-run / apply / again / show / revert / revert twice refused / re-apply) → RULING_1a on a mirror test costing (soft-deleted = prod's state, restore, Accept 409, re-open warning + Remove, save, accept) → both mirror test costings removed, journaled → All before / after the rules: **No change** (0 differences, 2 936 cells) |
+| `mirror/mirror-01-restored-reopened-warning.png` / `mirror-02-after-remove.png` | the restored breaching costing re-opened (the red list, Remove); after Remove (SIDES PU 0.060 m) |
+| `negative_controls.txt` / `negative_controls.py` | F6: 22 mechanisms broken one at a time — each caught by its tests; the tree restored from git and proved clean |
+| `../../screenshots/journeys/rt6_rules/` | the side-port journey's element shots (re-open → warning → Remove → save; greyed in three renderers; Switch ALL; the paste refusal; the restored costing; the unused door; the TEST bar) |
+
+**Prod in RT6 stays read only until the window.** No test quote is created on prod (RULING_1a): the re-open →
+warning → Remove → Accept-refused proof is the mirror rehearsal above and the side-port journey.

@@ -3,7 +3,8 @@
 #
 # The flaw it replaces (found by RT5): `pg_dump … | gzip > f || stop` tests gzip's exit status only. A failed dump
 # leaves a valid, non-empty gzip that also passes `[ -s f ] && gzip -t f` — the kit then writes with no backup.
-# A CI guard (backend/tests/test_ops_backup_guard.py) fails on any pg_dump pipe in ops/ outside this file.
+# A CI guard (backend/tests/test_ops_rt6.py::test_no_script_in_ops_pipes_pg_dump_outside_the_helper) fails on any
+# pg_dump pipe in ops/ outside this file.
 #
 # Sourced, never run:
 #     . "$KIT_DIR/lib/icb_backup.sh"

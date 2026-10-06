@@ -107,7 +107,7 @@ directory writable; `deploy/prod/icb-deploy.sh` the expected blob; icb's sudo NO
 | 7b | the same page → **new** quote → body **CHILLER MEDIUM** | every PU choice on the panel (FRONT / SIDES / ROOF / FLOOR, and the door the quote uses) **greyed out**, its tooltip the rule; no INSULATION FOAM picker. **Do not save** |
 | 7c | the same quote → **Paste from Excel** → paste one row copied from Excel: `FRONT PU` · `Y` · `0.06` (three cells) | the preview shows the row in red: **"refused — No PU insulation for Chillers"**. Close the dialog. **Calculate only — never approve, never save** |
 | 7d | `sudo bash /tmp/icb-rt6-rules/rt6_rules.sh show` (the read-only breach count, RULING_1a) | **`live breaching costings: 0`**; **`soft-deleted breaching costings: 1`** (A9998/09/2026, quote number only). No costing was created by 7b / 7c |
-| 8 | **Michael's :8000** (after the post-merge procedure's code step, below): `http://127.0.0.1:8000/mes/calculator?stay=1` | the red **TEST SERVER — 127.0.0.1:8000 — not prod** bar, and the tab title starts with **`[TEST]`** |
+| 8 | **Michael's :8000** (the post-merge procedure ran before the window, below): `http://127.0.0.1:8000/mes/calculator?stay=1` | the red **TEST SERVER — 127.0.0.1:8000 — not prod** bar, and the tab title starts with **`[TEST]`** |
 | 9 | `sudo bash /tmp/icb-rt6-tidy/rt6_tmp_tidy.sh dryrun` → `… apply` | dry-run: **34 of 34 present, all 47 files match** the reviewed sha256s. Apply: the 34 move (never a glob, never a delete) to **`/var/backups/icb-tmp-archive-<date>/`** (root:root 700) with `LISTING.txt` and `SHA256SUMS`; **read back:** the archive's sums = the reviewed list, none of the 34 left in /tmp, `node-compile-cache/` still there. RT6's kits and the deploy's own new rollback note stay |
 | 10 | `sudo bash /tmp/icb-rt2-doors/rt2_doors.sh` | **SUMMARY: 14 OK** |
 | 11 | `sudo bash /tmp/icb-release-v1.61.0/release.sh verify` | **0 failed** (the three doors again, after the data); families with an insulation rule: **2** |
@@ -167,22 +167,26 @@ Records: `/tmp/icb-release-v1.61.0/out-<mode>-<ts>/`, `/tmp/icb-rt6-rules/out-<m
   reads it). `alembic downgrade` is not part of the rollback.
 - **The full restore** (only if all of the above fail): `icb_platform_pre-v1.61.0_<ts>.dump`.
 
-## After the window and the merge: Michael's :8000 (the post-merge procedure)
+## Before the window, after the merge: Michael's :8000 (the post-merge procedure, RT6_DISPATCH)
 
 1. **Code:** the CA fast-forwards the main clone to the merge commit (Michael's local entries fingerprinted before
-   and after, never stashed, reset or overwritten), rebuilds the SPA, and gives Michael the dev one-liner: a checked
-   backup of `icb`, then `alembic upgrade 0053`. The CA reads it back before :8000 restarts (`start.bat` would
-   auto-upgrade). **Window step 8** reads the bar on :8000 after this.
-2. **The rules on dev:** `rt6_rules.py --target dev` dry-run ("2 to apply") → Michael applies with `--apply
-   --out-dir C:\Users\micge\Documents\icb_db_backups\rt6-dev-rules` → the CA reads it back with `--show`.
-3. **Michael's click-through on `http://127.0.0.1:8000`:** the TEST bar; a chiller's PU greyed; a freezer's EPS greyed
-   on the sides; the Paste refusal.
+   and after, never stashed, reset or overwritten) and rebuilds the SPA. Michael runs the dev one-liner (its first
+   line names the machine, `icb @ localhost:5432` and the HEAD): a checked backup of `icb`, then `alembic upgrade
+   0053`. The CA reads it back before :8000 restarts (`start.bat` would auto-upgrade).
+2. **The rules on dev:** `rt6_rules.py --target dev` (run from the main clone; it uses the repo's own check):
+   dry-run ("2 to apply") → Michael applies with `--apply --out-dir
+   C:\Users\micge\Documents\icb_db_backups\rt6-dev-rules` → `--show` reads them back, and lists dev's breaching
+   costings by quote number (one of them is the click-through's re-open).
+3. **Michael's click-through on `http://127.0.0.1:8000`** (dispatch): the TEST SERVER bar and the `[TEST]` title; a
+   chiller with PU greyed (dev's drafts still offer it); a refused approve; re-open → Remove → approve.
+
+**Window step 8** re-reads the bar on :8000. After the window: nothing more on :8000 (`RT6_RETURN_4`).
 
 ## Simulation (WSL; the real `icb-deploy.sh`, the real `mkstage*.sh`)
 
 | kit | scenarios | result |
 |---|---|---|
-| `ops/prod-release-v1.61.0/sim/run_all.sh` | happy (verify before = exactly 24) · notag · moved · bootfail · traceback · stalecache · resume · migfail · nobackup · pgdumpfail · cfstale · famchanged · nobuild · autologin · noenv · envother · wrongplace | see RT6_RETURN_2 |
+| `ops/prod-release-v1.61.0/sim/run_all.sh` | happy (verify before = exactly 24) · notag · moved · bootfail · traceback · stalecache · resume · migfail · nobackup · pgdumpfail · cfstale · famchanged · nobuild · autologin · noenv · envother · wrongplace | 17 / 17 |
 | `ops/prod-rt6/sim/run_window_sim.sh` | staging (five kits, the two Windows lines filled) · rules: wrong machine / database / code / alembic, tampered kit, a different plan, a failed dump, dry-run, apply, again, show, revert, revert twice, re-apply · tidy (real files): wrong machine, dry-run, a changed / extra / missing file, apply (owners and modes kept, the stays stay), again, show, restore, never mixed into · All / doors: the first line, wrong machine | 36 / 36 |
 | `ops/prod-rt5/sim/run_notes_sim.sh` (rt5_notes.sh on the helper) | as RT5 | 16 / 16 |
-| `ops/prod-rt6/rt6_rules.py` on the prod mirror | dry-run 2 → apply → 0 to apply, 2 already applied → show → revert exact → re-applied | see RT6_RETURN_2 |
+| `ops/prod-rt6/rt6_rules.py` on the prod mirror | dry-run 2 → apply → 0 to apply, 2 already applied → show → revert → revert twice refused → re-applied; RULING_1a on a mirror test costing; All before / after: No change | `docs/audit/rt6_2026-10/mirror/REHEARSAL_v1.61.0.md` |

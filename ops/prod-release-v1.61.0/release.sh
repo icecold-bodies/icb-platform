@@ -124,6 +124,7 @@ version_of() { health_version "$1" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p' |
 environment_of() { health_version "$1" | sed -n 's/.*"environment":"\([^"]*\)".*/\1/p' | head -n1; }
 banner_on() { # $1 door: how many TEST SERVER bars / [TEST] titles the login page carries (prod: 0)
   local page; page=$(curl -ks --max-time 20 "$1/login" 2>/dev/null)
+  grep -qi '<title>' <<<"$page" || { echo "no login page"; return 0; }   # an empty answer is not "no banner"
   echo "$(grep -c 'icb-test-banner' <<<"$page" || true)/$(grep -c '<title>\[TEST\]' <<<"$page" || true)"
 }
 noauth_report() {

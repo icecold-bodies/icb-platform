@@ -86,12 +86,41 @@ def users(app_mod):
         db.commit()
 
 
+def _purge_marker() -> None:
+    """This file's marker rows, found by the marker and deleted child-first BY ID (never TRUNCATE): at setup — what a
+    run that died mid-way left, or a negative control that let a refused write through (a job from a costing, whose
+    FK then blocked the costing's delete and left the whole set behind) — and again at teardown."""
+    from sqlalchemy import or_
+    from app.database import (BillOfMaterial, CalculationRecord, ConfiguratorDraft, ConfiguratorDraftSnapshot,
+                              Customer, Material, SessionLocal, TrailerGroup, TrailerType)
+    from app.models.mes import PrejobCard, ProductionJob
+    with SessionLocal() as db:
+        bodies = [i for (i,) in db.query(TrailerType.id).filter(TrailerType.name.like(f"{MARK} %"))]
+        groups = [i for (i,) in db.query(TrailerGroup.id).filter(TrailerGroup.name.like(f"{MARK} %"))]
+        custs = [i for (i,) in db.query(Customer.id).filter(Customer.name == f"{MARK} CUSTOMER")]
+        calcs = [i for (i,) in db.query(CalculationRecord.id).filter(or_(
+            CalculationRecord.trailer_type_id.in_(bodies), CalculationRecord.customer_id.in_(custs),
+            CalculationRecord.quote_number.like(f"{MARK}%")))]
+        db.query(PrejobCard).filter(PrejobCard.calculation_id.in_(calcs)).delete(synchronize_session=False)
+        db.query(ProductionJob).filter(ProductionJob.calculation_record_id.in_(calcs)).delete(synchronize_session=False)
+        db.query(CalculationRecord).filter(CalculationRecord.id.in_(calcs)).delete(synchronize_session=False)
+        db.query(ConfiguratorDraftSnapshot).filter(ConfiguratorDraftSnapshot.trailer_type_id.in_(bodies)).delete(synchronize_session=False)
+        db.query(ConfiguratorDraft).filter(ConfiguratorDraft.trailer_type_id.in_(bodies)).delete(synchronize_session=False)
+        db.query(BillOfMaterial).filter(BillOfMaterial.trailer_type_id.in_(bodies)).delete(synchronize_session=False)
+        db.query(TrailerType).filter(TrailerType.id.in_(bodies)).delete(synchronize_session=False)
+        db.query(TrailerGroup).filter(TrailerGroup.id.in_(groups)).delete(synchronize_session=False)
+        db.query(Material).filter(Material.material_code == MARK).delete(synchronize_session=False)
+        db.query(Customer).filter(Customer.id.in_(custs)).delete(synchronize_session=False)
+        db.commit()
+
+
 @pytest.fixture(scope="module")
 def staged(app_mod):
     """Three families — CHILLER-ruled, FREEZER-ruled, no rule — one body each, shaped like prod's: per panel an EPS
     and a PU master (INSULATION choice group) and an EPS / PU cost line in the panel's section, gated by a condition
-    naming the master. Plus a customer and the marker materials. Removed child-first by primary key."""
+    naming the master. Plus a customer and the marker materials. Purged by marker, child-first by id, before and after."""
     from app.database import (BillOfMaterial, Customer, Material, SessionLocal, TrailerGroup, TrailerType)
+    _purge_marker()
     ids: dict = {"groups": [], "bodies": {}, "materials": [], "masters": {}, "lines": {}}
     with SessionLocal() as db:
         fams = {}
@@ -141,19 +170,7 @@ def staged(app_mod):
         db.commit()
         ids["customer"] = cust.id
     yield ids
-    from app.database import CalculationRecord, ConfiguratorDraft, ConfiguratorDraftSnapshot, Customer as C
-    with SessionLocal() as db:
-        bodies = list(ids["bodies"].values())
-        db.query(CalculationRecord).filter(CalculationRecord.trailer_type_id.in_(bodies)).delete(synchronize_session=False)
-        db.query(CalculationRecord).filter(CalculationRecord.customer_id == ids["customer"]).delete(synchronize_session=False)
-        db.query(ConfiguratorDraftSnapshot).filter(ConfiguratorDraftSnapshot.trailer_type_id.in_(bodies)).delete(synchronize_session=False)
-        db.query(ConfiguratorDraft).filter(ConfiguratorDraft.trailer_type_id.in_(bodies)).delete(synchronize_session=False)
-        db.query(BillOfMaterial).filter(BillOfMaterial.trailer_type_id.in_(bodies)).delete(synchronize_session=False)
-        db.query(TrailerType).filter(TrailerType.id.in_(bodies)).delete(synchronize_session=False)
-        db.query(TrailerGroup).filter(TrailerGroup.id.in_(ids["groups"])).delete(synchronize_session=False)
-        db.query(Material).filter(Material.id.in_(ids["materials"])).delete(synchronize_session=False)
-        db.query(C).filter_by(id=ids["customer"]).delete()
-        db.commit()
+    _purge_marker()
 
 
 def sel(staged, key, picks):

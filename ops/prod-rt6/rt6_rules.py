@@ -40,7 +40,12 @@ from pathlib import Path
 
 import psycopg
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+_HERE = Path(__file__).resolve().parent
+# staged (the VM): the copy beside this file; in the repo (the mirror rehearsal, Michael's dev): backend/app/services
+if (_HERE / "insulation_rules.py").exists():
+    sys.path.insert(0, str(_HERE))
+else:                                                   # appended: nothing in services/ may shadow a library module
+    sys.path.append(str(_HERE.parents[1] / "backend" / "app" / "services"))
 import insulation_rules as ir  # noqa: E402  (the staged copy of backend/app/services/insulation_rules.py)
 
 TARGETS = {"prod": "icb_platform", "mirror": "icb_prodmirror", "dev": "icb"}
@@ -145,8 +150,8 @@ def show(cx) -> None:
             for cid, qn, status, deleted, res in cx.execute(
                     f"select id, quote_number, status, deleted_at is not null, result_json from {S}.calculations "
                     "where trailer_type_id = %s order by id", (tid,)).fetchall():
-                try:
-                    result = json.loads(res) if res else {}
+                try:                                    # text on prod; a json column would arrive decoded
+                    result = res if isinstance(res, dict) else (json.loads(res) if res else {})
                 except (TypeError, ValueError):
                     result = {}
                 found = ir.breaches(rule, cls, ir.saved_costing_payload(result, cls))

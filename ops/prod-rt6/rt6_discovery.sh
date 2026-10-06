@@ -58,7 +58,7 @@ export PYTHONDONTWRITEBYTECODE=1
 # ---- 1. the rules on prod's data ---------------------------------------------------------------------------------
 say "1. discovery (read-only session)"
 "$PY" "$BASE/rt6_discovery.py" "$URL" "$OUT" > "$OUT/discovery.log" 2>&1; rc=$?
-grep -E '^== |^   [A-Z#]|^      !!|^   LIVE|^      [A-Z0-9(]' "$OUT/discovery.log" | grep -v ' -> ' | head -n 120
+grep -E '^== |^   [A-Z0-9#]|^      !!|^   LIVE|^      [A-Z0-9(#]' "$OUT/discovery.log" | grep -v ' -> ' | head -n 120
 [ $rc = 0 ] || { tail -n 20 "$OUT/discovery.log"; stop DISCOVERY "the discovery failed (exit $rc)"; }
 
 # ---- 2. the environment the service reads: key NAMES only --------------------------------------------------------
@@ -106,7 +106,7 @@ say "3. /tmp (read only): what the tidy would move, what stays"
     find "/tmp/$n" -type f -print0 2>/dev/null | LC_ALL=C sort -z | xargs -0 -r sha256sum 2>/dev/null
   done
 } > "$OUT/tmp_listing.txt" 2>&1
-grep -E '^(MOVE\?|STAYS|OS-STAYS|RT6-KIT) ' "$OUT/tmp_listing.txt" | awk '{c[$1]++; if ($1=="MOVE?") print "   MOVE?  "$7"  ("$5" bytes, "$6" files, "$2")"} END {for (k in c) printf "   %s: %d item(s)\n", k, c[k]}'
+grep -E '^(MOVE\?|STAYS|OS-STAYS|RT6-KIT) ' "$OUT/tmp_listing.txt" | awk '{c[$1]++; if ($1=="MOVE?") print "   MOVE?  "$8"  ("$6" bytes, "$7" files, "$2")"} END {for (k in c) printf "   %s: %d item(s)\n", k, c[k]}'
 
 # ---- gate + pack -------------------------------------------------------------------------------------------------
 # no email-shaped value, and no value from an env file, may leave the VM

@@ -20,13 +20,21 @@ $Back      = Join-Path $env:USERPROFILE 'Downloads'
 function Stop-Step($tag, $why) { Write-Host ""; Write-Host "######## STOP [$tag]: $why"; Write-Host "######## nothing ran on prod after this point - tell the CA"; exit 1 }
 
 # ---- where am I? (the first line) ---------------------------------------------------------------------------------
-$probe = & ssh -o BatchMode=yes -o ConnectTimeout=10 $Vm "hostname -s; git -c safe.directory=/opt/icb-platform -C /opt/icb-platform rev-parse HEAD" 2>$null
+$errFile = [System.IO.Path]::GetTempFileName()
+$probe = & ssh -o BatchMode=yes -o ConnectTimeout=10 $Vm "hostname -s; git -c safe.directory=/opt/icb-platform -C /opt/icb-platform rev-parse HEAD" 2>$errFile
+$sshErr = ((Get-Content $errFile -ErrorAction SilentlyContinue) -join ' ').Trim()
+Remove-Item $errFile -ErrorAction SilentlyContinue
 $vmHost = if ($probe) { "$($probe[0])".Trim() } else { '?' }
 $vmHead = if ($probe -and $probe.Count -gt 1) { "$($probe[1])".Trim() } else { '?' }
 $short  = if ($vmHead.Length -ge 7) { $vmHead.Substring(0, 7) } else { $vmHead }
 Write-Host "######## RT6 discovery (read only) . machine $env:COMPUTERNAME -> $vmHost . db icb_platform (checked on the VM) . head $short . stage $($Staged.Substring(0,7)) . $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 if ($env:COMPUTERNAME -ne $PcName) { Stop-Step WHERE "this is $env:COMPUTERNAME; the stage lives on $PcName" }
-if ($vmHost -ne $VmName) { Stop-Step WHERE "ssh $Vm reached '$vmHost', not $VmName (VPN up? key loaded?)" }
+if ($vmHost -ne $VmName) {
+  $why = if ($sshErr -match 'timed out|No route|unreachable') { 'prod is not reachable on the LAN address - connect the VPN, then run this line again' }
+         elseif ($sshErr -match 'Permission denied|publickey') { 'ssh refused the key - tell the CA' }
+         else { 'tell the CA' }
+  Stop-Step WHERE "ssh $Vm reached '$vmHost', not $VmName. ssh said: $(if ($sshErr) { $sshErr } else { '(nothing)' }). $why"
+}
 if ($Heads -notcontains $vmHead) { Stop-Step WHERE "prod's code is $short, this kit expects $(($Heads | ForEach-Object { $_.Substring(0,7) }) -join ' ')" }
 if (-not (Test-Path $Tar)) { Stop-Step KIT "no $Tar - re-stage" }
 $sha = (Get-FileHash -Algorithm SHA256 $Tar).Hash.ToLower()

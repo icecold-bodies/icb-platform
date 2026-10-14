@@ -1,0 +1,11 @@
+# icb-backend environment — KEY NAMES ONLY (no value is ever read out)
+EnvironmentFiles: /etc/icb/backend.env
+Environment keys set in the unit itself: (none)
+/etc/icb/backend.env (root:icb 600): ALLOWED_ORIGINS ANTHROPIC_API_KEY APP_PORT AUTH_PROVIDER DATABASE_URL DEPLOYMENT_MODE EMAIL_FROM EMAIL_FROM FEEDBACK_NOTIFY_EMAIL FEEDBACK_NOTIFY_EMAIL FEEDBACK_NOTIFY_WHATSAPP FEEDBACK_NOTIFY_WHATSAPP FEEDBACK_NOTIFY_WHATSAPP ICB_ALLOW_SHARED_DB_WRITE INTEGRATION_API_TOKENS MES_DEMO_AUTOLOGIN_USER SAP_ENABLED SESSION_SECRET SMTP_URL SMTP_URL TWILIO_ACCOUNT_SID TWILIO_AUTH_TOKEN TWILIO_WHATSAPP_FROM TWILIO_WHATSAPP_TO 
+/opt/icb-platform/backend/.env: absent
+/opt/icb-platform/.env: absent
+key ICB_ENVIRONMENT: in no env file
+key ENVIRONMENT: in no env file
+key APP_ENV: in no env file
+key DEPLOYMENT_MODE: /etc/icb/backend.env 
+key DEBUG: in no env file

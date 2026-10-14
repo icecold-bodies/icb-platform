@@ -1,0 +1,76 @@
+(the line above, as run: machine icb-mes-prod, db icb_platform @ 127.0.0.1:5432, head a429404d468fb08d15ae42ec470d8b27eb72b1ba)
+== prod: alembic=0052 · read-only sessions · staged=32c221e · 2026-10-06T16:12:35+02:00
+== 1. discovery (read-only session)
+== 1 · classification: every insulation master on the CHILLER and FREEZER bodies (panel x insulation)
+   #25 CHILLER 2.3 METER (CHILLER): 12 classified, 0 unclassified, 12 insulation cost lines
+   #26 CHILLER MEDIUM (CHILLER): 12 classified, 0 unclassified, 12 insulation cost lines
+   #27 CHILLER LARGE (CHILLER): 12 classified, 0 unclassified, 12 insulation cost lines
+   #19 FREEZER 2.3 METER (FREEZER): 12 classified, 0 unclassified, 12 insulation cost lines
+   #20 FREEZER MEDIUM (FREEZER): 12 classified, 0 unclassified, 12 insulation cost lines
+   #21 FREEZER LARGE (FREEZER): 12 classified, 0 unclassified, 12 insulation cost lines
+      !! #36 MEAT HANGER SMALL-MEDIUM (MEAT): 'FLOOR EPS': the name selects both EPS on FLOOR and EPS on FRONT (condition on line 6228)
+== 2 · today's breaches under Burt's two rules (live costings; quote numbers only)
+   #25 CHILLER 2.3 METER: 6 live costing(s), 0 breaching; 0 soft-deleted (0 breaching)
+   #26 CHILLER MEDIUM: 9 live costing(s), 0 breaching; 2 soft-deleted (0 breaching)
+   #27 CHILLER LARGE: 7 live costing(s), 0 breaching; 1 soft-deleted (0 breaching)
+   #19 FREEZER 2.3 METER: 6 live costing(s), 0 breaching; 0 soft-deleted (0 breaching)
+   #20 FREEZER MEDIUM: 14 live costing(s), 1 breaching; 0 soft-deleted (0 breaching)
+   #21 FREEZER LARGE: 7 live costing(s), 0 breaching; 0 soft-deleted (0 breaching)
+   LIVE BREACHES: 1  (by status {'pending': 1})
+      N9937/07/2026    pending    2026-07-14 #26 CHILLER MEDIUM     thickness only — not a breach · selected=- priced=- thickness=FRONT PU,SIDES PU,DRD PU [selection snapshot] · selection names master id(s) no longer on the body: ['2533', '2535', '2539', '2540', '2542']
+      A9998/09/2026    pending    2026-09-15 #20 FREEZER MEDIUM     BREACH · selected=SIDES EPS priced=SIDES EPS thickness=SIDES EPS [selection snapshot]
+== 3 · validated references whose costing breaches (recall re-applies it)
+== 4 · drafts that would OFFER a forbidden choice (the save / restore warning's input)
+   #25 CHILLER 2.3 METER: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #14 2026-05-23: 6
+   #26 CHILLER MEDIUM: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #15 2026-05-23: 6
+   #27 CHILLER LARGE: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #2 2026-05-23: 6
+   #19 FREEZER 2.3 METER: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #1 2026-05-23: 4
+   #20 FREEZER MEDIUM: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #10 2026-05-23: 4
+   #21 FREEZER LARGE: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #3 2026-05-23: 4
+== 2. the service's environment: key names only
+   EnvironmentFiles: /etc/icb/backend.env
+   key ICB_ENVIRONMENT: in no env file
+   key ENVIRONMENT: in no env file
+   key APP_ENV: in no env file
+   key DEPLOYMENT_MODE: /etc/icb/backend.env 
+   key DEBUG: in no env file
+== 3. /tmp (read only): what the tidy would move, what stays
+   MOVE?  1  (regular_file bytes, 12 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 12 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 133 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 165 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 165 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 1353 files, 2026-09-07)
+   MOVE?  8  (directory bytes, 2300994 files, 2026-09-26)
+   MOVE?  1  (regular_file bytes, 2265 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 5061 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 1948 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-09-15)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-09-15)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-09-16)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-09-28)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-09-30)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-10-02)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-10-03)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-10-05)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-10-06)
+   MOVE?  1  (regular_file bytes, 779 files, 2026-09-07)
+   MOVE?  4  (directory bytes, 45525 files, 2026-09-29)
+   MOVE?  1  (regular_file bytes, 41 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 17498 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 13637 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 821 files, 2026-09-08)
+   MOVE?  1  (regular_file bytes, 120 files, 2026-09-08)
+   MOVE?  1  (regular_file bytes, 200 files, 2026-09-08)
+   MOVE?  1  (regular_file bytes, 135 files, 2026-09-08)
+   MOVE?  1  (regular_file bytes, 2066 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 702 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 636 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 392 files, 2026-09-07)
+   MOVE?  1  (regular_file bytes, 1908 files, 2026-09-07)
+   MOVE?  4  (directory bytes, 179733 files, 2026-09-07)
+   OS-STAYS: 13 item(s)
+   RT6-KIT: 2 item(s)
+   MOVE?: 34 item(s)
+   STAYS: 1 item(s)
+   gate ok: no email-shaped value; env_keys.txt holds key names only

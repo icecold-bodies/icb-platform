@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# ── RETIRED (RT6, 6 Oct 2026 — RT6_RULING_1 Q7) ─────────────────────────────────────────────────────────────────────
+# This kit's reviewed plan is applied on prod, and later releases and data steps build on what it wrote. It no longer
+# runs: its apply backed up with a bare `pg_dump … | gzip` (gzip's exit status only — a failed dump passed), and its
+# revert would now undo work done since. The file stays as the record its runbook cites. A new data step uses
+# ops/lib/icb_backup.sh (checked backup) and ops/lib/icb_where.sh (the safe-paste first line).
+echo "RETIRED (RT6, 2026-10-06): $(basename "$0") no longer runs — see its header. Nothing was done." >&2; exit 3
 # v1.58 — costing-audit pricing corrections on PROD. The operator runs, on the VM, ONE mode
 # at a time and sends the CA the output folder name before the next:
 #

@@ -27,6 +27,7 @@ from ..services import costing_attribution as attribution   # v1.52 — capture-
 from ..services.bom_order import order_result_items        # v1.54 — the calculator's BOM line order
 from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
 from ..services import insulation_foam as pu_foam   # v1.51 — 32D PU FOAM vs 4G FOAM
+from ..services import rule_guard                   # RT6 — Burt's insulation rules, enforced from the family
 from ..services import quote_document           # v1.51 — print modes
 from ..services.quote_document import has_repair_quote_document  # v1.48
 from ..templates_config import templates
@@ -877,6 +878,11 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
     result = _apply_chassis_and_margin(result, body, db)
     result = _apply_discount(result, body)
     result["trailer_name"] = tt.name
+    # RT6 — calculate WARNS: the family rule's breaches ride the result (the page shows them in red under the note,
+    # each with a Remove). Never inside _build_bom_items: the audit probe is never guarded.
+    result["rule_breaches"] = rule_guard.body_breaches(tt, bom_rows, body)
+    # ... and, on a ruled body, the insulation choices the check cannot read (an admin warning; never passed silently)
+    result["rule_unclassified"] = rule_guard.unclassified(tt, bom_rows)
     _attach_formula_debug(result, body_vars, formula_lib, global_vars)
     _t = _mark("chassis_margin_ms", _t)
 
@@ -1265,6 +1271,14 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         name = r.bom_section or (r.material.category.name if r.material and r.material.category else "")
         return (section_order.get(name, 99998), name.lower(), r.material.name.lower() if r.material else "")
     bom_rows.sort(key=_sec_key)
+
+    # RT6 — approve REFUSES a breach of the family's insulation rule: one chokepoint for every body save (new,
+    # revision, save-as-new, Replace, overwrite, capture-for, copy, recall, Calculator 2). It runs before anything is
+    # written — ahead of the Replace path's delete and the overwrite. No override, for any role (RT6 default 4).
+    _breaches = rule_guard.body_breaches(tt, bom_rows, body)
+    if _breaches:
+        raise HTTPException(status_code=409, detail=rule_guard.refusal(
+            _breaches, "This quote", "Remove it, then save again."))
 
     body_opt_sel  = {str(k): bool(v) for k, v in body.get("body_option_selections", {}).items()}
     excluded_cats = body.get("excluded_categories") or []
@@ -1768,6 +1782,9 @@ async def api_mark_calculation_accepted(record_id: int, request: Request, db: Se
             "approved_at": rec.approved_at.strftime("%Y-%m-%d %H:%M"),
             "approver": rec.approver.username if rec.approver else (user.username if rec.approved_by_user_id == user.id else None),
         }
+    # RT6 (RT6_RULING_1 Q3) — a costing that breaches its family's CURRENT insulation rule is not accepted: Accept
+    # is the path to the floor. The saved costing is never altered; the user re-opens it, Removes, saves, accepts.
+    rule_guard.refuse_saved(db, rec, "accepted")
     rec.approved_at = datetime.now(timezone.utc)
     rec.approved_by_user_id = user.id
     rec.status = "accepted"

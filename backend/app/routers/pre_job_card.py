@@ -38,6 +38,7 @@ from sqlalchemy.orm import Session
 
 from .. import database as _dbmod
 from ..database import CalculationRecord, User, UserSession, get_db
+from ..services import rule_guard   # RT6 — a costing that breaches its family's insulation rule never reaches the floor
 from ..deps import get_current_user, _is_localhost
 
 logger = logging.getLogger("burtcost")
@@ -87,6 +88,7 @@ async def api_pre_job_card_sent(record_id: int, request: Request, db: Session = 
             status_code=409,
             detail=f"Cannot send Pre-Job Card from status '{rec.status}'. Costing must be Accepted.",
         )
+    rule_guard.refuse_saved(db, rec, "sent to the floor")   # RT6_RULING_1 Q3
     rec.status = "pre_job_sent"
     rec.pre_job_sent_at = datetime.now(timezone.utc)
     db.commit()

@@ -1,0 +1,112 @@
+database icb_platform · read-only session
+
+== 1 · classification: every insulation master on the CHILLER and FREEZER bodies (panel x insulation)
+   #25 CHILLER 2.3 METER (CHILLER): 12 classified, 0 unclassified, 12 insulation cost lines
+      FRONT EPS        -> FRONT x EPS            T=0.06 default=True  [group FRONT + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FRONT PU         -> FRONT x PU   FORBIDDEN T=0.0 default=False  [group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SIDES EPS        -> SIDES x EPS            T=0.06 default=True  [group SIDES + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      SIDES PU         -> SIDES x PU   FORBIDDEN T=0.0 default=False  [group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      ROOF EPS         -> ROOF x EPS             T=0.076 default=True  [group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      ROOF PU          -> ROOF x PU    FORBIDDEN T=0.0 default=False  [group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      FLOOR EPS        -> FLOOR x EPS            T=0.076 default=True  [group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FLOOR PU         -> FLOOR x PU   FORBIDDEN T=0.0 default=False  [group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      DRD EPS          -> DRD x EPS              T=0.06 default=True  [group DRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      DRD PU           -> DRD x PU     FORBIDDEN T=0.0 default=False  [group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SRD EPS          -> SRD x EPS              T=0.0 default=False  [group SRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      SRD PU           -> SRD x PU     FORBIDDEN T=0.0 default=False  [group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+   #26 CHILLER MEDIUM (CHILLER): 12 classified, 0 unclassified, 12 insulation cost lines
+      FRONT EPS        -> FRONT x EPS            T=0.06 default=True  [group FRONT + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FRONT PU         -> FRONT x PU   FORBIDDEN T=0.0 default=False  [group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SIDES EPS        -> SIDES x EPS            T=0.06 default=True  [group SIDES + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      SIDES PU         -> SIDES x PU   FORBIDDEN T=0.0 default=False  [group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      ROOF EPS         -> ROOF x EPS             T=0.076 default=True  [group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      ROOF PU          -> ROOF x PU    FORBIDDEN T=0.0 default=False  [group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      FLOOR EPS        -> FLOOR x EPS            T=0.076 default=True  [group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FLOOR PU         -> FLOOR x PU   FORBIDDEN T=0.0 default=False  [group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      DRD EPS          -> DRD x EPS              T=0.06 default=True  [group DRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      DRD PU           -> DRD x PU     FORBIDDEN T=0.0 default=False  [group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SRD EPS          -> SRD x EPS              T=0.0 default=False  [group SRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      SRD PU           -> SRD x PU     FORBIDDEN T=0.0 default=False  [group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+   #27 CHILLER LARGE (CHILLER): 12 classified, 0 unclassified, 12 insulation cost lines
+      FRONT EPS        -> FRONT x EPS            T=0.06 default=True  [group FRONT + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FRONT PU         -> FRONT x PU   FORBIDDEN T=0.0 default=False  [group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SIDES EPS        -> SIDES x EPS            T=0.06 default=True  [group SIDES + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      SIDES PU         -> SIDES x PU   FORBIDDEN T=0.0 default=False  [group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      ROOF EPS         -> ROOF x EPS             T=0.1 default=True  [group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      ROOF PU          -> ROOF x PU    FORBIDDEN T=0.0 default=False  [group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      FLOOR EPS        -> FLOOR x EPS            T=0.1 default=True  [group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FLOOR PU         -> FLOOR x PU   FORBIDDEN T=0.0 default=False  [group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      DRD EPS          -> DRD x EPS              T=0.06 default=True  [group DRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      DRD PU           -> DRD x PU     FORBIDDEN T=0.0 default=False  [group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SRD EPS          -> SRD x EPS              T=0.0 default=False  [group SRD + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      SRD PU           -> SRD x PU     FORBIDDEN T=0.0 default=False  [group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+   #19 FREEZER 2.3 METER (FREEZER): 12 classified, 0 unclassified, 12 insulation cost lines
+      FRONT EPS        -> FRONT x EPS  FORBIDDEN T=0.0 default=False  [group FRONT + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      FRONT PU         -> FRONT x PU             T=0.06 default=True  [group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SIDES EPS        -> SIDES x EPS  FORBIDDEN T=0.0 default=False  [group SIDES + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      SIDES PU         -> SIDES x PU             T=0.06 default=True  [group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      ROOF EPS         -> ROOF x EPS             T=0.076 default=True  [group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      ROOF PU          -> ROOF x PU              T=0.0 default=False  [group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      FLOOR EPS        -> FLOOR x EPS            T=0.076 default=True  [group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FLOOR PU         -> FLOOR x PU             T=0.0 default=False  [group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      DRD EPS          -> DRD x EPS    FORBIDDEN T=0.0 default=False  [group DRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      DRD PU           -> DRD x PU               T=0.06 default=True  [group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SRD EPS          -> SRD x EPS    FORBIDDEN T=0.0 default=False  [group SRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      SRD PU           -> SRD x PU               T=0.0 default=False  [group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+   #20 FREEZER MEDIUM (FREEZER): 12 classified, 0 unclassified, 12 insulation cost lines
+      FRONT EPS        -> FRONT x EPS  FORBIDDEN T=0.0 default=False  [group FRONT + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      FRONT PU         -> FRONT x PU             T=0.06 default=True  [group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SIDES EPS        -> SIDES x EPS  FORBIDDEN T=0.0 default=False  [group SIDES + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      SIDES PU         -> SIDES x PU             T=0.06 default=True  [group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      ROOF EPS         -> ROOF x EPS             T=0.0 default=False  [group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      ROOF PU          -> ROOF x PU              T=0.076 default=True  [group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      FLOOR EPS        -> FLOOR x EPS            T=0.0 default=False  [group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FLOOR PU         -> FLOOR x PU             T=0.076 default=True  [group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      DRD EPS          -> DRD x EPS    FORBIDDEN T=0.0 default=False  [group DRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      DRD PU           -> DRD x PU               T=0.06 default=True  [group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SRD EPS          -> SRD x EPS    FORBIDDEN T=0.0 default=False  [group SRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      SRD PU           -> SRD x PU               T=0.0 default=False  [group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+   #21 FREEZER LARGE (FREEZER): 12 classified, 0 unclassified, 12 insulation cost lines
+      FRONT EPS        -> FRONT x EPS  FORBIDDEN T=0.0 default=False  [group FRONT + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      FRONT PU         -> FRONT x PU             T=0.06 default=True  [group FRONT + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SIDES EPS        -> SIDES x EPS  FORBIDDEN T=0.0 default=False  [group SIDES + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      SIDES PU         -> SIDES x PU             T=0.06 default=True  [group SIDES + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      ROOF EPS         -> ROOF x EPS             T=0.0 default=False  [group ROOF + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      ROOF PU          -> ROOF x PU              T=0.1 default=True  [group ROOF + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      FLOOR EPS        -> FLOOR x EPS            T=0.0 default=False  [group FLOOR + name EPS + INSULATION choice group; its condition gates 1 EPS cost line(s)]
+      FLOOR PU         -> FLOOR x PU             T=0.1 default=True  [group FLOOR + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      DRD EPS          -> DRD x EPS    FORBIDDEN T=0.0 default=False  [group DRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      DRD PU           -> DRD x PU               T=0.06 default=True  [group DRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+      SRD EPS          -> SRD x EPS    FORBIDDEN T=0.0 default=False  [group SRD + name EPS + INSULATION choice group; 1 EPS line(s) tied by the legacy link only (no condition names it)]
+      SRD PU           -> SRD x PU               T=0.0 default=False  [group SRD + name PU + INSULATION choice group; its condition gates 1 PU cost line(s)]
+   every family (the classifier is by mechanism, not by family): (no family): 0 classified / 0 unclassified; CHILLER: 36 classified / 0 unclassified; EXPLOSIVE: 110 classified / 0 unclassified; FREEZER: 36 classified / 0 unclassified; ICE CREAM: 36 classified / 0 unclassified; MEAT: 60 classified / 1 unclassified; OTHER: 113 classified / 0 unclassified
+      !! #36 MEAT HANGER SMALL-MEDIUM (MEAT): 'FLOOR EPS': the name selects both EPS on FLOOR and EPS on FRONT (condition on line 6228)
+
+   side doors on the freezers: do their options carry an insulation master?
+      #19 FREEZER 2.3 METER: 7 side-door row(s) (0 of them masters); insulation masters among them: 0; EPS/PU cost lines among them: 0 — OPTIONAL EXTRAS: Side doors with access step - Single; OPTIONAL EXTRAS: Side doors with access step - Double; OPTIONAL EXTRAS: Side doors with access step - Dry Freight Side Door; OPTIONAL EXTRAS: Insulated Panelvan - Side door & double rear doors; OPTIONAL EXTRAS: Insulated Panelvan - Double side doors & double rear doors; OPTIONAL EXTRAS: Sliding steps on side door (Bidfood); OPTIONAL EXTRAS: Platform & ladder on side door
+      #20 FREEZER MEDIUM: 7 side-door row(s) (0 of them masters); insulation masters among them: 0; EPS/PU cost lines among them: 0 — OPTIONAL EXTRAS: Side doors with access step - Single; OPTIONAL EXTRAS: Side doors with access step - Double; OPTIONAL EXTRAS: Side doors with access step - Dry Freight Side Door; OPTIONAL EXTRAS: Insulated Panelvan - Side door & double rear doors; OPTIONAL EXTRAS: Insulated Panelvan - Double side doors & double rear doors; OPTIONAL EXTRAS: Sliding steps on side door (Bidfood); OPTIONAL EXTRAS: Platform & ladder on side door
+      #21 FREEZER LARGE: 7 side-door row(s) (0 of them masters); insulation masters among them: 0; EPS/PU cost lines among them: 0 — OPTIONAL EXTRAS: Side doors with access step - Single; OPTIONAL EXTRAS: Side doors with access step - Double; OPTIONAL EXTRAS: Side doors with access step - Dry Freight Side Door; OPTIONAL EXTRAS: Insulated Panelvan - Side door & double rear doors; OPTIONAL EXTRAS: Insulated Panelvan - Double side doors & double rear doors; OPTIONAL EXTRAS: Sliding steps on side door (Bidfood); OPTIONAL EXTRAS: Platform & ladder on side door
+
+== 2 · today's breaches under Burt's two rules (live costings; quote numbers only)
+   #25 CHILLER 2.3 METER: 6 live costing(s), 0 breaching; 0 soft-deleted (0 breaching)
+   #26 CHILLER MEDIUM: 9 live costing(s), 0 breaching; 2 soft-deleted (0 breaching)
+   #27 CHILLER LARGE: 7 live costing(s), 0 breaching; 1 soft-deleted (0 breaching)
+   #19 FREEZER 2.3 METER: 6 live costing(s), 0 breaching; 0 soft-deleted (0 breaching)
+   #20 FREEZER MEDIUM: 14 live costing(s), 1 breaching; 0 soft-deleted (0 breaching)
+   #21 FREEZER LARGE: 7 live costing(s), 0 breaching; 0 soft-deleted (0 breaching)
+
+   LIVE BREACHES: 1  (by status {'pending': 1})
+      N9937/07/2026    pending    2026-07-14 #26 CHILLER MEDIUM     thickness only — not a breach · selected=- priced=- thickness=FRONT PU,SIDES PU,DRD PU [selection snapshot] · selection names master id(s) no longer on the body: ['2533', '2535', '2539', '2540', '2542']
+      A9998/09/2026    pending    2026-09-15 #20 FREEZER MEDIUM     BREACH · selected=SIDES EPS priced=SIDES EPS thickness=SIDES EPS [selection snapshot]
+   soft-deleted costings carrying a breach: 0 (not listed)
+
+== 3 · validated references whose costing breaches (recall re-applies it)
+   3 reference(s) on these bodies; 0 point at a breaching costing: none
+
+== 4 · drafts that would OFFER a forbidden choice (the save / restore warning's input)
+   #25 CHILLER 2.3 METER: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #14 2026-05-23: 6
+   #26 CHILLER MEDIUM: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #15 2026-05-23: 6
+   #27 CHILLER LARGE: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #2 2026-05-23: 6
+   #19 FREEZER 2.3 METER: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #1 2026-05-23: 4
+   #20 FREEZER MEDIUM: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #10 2026-05-23: 4
+   #21 FREEZER LARGE: live draft offers 0 forbidden choice(s); 1 backup(s), 1 would offer one — #3 2026-05-23: 4

@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# ── RETIRED (RT6, 6 Oct 2026 — RT6_RULING_1 Q7) ─────────────────────────────────────────────────────────────────────
+# This kit's reviewed plan is applied on prod, and later releases and data steps build on what it wrote. It no longer
+# runs: its apply backed up with a bare `pg_dump … | gzip` (gzip's exit status only — a failed dump passed), and its
+# revert would now undo work done since. The file stays as the record its runbook cites. A new data step uses
+# ops/lib/icb_backup.sh (checked backup) and ops/lib/icb_where.sh (the safe-paste first line).
+echo "RETIRED (RT6, 2026-10-06): $(basename "$0") no longer runs — see its header. Nothing was done." >&2; exit 3
 # RT4 — Manifest S on PROD (RT4_RULING_1 Q2 + Q3), in the v1.60.1 window AFTER the deploy (window step 4):
 #   S  docs/audit/rt4_2026-10/manifest_s/manifest_s.yaml
 #        46 line moves — bom_section_id + bom_section TOGETHER, each guarded on its exact current id AND string:

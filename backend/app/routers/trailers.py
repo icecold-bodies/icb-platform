@@ -25,6 +25,7 @@ from ..services import (
 from ..services import insulation_foam as pu_foam   # RT2 Part 1c — the per-body default grade
 from ..services import body_family                  # RT3 — the body's family (trailer group) + colour
 from ..services import sections as sections_svc     # RT4 — shared-section usage, the one row move, the draft rule
+from ..services import rule_guard                    # RT6 — the family's insulation rule (classification, warnings)
 from ..templates_config import templates
 
 router = APIRouter()
@@ -52,7 +53,10 @@ def _trailer_row(t: TrailerType) -> dict:
             "family":            body_family.body_family(t),
             # RT5 — the family's rule note (Burt's product rule), shown in red under BODY OPTIONS and in Body
             # Templates. A sibling of `family`, which keeps RT3's ratified shape; None = no note.
-            "rule_note":         body_family.rule_note_of(t)}
+            "rule_note":         body_family.rule_note_of(t),
+            # RT6 — the family's insulation rule {"allowed": {panel: [EPS|PU,...]}} (None = no rule): a sibling of
+            # rule_note. The panels grey by the BOM rows' rule_forbidden, never by deciding this themselves.
+            "insulation_rule":   rule_guard.rule_json(t)}
 
 
 def _new_body_group_id(db: Session, name: str, group_id) -> int | None:
@@ -241,6 +245,10 @@ async def get_bom(tt_id: int, db: Session = Depends(get_db)):
         name = r.bom_section or (r.material.category.name if r.material and r.material.category else "")
         return (section_order.get(name, 99998), name.lower(), r.sort_order)
     bom_rows.sort(key=_sec_key)
+    # RT6 — each insulation master's panel x insulation and, when the family's rule forbids it, the reason: the three
+    # renderers grey it with the rule as its tooltip; Paste from Excel and "Switch ALL" skip it.
+    _tt = db.query(TrailerType).filter_by(id=tt_id).first()
+    _ann = rule_guard.bom_annotations(_tt, [r for r in bom_rows if r.material is not None]) if _tt else {}
     result = []
     for row in bom_rows:
         mat = row.material
@@ -323,6 +331,10 @@ async def get_bom(tt_id: int, db: Session = Depends(get_db)):
             # Read-only here: no write path accepts it back (PUT /api/bom/{id}
             # takes an allow-list; rules change only via the configurator PATCH).
             "bom_conditions":            row.bom_conditions,
+            # RT6 — a master's (or an insulation cost line's) panel x insulation; the reason when the rule forbids it
+            "rule_class":                ({"kind": _ann[row.id]["kind"], "panel": _ann[row.id]["panel"],
+                                           "insulation": _ann[row.id]["insulation"]} if row.id in _ann else None),
+            "rule_forbidden":            _ann[row.id]["forbidden"] if row.id in _ann else None,
         })
     return result
 
@@ -2011,7 +2023,8 @@ async def configurator_put_draft(
     row.payload = json.dumps(draft)
     row.updated_by = getattr(user, "username", None)
     db.commit()
-    return {"ok": True}
+    # RT6 — WARN (never block: drafts are Michael's data) when the draft offers a choice the family's rule forbids
+    return {"ok": True, "rule_warnings": rule_guard.draft_warnings(db, trailer_id, draft)}
 
 
 # ─── Configurator draft snapshots (Settings page Explorer backup/restore) ────
@@ -2117,6 +2130,8 @@ async def configurator_restore_draft_snapshot(
         "restored_label": snap.label,
         "pre_restore_snapshot_id": pre.id,
         "draft": restored,
+        # RT6 — the restored tree's forbidden choices (a 23 May backup offers every one): a warning, not a block
+        "rule_warnings": rule_guard.draft_warnings(db, snap.trailer_type_id, restored),
     }
 
 
@@ -2378,8 +2393,47 @@ async def configurator_cross_body_audit(
     target_trailer = db.query(TrailerType).filter_by(id=target, is_active=True).first()
     if not target_trailer:
         raise HTTPException(status_code=404, detail="Target trailer not found")
-    _, audit = _cross_body_remap(db, snap, target_trailer)
+    remapped, audit = _cross_body_remap(db, snap, target_trailer)
+    # RT6 — shown with the audit, BEFORE anything is written: what the remapped tree would offer that the target
+    # family's insulation rule forbids (a warning; the restore stays the admin's call)
+    audit["rule_warnings"] = rule_guard.draft_warnings(db, target, remapped)
     return audit
+
+
+@router.get("/api/configurator/draft-snapshots/{snap_id}/rule-warnings")
+async def configurator_snapshot_rule_warnings(snap_id: int, request: Request, db: Session = Depends(get_db)):
+    """RT6 — the forbidden choices a draft backup would offer if restored onto its own body: the restore dialog lists
+    them BEFORE the admin confirms. Read-only; never blocks (drafts and their backups are Michael's data)."""
+    _require_admin_api(request, db)
+    snap = db.query(ConfiguratorDraftSnapshot).filter_by(id=snap_id).first()
+    if not snap:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+    try:
+        draft = json.loads(snap.payload) if snap.payload else {}
+    except (ValueError, TypeError):
+        draft = {}
+    return {"snapshot_id": snap.id, "label": snap.label,
+            "rule_warnings": rule_guard.draft_warnings(db, snap.trailer_type_id, draft)}
+
+
+@router.get("/api/trailers/{tt_id}/insulation-rule-check")
+async def insulation_rule_check(tt_id: int, request: Request, db: Session = Depends(get_db)):
+    """RT6 — admin view of the check on one body: its family's rule, every insulation master's class, and the
+    insulation choices the check cannot read (the admin warning in Body Templates; never silently passed)."""
+    _require_admin_api(request, db)
+    tt = db.query(TrailerType).filter_by(id=tt_id).first()
+    if not tt:
+        raise HTTPException(status_code=404, detail="Trailer not found")
+    from ..services import insulation_rules as ir
+    rows = db.query(BillOfMaterial).filter_by(trailer_type_id=tt_id).all()
+    cls = ir.classify_body([ir.row_view(r) for r in rows if r.material is not None])
+    rule = rule_guard.family_rule(tt)
+    return {"trailer_id": tt.id, "rule": rule_guard.rule_json(tt),
+            "masters": [{"id": m.id, "name": m.name, "panel": m.panel, "insulation": m.insulation, "how": m.how,
+                         "forbidden": bool(rule and m.panel and m.insulation not in rule[m.panel])}
+                        for m in cls.masters],
+            "unclassified": cls.unclassified if rule else [],
+            "unclassified_any": cls.unclassified}
 
 
 @router.post("/api/configurator/draft-snapshots/{snap_id}/restore-to/{trailer_id}")
@@ -2424,6 +2478,7 @@ async def configurator_cross_body_restore(
         "pre_restore_snapshot_id": pre.id,
         "draft": remapped,
         "audit": audit,
+        "rule_warnings": rule_guard.draft_warnings(db, trailer_id, remapped),   # RT6 — warn, never block
     }
 
 

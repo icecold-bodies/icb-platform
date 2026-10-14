@@ -331,6 +331,19 @@
           style="display:none;gap:6px;align-items:flex-start;margin:-4px 0 10px;color:{{ rule_note_ink }};font-size:12px;font-weight:600;line-height:1.35">
           <span aria-hidden="true">&#9888;</span><span id="body-rule-note-text" style="white-space:pre-line"></span>
         </div>
+        <!-- RT6 — the breaches of the family's insulation rule in THIS quote (from /api/calculate), each with a Remove
+             that clears it in this quote only. Written with textContent. Approve and Accept refuse while one stands. -->
+        <div id="body-rule-breaches" role="alert" hidden
+          style="display:none;margin:-4px 0 10px;padding:8px 10px;border:1px solid {{ rule_note_ink }};border-radius:6px;background:#FDF2F2;color:{{ rule_note_ink }};font-size:12px;line-height:1.4"></div>
+        <!-- RT6 — admins only: insulation choices on this body the rule's check cannot read (reported, never passed) -->
+        <div id="body-rule-unclassified" role="note" hidden
+          style="display:none;margin:-4px 0 10px;padding:6px 10px;border:1px solid #B45309;border-radius:6px;background:#FFFBEB;color:#92400E;font-size:11px;line-height:1.4"></div>
+        <style>
+          #body-options-list .rule-forbidden { opacity: .42; cursor: not-allowed; }
+          #body-options-list .rule-forbidden input { cursor: not-allowed; }
+          #body-rule-breaches .rb-row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px; font-weight:600; }
+          #body-rule-breaches .rb-remove { font-size:10px; padding:2px 10px; border:1px solid {{ rule_note_ink }}; color:{{ rule_note_ink }}; background:#fff; border-radius:4px; cursor:pointer; flex:none; }
+        </style>
         <!-- v1.51 — PU insulation foam grade. A costing-level choice, not a BOM
              row, so it lives OUTSIDE #body-options-list and survives every
              re-render (same reasoning as the Excel-paste button above). -->
@@ -734,7 +747,7 @@
       <button class="btn btn-icon" onclick="closeModal('modal-insulation-switch')">✕</button>
     </div>
     <div class="modal-body">
-      <p id="insulation-switch-body" style="font-size:13px;color:var(--text);margin:0"></p>
+      <p id="insulation-switch-body" style="font-size:13px;color:var(--text);margin:0;white-space:pre-line"></p>
     </div>
     <div class="modal-footer" style="gap:10px;justify-content:flex-end">
       <button class="btn btn-outline" style="min-width:80px"
@@ -1690,7 +1703,7 @@ const canCaptureForUser = {{ 'true' if user_can(user, 'costings.capture_for_user
    v=172 rather than either of them: both 170 and 171 have already been
    served, so a fresh number is the only value guaranteed not to hit a
    stale cached copy of one lane's file. #}
-<script defer src="/static/js/calculator.js?v=187"></script>
+<script defer src="/static/js/calculator.js?v=189"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

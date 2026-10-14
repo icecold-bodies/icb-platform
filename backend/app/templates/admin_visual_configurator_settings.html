@@ -1012,6 +1012,10 @@
   }
 </style>
 
+<!-- RT6 — when this body's draft offers a choice its family's insulation rule forbids: a warning, never a block
+     (drafts are Michael's data). Filled from the draft PUT's rule_warnings; plain DOM, outside React. -->
+<div id="draft-rule-warnings" role="note" hidden
+     style="margin:0 0 10px;padding:8px 12px;border:1px solid #D12424;border-radius:6px;background:#FDF2F2;color:#D12424;font-size:12px;font-weight:600;line-height:1.4"></div>
 <div id="visual-settings-root"></div>
 
 <script>
@@ -1230,6 +1234,22 @@ function persistDraft(trailerId, draft) {
 let _serverSaveTimer = null;
 let _pendingServerSave = null;   // { tid, draft }
 
+// RT6 — the forbidden choices a draft (or a backup about to be restored) offers, as one sentence.
+function ruleWarningText(list) {
+  if (!Array.isArray(list) || !list.length) return '';
+  const where = { DRD: 'the DRD (double rear doors)', SRD: 'the SRD (single rear door)' };
+  return `It offers ${list.length} choice${list.length === 1 ? '' : 's'} the body family's insulation rule forbids: ` +
+    list.map(w => `${w.insulation} on ${where[w.panel] || 'the ' + w.panel} ('${w.label}')`).join('; ') +
+    '. Quotes will show them greyed out; nothing is blocked.';
+}
+function showDraftRuleWarnings(list) {
+  const box = document.getElementById('draft-rule-warnings');
+  if (!box) return;
+  const txt = ruleWarningText(list);
+  box.textContent = txt ? '⚠ This draft: ' + txt : '';
+  box.hidden = !txt;
+}
+
 function saveDraftToServer(trailerId, draft) {
   if (!trailerId) return Promise.resolve();
   return fetch(`/api/configurator/trailers/${trailerId}/draft`, {
@@ -1238,7 +1258,9 @@ function saveDraftToServer(trailerId, draft) {
     keepalive: true,   // survive a page unload so the last edit still lands
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _csrfToken() },
     body: JSON.stringify({ draft }),
-  }).catch(() => {});
+  }).then(r => (r && r.ok) ? r.json() : null)
+    .then(d => { if (d) showDraftRuleWarnings(d.rule_warnings); })   // RT6 — warn, never block
+    .catch(() => {});
 }
 
 // Debounced server mirror — coalesces rapid edits into one PUT.
@@ -2421,10 +2443,17 @@ function App() {
   }
 
   async function restoreSnapshot(snap) {
+    // RT6 — list, BEFORE the admin confirms, the choices this backup offers that the family's rule forbids
+    let ruleWarn = '';
+    try {
+      const w = await fetch(`/api/configurator/draft-snapshots/${snap.id}/rule-warnings`, { credentials: 'same-origin' });
+      if (w.ok) ruleWarn = ruleWarningText((await w.json()).rule_warnings);
+    } catch (_) { /* the restore still works; the warning shows again after it */ }
     const ok = await window.confirmModal(
       `Restore Explorer config to snapshot "${snap.label}"?\n\n` +
       `Any unsaved changes since this snapshot will be replaced. ` +
-      `A safety-net snapshot of the current state will be captured automatically before restoring.`,
+      `A safety-net snapshot of the current state will be captured automatically before restoring.` +
+      (ruleWarn ? `\n\n⚠ ${ruleWarn}` : ''),
       { title: 'Restore snapshot', okText: 'Restore', danger: true }
     );
     if (!ok || snapshotBusy) return;
@@ -2444,6 +2473,7 @@ function App() {
         (data && data.draft) ? data.draft : createEmptyDraft(),
         `Restored "${snap.label}". A pre-restore safety snapshot was saved.`
       );
+      showDraftRuleWarnings(data && data.rule_warnings);   // RT6
       await loadSnapshots();
       setSnapshotsOpen(false);
     } finally {
@@ -2497,7 +2527,8 @@ function App() {
       (s.flags_unmatched ? `, ${s.flags_unmatched} stay unbound (remap them in the Explorer later)` : '') + `. ` +
       (s.categories_dropped ? `${s.categories_dropped} section${s.categories_dropped === 1 ? '' : 's'} not on this body will be dropped. ` : '') +
       (s.item_rules_total ? `Item inclusion rules are NOT carried across — use the audit list to reapply them per item. ` : '') +
-      `\n\nThis body's current config is auto-backed up first, so the restore itself can be rolled back.`,
+      `\n\nThis body's current config is auto-backed up first, so the restore itself can be rolled back.` +
+      (ruleWarningText(audit.rule_warnings) ? `\n\n⚠ ${ruleWarningText(audit.rule_warnings)}` : ''),   // RT6
       { title: 'Cross-body restore', okText: 'Restore', danger: true }
     );
     if (!ok || snapshotBusy) return;
@@ -2519,6 +2550,7 @@ function App() {
         `Restored "${snap.label}" from ${audit.source.trailer_name}. ` +
         `A pre-restore safety snapshot was saved.`
       );
+      showDraftRuleWarnings(data && data.rule_warnings);   // RT6
       await loadSnapshots();
       setXbodyAudit(null);
       setXbodySourceId('');

@@ -128,6 +128,23 @@ function _showRuleNote(t) {
   txt.textContent = note;
   box.hidden = !note;
   box.style.display = note ? 'flex' : 'none';
+  _showRuleUnclassified(t);   // RT6
+}
+
+// RT6 — on a body whose family carries an insulation rule: the insulation choices the check cannot classify (an
+// admin warning; the check never passes them silently). Text only; hidden when there are none or no rule.
+async function _showRuleUnclassified(t) {
+  const box = document.getElementById('tt-rule-unclassified');
+  if (!box) return;
+  box.hidden = true; box.style.display = 'none'; box.textContent = '';
+  if (!t || !t.insulation_rule) return;
+  try {
+    const r = await api('GET', `/api/trailers/${t.id}/insulation-rule-check`);
+    if (currentTTId !== t.id || !r.unclassified || !r.unclassified.length) return;
+    box.textContent = `⚠ The family's insulation rule cannot read ${r.unclassified.length} choice(s) on this body: `
+      + r.unclassified.map(u => `${u.name} — ${u.reason}`).join('; ') + '.';
+    box.hidden = false; box.style.display = 'block';
+  } catch (_) { /* informational only */ }
 }
 
 function selectTrailer(id) {

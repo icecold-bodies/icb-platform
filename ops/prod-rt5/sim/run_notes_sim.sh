@@ -21,6 +21,7 @@ PRODHEAD=$(git -C "$SIM/opt/icb-platform" rev-parse HEAD)
 
 K="$SIM/tmp/icb-rt5-notes"; mkdir -p "$K"
 for f in rt5_notes.sh rt5_notes.py; do git cat-file blob "$STAGED:ops/prod-rt5/$f" > "$K/$f"; done
+mkdir -p "$K/lib" && git cat-file blob "$STAGED:ops/lib/icb_backup.sh" > "$K/lib/icb_backup.sh"   # RT6
 cat > "$K/expected.env" <<EOF
 EXPECT_HEAD=$PRODHEAD
 EXPECT_ALEMBIC=0052
@@ -28,7 +29,7 @@ PLAN_TODO=2
 TOOL_SHA=$(sha256sum "$K/rt5_notes.py" | cut -d' ' -f1)
 STAGED_FROM=$STAGED
 EOF
-( cd "$K" && sha256sum rt5_notes.sh rt5_notes.py expected.env > SHA256SUMS )
+( cd "$K" && sha256sum rt5_notes.sh rt5_notes.py lib/icb_backup.sh expected.env > SHA256SUMS )
 
 mkdir -p "$SIM/opt/icb-platform/.venv/bin"
 cat > "$SIM/opt/icb-platform/.venv/bin/python" <<'PY'

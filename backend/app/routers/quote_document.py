@@ -126,7 +126,19 @@ async def repair_quote_pdf(record_id: int, request: Request,
     return StreamingResponse(
         BytesIO(pdf),
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{safe}.pdf"'},
+        # v1.51 (26 Aug) — no-store is LOAD-BEARING, not hygiene. The URL ends
+        # in ".pdf", and prod's public route (mes.icecoldgrp.online) rides a
+        # Cloudflare tunnel whose zone caches BY EXTENSION and stamps a 4-hour
+        # browser TTL onto responses that carry no Cache-Control. Two effects:
+        #   * an AUTHENTICATED customer quotation gets parked on a public CDN
+        #     edge, servable without ever reaching our auth again;
+        #   * a re-download after a fix keeps returning the OLD document — the
+        #     footer-overlap fix "didn't work" on prod for exactly this reason
+        #     while the direct-IP route (no Cloudflare) was fine all along.
+        # no-store forbids both the edge and the browser from keeping a copy;
+        # private is belt-and-braces for any other intermediary.
+        headers={"Content-Disposition": f'attachment; filename="{safe}.pdf"',
+                 "Cache-Control": "no-store, private"},
     )
 
 

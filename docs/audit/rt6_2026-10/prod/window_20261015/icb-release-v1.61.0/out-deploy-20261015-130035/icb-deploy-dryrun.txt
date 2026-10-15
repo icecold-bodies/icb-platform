@@ -1,0 +1,20 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  a429404d  RT5 (v1.60.2): Burt's body rules in red — the family rule note
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d already present - no fetch needed
+[32m  ok[0m  5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d = 5e37b0a4
+
+[1m== 2. plan[0m
+  a429404d -> 5e37b0a4   (2 commit(s), 147 file(s))
+    5e37b0a RT6 (v1.61.0): Burt's insulation rules enforced (0053), the TEST SERVER banner, checked backups and safe pastes; release + window kits (#218)
+    f441e7a docs(release): v1.60.2 OUTCOME + RT5 close — prod = a429404 (alembic 0052), the two rule notes applied, nothing priced moved (#217)
+
+  DB migration     YES - 0053_trailer_group_insulation_rule.py 
+  SPA rebuild      YES - 2 file(s) under frontend/
+  Service restart  YES - 21 Python file(s) changed
+
+[32m  ok[0m  dry run - nothing changed.

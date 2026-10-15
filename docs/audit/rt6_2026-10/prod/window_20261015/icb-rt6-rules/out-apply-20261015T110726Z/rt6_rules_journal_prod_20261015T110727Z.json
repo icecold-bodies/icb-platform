@@ -1,0 +1,22 @@
+{
+ "tool": "rt6_rules",
+ "plan_sha256": "638c598e544a2c69894046ae64db74b84a096536ec306b90aca4d9caae8a4423",
+ "tool_sha256": "66c1d6aefcde7166a853297128d94a9d302169b8e1cd3b37ad68fb3ba1147f50",
+ "target": "prod",
+ "database": "icb_platform",
+ "applied_at": "2026-10-15T11:07:27.739769+00:00",
+ "rows": [
+  {
+   "id": 5,
+   "name": "CHILLER",
+   "before": null,
+   "after": "{\"allowed\":{\"FRONT\":[\"EPS\"],\"SIDES\":[\"EPS\"],\"ROOF\":[\"EPS\"],\"FLOOR\":[\"EPS\"],\"DRD\":[\"EPS\"],\"SRD\":[\"EPS\"]}}"
+  },
+  {
+   "id": 4,
+   "name": "FREEZER",
+   "before": null,
+   "after": "{\"allowed\":{\"FRONT\":[\"PU\"],\"SIDES\":[\"PU\"],\"ROOF\":[\"EPS\",\"PU\"],\"FLOOR\":[\"EPS\",\"PU\"],\"DRD\":[\"PU\"],\"SRD\":[\"PU\"]}}"
+  }
+ ]
+}

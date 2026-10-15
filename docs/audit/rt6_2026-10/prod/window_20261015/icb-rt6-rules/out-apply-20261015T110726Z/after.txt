@@ -1,0 +1,6 @@
+database icb_platform (--target prod); RT6 insulation rules; plan sha256 638c598e544a2c69…; tool sha256 66c1d6aefcde7166…
+   ALREADY #5 CHILLER: '{"allowed":{"FRONT":["EPS"],"SIDES":["EPS"],"ROOF":["EPS"],"FLOOR":["EPS"],"DRD":["EPS"],"SRD":["EPS"]}}' -> {"allowed":{"FRONT":["EPS"],"SIDES":["EPS"],"ROOF":["EPS"],"FLOOR":["EPS"],"DRD":["EPS"],"SRD":["EPS"]}}
+           enforced on 3 bodies: CHILLER 2.3 METER, CHILLER LARGE, CHILLER MEDIUM
+   ALREADY #4 FREEZER: '{"allowed":{"FRONT":["PU"],"SIDES":["PU"],"ROOF":["EPS","PU"],"FLOOR":["EPS","PU"],"DRD":["PU"],"SRD":["PU"]}}' -> {"allowed":{"FRONT":["PU"],"SIDES":["PU"],"ROOF":["EPS","PU"],"FLOOR":["EPS","PU"],"DRD":["PU"],"SRD":["PU"]}}
+           enforced on 3 bodies: FREEZER 2.3 METER, FREEZER LARGE, FREEZER MEDIUM
+0 to apply, 2 already applied.

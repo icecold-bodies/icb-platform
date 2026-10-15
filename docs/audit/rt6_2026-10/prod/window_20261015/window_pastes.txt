@@ -1,0 +1,81 @@
+# RT6 window v1.61.0 — the outputs Michael pasted that are not in the fetched tar (one-liners run outside a kit).
+# Copied verbatim from the session; prompts trimmed. The tar: Downloads\rt6-window-back-20261015-131720.tar,
+# sha256 2522f967474987c5fce1bc54e09325dc530d097cb13dfa89d14193a376c995c9 (26 265 600 bytes).
+
+== 14 Oct 16:46 — run_window_copy.ps1 (Windows)
+######## RT6 window copy . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . db icb_platform (checked by each kit on the VM) . head a429404 . stage 5e37b0a . 2026-10-14 16:46:23
+== kit ok: icb-release-v1.61.0.tar sha256 937dce719931...
+== kit ok: icb-rt6-rules.tar sha256 7de4a796ee9a...
+== kit ok: icb-rt6-tidy.tar sha256 eab5a2f32dbf...
+== kit ok: icb-rt2-all.tar sha256 bce22cba9d47...
+== kit ok: icb-rt2-doors.tar sha256 55e2067e9245...
+== copy the 5 kits to prod /tmp
+   icb-release-v1.61.0 unpacked and verified on prod
+   icb-rt6-rules unpacked and verified on prod
+   icb-rt6-tidy unpacked and verified on prod
+   icb-rt2-all unpacked and verified on prod
+   icb-rt2-doors unpacked and verified on prod
+######## DONE - the five kits are in prod /tmp, verified. Next: the runbook's step 1 (All, pre).
+
+== 15 Oct 13:04 — step 4b: the two new routes, no session, read back on each door (RT6_RULING_3)
+######## RT6 step 4b · machine icb-mes-prod · head 5e37b0a · 2026-10-15 13:04:09 SAST
+https://127.0.0.1/api/trailers/27/insulation-rule-check -> 401
+https://127.0.0.1/api/configurator/draft-snapshots/1/rule-warnings -> 401
+https://192.168.0.251/api/trailers/27/insulation-rule-check -> 401
+https://192.168.0.251/api/configurator/draft-snapshots/1/rule-warnings -> 401
+https://mes.icecoldgrp.online/api/trailers/27/insulation-rule-check -> 401
+https://mes.icecoldgrp.online/api/configurator/draft-snapshots/1/rule-warnings -> 401
+
+== 15 Oct 13:13 — step 8 (the CA, read only, Michael's :8000)
+2026-10-15 13:13:26 :8000 /health/version: {"version":"v1.61.0","environment":"unset"}
+TEST bar: 1 · title: [TEST] Login — BurtCost · bar text: TEST SERVER — 127.0.0.1:8000 — not prod
+
+== 15 Oct 13:15 — step 9 check (after the tidy's dry-run STOPPED [STATE]: 0 of 34 present), read only
+######## RT6 step 9 check · machine icb-mes-prod · head 5e37b0a · 2026-10-15 13:15:15 SAST
+booted: 2026-10-11 08:02:53
+reboot   system boot  6.8.0-146-generi Sun Oct 11 08:02   still running
+reboot   system boot  6.8.0-139-generi Mon Sep  7 06:49   still running
+reboot   system boot  6.8.0-137-generi Tue Aug 11 07:01   still running
+== /tmp now:
+drwxrwxrwt 21 root      root         4096 2026-10-15_13:01:18 .
+drwxr-xr-x 10 mickeyger mickeyger    4096 2026-10-15_13:00:35 icb-release-v1.61.0
+-rw-rw-r--  1 mickeyger mickeyger   51200 2026-10-14_16:46:24 icb-release-v1.61.0.tar
+-rw-rw-r--  1 icb       icb            41 2026-10-15_13:00:40 icb-rollback-20261015-130040.txt
+drwxr-xr-x  7 mickeyger mickeyger    4096 2026-10-15_13:09:14 icb-rt2-all
+-rw-rw-r--  1 mickeyger mickeyger   30720 2026-10-14_16:46:24 icb-rt2-all.tar
+drwxr-xr-x  3 mickeyger mickeyger    4096 2026-10-14_16:14:33 icb-rt2-doors
+-rw-rw-r--  1 mickeyger mickeyger 4003840 2026-10-14_16:46:55 icb-rt2-doors.tar
+drwxr-xr-x  6 mickeyger mickeyger    4096 2026-10-15_13:13:05 icb-rt6-rules
+-rw-rw-r--  1 mickeyger mickeyger   61440 2026-10-14_16:46:24 icb-rt6-rules.tar
+drwxr-xr-x  4 mickeyger mickeyger    4096 2026-10-15_13:14:08 icb-rt6-tidy
+-rw-rw-r--  1 mickeyger mickeyger   30720 2026-10-14_16:46:24 icb-rt6-tidy.tar
+drwxrwxr-x  3 icb       icb          4096 2026-10-15_13:00:51 node-compile-cache
+   (plus the OS's own items, all dated 2026-10-11 08:02–08:51 or later: .font-unix .ICE-unix .X11-unix .XIM-unix
+    snap-private-tmp and nine systemd-private-* service folders)
+== OS /tmp rule:
+D /tmp 1777 root root 30d
+no icb-tmp-archive (nothing moved)
+
+== 15 Oct 13:17 — step 12, run_window_fetch.ps1 (Windows)
+######## RT6 window fetch . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . db (none: files only) . head 5e37b0a . stage 5e37b0a . 2026-10-15 13:17:20
+-rw-rw-r-- 1 mickeyger mickeyger 26265600 Oct 15 13:17 /tmp/rt6-window-back-20261015-131720.tar
+######## DONE - tell the CA: C:\Users\micge\Downloads\rt6-window-back-20261015-131720.tar (sha256 2522f9674749...)
+
+== 15 Oct 13:20 — the close: RT6's kits removed from prod /tmp by exact name, read back
+######## RT6 close /tmp · machine icb-mes-prod · head 5e37b0a · 2026-10-15 13:20:02 SAST
+== read back:
+   gone: /tmp/icb-release-v1.61.0
+   gone: /tmp/icb-release-v1.61.0.tar
+   gone: /tmp/icb-rt6-rules
+   gone: /tmp/icb-rt6-rules.tar
+   gone: /tmp/icb-rt6-tidy
+   gone: /tmp/icb-rt6-tidy.tar
+   gone: /tmp/icb-rt2-all
+   gone: /tmp/icb-rt2-all.tar
+   gone: /tmp/icb-rt2-doors
+   gone: /tmp/icb-rt2-doors.tar
+   gone: /tmp/icb-rt6-discovery
+   gone: /tmp/icb-rt6-discovery.tar
+== kept:
+-rw-rw-r-- 1 icb icb   41 Oct 15 13:00 /tmp/icb-rollback-20261015-130040.txt
+drwxrwxr-x 3 icb icb 4096 Oct 15 13:00 /tmp/node-compile-cache

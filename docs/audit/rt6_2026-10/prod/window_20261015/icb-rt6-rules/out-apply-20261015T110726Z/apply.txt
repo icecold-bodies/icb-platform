@@ -1,0 +1,4 @@
+database icb_platform (--target prod); RT6 insulation rules; plan sha256 638c598e544a2c69…; tool sha256 66c1d6aefcde7166…
+APPLIED 2 rule(s): #5 CHILLER; #4 FREEZER
+journal /tmp/icb-rt6-rules/out-apply-20261015T110726Z/rt6_rules_journal_prod_20261015T110727Z.json  sha256 fcaf74eda0490e2d1a7deef1ac1a08707d0fae4db60380e1658ef93870b700a0
+Undo: python rt6_rules.py --target prod --revert /tmp/icb-rt6-rules/out-apply-20261015T110726Z/rt6_rules_journal_prod_20261015T110727Z.json --out-dir <dir>

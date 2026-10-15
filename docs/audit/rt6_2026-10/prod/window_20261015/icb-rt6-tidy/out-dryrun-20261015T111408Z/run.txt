@@ -1,0 +1,5 @@
+== the reviewed items in /tmp: present and holding exactly the reviewed files
+   0 of 34 present, 34 missing
+
+######## STOP [STATE]: 34 reviewed item(s) are missing from /tmp — not the reviewed state; nothing moved
+######## tell the CA: /tmp/icb-rt6-tidy/out-dryrun-20261015T111408Z

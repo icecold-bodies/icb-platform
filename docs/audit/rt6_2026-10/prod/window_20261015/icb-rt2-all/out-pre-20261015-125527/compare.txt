@@ -1,0 +1,4 @@
+page run #43: All, passed, started 2026-10-06 11:53:41.674669+02, finished 2026-10-06 11:53:47.325688+02 (13022 min ago)
+   environment prod · database icb_platform · accepted list accepted_differences.prod.yaml · golden 04c774e2a7de6314
+   stored counts: PASS 2083  FLAG 0  ACCEPTED 67  EXPIRED 0  UNVERIFIABLE 76
+PAGE_EQUALS_CLI: no — the newest page run finished 13022 min ago (> 45): click All again, then re-run

@@ -1,0 +1,11 @@
+(the line above, as run: machine icb-mes-prod, db icb_platform @ 127.0.0.1:5432, head 5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d, mode dryrun)
+== prod: alembic=0053 staged=5e37b0a mode=dryrun  2026-10-15T13:06:59+02:00
+== dry-run (READ ONLY)
+database icb_platform (--target prod); RT6 insulation rules; plan sha256 638c598e544a2c69…; tool sha256 66c1d6aefcde7166…
+   TODO    #5 CHILLER: None -> {"allowed":{"FRONT":["EPS"],"SIDES":["EPS"],"ROOF":["EPS"],"FLOOR":["EPS"],"DRD":["EPS"],"SRD":["EPS"]}}
+           enforced on 3 bodies: CHILLER 2.3 METER, CHILLER LARGE, CHILLER MEDIUM
+   TODO    #4 FREEZER: None -> {"allowed":{"FRONT":["PU"],"SIDES":["PU"],"ROOF":["EPS","PU"],"FLOOR":["EPS","PU"],"DRD":["PU"],"SRD":["PU"]}}
+           enforced on 3 bodies: FREEZER 2.3 METER, FREEZER LARGE, FREEZER MEDIUM
+2 to apply, 0 already applied.
+
+######## DONE (dryrun: 2 to apply, 0 already applied.) — tell the CA: /tmp/icb-rt6-rules/out-dryrun-20261015T110658Z

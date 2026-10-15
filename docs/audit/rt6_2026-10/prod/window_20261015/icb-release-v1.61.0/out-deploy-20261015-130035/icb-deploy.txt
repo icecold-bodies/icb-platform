@@ -1,0 +1,347 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  a429404d  RT5 (v1.60.2): Burt's body rules in red — the family rule note
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d already present - no fetch needed
+[32m  ok[0m  5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d = 5e37b0a4
+
+[1m== 2. plan[0m
+  a429404d -> 5e37b0a4   (2 commit(s), 147 file(s))
+    5e37b0a RT6 (v1.61.0): Burt's insulation rules enforced (0053), the TEST SERVER banner, checked backups and safe pastes; release + window kits (#218)
+    f441e7a docs(release): v1.60.2 OUTCOME + RT5 close — prod = a429404 (alembic 0052), the two rule notes applied, nothing priced moved (#217)
+
+  DB migration     YES - 0053_trailer_group_insulation_rule.py 
+  SPA rebuild      YES - 2 file(s) under frontend/
+  Service restart  YES - 21 Python file(s) changed
+
+  rollback anchor a429404d saved to /tmp/icb-rollback-20261015-130040.txt
+
+[1m== 3. database backup (a migration is about to run)[0m
+Oct 15 13:00:41 icb-mes-prod runuser[34455]: pam_unix(runuser:session): session closed for user postgres
+Oct 15 13:00:41 icb-mes-prod icb-pg-backup[34452]: Backup complete: /var/backups/postgres/icb_platform_20261015-1300.dump.gz (3302221 bytes)
+Oct 15 13:00:41 icb-mes-prod systemd[1]: icb-pg-backup.service: Deactivated successfully.
+Oct 15 13:00:41 icb-mes-prod systemd[1]: Finished icb-pg-backup.service - ICB MES Postgres nightly backup.
+[32m  ok[0m  schema before: 0052 (head)
+
+[1m== 4. fast-forward the code[0m
+Updating a429404..5e37b0a
+Fast-forward
+ backend/VERSION                                    |    2 +-
+ .../versions/0053_trailer_group_insulation_rule.py |   50 +
+ backend/app/config.py                              |    4 +
+ backend/app/database.py                            |   16 +-
+ backend/app/env_banner.py                          |  103 ++
+ backend/app/main.py                                |    7 +-
+ backend/app/routers/admin_settings.py              |   76 +-
+ backend/app/routers/calculator.py                  |   17 +
+ backend/app/routers/pre_job_card.py                |    2 +
+ backend/app/routers/trailers.py                    |   61 +-
+ backend/app/services/insulation_rules.py           |  365 +++++++
+ backend/app/services/prejob_cards.py               |    4 +
+ backend/app/services/production_jobs.py            |    7 +
+ backend/app/services/rule_guard.py                 |  141 +++
+ backend/app/static/js/admin_templates.js           |   17 +
+ backend/app/static/js/app.js                       |   12 +-
+ backend/app/static/js/calculator.js                |  181 +++-
+ backend/app/templates/admin_quote_templates.html   |   38 +-
+ backend/app/templates/admin_templates.html         |    6 +-
+ .../admin_visual_configurator_settings.html        |   38 +-
+ backend/app/templates/base.html                    |    2 +-
+ backend/app/templates/calculator.html              |   17 +-
+ backend/tests/journeys/test_rt6_rules_journey.py   |  399 +++++++
+ backend/tests/test_calculator_enter_chain.py       |    6 +-
+ backend/tests/test_ops_rt6.py                      |  238 +++++
+ backend/tests/test_rt4_deny_by_default.py          |    3 +-
+ backend/tests/test_rt6_env_banner.py               |  107 ++
+ backend/tests/test_rt6_guards_api.py               |  487 +++++++++
+ backend/tests/test_rt6_insulation_rules.py         |  226 ++++
+ backend/tests/test_rt6_rules_tool.py               |  174 +++
+ docs/audit/rt5_2026-10/README.md                   |   17 +
+ .../prod/window_20261006/cells_window.txt          |    9 +
+ .../out-deploy-20261006-071946/OUTCOME.txt         |   13 +
+ .../icb-deploy-dryrun.txt                          |   20 +
+ .../out-deploy-20261006-071946/icb-deploy.txt      |  309 ++++++
+ .../out-deploy-20261006-071946/rollback-anchor.txt |    1 +
+ .../out-deploy-20261006-071946/run.txt             |  418 ++++++++
+ .../out-preflight-20261006-071557/run.txt          |   44 +
+ .../out-verify-20261006-071622/run.txt             |   38 +
+ .../out-verify-20261006-074225/run.txt             |   36 +
+ .../out-post-20261006-072534/SHA256SUMS.out        |    6 +
+ .../out-post-20261006-072534/compare.txt           |    4 +
+ .../reports/prod_chillers.md                       |   19 +
+ .../reports/prod_explosive.md                      |   42 +
+ .../reports/prod_freezers.md                       |   18 +
+ .../reports/prod_icecream.md                       |   49 +
+ .../out-post-20261006-072534/reports/prod_smoke.md |   22 +
+ .../icb-rt2-all/out-post-20261006-072534/run.txt   |   16 +
+ .../out-post-20261006-072727/SHA256SUMS.out        |    6 +
+ .../out-post-20261006-072727/compare.txt           |   14 +
+ .../reports/prod_chillers.md                       |   19 +
+ .../reports/prod_explosive.md                      |   42 +
+ .../reports/prod_freezers.md                       |   18 +
+ .../reports/prod_icecream.md                       |   49 +
+ .../out-post-20261006-072727/reports/prod_smoke.md |   22 +
+ .../icb-rt2-all/out-post-20261006-072727/run.txt   |   25 +
+ .../out-pre-20261006-071901/SHA256SUMS.out         |    6 +
+ .../out-pre-20261006-071901/compare.txt            |   14 +
+ .../reports/prod_chillers.md                       |   19 +
+ .../reports/prod_explosive.md                      |   42 +
+ .../reports/prod_freezers.md                       |   30 +
+ .../reports/prod_icecream.md                       |   49 +
+ .../out-pre-20261006-071901/reports/prod_smoke.md  |   28 +
+ .../icb-rt2-all/out-pre-20261006-071901/run.txt    |   25 +
+ .../out-20261006-074208/door_report.txt            |   21 +
+ .../out-apply-20261006T052241Z/after.txt           |    6 +
+ .../out-apply-20261006T052241Z/apply.txt           |    4 +
+ .../out-apply-20261006T052241Z/dryrun.txt          |    6 +
+ .../rt5_notes_journal_prod_20261006T052243Z.json   |   22 +
+ .../out-apply-20261006T052241Z/run.txt             |   33 +
+ .../out-apply-20261006T052241Z/show.txt            |    7 +
+ .../out-dryrun-20261006T052224Z/dryrun.txt         |    6 +
+ .../out-dryrun-20261006T052224Z/run.txt            |   10 +
+ .../out-dryrun-20261006T053920Z/dryrun.txt         |    6 +
+ .../out-dryrun-20261006T053920Z/run.txt            |   11 +
+ .../out-show-20261006T052255Z/run.txt              |   11 +
+ .../out-show-20261006T052255Z/show.txt             |    7 +
+ .../out-show-20261006T053758Z/run.txt              |   11 +
+ .../out-show-20261006T053758Z/show.txt             |    7 +
+ .../out-show-20261006T053907Z/run.txt              |   11 +
+ .../out-show-20261006T053907Z/show.txt             |    7 +
+ ...es_rt5_notes_journal_prod_20261006T052243Z.json |   22 +
+ ...es_journal_prod_20261006T052243Z.provenance.txt |    7 +
+ docs/audit/rt6_2026-10/README.md                   |   38 +
+ docs/audit/rt6_2026-10/mirror/REHEARSAL_v1.61.0.md |   82 ++
+ .../audit/rt6_2026-10/mirror/discovery_mirror.json |  964 +++++++++++++++++
+ docs/audit/rt6_2026-10/mirror/discovery_mirror.txt |  110 ++
+ .../mirror/mirror-01-restored-reopened-warning.png |  Bin 0 -> 56142 bytes
+ .../rt6_2026-10/mirror/mirror-02-after-remove.png  |  Bin 0 -> 56915 bytes
+ .../audit/rt6_2026-10/mirror/remove_proof_rows.txt |    3 +
+ docs/audit/rt6_2026-10/negative_controls.py        |  126 +++
+ docs/audit/rt6_2026-10/negative_controls.txt       |   24 +
+ .../prod/discovery_20261006-161235/SHA256SUMS.out  |    5 +
+ .../prod/discovery_20261006-161235/discovery.json  | 1106 ++++++++++++++++++++
+ .../prod/discovery_20261006-161235/discovery.txt   |  112 ++
+ .../prod/discovery_20261006-161235/env_keys.txt    |   11 +
+ .../prod/discovery_20261006-161235/run.txt         |   76 ++
+ .../prod/discovery_20261006-161235/tmp_listing.txt |  100 ++
+ .../RT6_1_reopen_FREEZER_MEDIUM_EPS_SIDES.png      |  Bin 0 -> 56142 bytes
+ .../rt6_2026-10/screens/RT6_1b_after_Remove.png    |  Bin 0 -> 56915 bytes
+ .../screens/RT6_2_CHILLER_MEDIUM_PU_greyed.png     |  Bin 0 -> 51412 bytes
+ .../screens/RT6_3_paste_PU_row_refused.png         |  Bin 0 -> 16297 bytes
+ docs/audit/rt6_2026-10/screens/facts.json          |   56 +
+ docs/runbooks/prod-deploy-v1.60.2.md               |   68 +-
+ docs/runbooks/prod-deploy-v1.61.0.md               |  192 ++++
+ .../01-reopened-freezer-eps-sides-warning.png      |  Bin 0 -> 36522 bytes
+ .../journeys/rt6_rules/02-after-remove.png         |  Bin 0 -> 31098 bytes
+ .../rt6_rules/03-chiller-pu-greyed-draft.png       |  Bin 0 -> 26121 bytes
+ .../rt6_rules/03-chiller-pu-greyed-flat.png        |  Bin 0 -> 32903 bytes
+ .../rt6_rules/03-chiller-pu-greyed-tree.png        |  Bin 0 -> 33529 bytes
+ .../journeys/rt6_rules/04-paste-pu-refused.png     |  Bin 0 -> 16267 bytes
+ .../journeys/rt6_rules/05-unused-door-named.png    |  Bin 0 -> 37685 bytes
+ frontend/src/lib/api.ts                            |    3 +
+ frontend/src/store/CostingsContext.tsx             |   13 +-
+ ops/dev-rt6/dev_rt6.ps1                            |  107 ++
+ ops/lib/icb_backup.sh                              |   52 +
+ ops/lib/icb_where.sh                               |   54 +
+ ops/prod-pricing-corrections/pc_prod.sh            |    6 +
+ ops/prod-release-v1.61.0/mkstage.sh                |  115 ++
+ ops/prod-release-v1.61.0/probe_paths.txt           |   55 +
+ ops/prod-release-v1.61.0/release.sh                |  437 ++++++++
+ ops/prod-release-v1.61.0/sim/run_all.sh            |   36 +
+ ops/prod-release-v1.61.0/sim/run_sim.sh            |  136 +++
+ ops/prod-release-v1.61.0/sim/stubs.sh              |  138 +++
+ ops/prod-rt1/rt1_data.sh                           |    6 +
+ ops/prod-rt1/rt1_factor.sh                         |    6 +
+ ops/prod-rt2/rt2_all.sh                            |   14 +
+ ops/prod-rt2/rt2_data.sh                           |    6 +
+ ops/prod-rt2/rt2_doors.sh                          |   14 +
+ ops/prod-rt3/rt3_families.sh                       |    6 +
+ ops/prod-rt4/rt4_data.sh                           |    6 +
+ ops/prod-rt5/mkstage_window.sh                     |    3 +-
+ ops/prod-rt5/rt5_notes.sh                          |   11 +-
+ ops/prod-rt5/sim/run_notes_sim.sh                  |    3 +-
+ ops/prod-rt6/mkstage_discovery.sh                  |   53 +
+ ops/prod-rt6/mkstage_window.sh                     |  106 ++
+ ops/prod-rt6/rt6_discovery.py                      |  304 ++++++
+ ops/prod-rt6/rt6_discovery.sh                      |  121 +++
+ ops/prod-rt6/rt6_rules.py                          |  282 +++++
+ ops/prod-rt6/rt6_rules.sh                          |  160 +++
+ ops/prod-rt6/rt6_tmp_tidy.sh                       |  133 +++
+ ops/prod-rt6/run_discovery.ps1                     |   61 ++
+ ops/prod-rt6/run_window_copy.ps1                   |   53 +
+ ops/prod-rt6/run_window_fetch.ps1                  |   45 +
+ ops/prod-rt6/sim/run_discovery_sim.sh              |  102 ++
+ ops/prod-rt6/sim/run_window_sim.sh                 |  241 +++++
+ ops/prod-rt6/tmp_tidy_manifest.txt                 |   84 ++
+ 147 files changed, 10512 insertions(+), 43 deletions(-)
+ create mode 100644 backend/alembic/versions/0053_trailer_group_insulation_rule.py
+ create mode 100644 backend/app/env_banner.py
+ create mode 100644 backend/app/services/insulation_rules.py
+ create mode 100644 backend/app/services/rule_guard.py
+ create mode 100644 backend/tests/journeys/test_rt6_rules_journey.py
+ create mode 100644 backend/tests/test_ops_rt6.py
+ create mode 100644 backend/tests/test_rt6_env_banner.py
+ create mode 100644 backend/tests/test_rt6_guards_api.py
+ create mode 100644 backend/tests/test_rt6_insulation_rules.py
+ create mode 100644 backend/tests/test_rt6_rules_tool.py
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/cells_window.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-release-v1.60.2/out-deploy-20261006-071946/OUTCOME.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-release-v1.60.2/out-deploy-20261006-071946/icb-deploy-dryrun.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-release-v1.60.2/out-deploy-20261006-071946/icb-deploy.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-release-v1.60.2/out-deploy-20261006-071946/rollback-anchor.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-release-v1.60.2/out-deploy-20261006-071946/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-release-v1.60.2/out-preflight-20261006-071557/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-release-v1.60.2/out-verify-20261006-071622/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-release-v1.60.2/out-verify-20261006-074225/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072534/SHA256SUMS.out
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072534/compare.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072534/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072534/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072534/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072534/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072534/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072534/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072727/SHA256SUMS.out
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072727/compare.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072727/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072727/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072727/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072727/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072727/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-post-20261006-072727/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-pre-20261006-071901/SHA256SUMS.out
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-pre-20261006-071901/compare.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-pre-20261006-071901/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-pre-20261006-071901/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-pre-20261006-071901/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-pre-20261006-071901/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-pre-20261006-071901/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-all/out-pre-20261006-071901/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt2-doors/out-20261006-074208/door_report.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-apply-20261006T052241Z/after.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-apply-20261006T052241Z/apply.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-apply-20261006T052241Z/dryrun.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-apply-20261006T052241Z/rt5_notes_journal_prod_20261006T052243Z.json
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-apply-20261006T052241Z/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-apply-20261006T052241Z/show.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-dryrun-20261006T052224Z/dryrun.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-dryrun-20261006T052224Z/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-dryrun-20261006T053920Z/dryrun.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-dryrun-20261006T053920Z/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-show-20261006T052255Z/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-show-20261006T052255Z/show.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-show-20261006T053758Z/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-show-20261006T053758Z/show.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-show-20261006T053907Z/run.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/icb-rt5-notes/out-show-20261006T053907Z/show.txt
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/var-backups/journal_notes_rt5_notes_journal_prod_20261006T052243Z.json
+ create mode 100644 docs/audit/rt5_2026-10/prod/window_20261006/var-backups/journal_notes_rt5_notes_journal_prod_20261006T052243Z.provenance.txt
+ create mode 100644 docs/audit/rt6_2026-10/README.md
+ create mode 100644 docs/audit/rt6_2026-10/mirror/REHEARSAL_v1.61.0.md
+ create mode 100644 docs/audit/rt6_2026-10/mirror/discovery_mirror.json
+ create mode 100644 docs/audit/rt6_2026-10/mirror/discovery_mirror.txt
+ create mode 100644 docs/audit/rt6_2026-10/mirror/mirror-01-restored-reopened-warning.png
+ create mode 100644 docs/audit/rt6_2026-10/mirror/mirror-02-after-remove.png
+ create mode 100644 docs/audit/rt6_2026-10/mirror/remove_proof_rows.txt
+ create mode 100644 docs/audit/rt6_2026-10/negative_controls.py
+ create mode 100644 docs/audit/rt6_2026-10/negative_controls.txt
+ create mode 100644 docs/audit/rt6_2026-10/prod/discovery_20261006-161235/SHA256SUMS.out
+ create mode 100644 docs/audit/rt6_2026-10/prod/discovery_20261006-161235/discovery.json
+ create mode 100644 docs/audit/rt6_2026-10/prod/discovery_20261006-161235/discovery.txt
+ create mode 100644 docs/audit/rt6_2026-10/prod/discovery_20261006-161235/env_keys.txt
+ create mode 100644 docs/audit/rt6_2026-10/prod/discovery_20261006-161235/run.txt
+ create mode 100644 docs/audit/rt6_2026-10/prod/discovery_20261006-161235/tmp_listing.txt
+ create mode 100644 docs/audit/rt6_2026-10/screens/RT6_1_reopen_FREEZER_MEDIUM_EPS_SIDES.png
+ create mode 100644 docs/audit/rt6_2026-10/screens/RT6_1b_after_Remove.png
+ create mode 100644 docs/audit/rt6_2026-10/screens/RT6_2_CHILLER_MEDIUM_PU_greyed.png
+ create mode 100644 docs/audit/rt6_2026-10/screens/RT6_3_paste_PU_row_refused.png
+ create mode 100644 docs/audit/rt6_2026-10/screens/facts.json
+ create mode 100644 docs/runbooks/prod-deploy-v1.61.0.md
+ create mode 100644 docs/screenshots/journeys/rt6_rules/01-reopened-freezer-eps-sides-warning.png
+ create mode 100644 docs/screenshots/journeys/rt6_rules/02-after-remove.png
+ create mode 100644 docs/screenshots/journeys/rt6_rules/03-chiller-pu-greyed-draft.png
+ create mode 100644 docs/screenshots/journeys/rt6_rules/03-chiller-pu-greyed-flat.png
+ create mode 100644 docs/screenshots/journeys/rt6_rules/03-chiller-pu-greyed-tree.png
+ create mode 100644 docs/screenshots/journeys/rt6_rules/04-paste-pu-refused.png
+ create mode 100644 docs/screenshots/journeys/rt6_rules/05-unused-door-named.png
+ create mode 100644 ops/dev-rt6/dev_rt6.ps1
+ create mode 100644 ops/lib/icb_backup.sh
+ create mode 100644 ops/lib/icb_where.sh
+ create mode 100644 ops/prod-release-v1.61.0/mkstage.sh
+ create mode 100644 ops/prod-release-v1.61.0/probe_paths.txt
+ create mode 100644 ops/prod-release-v1.61.0/release.sh
+ create mode 100644 ops/prod-release-v1.61.0/sim/run_all.sh
+ create mode 100644 ops/prod-release-v1.61.0/sim/run_sim.sh
+ create mode 100644 ops/prod-release-v1.61.0/sim/stubs.sh
+ create mode 100644 ops/prod-rt6/mkstage_discovery.sh
+ create mode 100644 ops/prod-rt6/mkstage_window.sh
+ create mode 100644 ops/prod-rt6/rt6_discovery.py
+ create mode 100644 ops/prod-rt6/rt6_discovery.sh
+ create mode 100644 ops/prod-rt6/rt6_rules.py
+ create mode 100644 ops/prod-rt6/rt6_rules.sh
+ create mode 100644 ops/prod-rt6/rt6_tmp_tidy.sh
+ create mode 100644 ops/prod-rt6/run_discovery.ps1
+ create mode 100644 ops/prod-rt6/run_window_copy.ps1
+ create mode 100644 ops/prod-rt6/run_window_fetch.ps1
+ create mode 100644 ops/prod-rt6/sim/run_discovery_sim.sh
+ create mode 100644 ops/prod-rt6/sim/run_window_sim.sh
+ create mode 100644 ops/prod-rt6/tmp_tidy_manifest.txt
+[32m  ok[0m  at 5e37b0a4 (verified by SHA, not by git describe)
+
+[1m== 5. alembic upgrade head[0m
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 0052 -> 0053, Body families: a machine-readable insulation rule on trailer_groups (Migration 0053).
+[32m  ok[0m  schema after: 0053 (head)
+
+[1m== 6. npm run build[0m
+
+> icb-mes-mockup@0.1.0 build
+> tsc -b && vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 2479 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              2.17 kB │ gzip:   1.08 kB
+dist/assets/index-DwmnmG9T.css              68.37 kB │ gzip:  13.50 kB
+dist/assets/html2canvas.esm-CBrSDip1.js    201.42 kB │ gzip:  48.03 kB
+dist/assets/index-BBI2d9Oo.js            1,196.07 kB │ gzip: 321.62 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 10.80s
+npm notice
+npm notice New major version of npm available! 10.9.8 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+[32m  ok[0m  bundle rebuilt: index-BBI2d9Oo.js
+
+[1m== 7. restart icb-backend[0m
+  active since (before): Sun 2026-10-11 08:03:00 SAST
+  active since (after):  Thu 2026-10-15 13:01:18 SAST
+[32m  ok[0m  restarted
+
+[1m== 8. verify[0m
+  workers started      4 (expected 4)
+  BOOTSTRAP FAILED     0 (expected 0)
+  https://127.0.0.1/health -> 200
+[32m  ok[0m  healthy
+
+[32m[1mDEPLOYED[0m  a429404d -> 5e37b0a4  (5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d)
+
+Rollback (code-only - additive migrations are left in place deliberately):
+    /opt/icb-platform/deploy/prod/icb-rollback.sh a429404d
+
+  or, without the script:
+    sudo -u icb git -C /opt/icb-platform reset --hard a429404d
+    sudo -u icb bash -lc 'cd /opt/icb-platform/frontend && npm run build'   # this range touched frontend/
+    sudo systemctl restart icb-backend
+

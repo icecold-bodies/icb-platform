@@ -1,0 +1,15 @@
+deployed      a429404 -> 5e37b0a (5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d)
+tag           v1.61.0 = d084f7b7ee5d4bbdec85bd8b23e4cc42c79f74b4 (local = origin, peels to the target); git describe = v1.61.0
+alembic       0052 -> 0053 (0053_trailer_group_insulation_rule.py); column insulation_rule:text:YES:NULL
+families      md5 6f1dfa660cb1bf45447997650aa283ac before = 6f1dfa660cb1bf45447997650aa283ac after; with an insulation rule: 0 (rt6_rules.sh sets the two)
+environment   ICB_ENVIRONMENT=prod in /etc/icb/backend.env; autologin empty: yes
+backup        /var/backups/postgres/icb_platform_pre-v1.61.0_20261015-130035.dump  3608614 bytes  sha256 e52a8f79a02ed0fdeb6ecb5e2856778f653e18fe84e54b14989392f40611a2c1 (checked: alembic_version, trailer_groups, trailer_types, calculations, bill_of_materials)
+restart       Sun 2026-10-11 08:03:00 SAST -> Thu 2026-10-15 13:01:18 SAST (pid 1098 -> 34561), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+version       local {"version":"v1.61.0","environment":"prod"} · lan {"version":"v1.61.0","environment":"prod"} · cloudflare {"version":"v1.61.0","environment":"prod"}
+test banner   local 0/0 · lan 0/0 · cloudflare 0/0 (bars/[TEST] titles; prod 0/0)
+no session    local: all 46 as expected · lan: all 46 as expected · cloudflare: all 46 as expected
+static        calculator.js ?v=189 aa99a811ad807dab  admin_templates.js ?v=23 ad5d8d480876a20f  app.js ?v=7 c202dbc4fdd043f4  (local = lan = the target blobs)
+spa           assets/index-Bd_exvgd.js -> assets/index-BBI2d9Oo.js (rebuilt; local = lan = disk; carries the Accept refusal)
+finished      2026-10-15T13:02:03+02:00

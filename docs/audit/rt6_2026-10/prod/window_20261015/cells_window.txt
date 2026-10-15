@@ -1,0 +1,30 @@
+# RT6 window v1.61.0 — All before (pre, 12:56:02, page run #44) vs after (post, 13:09:14, page run #45, after the rules)
+# Compared by the CA from the fetched report JSONs (icb-rt2-all/out-pre-20261015-125602 vs out-post-20261015-130914),
+# value by value, generated_at aside.
+
+smoke      cells  234  values  11251  differ 0
+chillers   cells  716  values  23701  differ 0
+freezers   cells  690  values  31450  differ 0
+icecream   cells  612  values  21697  differ 0
+explosive  cells  684  values  16867  differ 0
+TOTAL      cells 2936  values 104966  differ 0     -> NO CHANGE: the rules moved no price
+
+page = CLI on both: 2 702 of 2 702 cells identical (All = the four family packs; smoke is CLI only)
+counts (pre = post): PASS 1942 · ACCEPTED 52 · SKIP 476 · UNVERIFIABLE 76 · FLAG 156; smoke FLAG 27 · ACCEPTED 12 · PASS 150 · SKIP 45
+
+# The 156 FLAG cells (183 with smoke) were there BEFORE the window — Michael's decision at step 1 (15 Oct 12:57): continue,
+# step 6 judged "no change against step 1, cell for cell" (RULING_2 had expected 0 FLAG, as on 6 Oct). On 6 Oct the
+# page read PASS 2083 · FLAG 0 · ACCEPTED 67 (stale page run seen by the 12:55:27 pre). No kit journal on prod since
+# 6 Oct 07:22, so prod's pricing data was changed by hand between 6 and 15 Oct. Where (MES − Excel, from the pre run):
+chillers  CHILLER 2.3 METER        FLOOR                   12 cells  +69.55 .. +99.36
+chillers  CHILLER LARGE            FLOOR                   32 cells  +245.06 .. +295.09 …
+chillers  CHILLER MEDIUM           FLOOR                   12 cells  +148.30 .. +255.77
+freezers  FREEZER 2.3 METER        FLOOR                   12 cells  +66.00 .. +82.03
+freezers  FREEZER MEDIUM           DRD DOOR FITTINGS       20 cells  -293.46 (constant)
+freezers  FREEZER MEDIUM           FLOOR                   24 cells  +505.16 .. +792.47 …
+freezers  FREEZER MEDIUM           ROOF                     4 cells  +384.47 .. +712.21
+icecream  ICECREAM BODY LARGE      FLOOR                   15 cells  +252.60 .. +398.95 …
+icecream  ICECREAM BODY MEDIUM     FLOOR                   15 cells  -2317.73 .. -1740.02 …
+icecream  ICECREAM BODY SMALL      FLOOR                   10 cells  +100.84 .. +130.72
+smoke     (the same bodies and sections)                   27 cells
+# Pricing tables only; no customer field. For the BA / RT7 (the CI snapshot refresh): not RT6's to change.

@@ -1,0 +1,43 @@
+(the line above, as run: machine icb-mes-prod, db icb_platform @ 127.0.0.1:5432, head 5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d, mode apply)
+== prod: alembic=0053 staged=5e37b0a mode=apply  2026-10-15T13:07:26+02:00
+== dry-run (READ ONLY)
+database icb_platform (--target prod); RT6 insulation rules; plan sha256 638c598e544a2c69…; tool sha256 66c1d6aefcde7166…
+   TODO    #5 CHILLER: None -> {"allowed":{"FRONT":["EPS"],"SIDES":["EPS"],"ROOF":["EPS"],"FLOOR":["EPS"],"DRD":["EPS"],"SRD":["EPS"]}}
+           enforced on 3 bodies: CHILLER 2.3 METER, CHILLER LARGE, CHILLER MEDIUM
+   TODO    #4 FREEZER: None -> {"allowed":{"FRONT":["PU"],"SIDES":["PU"],"ROOF":["EPS","PU"],"FLOOR":["EPS","PU"],"DRD":["PU"],"SRD":["PU"]}}
+           enforced on 3 bodies: FREEZER 2.3 METER, FREEZER LARGE, FREEZER MEDIUM
+2 to apply, 0 already applied.
+== pre-apply backup (data only, checked): trailer_groups
+   ok   backup /var/backups/icb-rt6-2026-10/pre_apply_rules_20261015T110726Z.sql.gz  868 bytes  sha256 b19778050dbb5da980b01afdafd3e0ccd51a1947d36ef19c8d1867068b135608  (holds: icb_costings.trailer_groups)
+== apply — one transaction
+database icb_platform (--target prod); RT6 insulation rules; plan sha256 638c598e544a2c69…; tool sha256 66c1d6aefcde7166…
+APPLIED 2 rule(s): #5 CHILLER; #4 FREEZER
+journal /tmp/icb-rt6-rules/out-apply-20261015T110726Z/rt6_rules_journal_prod_20261015T110727Z.json  sha256 fcaf74eda0490e2d1a7deef1ac1a08707d0fae4db60380e1658ef93870b700a0
+Undo: python rt6_rules.py --target prod --revert /tmp/icb-rt6-rules/out-apply-20261015T110726Z/rt6_rules_journal_prod_20261015T110727Z.json --out-dir <dir>
+   ok   journal /var/backups/icb-rt6-2026-10/journal_rules_rt6_rules_journal_prod_20261015T110727Z.json  sha256 fcaf74eda0490e2d1a7deef1ac1a08707d0fae4db60380e1658ef93870b700a0
+== second dry-run (must find nothing left to apply)
+database icb_platform (--target prod); RT6 insulation rules; plan sha256 638c598e544a2c69…; tool sha256 66c1d6aefcde7166…
+   ALREADY #5 CHILLER: '{"allowed":{"FRONT":["EPS"],"SIDES":["EPS"],"ROOF":["EPS"],"FLOOR":["EPS"],"DRD":["EPS"],"SRD":["EPS"]}}' -> {"allowed":{"FRONT":["EPS"],"SIDES":["EPS"],"ROOF":["EPS"],"FLOOR":["EPS"],"DRD":["EPS"],"SRD":["EPS"]}}
+           enforced on 3 bodies: CHILLER 2.3 METER, CHILLER LARGE, CHILLER MEDIUM
+   ALREADY #4 FREEZER: '{"allowed":{"FRONT":["PU"],"SIDES":["PU"],"ROOF":["EPS","PU"],"FLOOR":["EPS","PU"],"DRD":["PU"],"SRD":["PU"]}}' -> {"allowed":{"FRONT":["PU"],"SIDES":["PU"],"ROOF":["EPS","PU"],"FLOOR":["EPS","PU"],"DRD":["PU"],"SRD":["PU"]}}
+           enforced on 3 bodies: FREEZER 2.3 METER, FREEZER LARGE, FREEZER MEDIUM
+0 to apply, 2 already applied.
+== the read-back (every family's rule, exactly)
+database icb_platform (--target prod); every family's insulation rule (read only)
+   #1   EXPLOSIVE    insulation_rule = None
+   #5   CHILLER      insulation_rule = '{"allowed":{"FRONT":["EPS"],"SIDES":["EPS"],"ROOF":["EPS"],"FLOOR":["EPS"],"DRD":["EPS"],"SRD":["EPS"]}}'
+        body #25 CHILLER 2.3 METER: 6 forbidden master(s) greyed ['DRD PU', 'FLOOR PU', 'FRONT PU', 'ROOF PU', 'SIDES PU', 'SRD PU']
+        body #27 CHILLER LARGE: 6 forbidden master(s) greyed ['DRD PU', 'FLOOR PU', 'FRONT PU', 'ROOF PU', 'SIDES PU', 'SRD PU']
+        body #26 CHILLER MEDIUM: 6 forbidden master(s) greyed ['DRD PU', 'FLOOR PU', 'FRONT PU', 'ROOF PU', 'SIDES PU', 'SRD PU']
+   #4   FREEZER      insulation_rule = '{"allowed":{"FRONT":["PU"],"SIDES":["PU"],"ROOF":["EPS","PU"],"FLOOR":["EPS","PU"],"DRD":["PU"],"SRD":["PU"]}}'
+        body #19 FREEZER 2.3 METER: 4 forbidden master(s) greyed ['DRD EPS', 'FRONT EPS', 'SIDES EPS', 'SRD EPS']
+        body #21 FREEZER LARGE: 4 forbidden master(s) greyed ['DRD EPS', 'FRONT EPS', 'SIDES EPS', 'SRD EPS']
+        body #20 FREEZER MEDIUM: 4 forbidden master(s) greyed ['DRD EPS', 'FRONT EPS', 'SIDES EPS', 'SRD EPS']
+          soft-deleted breaching: A9998/09/2026 (pending): EPS on SIDES
+   #3   MEAT         insulation_rule = None
+   #6   ICE CREAM    insulation_rule = None
+   #7   OTHER        insulation_rule = None
+live breaching costings: 0
+soft-deleted breaching costings: 1
+
+######## DONE (apply) — tell the CA: /tmp/icb-rt6-rules/out-apply-20261015T110726Z  (undo: sudo bash /tmp/icb-rt6-rules/rt6_rules.sh revert /var/backups/icb-rt6-2026-10/journal_rules_rt6_rules_journal_prod_20261015T110727Z.json)

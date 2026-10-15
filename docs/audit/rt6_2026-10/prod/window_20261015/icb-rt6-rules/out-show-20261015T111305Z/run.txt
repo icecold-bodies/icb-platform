@@ -1,0 +1,21 @@
+(the line above, as run: machine icb-mes-prod, db icb_platform @ 127.0.0.1:5432, head 5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d, mode show)
+== prod: alembic=0053 staged=5e37b0a mode=show  2026-10-15T13:13:05+02:00
+== every family's insulation rule, the greyed masters and the breach count (READ ONLY)
+database icb_platform (--target prod); every family's insulation rule (read only)
+   #1   EXPLOSIVE    insulation_rule = None
+   #5   CHILLER      insulation_rule = '{"allowed":{"FRONT":["EPS"],"SIDES":["EPS"],"ROOF":["EPS"],"FLOOR":["EPS"],"DRD":["EPS"],"SRD":["EPS"]}}'
+        body #25 CHILLER 2.3 METER: 6 forbidden master(s) greyed ['DRD PU', 'FLOOR PU', 'FRONT PU', 'ROOF PU', 'SIDES PU', 'SRD PU']
+        body #27 CHILLER LARGE: 6 forbidden master(s) greyed ['DRD PU', 'FLOOR PU', 'FRONT PU', 'ROOF PU', 'SIDES PU', 'SRD PU']
+        body #26 CHILLER MEDIUM: 6 forbidden master(s) greyed ['DRD PU', 'FLOOR PU', 'FRONT PU', 'ROOF PU', 'SIDES PU', 'SRD PU']
+   #4   FREEZER      insulation_rule = '{"allowed":{"FRONT":["PU"],"SIDES":["PU"],"ROOF":["EPS","PU"],"FLOOR":["EPS","PU"],"DRD":["PU"],"SRD":["PU"]}}'
+        body #19 FREEZER 2.3 METER: 4 forbidden master(s) greyed ['DRD EPS', 'FRONT EPS', 'SIDES EPS', 'SRD EPS']
+        body #21 FREEZER LARGE: 4 forbidden master(s) greyed ['DRD EPS', 'FRONT EPS', 'SIDES EPS', 'SRD EPS']
+        body #20 FREEZER MEDIUM: 4 forbidden master(s) greyed ['DRD EPS', 'FRONT EPS', 'SIDES EPS', 'SRD EPS']
+          soft-deleted breaching: A9998/09/2026 (pending): EPS on SIDES
+   #3   MEAT         insulation_rule = None
+   #6   ICE CREAM    insulation_rule = None
+   #7   OTHER        insulation_rule = None
+live breaching costings: 0
+soft-deleted breaching costings: 1
+
+######## DONE (show) — tell the CA: /tmp/icb-rt6-rules/out-show-20261015T111305Z

@@ -36,3 +36,14 @@
 
 **Prod in RT6 stays read only until the window.** No test quote is created on prod (RULING_1a): the re-open →
 warning → Remove → Accept-refused proof is the mirror rehearsal above and the side-port journey.
+
+# RT6 window (v1.61.0 on prod, 15 Oct 2026): `prod/window_20261015/`
+
+The records the kits wrote on prod, fetched in one tar (`rt6-window-back-20261015-131720.tar`, sha256 `2522f967…`):
+`icb-release-v1.61.0/` (preflight ×3, verify ×3, env, deploy with `OUTCOME.txt`), `icb-rt2-all/` (pre ×2, post ×2;
+run logs, compare, sums and the `.md` reports — the JSON / CSV / HTML stay out of git), `icb-rt2-doors/`,
+`icb-rt6-rules/` (dry-run, apply with its journal, show), `icb-rt6-tidy/` (the dry-run that found 0 of 34). Plus
+`window_pastes.txt` (the one-liners run outside a kit: copy, step 4b, step 8, the step-9 check, fetch, the /tmp close),
+`cells_window.txt` (All before vs after: 0 differences over 104 966 values; the 156 pre-existing FLAG cells by body and
+section) and `step7b_prod_chiller_medium_config.png` (cropped to the configuration card: no customer field). The
+runbook's OUTCOME (`docs/runbooks/prod-deploy-v1.61.0.md`) reads them.

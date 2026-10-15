@@ -75,6 +75,19 @@ N_PROBES=$(grep -vc -E '^(#|$)' "$S/probe_paths.txt")
 [ "$N_PROBES" -ge 46 ] || { echo "STOP: probe_paths.txt has only $N_PROBES paths"; exit 1; }
 grep -qx '200 /health/version' "$S/probe_paths.txt" && grep -qx '401 /openapi.json' "$S/probe_paths.txt" \
   && grep -qx '401 /api/trailers/27/insulation-rule-check' "$S/probe_paths.txt" || { echo "STOP: probe_paths.txt lacks a key line"; exit 1; }
+# RT6_RULING_3: a probe whose ROUTE IS NEW in the range cannot answer its status before the deploy — the old code has
+# no such route, so the gate answers 404 (the v1.61.0 window stopped on exactly that). Derived from the code itself:
+# the route string is in the target's backend/app and not in prod's. Only these paths may answer 404 before the deploy.
+route_re() { printf '%s' "${1%%\?*}" | sed -e 's/[.*^$+()|]/[&]/g' -e 's#/[0-9][0-9]*#/[{][^}/]+[}]#g'; }
+NEW_PROBES=""
+while read -r want path; do
+  case "$want" in ''|\#*) continue ;; esac
+  re="\"$(route_re "$path")\""
+  git grep -qE "$re" "$TARGET" -- backend/app || continue
+  git grep -qE "$re" "$PREV" -- backend/app && continue
+  NEW_PROBES="$NEW_PROBES $path"
+done < "$S/probe_paths.txt"
+NEW_PROBES=${NEW_PROBES# }
 PYYAML_VERSION=$(git cat-file blob "$TARGET:backend/requirements.txt" | sed -n 's/^PyYAML==\([0-9.]*\).*/\1/p' | head -n1)
 DEPLOY_SH_SHA=$(git cat-file blob "$TARGET:deploy/prod/icb-deploy.sh" | sha256sum | cut -d' ' -f1)
 WORKERS=4
@@ -98,6 +111,7 @@ STATIC_2="$STATIC_2"
 STATIC_3="$STATIC_3"
 SPA_MARK="$SPA_MARK"
 N_PROBES=$N_PROBES
+NEW_PROBES="$NEW_PROBES"
 PYYAML_VERSION=$PYYAML_VERSION
 DEPLOY_SH_SHA=$DEPLOY_SH_SHA
 WORKERS=$WORKERS
@@ -111,5 +125,6 @@ CR=$(find "$S" -type f -print0 | xargs -0 cat | tr -cd '\r' | wc -c | tr -d ' ')
 [ "$CR" = 0 ] || { echo "STOP: $CR CR byte(s) in the staged files"; exit 1; }
 bash -n "$S/release.sh" && bash -n "$S/lib/icb_where.sh" && bash -n "$S/lib/icb_backup.sh" || { echo "STOP: a staged script does not parse"; exit 1; }
 echo "staged ${PREV:0:7} -> ${TARGET:0:7} ($TAG), alembic $ALEMBIC_BEFORE -> $ALEMBIC_AFTER, $FE frontend file(s), $N_PROBES no-session probes per door"
+echo "routes new in the range (may answer 404 before the deploy, and only these): ${NEW_PROBES:-none}"
 cat "$S/expected.env"; cat "$S/SHA256SUMS"
 ( cd "$OUTDIR" && tar -cf icb-release-v1.61.0.tar icb-release-v1.61.0 ) && ls -l "$OUTDIR/icb-release-v1.61.0.tar"

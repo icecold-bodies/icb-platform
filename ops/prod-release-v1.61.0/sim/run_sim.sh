@@ -1,7 +1,9 @@
 #!/bin/bash
 # v1.61.0 release-kit simulation, run as root in WSL:  bash run_sim.sh <scenario> [kit-branch]
 # Scenarios: happy | notag | moved | bootfail | traceback | stalecache | resume | migfail | nobackup | cfstale |
-#            famchanged | autologin | noenv | envother | wrongplace | nobuild | pgdumpfail
+#            famchanged | autologin | noenv | envother | wrongplace | nobuild | pgdumpfail | oldkit | oldroute404
+# (RT6_RULING_3: the fake doors answer 404 for a route the running code lacks; oldkit runs the tag's release.sh — the
+# copy the window ran — and must reproduce the window's 3 preflight FAILs; oldroute404 is the fixed kit's negative control)
 # Builds a throw-away prod (repo at v1.60.2 a429404 with the v1.60.2 tag but WITHOUT v1.61.0, as the real VM; fake
 # venv / dist / env / backups / deploy record; a fake database at alembic 0052) under $SIM and runs the STAGED kit (built
 # by the real mkstage.sh from a sim origin whose backport/v1.39-base carries the RT6 branch, and an annotated v1.61.0
@@ -38,10 +40,28 @@ git -c user.email=sim@x -c user.name=sim tag -f -a v1.61.0 -m "sim v1.61.0" "$TA
 echo "   prev ${PREV:0:7}  target ${TARGET:0:7}  tag $(git rev-parse v1.61.0 | cut -c1-12)"
 
 echo "== stage the kit with the real mkstage.sh"
-bash ops/prod-release-v1.61.0/mkstage.sh "$SIM/stageout" "$TARGET" "$PREV" | grep -E '^staged|^STATIC|^ALEMBIC|^SPA_MARK|^N_PROBES|^EXPECT|^STOP' || true
+bash ops/prod-release-v1.61.0/mkstage.sh "$SIM/stageout" "$TARGET" "$PREV" | grep -E '^staged|^routes new|^STATIC|^ALEMBIC|^SPA_MARK|^N_PROBES|^EXPECT|^STOP' || true
 [ -f "$SIM/stageout/icb-release-v1.61.0.tar" ] || { echo "SIM: mkstage produced no tar"; exit 1; }
 tar -xf "$SIM/stageout/icb-release-v1.61.0.tar" -C "$SIM/tmp" || exit 1
 git cat-file blob "$PREV:backend/app/static/js/calculator.js" > "$SIMSTATE/calc_prev.js"
+# RT6_RULING_3: the fake doors answer 404 for a route the RUNNING code lacks. Worked out here, by the sim, from the two
+# trees (a probe whose route string is in one tree's backend/app and not the other's) — the stub then needs no kit.
+sim_route_re() { printf '%s' "${1%%\?*}" | sed -e 's/[.*^$+()|]/[&]/g' -e 's#/[0-9][0-9]*#/[{][^}/]+[}]#g'; }
+: > "$SIMSTATE/absent_prev"; : > "$SIMSTATE/absent_target"
+while read -r want path; do
+  case "$want" in ''|\#*) continue ;; esac
+  re="\"$(sim_route_re "$path")\""; t=0; p=0
+  git grep -qE "$re" "$TARGET" -- backend/app && t=1
+  git grep -qE "$re" "$PREV" -- backend/app && p=1
+  [ $t = 1 ] && [ $p = 0 ] && echo "$path" >> "$SIMSTATE/absent_prev"
+  [ $p = 1 ] && [ $t = 0 ] && echo "$path" >> "$SIMSTATE/absent_target"
+done < <(git cat-file blob "$TARGET:ops/prod-release-v1.61.0/probe_paths.txt")
+echo "   the fake doors on the old code 404: $(tr '\n' ' ' < "$SIMSTATE/absent_prev")· on the new code: $(tr '\n' ' ' < "$SIMSTATE/absent_target")"
+if [ "$SCEN" = oldkit ]; then        # the copy of release.sh the v1.61.0 window RAN (the tag's), re-summed
+  $G -C "$REPO" show "v1.61.0:ops/prod-release-v1.61.0/release.sh" > "$SIM/tmp/icb-release-v1.61.0/release.sh" || exit 1
+  ( cd "$SIM/tmp/icb-release-v1.61.0" && sha256sum release.sh probe_paths.txt lib/icb_where.sh lib/icb_backup.sh expected.env > SHA256SUMS ) || exit 1
+  echo "   (oldkit) release.sh = the v1.61.0 tag's copy, sha256 $(sha256sum "$SIM/tmp/icb-release-v1.61.0/release.sh" | cut -c1-12)"
+fi
 
 echo "== the fake prod at ${PREV:0:7}"
 git clone -q "$SIM/origin.git" "$SIM/opt/icb-platform" || exit 1
@@ -107,6 +127,7 @@ case "$SCEN" in
   autologin) sed -i 's/^MES_DEMO_AUTOLOGIN_USER=$/MES_DEMO_AUTOLOGIN_USER=admin/' "$SIM/etc/icb/backend.env" ;;
   envother) echo 'ICB_ENVIRONMENT=dev' >> "$SIM/etc/icb/backend.env" ;;
   wrongplace) HOSTNAME_SIM=icb-mes-dev ;;
+  oldroute404) touch "$SIMSTATE/oldroute404" ;;   # an OLD gated route (/api/calculations) answers 404 on the old code
 esac
 cp -p "$SIM/etc/icb/backend.env" "$SIMSTATE/env_before"
 

@@ -3,7 +3,7 @@
 #     bash run_all.sh [kit-branch] [scenario ...]        (no scenario = all)
 # A scenario passes when its log carries the expected banners in order. The scenario script is read from the kit
 # branch itself. Each run removes its own /root/relsim7-* folder (the RT4 disk lesson).
-KIT=${1:-rt6/enforce}; shift 2>/dev/null
+KIT=${1:-rt6/close}; shift 2>/dev/null
 ONLY=" $* "
 REPO=/mnt/c/Users/micge/Documents/icb-platform
 RUN=$(mktemp); git -C "$REPO" -c safe.directory='*' show "$KIT:ops/prod-release-v1.61.0/sim/run_sim.sh" > "$RUN" || exit 1
@@ -15,7 +15,16 @@ row() { # $1 scenario, $2 regex over the whole log
 }
 VB=${VB:-24}   # verify BEFORE the deploy (and before the env step): exactly these 24 not-yet-deployed checks
 FIRST='######## RT6 release v1.61.0 preflight · machine icb-mes-prod · db icb_platform @ 127.0.0.1:5432 · head a429404'
-row happy        "$FIRST.*PREFLIGHT PASSED.*######## VERIFY: $VB check\(s\) failed.*DONE \(env: ICB_ENVIRONMENT=prod, read back.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed.*DONE \(env: already ICB_ENVIRONMENT=prod\).*######## ALREADY DEPLOYED.*1 line\(s\) added: ICB_ENVIRONMENT=prod .*earlier lines unchanged: yes; mode 600.*pg_dump ran at alembic 0052.*npm builds: [1-9]"
+NL=$'\n'
+NEWP='/api/trailers/27/insulation-rule-check /api/configurator/draft-snapshots/1/rule-warnings'
+NEWF='/api/trailers/27/insulation-rule-check=404/401 /api/configurator/draft-snapshots/1/rule-warnings=404/401'
+# happy = the FIXED kit (RT6_RULING_3): before the deploy only the two new routes may answer 404; after it, every one as listed
+row happy        "$FIRST.*routes new in this release \(404 on v1\.60\.2, so allowed 404 here and nowhere else\): $NEWP${NL}.*PASS NOAUTH_LOCAL = all 46 as expected \(new in this release, 404 before the deploy: $NEWP\).*PASS NOAUTH_CF = all 46 as expected \(new in this release.*PREFLIGHT PASSED.*######## VERIFY: $VB check\(s\) failed.*DONE \(env: ICB_ENVIRONMENT=prod, read back.*PASS NOAUTH_LOCAL = all 46 as expected${NL}.*PASS NOAUTH_CF = all 46 as expected${NL}.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed.*DONE \(env: already ICB_ENVIRONMENT=prod\).*######## ALREADY DEPLOYED.*1 line\(s\) added: ICB_ENVIRONMENT=prod .*earlier lines unchanged: yes; mode 600.*pg_dump ran at alembic 0052.*npm builds: [1-9]"
+# oldkit = the tag's release.sh, the copy the window ran, under the fixed fake doors: it must reproduce the window's
+# 3 preflight FAILs and verify-before 27, word for word (B3: a sim whose fake server cannot fail proves nothing)
+row oldkit       "FAIL NOAUTH_LOCAL = '$NEWF'.*FAIL NOAUTH_LAN = '$NEWF'.*FAIL NOAUTH_CF = '$NEWF'.*######## PREFLIGHT: 3 check\(s\) FAILED.*######## VERIFY: 27 check\(s\) failed.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed"
+# oldroute404 = the fixed kit's negative control: an OLD gated route answering 404 before the deploy still FAILS
+row oldroute404  "FAIL NOAUTH_LOCAL = '/api/calculations=404/401'.*######## PREFLIGHT: 3 check\(s\) FAILED.*######## VERIFY: 27 check\(s\) failed.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed"
 row notag        'STOP \[TAG_ON_ORIGIN\]|PREFLIGHT: [0-9]+ check\(s\) FAILED.*STOP \[TAG\]'
 row moved        'STOP \[WHERE\]: WRONG PLACE — code is at [0-9a-f]{7}, this step expects a429404 [0-9a-f]{7}; nothing was run.*sim state: prod HEAD [0-9a-f]+, describe v1\.60\.2, alembic 0052'   # RT6: the safe-paste line refuses before ANCHORS
 row bootfail     'BOOTSTRAP FAILED.*STOP \[DEPLOY\]'

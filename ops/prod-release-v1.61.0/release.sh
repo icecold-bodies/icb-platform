@@ -25,6 +25,13 @@
 # deploy/prod/icb-deploy.sh (dry run, then --yes) -> post-deploy asserts: the schema (insulation_rule), the families
 # untouched, no rule set yet, the three statics, the SPA rebuilt, and the THREE doors: /health/version =
 # {"version":"v1.61.0","environment":"prod"}, no TEST banner, every probe_paths.txt path its listed status.
+#
+# RT6_RULING_3 (after the window): v1.61.0 RAN with the tag's copy of this file (`git show v1.61.0:<this path>`). Its
+# preflight and verify-before checked the NEW release's probe list against the OLD code, where the two routes added
+# by RT6 do not exist and the gate answers 404 — 3 FAILs that were ruled exact and accepted. This copy fixes that for
+# the next kit: mkstage.sh derives NEW_PROBES (a route string in the target's backend/app and not in prod's), and
+# while prod still runs the old code only those paths may answer 404. After the deploy every path must answer as
+# listed. The release sim reproduces the window's 3 FAILs with the tag's copy (scenario oldkit).
 # Deliberately no bare `set -e`.
 set -u
 
@@ -127,15 +134,19 @@ banner_on() { # $1 door: how many TEST SERVER bars / [TEST] titles the login pag
   grep -qi '<title>' <<<"$page" || { echo "no login page"; return 0; }   # an empty answer is not "no banner"
   echo "$(grep -c 'icb-test-banner' <<<"$page" || true)/$(grep -c '<title>\[TEST\]' <<<"$page" || true)"
 }
-noauth_report() {
-  local door=$1 bad="" want path got
+noauth_report() { # $1 door; $2 = "before" while prod still runs the OLD code (RT6_RULING_3): a path in NEW_PROBES —
+  # its route is new in this release, so the old code answers 404 — may answer 404, and only those paths
+  local door=$1 before=${2:-} bad="" early="" want path got
   while read -r want path; do
     case "$want" in ''|\#*) continue ;; esac
     got=$(curl -ks -o /dev/null --max-time 20 -H 'Accept: application/json' -w '%{http_code}' "$door$path" 2>/dev/null)
-    [ "$got" = "$want" ] || bad="$bad $path=${got:-000}/$want"
+    [ "$got" = "$want" ] && continue
+    if [ "$before" = before ] && [ "$got" = 404 ] && [[ " ${NEW_PROBES:-} " == *" $path "* ]]; then early="$early $path"; continue; fi
+    bad="$bad $path=${got:-000}/$want"
   done < "$BASE/probe_paths.txt"
-  echo "${bad:-all $N_PROBES as expected}" | sed 's/^ //'
+  if [ -n "$bad" ]; then echo "${bad# }"; else echo "all $N_PROBES as expected${early:+ (new in this release, 404 before the deploy:$early)}"; fi
 }
+NOAUTH_OK="~^all $N_PROBES as expected( [(]new in this release, 404 before the deploy: .*[)])?$"
 yaml_version() { "$PY" -c 'import yaml; print(yaml.__version__)' 2>/dev/null || echo missing; }
 tag_local() { gitr rev-parse -q --verify "refs/tags/$TAG" 2>/dev/null || echo missing; }
 describe() { gitr describe --tags --abbrev=0 HEAD 2>/dev/null || echo none; }
@@ -208,9 +219,10 @@ post_checks() { # $1 journal --since, $2 epoch the code moved (deploy) or empty,
     check "NO_TEST_BANNER_$d" "$(banner_on "${!d}")" "0/0"
   done
   say "no session, Accept JSON: every path in probe_paths.txt answers its listed status, on the three doors"
-  check NOAUTH_LOCAL "$(noauth_report "$LOCAL")" "all $N_PROBES as expected"
-  check NOAUTH_LAN "$(noauth_report "$LAN")" "all $N_PROBES as expected"
-  check NOAUTH_CF "$(noauth_report "$CF")" "all $N_PROBES as expected"
+  local nb=''; [ "$(gitr rev-parse HEAD)" = "$PREV" ] && nb=before   # verify before the deploy: the old code runs
+  check NOAUTH_LOCAL "$(noauth_report "$LOCAL" "$nb")" "$NOAUTH_OK"
+  check NOAUTH_LAN "$(noauth_report "$LAN" "$nb")" "$NOAUTH_OK"
+  check NOAUTH_CF "$(noauth_report "$CF" "$nb")" "$NOAUTH_OK"
   say "served bytes: each page loads its new ?v= and both doors serve the target blob; the SPA rebuilt"
   static_checks after
   set -- $(spa_report)
@@ -243,9 +255,10 @@ if [ "$MODE" = preflight ]; then
   check HEALTH "$(code_url "$LOCAL/health")" 200
   say "today, on the three doors: $PREV_TAG answers, and RT4's no-session gate holds"
   for d in LOCAL LAN CF; do check "VERSION_$d" "$(version_of "${!d}")" "$PREV_TAG"; done
-  check NOAUTH_LOCAL "$(noauth_report "$LOCAL")" "all $N_PROBES as expected"
-  check NOAUTH_LAN "$(noauth_report "$LAN")" "all $N_PROBES as expected"
-  check NOAUTH_CF "$(noauth_report "$CF")" "all $N_PROBES as expected"
+  echo "   routes new in this release (404 on $PREV_TAG, so allowed 404 here and nowhere else): ${NEW_PROBES:-none}"
+  check NOAUTH_LOCAL "$(noauth_report "$LOCAL" before)" "$NOAUTH_OK"
+  check NOAUTH_LAN "$(noauth_report "$LAN" before)" "$NOAUTH_OK"
+  check NOAUTH_CF "$(noauth_report "$CF" before)" "$NOAUTH_OK"
   say "PyYAML (installed by v1.59.0; this release installs nothing)"
   check PYYAML "$(yaml_version)" "$PYYAML_VERSION"
   say "the SPA build tooling (icb-deploy.sh runs npm run build as icb)"

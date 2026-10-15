@@ -85,7 +85,13 @@ case "$path_noq" in
   /mes-app/assets/*) f=/opt/icb-platform/frontend/dist/${path_noq#/mes-app/}; [ -f "$f" ] && file=$f || code=404 ;;
   *)
     want=$(awk -v p="$path" '$2 == p { print $1; exit }' /tmp/icb-release-v1.61.0/probe_paths.txt)
-    code=${want:-404} ;;
+    code=${want:-404}
+    # RT6_RULING_3: a route the RUNNING code lacks answers 404, whatever the probe list says (before this fix the fake
+    # doors answered every listed path as listed — they could not fail the way prod's did on 14-15 Oct)
+    lacks=$S/absent_prev; [ $new = 1 ] && lacks=$S/absent_target
+    grep -qxF -- "$path" "$lacks" 2>/dev/null && code=404
+    # the negative control: an OLD gated route answering 404 before the deploy must still fail the check
+    [ -f "$S/oldroute404" ] && [ $new = 0 ] && [ "$path" = /api/calculations ] && code=404 ;;
 esac
 if [ -n "$file" ]; then if [ -n "$out" ]; then cat "$file" > "$out"; else cat "$file"; fi
 elif [ -n "$out" ]; then printf '%s' "$body" > "$out"; else printf '%s' "$body"; fi

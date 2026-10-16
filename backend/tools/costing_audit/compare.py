@@ -274,8 +274,47 @@ class MesLine_like:      # structural type for triage (MesLine or a test double)
     excluded: bool
 
 
+PIN_TOL = 0.01              # RT7: an accepted cell's difference must equal its pinned amount within R0.01
+AMOUNT_CHANGED = "ACCEPTED_AMOUNT_CHANGED"
+
+
+def pin_key(cell) -> str:
+    """The key an accepted entry pins a cell's amount under: '<scenario id> | <section>'."""
+    sid = cell["scenario_id"] if isinstance(cell, dict) else cell.scenario_id
+    sec = (cell.get("section_mes") or cell.get("section_excel")) if isinstance(cell, dict) \
+        else (cell.section_mes or cell.section_excel)
+    return f"{sid} | {sec}"
+
+
+def cell_net(cell) -> float:
+    m = (cell.get("mes_total") if isinstance(cell, dict) else cell.mes_total) or 0.0
+    e = (cell.get("excel_total") if isinstance(cell, dict) else cell.excel_total) or 0.0
+    return round(m - e, 2)
+
+
+def _pin_failure(cell: Cell, entries: list[Accepted]) -> str | None:
+    """None when every covering entry that pins amounts pins THIS cell at its current difference."""
+    key, net = pin_key(cell), cell_net(cell)
+    for a in entries:
+        if a.amounts is None:
+            continue
+        want = a.pinned(key)
+        if want is None:
+            return f"{AMOUNT_CHANGED} entry {a.index} pins no amount for this cell; actual {net:+.2f}"
+        if abs(want - net) > PIN_TOL + 1e-9:
+            return f"{AMOUNT_CHANGED} entry {a.index} pinned {want:+.2f}, actual {net:+.2f}"
+    return None
+
+
 def _mark(cell: Cell, primary: Accepted, others: list[Accepted], today: date | None) -> Cell:
+    why = _pin_failure(cell, [primary, *others])
+    if why:
+        cell.status = "FLAG"
+        cell.reason = why
+        return cell
     cell.accepted = primary.to_dict()
+    if primary.amounts is not None:
+        cell.accepted["pinned"] = primary.pinned(pin_key(cell))
     if others:
         cell.accepted["also"] = [o.to_dict() for o in others]
         if any(o.kind == "known_defect" for o in others):
@@ -364,7 +403,7 @@ def reapply_accepted(report: dict, accepted: list[Accepted], *, today: date | No
         base = _underlying_status(d)
         d["status"] = base
         d["base_status"] = None
-        if str(d.get("reason") or "").startswith(("accepted entry", "accepted cause")):
+        if str(d.get("reason") or "").startswith(("accepted entry", "accepted cause", AMOUNT_CHANGED)):
             d["reason"] = None
         if tri:
             d["likely_cause"] = likely_cause(tri)

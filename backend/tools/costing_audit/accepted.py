@@ -54,6 +54,13 @@ class Accepted:
     index: int
     kind: str = "tolerated"
     cause: str | list[str] | None = None
+    # RT7 — the amount each accepted cell differs by, pinned: {"<scenario id> | <section>": rand}. None = the entry
+    # pins nothing (a dev list); {} = it pins no cell, so it accepts none.
+    amounts: dict[str, float] | None = None
+    mechanism: str | None = None
+
+    def pinned(self, key: str) -> float | None:
+        return None if self.amounts is None else self.amounts.get(key)
 
     def expired(self, today: date | None = None) -> bool:
         return self.review_by is not None and (today or date.today()) > self.review_by
@@ -88,7 +95,7 @@ class Accepted:
 
     def to_dict(self) -> dict:
         return {"body": self.body, "section": self.section, "variant": self.variant, "kind": self.kind,
-                "cause": self.cause,
+                "cause": self.cause, "mechanism": self.mechanism,
                 "reason": self.reason, "owner": self.owner,
                 "review_by": self.review_by.isoformat() if self.review_by else None}
 
@@ -124,8 +131,15 @@ def load_accepted(path: Path | None = None) -> list[Accepted]:
         def _field(v):
             return [str(x) for x in v] if isinstance(v, (list, tuple)) else str(v)
         cause = e.get("cause")
+        amounts = e.get("amounts")
+        if amounts is not None:
+            if not isinstance(amounts, dict):
+                raise ValueError(f"{p.name}: entry {i} amounts must be a mapping 'scenario | section': rand")
+            amounts = {" | ".join(s.strip() for s in str(k).split("|", 1)): round(float(v), 2)
+                       for k, v in amounts.items()}
         out.append(Accepted(body=_field(e["body"]), section=_field(e["section"]),
                             variant=_field(e.get("variant", "*")), reason=str(e["reason"]),
                             owner=str(e.get("owner", "?")), review_by=rb, index=i, kind=kind,
-                            cause=_field(cause) if cause else None))
+                            cause=_field(cause) if cause else None, amounts=amounts,
+                            mechanism=str(e["mechanism"]) if e.get("mechanism") else None))
     return out

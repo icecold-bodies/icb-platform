@@ -58,6 +58,12 @@ RO=$(psql "$URL" -XAtc "select current_setting('transaction_read_only')") || sto
 [ "$RO" = on ] || stop DB "the session is not read-only ($RO)"
 [ "$(git -c safe.directory=$REPO -C $REPO status --porcelain --untracked-files=no | wc -l)" = 0 ] || stop CODE "prod has modified tracked files"
 say "prod: alembic=$ALEMBIC · read-only sessions · staged=${STAGED_FROM:0:7} · $(date -Is)"
+# The app's Settings (imported by the audit tool) read their values from the ENVIRONMENT — DATABASE_URL and
+# SESSION_SECRET are required — exactly as the service gets them from this file. Loaded silently, never printed.
+# (16 Oct: the first paste stopped here with "2 validation errors for Settings" — the kit had read only the URL.)
+set -a; . /etc/icb/backend.env >/dev/null 2>&1; set +a
+[ -n "${DATABASE_URL:-}" ] && [ -n "${SESSION_SECRET:-}" ] || stop KIT "/etc/icb/backend.env did not provide DATABASE_URL and SESSION_SECRET"
+export PGOPTIONS='-c default_transaction_read_only=on'     # again, after the env file: still every session read-only
 export PYTHONDONTWRITEBYTECODE=1
 export PYTHONPATH=$REPO/backend
 cd "$REPO/backend" || stop CODE "cd $REPO/backend"

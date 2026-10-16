@@ -19,7 +19,9 @@ $G clone -q --bare --single-branch --branch backport/v1.39-base "$WIN/icb-platfo
 git clone -q "$SIM/origin.git" "$SIM/work" && cd "$SIM/work" || exit 1
 # the worktree's branch lives in the main clone's repository (WSL git cannot read a Windows worktree's .git file)
 $G fetch -q "$WIN/icb-platform" "$BR" "refs/tags/v1.61.0:refs/tags/v1.61.0" && git -c advice.detachedHead=false checkout -q FETCH_HEAD || exit 1
-bash ops/prod-rt7/mkstage_discovery.sh "$SIM/stageout" HEAD > "$SIM/stage.log" 2>&1 || { cat "$SIM/stage.log"; exit 1; }
+# KITREF stages another commit's kit with this commit's sim — the negative control (KITREF=e1e6d37: the kit that
+# stopped on prod on 16 Oct must stop here too)
+bash ops/prod-rt7/mkstage_discovery.sh "$SIM/stageout" "${KITREF:-HEAD}" > "$SIM/stage.log" 2>&1 || { cat "$SIM/stage.log"; exit 1; }
 grep -m1 '^staged' "$SIM/stage.log"
 PROD=$(git rev-parse "v1.61.0^{commit}")
 git clone -q "$SIM/origin.git" "$SIM/opt/icb-platform" && git -C "$SIM/opt/icb-platform" fetch -q "$SIM/work" "refs/tags/v1.61.0:refs/tags/v1.61.0" \
@@ -30,6 +32,10 @@ mkdir -p "$SIM/opt/icb-platform/.venv/bin"
 cat > "$SIM/opt/icb-platform/.venv/bin/python" <<'PY'
 #!/bin/bash
 case "${PGOPTIONS:-}" in *default_transaction_read_only=on*) ;; *) echo "python stub: NOT read-only"; exit 3;; esac
+case "$1" in -c|-m)    # the real app's Settings: both values must be in the ENVIRONMENT (16 Oct, the first prod paste)
+  [ -n "${DATABASE_URL:-}" ] && [ -n "${SESSION_SECRET:-}" ] \
+    || { echo "pydantic_core._pydantic_core.ValidationError: 2 validation errors for Settings (stub)"; exit 1; } ;;
+esac
 if [ "$1" = -c ]; then exit 0; fi
 if [ "$1" = -m ] && [ "$2" = tools.costing_audit ]; then
   cmd=$3; shift 3; out=; stem=; pack=
@@ -103,6 +109,9 @@ MUTATE="rm -f $SIM/tmp/icb-rt7-discovery/.staged_at" run; row "unstamped kit" 'S
 run icb-mes-prod nobody; row "not root" 'STOP \[KIT\]: run with sudo'
 echo 0052 > "$SIM/state/alembic"; run; row "wrong alembic" 'STOP \[DB\]: alembic_version is .0052.'; echo 0053 > "$SIM/state/alembic"
 MUTATE="truncate -s 100 $SIM/tmp/icb-rt7-discovery/rt7_summary.py" run; row "tampered stage" 'STOP \[KIT\]: staged files do not match'
+cp "$SIM/etc/icb/backend.env" "$SIM/state/env.good"; grep -v '^SESSION_SECRET=' "$SIM/state/env.good" > "$SIM/etc/icb/backend.env"
+run; row "env file without SESSION_SECRET" 'STOP \[KIT\]: /etc/icb/backend.env did not provide DATABASE_URL and SESSION_SECRET'
+cp "$SIM/state/env.good" "$SIM/etc/icb/backend.env"
 cp "$SIM/state/snapshot.json" "$SIM/state/snapshot.good"
 python3 - "$SIM/state/snapshot.json" <<'EOF'
 import json, sys

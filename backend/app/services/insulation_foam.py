@@ -110,4 +110,5 @@ def price_multiplier(foam, factor: float | None = None) -> float:
     """Multiplier to apply to a PU foam row's stored (32D) unit price."""
     if normalise(foam) != FOAM_4G:
         return 1.0
-    return FACTOR_4G_DEFAULT if factor is None else float(factor)
+    # RT7 §3.0 NEGATIVE CONTROL — a deliberate engine drift, NEVER MERGE: 4G PU priced 5 % high.
+    return (FACTOR_4G_DEFAULT if factor is None else float(factor)) * 1.05

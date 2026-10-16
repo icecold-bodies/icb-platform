@@ -246,6 +246,30 @@ def admin_session(page: "Page", base: str = _DEFAULT_BASE) -> "Page":
     return page
 
 
+def wait_calculator_ready(target, timeout: int = 20_000) -> None:
+    """Block until the calculator's DOMContentLoaded init has FINISHED (RT7).
+
+    ``#trailer-select`` is visible long before init ends: five API loads, then the
+    ``?edit=`` / ``?from=`` / ``?trailer=`` load or the LAST SESSION (localStorage,
+    written on every unload — so a second visit in one browser context restores the
+    first visit's body or REPAIRS and re-renders that surface), then
+    ``defaultNewRatio()``, and only then the live-recalc / Enter listeners. A journey
+    that acts before that can be overtaken (#219: the open repair source menu was
+    replaced under the click). Init registers the page shortcuts right after the
+    restore, in the same synchronous run that binds the listeners, so once
+    ``pageShortcuts.save`` is set the whole init has run. Polled on that STATE
+    (python-side: the CSP has no unsafe-eval), never a sleep. ``target`` is a Page or
+    a Frame (the /mes-app/costings/new embed).
+    """
+    import time
+    probe = "() => typeof pageShortcuts !== 'undefined' && pageShortcuts.save !== null"
+    deadline = time.monotonic() + timeout / 1000.0
+    while not target.evaluate(probe):
+        if time.monotonic() > deadline:
+            raise AssertionError(f"the calculator's init did not finish within {timeout} ms")
+        target.wait_for_timeout(50)          # Page and Frame both have it; the poll interval, not the wait
+
+
 def clear_calculator_ratio(page: "Page", timeout: int = 20_000) -> None:
     """Set the calculator's ratio to "— None —" and make it STAY there.
 

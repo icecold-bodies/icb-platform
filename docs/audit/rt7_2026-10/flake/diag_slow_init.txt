@@ -1,0 +1,4 @@
+13:37:54  run  1/3    12s  PASS
+13:38:06  run  2/3    11s  PASS
+13:38:17  run  3/3    11s  PASS
+== diag_slow_init throttle x1 : 0/3 failed (0%)

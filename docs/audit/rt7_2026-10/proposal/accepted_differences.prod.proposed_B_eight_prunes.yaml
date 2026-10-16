@@ -1,0 +1,208 @@
+- body: icecream up to 4.8
+  section: FLOOR
+  variant: '*'
+  cause: 12MM PF PLYWOOD
+  kind: known_defect
+  reason: '[TOOL] ICECREAM UP TO 4.8''s 12MM PF PLYWOOD floor line (bom 5653) prices only when its draft choice ''12MM PF PLYWOOD'' is ticked (beside 9MM BIRCH 11203 and 12MM FINN 11207); the audit probe
+    cannot tick a draft choice, so the FLOOR reads it missing (-R1.9k to -R2.5k). A probe limit, not a template defect (Michael, 28 Sep) — still to confirm which choice the calculator starts with. The ALU
+    EXTRUTION FLOOR default was turned OFF in v1.58.'
+  owner: BA
+  review_by: 2026-10-31
+  amounts:
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~all_pu | FLOOR: -1914.11
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~as_sheet | FLOOR: -1914.11
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~drd | FLOOR: -1914.11
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~foam_4g | FLOOR: -1914.1
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~srd | FLOOR: -1914.11
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~all_pu | FLOOR: -2228.76
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~as_sheet | FLOOR: -2228.76
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~drd | FLOOR: -2228.76
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~foam_4g | FLOOR: -2228.75
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~srd | FLOOR: -2228.76
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~all_pu | FLOOR: -2543.4
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~as_sheet | FLOOR: -2543.4
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~drd | FLOOR: -2543.4
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~foam_4g | FLOOR: -2543.41
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~srd | FLOOR: -2543.4
+- body:
+  - icecream up to 3,2
+  - icecream up to 4.8
+  section:
+  - DRD
+  - SRD
+  variant: '*'
+  cause: TAPPING BLOCKS
+  kind: tolerated
+  reason: '[BURT SLIP] Burt''s rear-door TAPPING row prices the buffer plate, not the tapping blocks: ''icecream up to 3,2''!E41 and ''icecream up to 4.8''!E45 = ''[2]SRD FLOOR PLATE''!$F$24*3 instead of
+    TAPING BLOCKS (+R259.72 per door section on Burt''s side). MES is right. Burt fix list B-01, B-02.'
+  owner: BA
+  review_by: 2026-10-31
+  mechanism: burt_sheet_formula_slip
+  refs:
+  - '''icecream up to 3,2''!E41'
+  - '''icecream up to 4.8''!E45'
+  - B-01
+  - B-02
+  amounts:
+    ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD: -259.75
+    ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~as_sheet | DRD: -259.75
+    ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~drd | DRD: -259.75
+    ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~foam_4g | DRD: -259.76
+    ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~srd | SRD: -259.75
+    ICECREAM_UP_TO_3,2~L3.2~W2.1~H2~all_pu | DRD: -259.75
+    ICECREAM_UP_TO_3,2~L3.2~W2.1~H2~as_sheet | DRD: -259.75
+    ICECREAM_UP_TO_3,2~L3.2~W2.1~H2~drd | DRD: -259.75
+    ICECREAM_UP_TO_3,2~L3.2~W2.1~H2~foam_4g | DRD: -259.76
+    ICECREAM_UP_TO_3,2~L3.2~W2.1~H2~srd | SRD: -259.75
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~all_pu | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~as_sheet | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~drd | DRD: -259.77
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~foam_4g | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L3.6~W2.3~H2.26~srd | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~all_pu | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~as_sheet | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~drd | DRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~foam_4g | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.2~W2.3~H2.26~srd | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~all_pu | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~as_sheet | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~drd | DRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~foam_4g | SRD: -259.77
+    ICECREAM_UP_TO_4.8~L4.8~W2.3~H2.26~srd | SRD: -259.77
+- body: ' UP TO 4.8 MT FREEZER  (2'
+  section: SUB FRAME + LIGHT BOX ASSY
+  variant: '*'
+  cause: MOUNTING BRACKET
+  kind: known_defect
+  reason: '[DATA] SMALL MOUNTING BRACKET priced differently from Burt''s sheet on FREEZER MEDIUM (-R126), prod as dev.'
+  owner: BA
+  review_by: 2026-10-31
+  amounts:
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~all_pu | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~as_sheet | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~drd | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~foam_4g | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~roof_floor_eps | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~srd | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~all_pu | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~as_sheet | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~drd | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~foam_4g | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~roof_floor_eps | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~srd | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~all_pu | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~as_sheet | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~drd | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~foam_4g | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~roof_floor_eps | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~srd | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~all_pu | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~as_sheet | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~drd | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~foam_4g | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~roof_floor_eps | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~srd | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L6~W2.5~H2.4~as_sheet | SUB FRAME + LIGHT BOX ASSY: -125.68
+    UP_TO_4.8_MT_FREEZER_2~L6~W2.5~H2.4~roof_floor_eps | SUB FRAME + LIGHT BOX ASSY: -125.68
+- body: EXPLOSIVE UP TO 2.7
+  section: SRD
+  variant: srd
+  cause: ALU PLATE
+  kind: known_defect
+  reason: '[DATA] 0.9 MM ALU PLATE on the EXPLOSIVE UP TO 2.7 single rear door priced/quantified differently from Burt''s sheet (-R325), prod as dev.'
+  owner: BA
+  review_by: 2026-10-31
+  amounts:
+    EXPLOSIVE_UP_TO_2.7~L1.8~W1.2~H1.6~srd | SRD: -336.68
+    EXPLOSIVE_UP_TO_2.7~L2.3~W1.2~H1.6~srd | SRD: -336.68
+    EXPLOSIVE_UP_TO_2.7~L2.7~W1.2~H1.6~srd | SRD: -336.68
+- body: ' UP TO 4.8 MT FREEZER  (2'
+  section: FLOOR
+  variant: '*'
+  cause:
+  - 12MM PF PLYWOOD
+  - PRICE_DIFF EPS
+  kind: tolerated
+  mechanism: mes_updated_ahead_of_burt
+  reason: '[MES AHEAD] FREEZER MEDIUM FLOOR: Michael changed prod on purpose between 6 and 15 Oct 2026 - 12MM PF PLYWOOD R223.15 -> R267.79 per m2 (bom 2483 lost its /2.98 and material 956 went R665 ->
+    R267.79, 6 Oct 12:43); on roof_floor_eps also EPS R156.56 -> R206.00 per m2 (materials 127 and 133, 7 Oct); Burt''s sheet has not caught up. Burt fix list: keep in step.'
+  owner: BA
+  review_by: '2026-11-30'
+  amounts:
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~all_pu | FLOOR: 347.13
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~as_sheet | FLOOR: 347.13
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~drd | FLOOR: 347.13
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~foam_4g | FLOOR: 347.13
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~roof_floor_eps | FLOOR: 731.65
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~srd | FLOOR: 347.13
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~all_pu | FLOOR: 483.71
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~as_sheet | FLOOR: 483.71
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~drd | FLOOR: 483.71
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~foam_4g | FLOOR: 483.71
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~roof_floor_eps | FLOOR: 1019.51
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~srd | FLOOR: 483.71
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~all_pu | FLOOR: 552.0
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~as_sheet | FLOOR: 552.0
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~drd | FLOOR: 552.0
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~foam_4g | FLOOR: 552.0
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~roof_floor_eps | FLOOR: 1163.44
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~srd | FLOOR: 552.0
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~all_pu | FLOOR: 643.05
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~as_sheet | FLOOR: 643.05
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~drd | FLOOR: 643.05
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~foam_4g | FLOOR: 643.05
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~roof_floor_eps | FLOOR: 1355.36
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~srd | FLOOR: 643.05
+    UP_TO_4.8_MT_FREEZER_2~L6~W2.5~H2.4~as_sheet | FLOOR: 688.57
+    UP_TO_4.8_MT_FREEZER_2~L6~W2.5~H2.4~roof_floor_eps | FLOOR: 1451.31
+- body: ' UP TO 4.8 MT FREEZER  (2'
+  section: ROOF
+  variant: '*'
+  cause:
+  - PRICE_DIFF EPS
+  kind: tolerated
+  mechanism: mes_updated_ahead_of_burt
+  reason: '[MES AHEAD] FREEZER MEDIUM ROOF: Michael changed prod on purpose between 6 and 15 Oct 2026 - EPS R156.56 -> R206.00 per m2 (materials 127 and 133, 7 Oct; roof_floor_eps); Burt''s sheet has not
+    caught up. Burt fix list: keep in step.'
+  owner: BA
+  review_by: '2026-11-30'
+  amounts:
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~roof_floor_eps | ROOF: 384.47
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~roof_floor_eps | ROOF: 535.74
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~roof_floor_eps | ROOF: 611.37
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~roof_floor_eps | ROOF: 712.21
+    UP_TO_4.8_MT_FREEZER_2~L6~W2.5~H2.4~roof_floor_eps | ROOF: 762.63
+- body: ' UP TO 4.8 MT FREEZER  (2'
+  section: DRD DOOR FITTINGS
+  variant: '*'
+  cause:
+  - CSLB HINGES
+  kind: tolerated
+  mechanism: mes_updated_ahead_of_burt
+  reason: '[MES AHEAD] FREEZER MEDIUM DRD DOOR FITTINGS: Michael changed prod on purpose between 6 and 15 Oct 2026 - CSLB HINGES 6 -> 4 on the double rear door (bom 2447; -R293.46 = 2 x R146.73); Burt''s
+    sheet has not caught up. Burt fix list: keep in step.'
+  owner: BA
+  review_by: '2026-11-30'
+  amounts:
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~all_pu | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~as_sheet | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~drd | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~foam_4g | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~roof_floor_eps | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~all_pu | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~as_sheet | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~drd | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~foam_4g | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.2~W2.5~H2.4~roof_floor_eps | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~all_pu | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~as_sheet | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~drd | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~foam_4g | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L4.8~W2.5~H2.4~roof_floor_eps | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~all_pu | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~as_sheet | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~drd | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~foam_4g | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L5.6~W2.5~H2.4~roof_floor_eps | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L6~W2.5~H2.4~as_sheet | DRD DOOR FITTINGS: -293.46
+    UP_TO_4.8_MT_FREEZER_2~L6~W2.5~H2.4~roof_floor_eps | DRD DOOR FITTINGS: -293.46

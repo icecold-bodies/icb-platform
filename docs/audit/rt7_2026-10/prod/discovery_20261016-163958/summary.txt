@@ -1,0 +1,30 @@
+
+chillers: 716 cells  {'PASS': 590, 'SKIP': 126}
+
+freezers: 690 cells  {'ACCEPTED': 24, 'FLAG': 48, 'PASS': 501, 'SKIP': 117}
+  ACCEPTED   24  FREEZER MEDIUM           SUB FRAME + LIGHT BOX ASSY PRICE_DIFF SMALL MOUNTING BRACKET                 -125.68 ..    -125.68  all_pu,as_sheet,drd,foam_4g,roof_floor_eps,srd
+  FLAG       20  FREEZER MEDIUM           DRD DOOR FITTINGS          QTY_DIFF CSLB HINGES                              -293.46 ..    -293.46  all_pu,as_sheet,drd,foam_4g,roof_floor_eps
+  FLAG       20  FREEZER MEDIUM           FLOOR                      PRICE_DIFF 12MM PF PLYWOOD                        +347.13 ..    +643.05  all_pu,as_sheet,drd,foam_4g,srd
+  FLAG        4  FREEZER MEDIUM           FLOOR                      PRICE_DIFF EPS                                    +731.65 ..   +1355.36  roof_floor_eps
+  FLAG        4  FREEZER MEDIUM           ROOF                       PRICE_DIFF EPS                                    +384.47 ..    +712.21  roof_floor_eps
+
+icecream: 612 cells  {'ACCEPTED': 40, 'PASS': 416, 'SKIP': 116, 'UNVERIFIABLE': 40}
+  ACCEPTED    3  ICECREAM BODY MEDIUM     DRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 1 MES line(s)    -259.77 ..    -259.77  drd
+  ACCEPTED   15  ICECREAM BODY MEDIUM     FLOOR                      MISSING_IN_MES 12MM PF PLYWOOD                   -2543.41 ..   -1914.10  all_pu,as_sheet,drd,foam_4g,srd
+  ACCEPTED   12  ICECREAM BODY MEDIUM     SRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -259.77 ..    -259.77  all_pu,as_sheet,foam_4g,srd
+  ACCEPTED    8  ICECREAM BODY SMALL      DRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -259.76 ..    -259.75  all_pu,as_sheet,drd,foam_4g
+  ACCEPTED    2  ICECREAM BODY SMALL      SRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -259.75 ..    -259.75  srd
+
+explosive: 684 cells  {'ACCEPTED': 3, 'PASS': 528, 'SKIP': 117, 'UNVERIFIABLE': 36}
+  ACCEPTED    3  EXPLOSIVE UP TO 2.7      SRD                        BOTH 0.9 MM ALU PLATE                             -336.68 ..    -336.68  srd
+
+smoke: 234 cells  {'ACCEPTED': 18, 'FLAG': 15, 'PASS': 156, 'SKIP': 45}
+  ACCEPTED    6  FREEZER MEDIUM           SUB FRAME + LIGHT BOX ASSY PRICE_DIFF SMALL MOUNTING BRACKET                 -125.68 ..    -125.68  as_sheet,roof_floor_eps
+  ACCEPTED    6  ICECREAM BODY MEDIUM     FLOOR                      MISSING_IN_MES 12MM PF PLYWOOD                   -2543.40 ..   -1914.11  as_sheet,srd
+  ACCEPTED    6  ICECREAM BODY MEDIUM     SRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -259.77 ..    -259.77  as_sheet,srd
+  FLAG        6  FREEZER MEDIUM           DRD DOOR FITTINGS          QTY_DIFF CSLB HINGES                              -293.46 ..    -293.46  as_sheet,roof_floor_eps
+  FLAG        3  FREEZER MEDIUM           FLOOR                      PRICE_DIFF 12MM PF PLYWOOD                        +483.71 ..    +688.57  as_sheet
+  FLAG        3  FREEZER MEDIUM           FLOOR                      PRICE_DIFF EPS                                   +1019.51 ..   +1451.31  roof_floor_eps
+  FLAG        3  FREEZER MEDIUM           ROOF                       PRICE_DIFF EPS                                    +535.74 ..    +762.63  roof_floor_eps
+
+All (chillers + freezers + icecream + explosive): 2702 cells  {'ACCEPTED': 67, 'FLAG': 48, 'PASS': 2035, 'SKIP': 476, 'UNVERIFIABLE': 76}

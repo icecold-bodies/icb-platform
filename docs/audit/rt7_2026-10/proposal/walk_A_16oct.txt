@@ -1,0 +1,49 @@
+current list: 12 entries (accepted_differences.prod.yaml)
+  0. today's list, unchanged                                 All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+     (coverage pass)                                         All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  coverage per entry (All packs + smoke):
+    #0  ['UP TO 2.3 CHILLER BODY', ' 4.9 & UP CH SRD                          ['DIFF EPS', 'BOTH EPS']                     All   0  smoke  0
+    #1  icecream up to 4.8                       FLOOR                        12MM PF PLYWOOD                              All  15  smoke  6
+    #2  *                                        SUB FRAME + LIGHT BOX ASSY   ['GALV PLATE', 'MOUNTING CLEATS']            All   0  smoke  0
+    #3  *                                        ['DRD', 'SRD']               TAPPING BLOCKS                               All  25  smoke  6
+    #4  *                                        SRD DOOR FITTINGS            ['CSLB HINGES', 'SILPLUS', 'LOCKING POLE', ' All   0  smoke  0
+    #5  icecream up to 4.8                       ['DRD', 'DRD DOOR FITTINGS'] ['DIFF PU', 'BOTH PU', '4MM PF PLYWOOD', '28 All   0  smoke  0
+    #6  ['icecream up to 3,2', 'icecream up to 4 ['DRD', 'SRD']               ALU BUFFER PLATE                             All   0  smoke  0
+    #7  EXPLOSIVE 2.7 TO 4.8                     ['ROOF', 'SIDES']            ['6MM PF PLYWOOD', '4MM PF PLYWOOD']         All   0  smoke  0
+    #8  *                                        SRD                          ['PLYWOOD', 'GLUE LINE']                     All   3  smoke  0
+    #9   UP TO 4.8 MT FREEZER  (2                SUB FRAME + LIGHT BOX ASSY   MOUNTING BRACKET                             All  24  smoke  6
+    #10 EXPLOSIVE UP TO 2.7                      SRD                          ALU PLATE                                    All   3  smoke  0
+    #11 UP TO 5.5 CHILLER AND 2.3 WIDE           DRD DOOR FITTINGS            2317 DOOR RUBBER                             All   0  smoke  0
+
+H4 — one prune at a time, reaccept after each:
+  1. prune SRD EPS (CHILLER 2.3 / LARGE) (entry left the list) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  2. prune the icecream ALU BUFFER PLATE (entry left the list) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  3. prune the EXPLOSIVE 2.7-4.8 plywood (entry left the list) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  4. prune the CHILLER MEDIUM 2317 DOOR RUBBER (entry left the list) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  5. re-label tapping = burt_sheet_formula_slip (icecream 3,2 + 4.8) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  6. + 3 mes_updated_ahead_of_burt entries (no pins yet)     All: FLAG   0  ACCEPTED 115  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+  7. every entry pinned at today's amounts                   All: FLAG   0  ACCEPTED 115  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+
+per entry: cells pinned (All + smoke-only keys), amount range
+  #0  known_defect               icecream up to 4.8                 FLOOR                 15 pins   -2543.41 ..  -1914.10
+  #1  known_defect               *                                  SUB FRAME + LIGHT BO   0 pins  (none)
+  #2  burt_sheet_formula_slip    ['icecream up to 3,2', 'icecream u ['DRD', 'SRD']        25 pins    -259.77 ..   -259.75
+  #3  known_defect               *                                  SRD DOOR FITTINGS      0 pins  (none)
+  #4  known_defect               icecream up to 4.8                 ['DRD', 'DRD DOOR FI   0 pins  (none)
+  #5  known_defect               *                                  SRD                    3 pins    -336.68 ..   -336.68
+  #6  known_defect                UP TO 4.8 MT FREEZER  (2          SUB FRAME + LIGHT BO  26 pins    -125.68 ..   -125.68
+  #7  known_defect               EXPLOSIVE UP TO 2.7                SRD                    3 pins    -336.68 ..   -336.68
+  #8  mes_updated_ahead_of_burt   UP TO 4.8 MT FREEZER  (2          FLOOR                 26 pins    +347.13 ..  +1451.31
+  #9  mes_updated_ahead_of_burt   UP TO 4.8 MT FREEZER  (2          ROOF                   5 pins    +384.47 ..   +762.63
+  #10 mes_updated_ahead_of_burt   UP TO 4.8 MT FREEZER  (2          DRD DOOR FITTINGS     22 pins    -293.46 ..   -293.46
+
+NC — move one pin and reaccept:
+  pin ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD moved +1.00 All: FLAG   1  ACCEPTED 114  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+      icecream: FLAG ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD :: ACCEPTED_AMOUNT_CHANGED entry 2 pinned -258.75, actual -259.75
+  pin ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD moved +0.01 All: FLAG   0  ACCEPTED 115  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+  pin ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD moved +0.02 All: FLAG   1  ACCEPTED 114  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+      icecream: FLAG ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD :: ACCEPTED_AMOUNT_CHANGED entry 2 pinned -259.73, actual -259.75
+  pin ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD moved -1.00 All: FLAG   1  ACCEPTED 114  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+      icecream: FLAG ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD :: ACCEPTED_AMOUNT_CHANGED entry 2 pinned -260.75, actual -259.75
+  pin removed for that cell                                  All: FLAG   1  ACCEPTED 114  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+      icecream: FLAG ICECREAM_UP_TO_3,2~L2.4~W2.1~H2~all_pu | DRD :: ACCEPTED_AMOUNT_CHANGED entry 2 pins no amount for this cell; actual -259.75

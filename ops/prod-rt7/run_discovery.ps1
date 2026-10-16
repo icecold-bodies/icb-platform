@@ -59,6 +59,7 @@ if (-not $last) { Stop-Step FETCH "no result tar on prod" }
 $dest = Join-Path $Back ("rt7-discovery-back-" + (Get-Date -Format 'yyyyMMdd-HHmmss') + ".tar")
 & scp -q -o BatchMode=yes "${Vm}:$last" $dest
 if ($LASTEXITCODE -ne 0) { Stop-Step FETCH "scp back failed (exit $LASTEXITCODE)" }
+if (-not (Test-Path $dest) -or (Get-Item $dest).Length -eq 0) { Stop-Step FETCH "scp reported success but $dest is missing or empty" }
 $bsha = (Get-FileHash -Algorithm SHA256 $dest).Hash.ToLower()
 Write-Host ""
 Write-Host "######## DONE - tell the CA: $dest (sha256 $($bsha.Substring(0,12))...)"

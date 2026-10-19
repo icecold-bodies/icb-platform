@@ -262,12 +262,33 @@ def wait_calculator_ready(target, timeout: int = 20_000) -> None:
     a Frame (the /mes-app/costings/new embed).
     """
     import time
+    from playwright.sync_api import Error as PlaywrightError
     probe = "() => typeof pageShortcuts !== 'undefined' && pageShortcuts.save !== null"
     deadline = time.monotonic() + timeout / 1000.0
-    while not target.evaluate(probe):
+    while True:
+        try:
+            if target.evaluate(probe):
+                return
+        except PlaywrightError:              # the page is still navigating: its context is not there yet
+            pass
         if time.monotonic() > deadline:
             raise AssertionError(f"the calculator's init did not finish within {timeout} ms")
         target.wait_for_timeout(50)          # Page and Frame both have it; the poll interval, not the wait
+
+
+def wait_embedded_calculator_ready(page: "Page", timeout: int = 30_000):
+    """The /mes-app/costings/new embed: find the calculator's iframe (by its URL, /mes/calculator), then
+    wait_calculator_ready on it. Returns the Frame (frame_locator cannot evaluate)."""
+    import time
+    deadline = time.monotonic() + timeout / 1000.0
+    while True:
+        frame = next((f for f in page.frames if "/mes/calculator" in (f.url or "")), None)
+        if frame is not None:
+            wait_calculator_ready(frame, timeout=max(1, int((deadline - time.monotonic()) * 1000)))
+            return frame
+        if time.monotonic() > deadline:
+            raise AssertionError(f"no /mes/calculator frame on the page within {timeout} ms")
+        page.wait_for_timeout(50)
 
 
 def clear_calculator_ratio(page: "Page", timeout: int = 20_000) -> None:

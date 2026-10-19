@@ -31,7 +31,7 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import admin_session, shot  # noqa: E402  (sys.path set in conftest)
+from _common import wait_embedded_calculator_ready, admin_session, shot  # noqa: E402  (sys.path set in conftest)
 
 T = 15_000
 JOURNEY = "excel_preview_active_flag"
@@ -130,6 +130,7 @@ def test_preview_dialog_excel_download(page: Page, live_server: str, staged, tmp
     expect(btn).to_be_visible(timeout=T)
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
+    wait_embedded_calculator_ready(page)  # RT7: the embedded calculator's init has finished
     shot(page, "01-button-in-header", journey=JOURNEY)
 
     # ── Nothing calculated yet → dialog opens with confirm DISABLED ──────────

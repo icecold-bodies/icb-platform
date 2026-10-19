@@ -10,6 +10,8 @@ Per scenario x section (ratified defaults 3, 7):
                   ERROR_CELL, NO_4G_REFERENCE) — never PASS
     UNMAPPED      the Excel section has no MES section of that name
     ACCEPTED      a FLAG/PRESENCE/UNMAPPED covered by accepted_differences.yaml
+                  (RT7: and, on a pinned list, at exactly the amount every covering entry pinned — else a FLAG
+                  whose reason starts ACCEPTED_AMOUNT_CHANGED)
     EXPIRED       ... covered by an entry past its review_by (fails)
     NO_GOLDEN     the pack has a scenario the golden does not (re-run golden)
 
@@ -76,6 +78,7 @@ class Cell:
     likely_cause: str | None = None
     triage: list[LineTriage] = field(default_factory=list)
     base_status: str | None = None     # the status before any acceptance (FLAG/PRESENCE/UNMAPPED)
+    base_reason: str | None = None     # RT7: the cell's own reason, kept when an amount pin overwrites `reason`
 
     @property
     def failing(self) -> bool:
@@ -293,22 +296,27 @@ def cell_net(cell) -> float:
 
 
 def _pin_failure(cell: Cell, entries: list[Accepted]) -> str | None:
-    """None when every covering entry that pins amounts pins THIS cell at its current difference."""
+    """None when every covering entry that pins amounts pins THIS cell at its current difference (RT7); otherwise
+    the reason, naming each entry whose pin does not hold, its pinned amount and the actual one."""
     key, net = pin_key(cell), cell_net(cell)
+    bad = []
     for a in entries:
-        if a.amounts is None:
+        if a.amounts is None:          # an unpinned (dev) entry: the cause alone decides, as before RT7
             continue
         want = a.pinned(key)
         if want is None:
-            return f"{AMOUNT_CHANGED} entry {a.index} pins no amount for this cell; actual {net:+.2f}"
-        if abs(want - net) > PIN_TOL + 1e-9:
-            return f"{AMOUNT_CHANGED} entry {a.index} pinned {want:+.2f}, actual {net:+.2f}"
-    return None
+            bad.append(f"entry {a.index} pins no amount for this cell")
+        elif abs(want - net) > PIN_TOL + 1e-9:
+            bad.append(f"entry {a.index} pinned {want:+.2f}")
+    return f"{AMOUNT_CHANGED} {'; '.join(bad)}; actual {net:+.2f}" if bad else None
 
 
 def _mark(cell: Cell, primary: Accepted, others: list[Accepted], today: date | None) -> Cell:
     why = _pin_failure(cell, [primary, *others])
     if why:
+        # Failing, and loud: a FLAG whatever the cell's own status was. Its own reason is kept in base_reason, so
+        # a later `reaccept` judges a one-sided (PRESENCE) cell on its real reason, not on this one.
+        cell.base_reason = cell.reason
         cell.status = "FLAG"
         cell.reason = why
         return cell
@@ -403,8 +411,11 @@ def reapply_accepted(report: dict, accepted: list[Accepted], *, today: date | No
         base = _underlying_status(d)
         d["status"] = base
         d["base_status"] = None
-        if str(d.get("reason") or "").startswith(("accepted entry", "accepted cause", AMOUNT_CHANGED)):
+        if str(d.get("reason") or "").startswith(AMOUNT_CHANGED):
+            d["reason"] = d.get("base_reason")          # the cell's own reason, kept when a pin overwrote it
+        elif str(d.get("reason") or "").startswith(("accepted entry", "accepted cause")):
             d["reason"] = None
+        d["base_reason"] = None
         if tri:
             d["likely_cause"] = likely_cause(tri)
         cell = Cell(**d, triage=tri)

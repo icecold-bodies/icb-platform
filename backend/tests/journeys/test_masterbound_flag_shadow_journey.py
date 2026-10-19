@@ -37,7 +37,7 @@ import time
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import admin_session, shot  # noqa: E402  (sys.path set in conftest)
+from _common import wait_calculator_ready, admin_session, shot  # noqa: E402  (sys.path set in conftest)
 
 T = 15_000
 JOURNEY = "masterbound_flag_shadow"
@@ -249,6 +249,7 @@ def _open(page: Page, base: str, tt: int) -> None:
     admin_session(page, base=base)
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    wait_calculator_ready(page)          # RT7: the calculator's init has finished (restore + listeners)
     page.select_option("#trailer-select", str(tt))
 
 
@@ -462,6 +463,7 @@ def test_masterless_defaults_tombstone_and_editor_on_the_wire(page: Page, live_s
             lambda p: p.get("trailer_type_id") == n["tt"] and DECK in _bvo(p)), timeout=30_000) as r2:
         page.goto("/calculator")
         expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+        wait_calculator_ready(page)          # RT7: the calculator's init has finished (restore + listeners)
         page.select_option("#trailer-select", str(n["tt"]))
     req2, res2 = r2.value.request.post_data_json, r2.value.json()
     assert _bvo(req2).get(DECK) == 0, _bvo(req2)

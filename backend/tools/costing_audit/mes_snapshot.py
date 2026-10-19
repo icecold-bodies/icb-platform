@@ -339,3 +339,10 @@ def unload_snapshot(inserted: dict, *, allow_non_test_db: bool = False, log=prin
 
 def snapshot_path(pack_name: str) -> Path:
     return MES_SNAPSHOT_DIR / f"{pack_name}.json"
+
+
+def snapshot_digest(path: Path) -> str:
+    """sha256 of a snapshot's CONTENT, line endings normalised to LF (RT7's matched pair): a Windows checkout with
+    core.autocrlf holds the committed file as CRLF, git and CI hold it as LF — one content, one digest."""
+    import hashlib
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()

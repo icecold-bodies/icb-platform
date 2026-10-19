@@ -19,7 +19,7 @@ import os
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import _DEFAULT_BASE, admin_session, shot  # noqa: E402
+from _common import wait_calculator_ready, _DEFAULT_BASE, admin_session, shot  # noqa: E402
 
 T = 20_000
 JOURNEY = "costing_parameters"
@@ -104,6 +104,7 @@ def test_the_costing_page_reads_back_the_parameters_that_were_typed(page: Page, 
 
     page.goto("/mes/calculator?stay=1")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    wait_calculator_ready(page)          # RT7: the calculator's init has finished (restore + listeners)
     page.select_option("#trailer-select", str(staged["tt"]))
     expect(page.locator("#bom-area tr.calc-grp-row[data-bom-id]")).to_have_count(1, timeout=T)
     for field, value in TYPED.items():

@@ -4,32 +4,27 @@ name: Costing audit
 # committed GOLDEN (Burt's workbook, recalculated locally by `audit golden`)
 # through the real /api/calculate code path. Never needs Excel or LibreOffice.
 #
-#   pull_request   touching the calculation engine / BOM models / the tool:
-#                  the SMOKE pack (3 bodies x 3 lengths x 2 variants) must
-#                  produce no unaccepted FLAG.
-#   schedule       nightly: every committed pack.
-#   workflow_dispatch: every committed pack, on demand.
+#   RT7 (v1.61.1, RT7_RULING_1 Q4) — ALL FIVE PACKS, EVERY TIME:
+#   pull_request       every PR, no path filter. The five packs run as parallel jobs: ~1.5 min of wall time,
+#                      +~10 s over smoke alone. Before RT7 a PR ran smoke only, and only when it touched a path
+#                      list: a docs/ops PR ran nothing, and smoke (all 32D bodies) missed a 5 % 4G foam error
+#                      that freezers, icecream and explosive caught.
+#   push               backport/v1.39-base: the squash commit Michael merges gets its own full run.
+#   workflow_dispatch  on demand.
+#   (No `schedule`: GitHub fires schedules only from the DEFAULT branch, main, so the old "nightly" never ran
+#   for backport/v1.39-base.) tests/costing_audit/test_rt7_ci_triggers.py keeps these three.
 #
 # The MES master data comes from tests/costing_audit/mes_snapshot/all.json,
 # loaded into the isolated CI database (icb_test) — CI has no ICB database, so
 # this is an ENGINE-drift gate over PROD's pricing (v1.57.3): the snapshot is
-# exported from prod and paired with prod's accepted list (`--env prod`). Dev
-# is Michael's workbench and keeps its own list for local runs.
+# exported from prod and paired with prod's accepted list (`--env prod`), whose
+# entries pin their amounts (RT7). Dev is Michael's workbench and keeps its own
+# list for local runs.
 
 on:
   pull_request:
-    paths:
-      - "backend/app/formula_engine.py"
-      - "backend/app/routers/calculator.py"
-      - "backend/app/services/__init__.py"
-      - "backend/app/services/insulation_foam.py"
-      - "backend/app/database.py"
-      - "backend/alembic/versions/**"
-      - "backend/tools/costing_audit/**"
-      - "backend/tests/costing_audit/**"
-      - ".github/workflows/costing-audit.yml"
-  schedule:
-    - cron: "30 2 * * *"
+  push:
+    branches: [backport/v1.39-base]
   workflow_dispatch:
 
 defaults:
@@ -43,8 +38,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # PRs run the smoke pack only; nightly/manual runs every pack that has golden.
-        pack: ${{ fromJSON(github.event_name == 'pull_request' && '["smoke"]' || '["smoke","chillers","freezers","icecream","explosive"]') }}
+        # RT7: every pack on every trigger (parallel jobs).
+        pack: [smoke, chillers, freezers, icecream, explosive]
     env:
       DATABASE_URL: postgresql+psycopg://icb_app:icb_app_dev@localhost:5432/icb_test
       SESSION_SECRET: ci-test-secret-not-for-production

@@ -26,6 +26,12 @@ rulings `RT7_RULING_1` (17 Oct) and `RT7_RULING_1A` (19 Oct: prod's 4G factor mo
   (`docs/audit/rt7_2026-10/golden/`).
 - **CI:** all five packs on every PR (no path filter), on every push to `backport/v1.39-base`, and on demand; no
   `schedule` (it never fired off the default branch).
+- **CI's snapshot loader (RULING_1B §1):** the snapshot's rows now win over anything a migration or a seed put in the
+  CI database. Until RT7 the loader was ON CONFLICT DO NOTHING, so every CI run since v1.57.3 priced 4G with migration
+  0046's seeded factor. A new step, `audit load-snapshot`, checks every row column for column before the packs
+  (`docs/audit/rt7_2026-10/ci_loader/`). CI only: prod never loads a snapshot.
+- **bom 3216 is a named post-correction edit (RULING_1B §2):** CHILLER MEDIUM / DRD DOOR FITTINGS / 2317 DOOR RUBBER,
+  `… * 0`, B-07. The v1.58 test knows it by its exact expression, so any other drift still fails.
 - **The reboot guard:** every RT7 kit's first line prints prod's boot time; a kit copied before the last boot, or never
   stamped by the copy line, refuses to run.
 - **Tests only:** the flaky repair journey and the 14 other sites sharing its assumption wait for the calculator's init
@@ -35,6 +41,10 @@ rulings `RT7_RULING_1` (17 Oct) and `RT7_RULING_1A` (19 Oct: prod's 4G factor mo
 
 Prod's data as the build paste read it (19 Oct 15:15 SAST: prod `5e37b0a`, alembic 0053, the 4G factor exactly
 `1.3170731707317074`). If prod's pricing moves before the window, these move with it: re-derive them first.
+
+**Known since the paste (record in the OUTCOME; no re-derivation needed):** on 19 Oct, after the export, Michael put
+MEAT HANGER LARGE's FRONT PU divisor back from **2.99 to 2.98** on prod (RULING_1B §4; 2.99 matched one quote, and
+RT8's frozen edit removes that need). No pack covers MEAT, so none of the numbers below move, and there is no re-export.
 
 **Window step 1 — All BEFORE** (the deployed v1.61.0: the old golden, the old list): the paste's own counts.
 
@@ -131,8 +141,18 @@ prod — it is Michael's workbench — so the counts are dev's; the point is tha
 
 ## Simulation (WSL; the real kits)
 
-__FROM_THE_BUILD__ — `ops/prod-rt7/sim/run_export_sim.sh` (20/20), `ops/prod-rt7/sim/run_discovery_sim.sh` (16/16),
-the release sim.
+Each sim runs the committed kit from the branch in a WSL namespace, with stubs for prod's commands, and removes its own
+clones.
+
+| sim | result | its refusals |
+|---|---|---|
+| `ops/prod-release-v1.61.1/sim/run_all.sh` (the release kit, `795f441`; the kits are unchanged since) | **14 / 14** | the factor not exact; no tag on origin; prod moved; a traceback after the restart; a backup with no data; pg_dump failing; Cloudflare still serving v1.61.0; autologin set; no environment key; the wrong machine; a kit staged before the last boot; an unstamped kit. Plus a failed deploy that a second run RESUMEs (SPA rebuilt by the resume; verify 0) |
+| `ops/prod-rt7/sim/run_window_sim.sh` (the window stager + the copy and fetch lines) | **16 / 16** | an unstamped kit; a kit staged before the boot |
+| `ops/prod-rt7/sim/run_export_sim.sh` (the 19 Oct build-export kit) | **20 / 20** | the factor not exact; a personal-looking column; the env file missing |
+| `ops/prod-rt7/sim/run_discovery_sim.sh` (the 16 Oct discovery kit) | **16 / 16** | the place; the env (the first prod paste's STOP reproduced on the old kit) |
+
+The happy path reads: preflight PASSED → verify-before fails on exactly 7 → DEPLOYED → verify 0 → a second deploy says
+ALREADY DEPLOYED and verifies; the kit's pg_dump runs at alembic 0053; no npm build on a fresh deploy.
 
 ## OUTCOME
 

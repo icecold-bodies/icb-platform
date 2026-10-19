@@ -148,8 +148,8 @@ clones.
 |---|---|---|
 | `ops/prod-release-v1.61.1/sim/run_all.sh` (the release kit, `795f441`; the kits are unchanged since) | **14 / 14** | the factor not exact; no tag on origin; prod moved; a traceback after the restart; a backup with no data; pg_dump failing; Cloudflare still serving v1.61.0; autologin set; no environment key; the wrong machine; a kit staged before the last boot; an unstamped kit. Plus a failed deploy that a second run RESUMEs (SPA rebuilt by the resume; verify 0) |
 | `ops/prod-rt7/sim/run_window_sim.sh` (the window stager + the copy and fetch lines) | **16 / 16** | an unstamped kit; a kit staged before the boot |
-| `ops/prod-rt7/sim/run_export_sim.sh` (the 19 Oct build-export kit) | **20 / 20** | the factor not exact; a personal-looking column; the env file missing |
-| `ops/prod-rt7/sim/run_discovery_sim.sh` (the 16 Oct discovery kit) | **16 / 16** | the place; the env (the first prod paste's STOP reproduced on the old kit) |
+| `ops/prod-rt7/sim/run_export_sim.sh` (the 19 Oct build-export kit) | **20 / 20** | the factor not exact; the wrong machine, database or HEAD; a kit staged before the boot; an unstamped kit; not root; the wrong alembic; a tampered stage; an env file without SESSION_SECRET; an email in the export (the no-people gate; the refused export removed) |
+| `ops/prod-rt7/sim/run_discovery_sim.sh` (the 16 Oct discovery kit) | **16 / 16** | the wrong machine, database or HEAD; a kit staged before the boot; an unstamped kit; not root; the wrong alembic; a tampered stage; an env file without SESSION_SECRET (the first prod paste's STOP); an email in the export |
 
 The happy path reads: preflight PASSED → verify-before fails on exactly 7 → DEPLOYED → verify 0 → a second deploy says
 ALREADY DEPLOYED and verifies; the kit's pg_dump runs at alembic 0053; no npm build on a fresh deploy.

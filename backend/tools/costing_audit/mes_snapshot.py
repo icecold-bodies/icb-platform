@@ -411,7 +411,9 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool
                 replaced[child] = replaced.get(child, 0) + len(extra)
                 log(f"[snapshot] {child}: {len(extra)} row(s) under a snapshot {parent} that the snapshot does not "
                     "carry, deleted")
-        # sequences: bump past the preserved ids
+        # sequences: bump past the preserved ids — FORWARD ONLY. setval is not transactional: the load deletes rows (a
+        # seeded row replaced), so MAX(id) can fall below a row a rolled-back load puts back; a sequence set to it would
+        # stay behind and the next insert would collide (RT7: test_rt3_bootstrap's report template, id 5).
         for name in doc["tables"]:
             t = tables[name]
             pk = list(t.primary_key.columns)
@@ -419,7 +421,8 @@ def load_snapshot(path: Path, *, allow_non_test_db: bool = False, rollback: bool
                 seq = conn.execute(text(f"SELECT pg_get_serial_sequence('{t.fullname}', '{pk[0].name}')")).scalar()
                 if seq:
                     conn.execute(text(
-                        f"SELECT setval('{seq}', COALESCE((SELECT MAX({pk[0].name}) FROM {t.fullname}), 1))"))
+                        f"SELECT setval('{seq}', GREATEST(COALESCE((SELECT MAX({pk[0].name}) FROM {t.fullname}), 1), "
+                        f"(SELECT last_value FROM {seq})))"))
         if rollback:
             txn.rollback()
         else:

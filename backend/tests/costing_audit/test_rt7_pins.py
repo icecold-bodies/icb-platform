@@ -356,3 +356,26 @@ def test_a_row_under_a_snapshot_parent_that_the_snapshot_lacks_is_flagged_then_r
     load_snapshot(snap, conn=txn, log=lambda *_: None)
     assert _rows(txn, "skin_formula_items", [extra]) == []
     assert check_fidelity(snap, conn=txn, log=lambda *_: None) == []
+
+
+def test_a_rolled_back_load_never_leaves_a_sequence_behind(txn, tmp_path):
+    """setval is not transactional. The load deletes a replaced row; if it set the sequence to the remaining MAX(id), a
+    rolled-back load would leave the sequence below the row it puts back, and the next insert collides (the full suite
+    found it: test_rt3_bootstrap's report template, id 5). The loader only moves a sequence forward."""
+    from sqlalchemy import text
+    from tools.costing_audit.mes_snapshot import load_snapshot
+    x = txn.execute(text("INSERT INTO report_templates (name, slug, kind, is_active) "
+                         "VALUES ('placeholder', 'rt7-seq-placeholder', 'html', true) RETURNING id")).scalar()
+    d = txn.execute(text("INSERT INTO report_templates (name, slug, kind, is_active) "
+                         "VALUES ('seeded', 'rt7-seq-test', 'html', true) RETURNING id")).scalar()
+    txn.execute(text("DELETE FROM report_templates WHERE id = :x"), {"x": x})      # a free id below the seeded row's
+    snap = tmp_path / "one.json"
+    snap.write_text(json.dumps({"tables": {"report_templates": [{
+        "id": x, "name": "from the snapshot", "slug": "rt7-seq-test", "description": None, "is_active": True,
+        "kind": "html", "pdf_template_id": None, "created_at": "2026-10-19T12:00:00",
+        "updated_at": "2026-10-19T12:00:00"}]}}), encoding="utf-8")
+    sp = txn.begin_nested()
+    load_snapshot(snap, conn=txn, log=lambda *_: None)               # replaces the seeded row d with the snapshot's x
+    sp.rollback()                                                    # d is back
+    seq = txn.execute(text("SELECT pg_get_serial_sequence('report_templates', 'id')")).scalar()
+    assert txn.execute(text(f"SELECT last_value FROM {seq}")).scalar() >= d

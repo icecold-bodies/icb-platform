@@ -1,0 +1,3 @@
+the committed list: FLAG 0 ACCEPTED 148 (five packs incl. smoke)
+one pin moved +R1.00: FLAG 1 ACCEPTED 147 (five packs incl. smoke)
+    freezers: UP_TO_4.8_MT_FREEZER_2~L3~W2.5~H2.4~all_pu | DRD DOOR FITTINGS: ACCEPTED_AMOUNT_CHANGED entry 6 pinned -292.46; actual -293.46

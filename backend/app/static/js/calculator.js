@@ -6186,6 +6186,11 @@ function renderRuleUnclassified(items) {
  *  snapshot-less re-open (edit replay) excludes the forbidden line and brings in the allowed one. Nothing is written
  *  until the user saves — and the save is checked again on the server. */
 async function removeRuleBreach(b) {
+  // RT8 — a frozen quote's options are as saved: the breach is removed after re-pricing, and saved as a new revision
+  if (frozen || _frozenReadOnly) {
+    toast('This quote shows its saved prices. Click Update to today’s prices, then Remove, and save as a new revision.', 'warn', 9000);
+    return;
+  }
   const panel = b.panel, ins = b.insulation;
   const masters = (bomData || []).filter(r => r.is_body_option && r.rule_class && r.rule_class.kind === 'master'
                                               && r.rule_class.panel === panel);

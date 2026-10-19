@@ -279,13 +279,36 @@ def test_replace_and_overwrite_are_refused_before_they_touch_anything(client, us
     assert {i: row_fingerprint(i) for i in (existing, stale)} == fp      # byte-identical: nothing deleted, nothing changed
 
 
-def test_the_allowed_quote_saves_and_the_removed_choice_lets_the_overwrite_through(client, users, staged):
+def test_the_allowed_quote_saves_and_the_removed_choice_saves_as_a_new_revision(client, users, staged):
+    """RT8 (v1.62.0): a saved quote is edited at its SAVED prices, so a choice is removed by re-pricing ("Update
+    to today's prices"), which saves as a NEW REVISION — the original stays exactly as sent. An Overwrite from a
+    client that is not at the saved prices is refused before anything is touched."""
     stale = saved_costing(staged, "freeze", {"SIDES": "EPS"})
+    fp = row_fingerprint(stale)
     r = client.post("/api/approve", headers=users["sales"],
                     json=payload(staged, "freeze", {}, edit_record_id=stale, version_action="overwrite"))
+    assert r.status_code == 409 and r.json()["detail"]["code"] == "overwrite_needs_saved_prices", r.text
+    # a record saved before input_state carries no replayable lines: it cannot be edited at saved prices at all
+    r = client.post("/api/approve", headers=users["sales"],
+                    json=payload(staged, "freeze", {}, edit_record_id=stale, version_action="overwrite",
+                                 frozen_record_id=stale, screen={"grand_total": 1.0}))
+    assert r.status_code == 409 and r.json()["detail"]["code"] == "frozen_not_capable", r.text
+    assert row_fingerprint(stale) == fp
+    # re-priced with the choice removed: the new revision carries the allowed choice; the original is untouched
+    today = payload(staged, "freeze", {}, repriced_from_record_id=stale)
+    calc = client.post("/api/calculate", json=today, headers=users["sales"])
+    assert calc.status_code == 200, calc.text
+    r = client.post("/api/approve", headers=users["sales"],
+                    json=payload(staged, "freeze", {}, edit_record_id=stale, version_action="new_version", next_version=2,
+                                 repriced_from_record_id=stale,
+                                 screen={"grand_total": calc.json()["grand_total"], "net_total": calc.json()["net_total"]}))
     assert r.status_code == 200, r.text
-    st = json.loads(json.loads(row_fingerprint(stale))["result_json"])["input_state"]["body_option_selections"]
+    new_id = r.json()["record_id"]
+    assert new_id != stale and r.json()["version"] == 2
+    st = json.loads(json.loads(row_fingerprint(new_id))["result_json"])["input_state"]["body_option_selections"]
     assert st[str(staged["masters"]["freeze"][("SIDES", "PU")])] is True
+    assert json.loads(json.loads(row_fingerprint(new_id))["result_json"])["repriced"]["from_record_id"] == stale
+    assert row_fingerprint(stale) == fp
     assert client.post("/api/approve", json=payload(staged, "plain", {p: "PU" for p in ir.PANELS}),
                        headers=users["sales"]).status_code == 200
 

@@ -946,9 +946,11 @@ def _compute_body_result(db: Session, body: dict, *, fresh: bool = False, stages
 
 # ─── RT8 — frozen mode: a re-opened quote is the saved quote ──────────────────
 
-def _frozen_record(db: Session, record_id) -> tuple[CalculationRecord, dict]:
+def _frozen_record(db: Session, record_id, *, require_capable: bool = True) -> tuple[CalculationRecord, dict]:
     """The pending costing a frozen calculation / save / re-price works from, with its stored result. 404 when it
-    does not exist; 409 when it is deleted, not pending, or cannot be replayed from its saved copy."""
+    does not exist; 409 when it is deleted, not pending, or — for a FROZEN calculation or save — cannot be replayed
+    from its saved copy. A re-price (`require_capable=False`) is open to every pending record: for one that cannot
+    be frozen it is the only way to edit (ratified default 10)."""
     try:
         rid = int(record_id)
     except (TypeError, ValueError):
@@ -964,7 +966,7 @@ def _frozen_record(db: Session, record_id) -> tuple[CalculationRecord, dict]:
                             detail=f"Only pending costings can be edited — this one is '{rec_status}'.")
     data = frozen_quote.stored(rec)
     ok, why = frozen_quote.capability(rec, data)
-    if not ok:
+    if not ok and require_capable:
         raise HTTPException(status_code=409, detail={
             "code": "frozen_not_capable",
             "message": f"This quote cannot be edited at its saved prices ({why}). "
@@ -993,6 +995,9 @@ def _calculate_frozen(db: Session, body: dict, frozen_id) -> dict:
         raise HTTPException(status_code=409, detail={"code": e.code, "message": e.message})
     frozen_quote.strip_working_keys(result)
     result["trailer_name"] = data.get("trailer_name") or (rec.trailer_type.name if getattr(rec, "trailer_type", None) else None)
+    # RT6 unchanged — the SAVED quote's breaches of the family's CURRENT rule show on the frozen screen (the page
+    # lists them in red); the save refuses them and points to re-pricing, where Remove works
+    result["rule_breaches"] = rule_guard.saved_breaches(db, rec)
     return result
 
 
@@ -1043,7 +1048,7 @@ async def api_reprice_preview(record_id: int, request: Request, db: Session = De
     if not user:
         raise HTTPException(status_code=401)
     body = await request.json()
-    rec, data = _frozen_record(db, record_id)
+    rec, data = _frozen_record(db, record_id, require_capable=False)
     if rec.trailer_type_id is None:
         frozen = frozen_quote.frozen_repair_lines(data)
         gone = frozen_quote.gone_material_lines(db, frozen)
@@ -1279,13 +1284,18 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     if free_hand.is_repair_mode(body):
         frozen_lines = None
         rec0 = data0 = None
+        if frozen_id or repriced_from:
+            rec0, data0 = _frozen_record(db, frozen_id or repriced_from, require_capable=bool(frozen_id))
+            # the v1.47 symmetry guard, before anything is computed: a repair save lands on a REPAIR
+            if not (rec0.trailer_type_id is None and bool(getattr(rec0, "is_repair", False))):
+                raise HTTPException(
+                    status_code=409,
+                    detail="That costing is not a repair — reopen it from the costings list and save it there.")
         if frozen_id:
             # RT8 — a saved repair's stock lines keep the price they were quoted at
-            rec0, data0 = _frozen_record(db, frozen_id)
             frozen_lines = frozen_quote.frozen_repair_lines(data0)
         elif repriced_from:
             # RT8 — re-priced at today's catalogue; only a line whose material is gone keeps its saved price
-            rec0, data0 = _frozen_record(db, repriced_from)
             frozen_lines = frozen_quote.gone_material_lines(db, frozen_quote.frozen_repair_lines(data0))
         result, repair_meta, repair_lines = _calculate_repair(body, db, require_type=True, frozen_lines=frozen_lines)
         if frozen_id or repriced_from:
@@ -1475,6 +1485,10 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     if frozen_id:
         # ── RT8 — a save at SAVED prices: the stored lines, replayed (services/frozen_quote) ───────────────────
         rec0, data0 = _frozen_record(db, frozen_id)
+        if rec0.trailer_type_id is None and bool(getattr(rec0, "is_repair", False)):
+            # the v1.47 mirror guard, before anything is computed: a body save never lands on a REPAIR
+            raise HTTPException(status_code=409,
+                                detail="That costing is a repair — reopen it from the costings list and save it there.")
         if rec0.trailer_type_id is None or int(rec0.trailer_type_id) != int(trailer_id):
             raise HTTPException(status_code=409, detail="That costing is for a different body type — reopen it from the costings list.")
         # RT6 unchanged: a frozen save of a quote that breaks the family's insulation rule is still refused. The
@@ -1540,7 +1554,10 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         result = _apply_discount(result, body)
         if repriced_from:
             # RT8 — the re-priced revision: equals the screen to the cent, and records what changed
-            rec0, data0 = _frozen_record(db, repriced_from)
+            rec0, data0 = _frozen_record(db, repriced_from, require_capable=False)
+            if rec0.trailer_type_id is None and bool(getattr(rec0, "is_repair", False)):
+                raise HTTPException(status_code=409,
+                                    detail="That costing is a repair — reopen it from the costings list and save it there.")
             if rec0.trailer_type_id is None or int(rec0.trailer_type_id) != int(trailer_id):
                 raise HTTPException(status_code=409, detail="That costing is for a different body type.")
             _check_screen(result, screen)

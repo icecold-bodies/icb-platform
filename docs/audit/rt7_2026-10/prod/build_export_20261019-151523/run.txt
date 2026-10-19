@@ -1,0 +1,117 @@
+(the line above, as run: machine icb-mes-prod, db icb_platform @ 127.0.0.1:5432, head 5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d, boot 2026-10-11 08:02:53 SAST)
+== prod: alembic=0053 · read-only sessions · staged=022eb40 · 2026-10-19T15:15:24+02:00
+== 0. the 4G foam factor (exact text) and the 15 bodies
+   session read-only: on
+   costings.pu_foam_4g_factor = '1.3170731707317074'  updated_at 2026-10-01 12:44:36.482581  (expected '1.3170731707317074' = 5400/4100)
+    12 MEAT HANGER LARGE          active=True
+    15 RHINORANGE TRAILER         active=True
+    16 ICECREAM BODY SMALL        active=True
+    17 ICECREAM BODY MEDIUM       active=True
+    18 ICECREAM BODY LARGE        active=True
+    19 FREEZER 2.3 METER          active=True
+    20 FREEZER MEDIUM             active=True
+    21 FREEZER LARGE              active=True
+    24 EXPLOSIVE 4.9 AND UP       active=True
+    25 CHILLER 2.3 METER          active=True
+    26 CHILLER MEDIUM             active=True
+    27 CHILLER LARGE              active=True
+    34 EXPLOSIVE UP TO 2.7        active=True
+    36 MEAT HANGER SMALL-MEDIUM   active=True
+    37 EXPLOSIVE 2.7 TO 4.8       active=True
+== 1. All: the five packs, --env prod (the deployed code, read-only sessions)
+   smoke exit=1  - Cells: FLAG 15, ACCEPTED 18, PASS 156, SKIP 45
+   chillers exit=0  - Cells: PASS 590, SKIP 126
+   freezers exit=1  - Cells: FLAG 71, ACCEPTED 24, PASS 478, SKIP 117
+   icecream exit=1  - Cells: FLAG 37, UNVERIFIABLE 40, ACCEPTED 32, PASS 387, SKIP 116
+   explosive exit=1  - Cells: FLAG 6, UNVERIFIABLE 36, ACCEPTED 3, PASS 522, SKIP 117
+== 2. snapshot export of the 15 bodies (allow-listed pricing tables; refuses any other table or a personal-looking column)
+   [snapshot] all.json: admin_settings 1, bill_of_materials 4090, body_option_groups 9, body_option_subgroups 18, bom_sections 41, floor_plates 8, global_variables 1, material_categories 21, mounting_cleats 7, report_templates 4, sap_item_codes 29, skin_formulas 4, taping_blocks 2, trailer_groups 6, trailer_types 15, floor_plate_items 25, materials 482, mounting_cleat_items 30, skin_formula_ingredients 9, taping_block_items 10, skin_formula_items 16
+== 3. the no-people gate on the written file + its inventory (tables, rows, column NAMES)
+   gate ok: test_the_gates_catch_a_known_hit
+   gate ok: test_snapshot_tables_are_pricing_definitions_only
+   gate ok: test_snapshot_has_no_personal_columns
+   gate ok: test_snapshot_has_no_email_addresses
+   phone-shaped values: 0
+   generated_at 2026-10-19T13:15:43+00:00  trailers [12, 15, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 34, 36, 37]
+   table                       rows  columns
+   admin_settings                 1  id, key, updated_at, value
+   bill_of_materials           4090  body_option_default, body_option_group, body_option_group_id, body_option_linked, body_option_linked_id, body_option_subgroup, body_option_subgroup_id, bom_conditions, bom_section, bom_section_id, calc2_default_excluded, excel_formula, floor_plate_id, formula_expression, highlight_color, id, is_body_option, is_formula_skin, material_id, mounting_cleat_id, notes, price_updated_at, selection_group, selection_mode, skin_formula_id, skin_formula_region, sort_order, source_cell, taping_block_id, trailer_type_id, unit_price_override, unit_price_snapshot, variable_value, waste_percentage
+   body_option_groups             9  bom_section_id, id, name, parent_option_master_id, sort_order
+   body_option_subgroups         18  group_id, id, name, sort_order
+   bom_sections                  41  archived_at, body_option_master_id, id, is_optional, multiplier, name, sort_order
+   floor_plates                   8  description, id, is_active, name, price_formula, sort_order
+   global_variables               1  description, id, name, value
+   material_categories           21  description, id, name
+   mounting_cleats                7  description, group, id, is_active, name, sort_order
+   report_templates               4  created_at, description, id, is_active, kind, name, pdf_template_id, slug, updated_at
+   sap_item_codes                29  description, id, is_active, item_code, last_purch_price
+   skin_formulas                  4  description, id, is_active, name, sort_order
+   taping_blocks                  2  description, id, is_active, name, size_mm, sort_order
+   trailer_groups                 6  colour, created_at, description, id, insulation_rule, name, report_template_id, rule_note, sort_order
+   trailer_types                 15  configurator_v2, created_at, default_height, default_insulation_foam, default_length, default_width, description, group_id, id, is_active, markup_percentage, name, override_report_template_id, protect_overrides
+   floor_plate_items             25  id, item_name, length, m2, plate_id, price_per_unit, price_source, quantity, sap_code, sap_item_code_id, side, sort_order, width
+   materials                    482  category_id, id, is_active, last_bulk_update_at, last_bulk_update_note, last_updated, manufacture_sub_category, material_code, name, price_per_unit, sap_code, size, supplier, unit_of_measure
+   mounting_cleat_items          30  cleat_id, id, item_name, length, m2, price_per_unit, price_source, quantity, sap_code, sap_item_code_id, sort_order, width
+   skin_formula_ingredients       9  id, is_active, name, price_kzn, price_standard, sap_code, sap_item_code_id, sort_order
+   taping_block_items            10  block_id, id, item_name, length, m2, price_per_unit, price_source, quantity, sap_code, sap_item_code_id, sort_order, width
+   skin_formula_items            16  formula_id, id, ingredient_id, price_source, qty_formula, qty_per_m2, sort_order
+   materials.last_bulk_update_note (system labels): ['None', 'September 2026 price update', 'September 2026 — floor plywood raw sheet price, /2.98 in formula', 'legacy_uat_sync 2026-07-04']
+   materials.supplier: 2 distinct (company names, not printed)
+   bill_of_materials.notes: 2032 non-empty of 4090
+   total rows 4828  bytes 3974164
+== 4. cells by body, section and cause
+
+chillers: 716 cells  {'PASS': 590, 'SKIP': 126}
+
+freezers: 690 cells  {'ACCEPTED': 24, 'FLAG': 71, 'PASS': 478, 'SKIP': 117}
+  ACCEPTED   24  FREEZER MEDIUM           SUB FRAME + LIGHT BOX ASSY PRICE_DIFF SMALL MOUNTING BRACKET                 -125.68 ..    -125.68  all_pu,as_sheet,drd,foam_4g,roof_floor_eps,srd
+  FLAG        2  FREEZER 2.3 METER        DRD                        BOTH PU                                            -64.60 ..     -64.60  foam_4g
+  FLAG        2  FREEZER 2.3 METER        FRONT                      BOTH PU                                            -64.60 ..     -64.60  foam_4g
+  FLAG        2  FREEZER 2.3 METER        SIDES                      BOTH PU                                           -124.98 ..     -97.98  foam_4g
+  FLAG        3  FREEZER LARGE            FRONT                      BOTH PU                                            -64.65 ..     -64.65  foam_4g
+  FLAG        3  FREEZER LARGE            ROOF                       BOTH PU                                           -364.11 ..    -218.47  foam_4g
+  FLAG        3  FREEZER LARGE            SIDES                      BOTH PU                                           -437.18 ..    -262.31  foam_4g
+  FLAG       20  FREEZER MEDIUM           DRD DOOR FITTINGS          QTY_DIFF CSLB HINGES                              -293.46 ..    -293.46  all_pu,as_sheet,drd,foam_4g,roof_floor_eps
+  FLAG       16  FREEZER MEDIUM           FLOOR                      PRICE_DIFF 12MM PF PLYWOOD                        +347.13 ..    +643.05  all_pu,as_sheet,drd,srd
+  FLAG        4  FREEZER MEDIUM           FLOOR                      PRICE_DIFF EPS                                    +731.65 ..   +1355.36  roof_floor_eps
+  FLAG        4  FREEZER MEDIUM           FRONT                      BOTH PU                                            -64.64 ..     -64.64  foam_4g
+  FLAG        4  FREEZER MEDIUM           ROOF                       BOTH PU                                           -189.53 ..    -102.31  foam_4g
+  FLAG        4  FREEZER MEDIUM           ROOF                       PRICE_DIFF EPS                                    +384.47 ..    +712.21  roof_floor_eps
+  FLAG        4  FREEZER MEDIUM           SIDES                      BOTH PU                                           -299.38 ..    -161.61  foam_4g
+
+icecream: 612 cells  {'ACCEPTED': 32, 'FLAG': 37, 'PASS': 387, 'SKIP': 116, 'UNVERIFIABLE': 40}
+  ACCEPTED    3  ICECREAM BODY MEDIUM     DRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 1 MES line(s)    -259.77 ..    -259.77  drd
+  ACCEPTED   12  ICECREAM BODY MEDIUM     FLOOR                      MISSING_IN_MES 12MM PF PLYWOOD                   -2543.40 ..   -1914.11  all_pu,as_sheet,drd,srd
+  ACCEPTED    9  ICECREAM BODY MEDIUM     SRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -259.77 ..    -259.77  all_pu,as_sheet,srd
+  ACCEPTED    6  ICECREAM BODY SMALL      DRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -259.75 ..    -259.75  all_pu,as_sheet,drd
+  ACCEPTED    2  ICECREAM BODY SMALL      SRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -259.75 ..    -259.75  srd
+  FLAG        3  ICECREAM BODY LARGE      DRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 1 MES line(s)    -129.23 ..    -129.23  foam_4g
+  FLAG        3  ICECREAM BODY LARGE      FRONT                      BOTH PU                                           -129.23 ..    -129.23  foam_4g
+  FLAG        3  ICECREAM BODY LARGE      ROOF                       BOTH PU                                           -444.13 ..    -273.10  foam_4g
+  FLAG        3  ICECREAM BODY LARGE      SIDES                      BOTH PU                                           -852.74 ..    -524.35  foam_4g
+  FLAG        3  ICECREAM BODY MEDIUM     FLOOR                      MISSING_IN_MES 12MM PF PLYWOOD                   -2853.66 ..   -2147.59  foam_4g
+  FLAG        3  ICECREAM BODY MEDIUM     FRONT                      BOTH PU                                           -129.22 ..    -129.22  foam_4g
+  FLAG        3  ICECREAM BODY MEDIUM     ROOF                       BOTH PU                                           -310.36 ..    -233.57  foam_4g
+  FLAG        3  ICECREAM BODY MEDIUM     SIDES                      BOTH PU                                           -513.73 ..    -386.62  foam_4g
+  FLAG        3  ICECREAM BODY MEDIUM     SRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -388.95 ..    -388.95  foam_4g
+  FLAG        2  ICECREAM BODY SMALL      DRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -367.40 ..    -367.40  foam_4g
+  FLAG        2  ICECREAM BODY SMALL      FLOOR                      BOTH PU                                           -143.38 ..    -108.09  foam_4g
+  FLAG        2  ICECREAM BODY SMALL      FRONT                      BOTH PU                                           -107.67 ..    -107.67  foam_4g
+  FLAG        2  ICECREAM BODY SMALL      ROOF                       BOTH PU                                           -143.42 ..    -108.12  foam_4g
+  FLAG        2  ICECREAM BODY SMALL      SIDES                      BOTH PU                                           -286.84 ..    -216.23  foam_4g
+
+explosive: 684 cells  {'ACCEPTED': 3, 'FLAG': 6, 'PASS': 522, 'SKIP': 117, 'UNVERIFIABLE': 36}
+  ACCEPTED    3  EXPLOSIVE UP TO 2.7      SRD                        BOTH 0.9 MM ALU PLATE                             -336.68 ..    -336.68  srd
+  FLAG        3  EXPLOSIVE 4.9 AND UP     SRD                        BOTH PU                                            -91.12 ..     -91.12  srd
+  FLAG        3  EXPLOSIVE UP TO 2.7      FRONT                      BOTH PU                                            -44.14 ..     -44.14  foam_4g
+
+smoke: 234 cells  {'ACCEPTED': 18, 'FLAG': 15, 'PASS': 156, 'SKIP': 45}
+  ACCEPTED    6  FREEZER MEDIUM           SUB FRAME + LIGHT BOX ASSY PRICE_DIFF SMALL MOUNTING BRACKET                 -125.68 ..    -125.68  as_sheet,roof_floor_eps
+  ACCEPTED    6  ICECREAM BODY MEDIUM     FLOOR                      MISSING_IN_MES 12MM PF PLYWOOD                   -2543.40 ..   -1914.11  as_sheet,srd
+  ACCEPTED    6  ICECREAM BODY MEDIUM     SRD                        GROUP_DIFF 130*62MM TAPPING BLOCKS ~ 2 MES line(s)    -259.77 ..    -259.77  as_sheet,srd
+  FLAG        6  FREEZER MEDIUM           DRD DOOR FITTINGS          QTY_DIFF CSLB HINGES                              -293.46 ..    -293.46  as_sheet,roof_floor_eps
+  FLAG        3  FREEZER MEDIUM           FLOOR                      PRICE_DIFF 12MM PF PLYWOOD                        +483.71 ..    +688.57  as_sheet
+  FLAG        3  FREEZER MEDIUM           FLOOR                      PRICE_DIFF EPS                                   +1019.51 ..   +1451.31  roof_floor_eps
+  FLAG        3  FREEZER MEDIUM           ROOF                       PRICE_DIFF EPS                                    +535.74 ..    +762.63  roof_floor_eps
+
+All (chillers + freezers + icecream + explosive): 2702 cells  {'ACCEPTED': 59, 'FLAG': 114, 'PASS': 1977, 'SKIP': 476, 'UNVERIFIABLE': 76}

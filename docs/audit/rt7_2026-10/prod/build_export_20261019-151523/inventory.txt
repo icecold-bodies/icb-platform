@@ -1,0 +1,32 @@
+   gate ok: test_the_gates_catch_a_known_hit
+   gate ok: test_snapshot_tables_are_pricing_definitions_only
+   gate ok: test_snapshot_has_no_personal_columns
+   gate ok: test_snapshot_has_no_email_addresses
+   phone-shaped values: 0
+   generated_at 2026-10-19T13:15:43+00:00  trailers [12, 15, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 34, 36, 37]
+   table                       rows  columns
+   admin_settings                 1  id, key, updated_at, value
+   bill_of_materials           4090  body_option_default, body_option_group, body_option_group_id, body_option_linked, body_option_linked_id, body_option_subgroup, body_option_subgroup_id, bom_conditions, bom_section, bom_section_id, calc2_default_excluded, excel_formula, floor_plate_id, formula_expression, highlight_color, id, is_body_option, is_formula_skin, material_id, mounting_cleat_id, notes, price_updated_at, selection_group, selection_mode, skin_formula_id, skin_formula_region, sort_order, source_cell, taping_block_id, trailer_type_id, unit_price_override, unit_price_snapshot, variable_value, waste_percentage
+   body_option_groups             9  bom_section_id, id, name, parent_option_master_id, sort_order
+   body_option_subgroups         18  group_id, id, name, sort_order
+   bom_sections                  41  archived_at, body_option_master_id, id, is_optional, multiplier, name, sort_order
+   floor_plates                   8  description, id, is_active, name, price_formula, sort_order
+   global_variables               1  description, id, name, value
+   material_categories           21  description, id, name
+   mounting_cleats                7  description, group, id, is_active, name, sort_order
+   report_templates               4  created_at, description, id, is_active, kind, name, pdf_template_id, slug, updated_at
+   sap_item_codes                29  description, id, is_active, item_code, last_purch_price
+   skin_formulas                  4  description, id, is_active, name, sort_order
+   taping_blocks                  2  description, id, is_active, name, size_mm, sort_order
+   trailer_groups                 6  colour, created_at, description, id, insulation_rule, name, report_template_id, rule_note, sort_order
+   trailer_types                 15  configurator_v2, created_at, default_height, default_insulation_foam, default_length, default_width, description, group_id, id, is_active, markup_percentage, name, override_report_template_id, protect_overrides
+   floor_plate_items             25  id, item_name, length, m2, plate_id, price_per_unit, price_source, quantity, sap_code, sap_item_code_id, side, sort_order, width
+   materials                    482  category_id, id, is_active, last_bulk_update_at, last_bulk_update_note, last_updated, manufacture_sub_category, material_code, name, price_per_unit, sap_code, size, supplier, unit_of_measure
+   mounting_cleat_items          30  cleat_id, id, item_name, length, m2, price_per_unit, price_source, quantity, sap_code, sap_item_code_id, sort_order, width
+   skin_formula_ingredients       9  id, is_active, name, price_kzn, price_standard, sap_code, sap_item_code_id, sort_order
+   taping_block_items            10  block_id, id, item_name, length, m2, price_per_unit, price_source, quantity, sap_code, sap_item_code_id, sort_order, width
+   skin_formula_items            16  formula_id, id, ingredient_id, price_source, qty_formula, qty_per_m2, sort_order
+   materials.last_bulk_update_note (system labels): ['None', 'September 2026 price update', 'September 2026 — floor plywood raw sheet price, /2.98 in formula', 'legacy_uat_sync 2026-07-04']
+   materials.supplier: 2 distinct (company names, not printed)
+   bill_of_materials.notes: 2032 non-empty of 4090
+   total rows 4828  bytes 3974164

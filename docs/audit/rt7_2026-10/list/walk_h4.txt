@@ -1,0 +1,26 @@
+the reference run: mirror_newgolden_oldlist; the list before: accepted_old_prod_list.yaml, 12 entries
+  0. the list before (RT6's), unchanged                              All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+
+H4 — one prune at a time, `reaccept` after each:
+  1. prune SRD EPS (CHILLER 2.3 / LARGE)                             All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  2. prune the icecream ALU BUFFER PLATE                             All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  3. prune the EXPLOSIVE 2.7-4.8 plywood                             All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  4. prune the CHILLER MEDIUM 2317 DOOR RUBBER                       All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  5. prune SUB FRAME GALV PLATE / MOUNTING CLEATS                    All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  6. prune SRD DOOR FITTINGS (hinges, silplus, ...)                  All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  7. prune icecream 4.8 DRD PU / hinges                              All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  8. prune the SRD PLYWOOD / GLUE LINE ruling                        All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+
+the four that stay — re-labelled, each with what clears it and one review date (Q3):
+  re-label / refs / review_by 2026-11-30: burt_sheet_formula_slip (TAPPING BLOCKS) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  re-label / refs / review_by 2026-11-30: probe_limit (12MM PF PLYWOOD) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  re-label / refs / review_by 2026-11-30: burt_decision_pending (MOUNTING BRACKET) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+  re-label / refs / review_by 2026-11-30: burt_decision_pending (ALU PLATE) All: FLAG  48  ACCEPTED  67  EXPIRED 0  | smoke: FLAG 15  ACCEPTED 18
+
+the three hand edits Michael made on prod 6-7 Oct (RT7_RULING_1 Q1: lamination excluded — it is back at Burt's):
+  + mes_updated_ahead_of_burt: FREEZER MEDIUM FLOOR                  All: FLAG  24  ACCEPTED  91  EXPIRED 0  | smoke: FLAG  9  ACCEPTED 24
+  + mes_updated_ahead_of_burt: FREEZER MEDIUM ROOF                   All: FLAG  20  ACCEPTED  95  EXPIRED 0  | smoke: FLAG  6  ACCEPTED 27
+  + mes_updated_ahead_of_burt: FREEZER MEDIUM DRD DOOR FITTINGS      All: FLAG   0  ACCEPTED 115  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+  the list after: 7 entries (amounts next, by `audit pin`)           All: FLAG   0  ACCEPTED 115  EXPIRED 0  | smoke: FLAG  0  ACCEPTED 33
+
+wrote C:\Users\micge\Documents\icb-platform-rt7\backend\tests\costing_audit\accepted_differences.prod.yaml (7 entries, unpinned)

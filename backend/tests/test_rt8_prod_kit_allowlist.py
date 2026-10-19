@@ -36,9 +36,10 @@ def test_the_allow_lists_name_nothing_personal(kit):
 
 
 def test_the_sql_selects_only_the_allow_listed_columns(kit):
+    select_list = kit.SQL.split(" from ")[0]
     cols = re.findall(r"\bc\.([a-z_]+)", kit.SQL)
     assert set(cols) <= set(kit.COLUMNS), set(cols) - set(kit.COLUMNS)
-    joined = re.findall(r"\bt\.([a-z_]+)", kit.SQL)
+    joined = re.findall(r"\bt\.([a-z_]+)", select_list)        # the join key (t.id) is not a selected column
     assert set(joined) <= set(kit.JOIN_COLUMNS)
     assert "customers" not in kit.SQL and "users" not in kit.SQL and "contact" not in kit.SQL
     assert re.search(r"\bfrom materials\b", kit.SQL_MATERIALS) and "name" not in kit.SQL_MATERIALS

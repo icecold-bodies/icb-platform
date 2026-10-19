@@ -1,0 +1,482 @@
+[
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    1082,
+    1228
+   ],
+   [
+    1753,
+    1818
+   ]
+  ],
+  "gate_ms": 1327,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 1
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    911,
+    1000
+   ],
+   [
+    1581,
+    1643
+   ]
+  ],
+  "gate_ms": 1089,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 2
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    974,
+    1066
+   ],
+   [
+    1645,
+    1712
+   ]
+  ],
+  "gate_ms": 1163,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 3
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    1208,
+    1328
+   ],
+   [
+    1881,
+    1949
+   ]
+  ],
+  "gate_ms": 1464,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 4
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    1311,
+    1498
+   ],
+   [
+    1978,
+    2072
+   ]
+  ],
+  "gate_ms": 1641,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 5
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    1436,
+    1564
+   ],
+   [
+    2093,
+    2223
+   ]
+  ],
+  "gate_ms": 1671,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 6
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    999,
+    1131
+   ],
+   [
+    1675,
+    1762
+   ]
+  ],
+  "gate_ms": 1244,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 7
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    1128,
+    1233
+   ],
+   [
+    1808,
+    1900
+   ]
+  ],
+  "gate_ms": 1342,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 8
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    975,
+    1067
+   ],
+   [
+    1650,
+    1731
+   ]
+  ],
+  "gate_ms": 1161,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 9
+ },
+ {
+  "id": 1674,
+  "qno": "A32812/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    1199,
+    1291
+   ],
+   [
+    1871,
+    1940
+   ]
+  ],
+  "gate_ms": 1382,
+  "late_calcs": 1,
+  "drift_banner": true,
+  "banner": "\u26a0 Re-costing with current prices/formulas would change the total by \u2212R\u00a018\u00a0866,89 (saved R\u00a0281\u00a0925,98 \u2192 now R\u00a0263\u00a0059,09). Showing the saved figures; your next e",
+  "saved_gt": 147675.51,
+  "shown_gt": 137792.86,
+  "shown_is_saved": false,
+  "WRONG": true,
+  "run": 10
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    979,
+    1094
+   ],
+   [
+    1602,
+    1671
+   ]
+  ],
+  "gate_ms": 1149,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 1
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    975,
+    1092
+   ],
+   [
+    1620,
+    1684
+   ]
+  ],
+  "gate_ms": 1154,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 2
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    959,
+    1066
+   ],
+   [
+    1610,
+    1682
+   ]
+  ],
+  "gate_ms": 1136,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 3
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    912,
+    995
+   ],
+   [
+    1555,
+    1625
+   ]
+  ],
+  "gate_ms": 1039,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 4
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    996,
+    1108
+   ],
+   [
+    1630,
+    1698
+   ]
+  ],
+  "gate_ms": 1164,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 5
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    1078,
+    1179
+   ],
+   [
+    1712,
+    1785
+   ]
+  ],
+  "gate_ms": 1235,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 6
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    938,
+    1034
+   ],
+   [
+    1570,
+    1643
+   ]
+  ],
+  "gate_ms": 1082,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 7
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    932,
+    1023
+   ],
+   [
+    1581,
+    1640
+   ]
+  ],
+  "gate_ms": 1072,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 8
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    1415,
+    1594
+   ],
+   [
+    2056,
+    2120
+   ]
+  ],
+  "gate_ms": 1642,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 9
+ },
+ {
+  "id": 1679,
+  "qno": "A32817/08/2026",
+  "n_calcs": 2,
+  "calc_ms": [
+   [
+    906,
+    989
+   ],
+   [
+    1558,
+    1627
+   ]
+  ],
+  "gate_ms": 1036,
+  "late_calcs": 1,
+  "drift_banner": false,
+  "banner": "\u2713 Balanced with the saved quote \u2014 Total R\u00a0312\u00a0455,56 \u00b7 Mfg R\u00a0163\u00a0667,20",
+  "saved_gt": 163667.2,
+  "shown_gt": 163667.2,
+  "shown_is_saved": true,
+  "WRONG": false,
+  "run": 10
+ }
+]

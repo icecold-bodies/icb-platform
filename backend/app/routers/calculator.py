@@ -28,6 +28,8 @@ from ..services.bom_order import order_result_items        # v1.54 — the calcu
 from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS mode
 from ..services import insulation_foam as pu_foam   # v1.51 — 32D PU FOAM vs 4G FOAM
 from ..services import rule_guard                   # RT6 — Burt's insulation rules, enforced from the family
+from ..services import frozen_quote                 # RT8 — a re-opened quote is the saved quote
+from ..services.frozen_quote import FrozenError
 from ..services import quote_document           # v1.51 — print modes
 from ..services.quote_document import has_repair_quote_document  # v1.48
 from ..templates_config import templates
@@ -761,7 +763,8 @@ def _repair_document_number(result: dict) -> str | None:
 
 
 def _calculate_repair(body: dict, db: Session, *,
-                      require_type: bool = False) -> tuple[dict, dict, list[dict]]:
+                      require_type: bool = False,
+                      frozen_lines: dict | None = None) -> tuple[dict, dict, list[dict]]:
     """Compute a REPAIRS costing — the v1.47 repair surface, which has no body
     behind it (no dimensions, no body options, no insulation, no BOM).
 
@@ -778,8 +781,10 @@ def _calculate_repair(body: dict, db: Session, *,
     fields = free_hand.repair_fields(body, require_type=require_type)
     # allow_total_only: the ICB repair quotation's real line grammar is a long
     # description with a LUMP-SUM total and no qty/price (addendum D3).
+    # RT8 — `frozen_lines`: a saved repair's stock lines keep the price they were quoted at (edit at saved prices),
+    # or, on a re-price, only the lines whose material is no longer in the list keep it (today has no price for them).
     lines = free_hand.parse_lines(body.get("repair_lines"), allow_stock=True,
-                                  allow_total_only=True, db=db)
+                                  allow_total_only=True, db=db, frozen_lines=frozen_lines)
     if not lines:
         raise HTTPException(status_code=422,
                             detail="A repair quote needs at least one line — add a "
@@ -822,6 +827,18 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     trailer_id = body.get("trailer_type_id")
 
+    # RT8 — a quote opened for Edit computes from its SAVED lines, never from the template (frozen mode). Ahead
+    # of the repair branch: a frozen REPAIR keeps the stock prices it was quoted at.
+    frozen_id = body.get("frozen_record_id")
+    if frozen_id:
+        result = _calculate_frozen(db, body, frozen_id)
+        _stages["frozen"] = 1
+        try:
+            request.state.perf_extra = _stages
+        except Exception:
+            pass
+        return JSONResponse(result)
+
     # REPAIRS mode (v1.47 Lane C) — no body, so no trailer, no BOM, no geometry.
     # Returns early on the same result shape the body path produces, so the
     # summary panel, previews and exports all read it unchanged.
@@ -834,6 +851,44 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
             pass
         return JSONResponse(result)
 
+    _t = _time.monotonic()
+    # RT8 — a re-priced quote (after "Update to today's prices") reads the formula library and the global variables
+    # from their tables, as the re-price preview and the save do: the three must agree to the cent.
+    result = _compute_body_result(db, body, fresh=bool(body.get("repriced_from_record_id")), stages=_stages)
+    result.pop("_today_bom_ids", None)
+    _t = _mark("compute_ms", _t)
+
+    # Serialize as a separate phase so we can tell whether a spike sits in
+    # the handler logic or in JSON-dumping the result. Pre-encoding here also
+    # lets GZipMiddleware compress a known-size bytes payload (slightly faster
+    # than chunked-from-dict). Big freezer trailers can produce ~200 KB JSON.
+    import json as _json
+    _payload = _json.dumps(result, default=str).encode("utf-8")
+    _mark("serialize_ms", _t)
+    _stages["resp_bytes"] = len(_payload)
+
+    # Surface the stage breakdown to the perf middleware so /admin/performance
+    # can pinpoint where any future spike came from.
+    try:
+        request.state.perf_extra = _stages
+    except Exception:
+        pass
+    return Response(content=_payload, media_type="application/json")
+
+
+def _compute_body_result(db: Session, body: dict, *, fresh: bool = False, stages: dict | None = None) -> dict:
+    """/api/calculate's BODY computation — today's template rows, today's prices — shared with the re-price preview
+    (RT8). `fresh` reads the formula library and the global variables from their tables, as /api/approve does,
+    instead of the 30 s per-worker cache: a re-price preview, the screen after Apply and the save it leads to must
+    read the same way (RT8_RULING_1), so none of them uses the cache."""
+    import time as _time
+    _stages: dict = stages if stages is not None else {}
+    def _mark(stage: str, started: float) -> float:
+        now = _time.monotonic()
+        _stages[stage] = round((now - started) * 1000.0, 1)
+        return now
+
+    trailer_id = body.get("trailer_type_id")
     _t = _time.monotonic()
     tt = db.query(TrailerType).filter_by(id=trailer_id).first()
     if not tt:
@@ -870,8 +925,8 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
     _apply_body_variable_overrides(body_vars, body.get("body_variable_overrides"))
     _t = _mark("build_items_ms", _t)
 
-    formula_lib = get_formula_lib()
-    global_vars = get_global_vars()
+    formula_lib = frozen_quote.active_library(db) if fresh else get_formula_lib()
+    global_vars = frozen_quote.active_globals(db) if fresh else get_global_vars()
     result = calculate_bom(bom_items, body.get("dimensions", {}), body_vars, formula_lib, global_vars)
     _t = _mark("formula_eval_ms", _t)
 
@@ -885,23 +940,124 @@ async def api_calculate(request: Request, db: Session = Depends(get_db)):
     result["rule_unclassified"] = rule_guard.unclassified(tt, bom_rows)
     _attach_formula_debug(result, body_vars, formula_lib, global_vars)
     _t = _mark("chassis_margin_ms", _t)
+    result["_today_bom_ids"] = {r.id for r in bom_rows}     # for the re-price comparison; stripped before serialising
+    return result
 
-    # Serialize as a separate phase so we can tell whether a spike sits in
-    # the handler logic or in JSON-dumping the result. Pre-encoding here also
-    # lets GZipMiddleware compress a known-size bytes payload (slightly faster
-    # than chunked-from-dict). Big freezer trailers can produce ~200 KB JSON.
-    import json as _json
-    _payload = _json.dumps(result, default=str).encode("utf-8")
-    _mark("serialize_ms", _t)
-    _stages["resp_bytes"] = len(_payload)
 
-    # Surface the stage breakdown to the perf middleware so /admin/performance
-    # can pinpoint where any future spike came from.
+# ─── RT8 — frozen mode: a re-opened quote is the saved quote ──────────────────
+
+def _frozen_record(db: Session, record_id) -> tuple[CalculationRecord, dict]:
+    """The pending costing a frozen calculation / save / re-price works from, with its stored result. 404 when it
+    does not exist; 409 when it is deleted, not pending, or cannot be replayed from its saved copy."""
     try:
-        request.state.perf_extra = _stages
-    except Exception:
-        pass
-    return Response(content=_payload, media_type="application/json")
+        rid = int(record_id)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="frozen_record_id must be a costing id")
+    rec = db.query(CalculationRecord).filter_by(id=rid).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="Costing to edit was not found")
+    if getattr(rec, "deleted_at", None) is not None:
+        raise HTTPException(status_code=409, detail="That costing was deleted — restore it from the costings list first.")
+    rec_status = rec.status or ("accepted" if rec.approved_at else "pending")
+    if rec_status != "pending":
+        raise HTTPException(status_code=409,
+                            detail=f"Only pending costings can be edited — this one is '{rec_status}'.")
+    data = frozen_quote.stored(rec)
+    ok, why = frozen_quote.capability(rec, data)
+    if not ok:
+        raise HTTPException(status_code=409, detail={
+            "code": "frozen_not_capable",
+            "message": f"This quote cannot be edited at its saved prices ({why}). "
+                       "Click Update to today's prices to edit it; that saves as a new revision."})
+    return rec, data
+
+
+def _frozen_meta(rec: CalculationRecord, data: dict, library: str) -> dict:
+    return {"record_id": rec.id, "quote_number": rec.quote_number,
+            "version": int(data.get("version", 1) or 1), "saved_at": data.get("saved_at"), "library": library}
+
+
+def _calculate_frozen(db: Session, body: dict, frozen_id) -> dict:
+    """The frozen calculation: the saved lines at the user's inputs. Body costings replay their stored lines
+    (services/frozen_quote); a repair re-runs its lines with its stock prices as quoted."""
+    rec, data = _frozen_record(db, frozen_id)
+    if rec.trailer_type_id is None:
+        result, _fields, _lines = _calculate_repair(body, db, frozen_lines=frozen_quote.frozen_repair_lines(data))
+        result["frozen"] = _frozen_meta(rec, data, "none")
+        return result
+    if int(body.get("trailer_type_id") or 0) != int(rec.trailer_type_id):
+        raise HTTPException(status_code=409, detail="That costing is for a different body type — reopen it from the costings list.")
+    try:
+        result = frozen_quote.replay_body(db, rec, data, body)
+    except FrozenError as e:
+        raise HTTPException(status_code=409, detail={"code": e.code, "message": e.message})
+    frozen_quote.strip_working_keys(result)
+    result["trailer_name"] = data.get("trailer_name") or (rec.trailer_type.name if getattr(rec, "trailer_type", None) else None)
+    return result
+
+
+def _check_screen(result: dict, screen) -> None:
+    """Ratified default 5: a frozen or re-priced save stores exactly what the screen shows. The client sends the
+    figures on screen; the server's own computation must match them to the cent, else nothing is saved."""
+    if not isinstance(screen, dict) or screen.get("grand_total") is None:
+        raise HTTPException(status_code=409, detail={
+            "code": "screen_missing",
+            "message": "The figures on screen did not reach the server, so nothing was saved. Reload the quote and try again."})
+    for key in ("grand_total", "net_total"):
+        if screen.get(key) is None:
+            continue
+        try:
+            shown = float(screen[key])
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=409, detail={"code": "screen_missing",
+                                                         "message": "The figures on screen are unreadable; nothing was saved."})
+        ours = result.get(key)
+        if ours is None:
+            ours = result.get("selling_price") if key == "net_total" else 0
+        if abs(shown - float(ours or 0)) > frozen_quote.CENT:
+            label = "Net total" if key == "net_total" else "Materials cost"
+            raise HTTPException(status_code=409, detail={
+                "code": "frozen_mismatch",
+                "message": f"{label} on screen is R{shown:,.2f} but the saved prices give R{float(ours or 0):,.2f}. "
+                           "Nothing was saved. Reload the quote and try again; if it repeats, tell the administrator."})
+
+
+def _repriced_block(rec0: CalculationRecord, data0: dict, result: dict, body: dict,
+                    today_bom_ids: "set[int] | None") -> dict:
+    """What a re-priced revision records about where it came from: the audit trail (ratified default 4)."""
+    return {
+        "from_record_id": rec0.id, "from_quote_number": rec0.quote_number,
+        "from_version": int(data0.get("version", 1) or 1), "from_saved_at": data0.get("saved_at"),
+        "repriced_at": frozen_quote.now_iso(),
+        "comparison": frozen_quote.compare(data0, result, today_bom_ids=today_bom_ids,
+                                           new_options=body.get("new_options")),
+    }
+
+
+@router.post("/api/calculations/{record_id}/reprice-preview")
+async def api_reprice_preview(record_id: int, request: Request, db: Session = Depends(get_db)):
+    """RT8 — "View changes" / "Update to today's prices": what re-pricing a saved pending quote at today's template
+    and prices would change, line by line, per section and in total. Reads the formula library and the global
+    variables from their tables (never the cache), exactly as the save that may follow. Nothing is written."""
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401)
+    body = await request.json()
+    rec, data = _frozen_record(db, record_id)
+    if rec.trailer_type_id is None:
+        frozen = frozen_quote.frozen_repair_lines(data)
+        gone = frozen_quote.gone_material_lines(db, frozen)
+        today, _fields, _lines = _calculate_repair(body, db, frozen_lines=gone)
+        comparison = frozen_quote.compare(data, today, today_bom_ids=None)
+        comparison["kept_saved_price"] = [str(ln.get("description") or "") for ln in gone.values()]
+    else:
+        if int(body.get("trailer_type_id") or 0) != int(rec.trailer_type_id):
+            raise HTTPException(status_code=409, detail="That costing is for a different body type.")
+        today = _compute_body_result(db, body, fresh=True)
+        comparison = frozen_quote.compare(data, today, today_bom_ids=today.pop("_today_bom_ids", None),
+                                          new_options=body.get("new_options"))
+    return {"record_id": rec.id, "quote_number": rec.quote_number, "saved_at": data.get("saved_at"),
+            "version": int(data.get("version", 1) or 1), "comparison": comparison}
 
 
 # ─── Check duplicate ──────────────────────────────────────────────────────────
@@ -1087,6 +1243,33 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     new_rep = None if is_overwrite else attribution.plan_rep_change(
         db, user, requested_rep, creator_id=user.id, is_new=True)
 
+    # ── RT8 — frozen mode and re-pricing: the gates, before anything is read for the save ──────────────────────
+    # frozen_record_id: the quote is saved from its SAVED lines (Overwrite or New revision);
+    # repriced_from_record_id: the quote was re-priced at today's template and prices → New revision ONLY, and the
+    # revision records the comparison; `screen`: the figures the user sees, which the save must equal to the cent.
+    frozen_id = body.get("frozen_record_id")
+    repriced_from = body.get("repriced_from_record_id")
+    screen = body.get("screen") if isinstance(body.get("screen"), dict) else None
+    if frozen_id and repriced_from:
+        raise HTTPException(status_code=409, detail="A save is either at saved prices or re-priced, not both.")
+    if repriced_from and version_action != "new_version":
+        raise HTTPException(status_code=409, detail={
+            "code": "repriced_new_revision_only",
+            "message": "A re-priced quote saves as a new revision only, so the revision the customer received stays as sent."})
+    if frozen_id:
+        if not edit_record_id or str(edit_record_id) != str(frozen_id) or version_action not in ("overwrite", "new_version"):
+            raise HTTPException(status_code=409, detail="A save at saved prices must overwrite that quote or save a new revision of it.")
+    elif edit_record_id and version_action == "overwrite":
+        raise HTTPException(status_code=409, detail={
+            "code": "overwrite_needs_saved_prices",
+            "message": "Overwrite keeps the quote exactly as saved, so it is only offered while the quote shows its saved "
+                       "prices. A re-priced quote saves as a new revision."})
+    if (frozen_id or repriced_from) and screen is None:
+        raise HTTPException(status_code=409, detail={
+            "code": "screen_missing",
+            "message": "The figures on screen did not reach the server, so nothing was saved. Reload the quote and try again."})
+    frozen_meta = None          # rides the response, never the stored copy
+
     # ── REPAIRS mode (v1.47 Lane C) ───────────────────────────────────────────
     # A repair has no body, so none of the BOM / body-option / version machinery
     # below applies. It saves through the SAME record, quote-numbering and
@@ -1094,7 +1277,24 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     # (is_repair=True) so /schedule-repair, RepairPhasePanel and the purple
     # Repair pill all work untouched.
     if free_hand.is_repair_mode(body):
-        result, repair_meta, repair_lines = _calculate_repair(body, db, require_type=True)
+        frozen_lines = None
+        rec0 = data0 = None
+        if frozen_id:
+            # RT8 — a saved repair's stock lines keep the price they were quoted at
+            rec0, data0 = _frozen_record(db, frozen_id)
+            frozen_lines = frozen_quote.frozen_repair_lines(data0)
+        elif repriced_from:
+            # RT8 — re-priced at today's catalogue; only a line whose material is gone keeps its saved price
+            rec0, data0 = _frozen_record(db, repriced_from)
+            frozen_lines = frozen_quote.gone_material_lines(db, frozen_quote.frozen_repair_lines(data0))
+        result, repair_meta, repair_lines = _calculate_repair(body, db, require_type=True, frozen_lines=frozen_lines)
+        if frozen_id or repriced_from:
+            _check_screen(result, screen)
+        result["saved_at"] = frozen_quote.now_iso()      # RT8 — every save, Overwrite included, stamps its date
+        if repriced_from:
+            result["repriced"] = _repriced_block(rec0, data0, result, body, today_bom_ids=None)
+        if frozen_id:
+            frozen_meta = _frozen_meta(rec0, data0, "none")
         result["input_state"] = {
             "is_repair":     True,
             "repair_type":   repair_meta["repair_type"],
@@ -1272,82 +1472,133 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         return (section_order.get(name, 99998), name.lower(), r.material.name.lower() if r.material else "")
     bom_rows.sort(key=_sec_key)
 
-    # RT6 — approve REFUSES a breach of the family's insulation rule: one chokepoint for every body save (new,
-    # revision, save-as-new, Replace, overwrite, capture-for, copy, recall, Calculator 2). It runs before anything is
-    # written — ahead of the Replace path's delete and the overwrite. No override, for any role (RT6 default 4).
-    _breaches = rule_guard.body_breaches(tt, bom_rows, body)
-    if _breaches:
-        raise HTTPException(status_code=409, detail=rule_guard.refusal(
-            _breaches, "This quote", "Remove it, then save again."))
+    if frozen_id:
+        # ── RT8 — a save at SAVED prices: the stored lines, replayed (services/frozen_quote) ───────────────────
+        rec0, data0 = _frozen_record(db, frozen_id)
+        if rec0.trailer_type_id is None or int(rec0.trailer_type_id) != int(trailer_id):
+            raise HTTPException(status_code=409, detail="That costing is for a different body type — reopen it from the costings list.")
+        # RT6 unchanged: a frozen save of a quote that breaks the family's insulation rule is still refused. The
+        # saved quote's own choices are judged, as Accept judges them; the way out is re-pricing.
+        _breaches = rule_guard.saved_breaches(db, rec0)
+        if _breaches:
+            raise HTTPException(status_code=409, detail=rule_guard.refusal(
+                _breaches, "This quote",
+                "Click Update to today's prices, remove it there, and save as a new revision."))
+        try:
+            result = frozen_quote.replay_body(db, rec0, data0, body)
+        except FrozenError as e:
+            raise HTTPException(status_code=409, detail={"code": e.code, "message": e.message})
+        _check_screen(result, screen)
+        frozen_meta = result.pop("frozen", None)
+        result["input_state"] = frozen_quote.frozen_input_state(data0, body, result, overrides, override_reasons)
+        saved_names = {str(it.get("bom_id")): it.get("material") for it in (data0.get("items") or [])
+                       if isinstance(it, dict) and it.get("bom_id") is not None}
+        saved_updated = {str(it.get("bom_id")): it.get("last_updated") for it in (data0.get("items") or [])
+                         if isinstance(it, dict) and it.get("bom_id") is not None}
+        for item in result["items"]:
+            if item.get("free_hand"):
+                continue
+            item["last_updated"] = saved_updated.get(str(item.get("bom_id")))
+        _ov = result["input_state"]["overrides"]
+        _rs = result["input_state"]["override_reasons"]
+        result["overrides_by_bom"]  = {k: v for k, v in _ov.items() if k in saved_names}
+        result["overrides_by_name"] = {saved_names[k]: v for k, v in _ov.items() if k in saved_names}
+        result["override_reasons_by_bom"]  = {k: r for k, r in _rs.items() if k in saved_names}
+        result["override_reasons_by_name"] = {saved_names[k]: r for k, r in _rs.items() if k in saved_names}
+        # the three keys every save from v1.62.0 stores — carried, never refreshed, on a frozen save
+        if data0.get("pu_foam_4g_factor") is not None:
+            result["pu_foam_4g_factor"] = data0.get("pu_foam_4g_factor")
+        if isinstance(data0.get("formula_library"), dict):
+            result["formula_library"] = data0["formula_library"]
+        elif (frozen_meta or {}).get("library") == "none":
+            result["formula_library"] = frozen_quote.active_library(db)   # no saved line references the library
+    else:
+        # RT6 — approve REFUSES a breach of the family's insulation rule: one chokepoint for every body save (new,
+        # revision, save-as-new, Replace, overwrite, capture-for, copy, recall, Calculator 2). It runs before anything is
+        # written — ahead of the Replace path's delete and the overwrite. No override, for any role (RT6 default 4).
+        _breaches = rule_guard.body_breaches(tt, bom_rows, body)
+        if _breaches:
+            raise HTTPException(status_code=409, detail=rule_guard.refusal(
+                _breaches, "This quote", "Remove it, then save again."))
 
-    body_opt_sel  = {str(k): bool(v) for k, v in body.get("body_option_selections", {}).items()}
-    excluded_cats = body.get("excluded_categories") or []
-    flag_overrides = {str(k): bool(v) for k, v in (body.get("flag_overrides") or {}).items()}
-    include_all_items = bool(body.get("include_all_items"))
-    user_excluded_bom_ids = body.get("user_excluded_bom_ids") or []
-    optional_sections_enabled = body.get("optional_sections_enabled") or []
-    insulation_foam = pu_foam.normalise(body.get("insulation_foam"))
-    bom_items = _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_cats, trailer=tt, flag_overrides=flag_overrides, include_all_items=include_all_items, user_excluded_bom_ids=user_excluded_bom_ids, optional_sections_enabled=optional_sections_enabled, formula_overrides=body.get("formula_overrides"), insulation_foam=insulation_foam)
-    free_hand_lines = _append_free_hand_lines(bom_items, body, optional_sections_enabled)
-    body_vars = _build_body_variables(bom_rows)
-    _apply_body_variable_overrides(body_vars, body.get("body_variable_overrides"))
-    formula_lib = {f.name.lower(): f.expression
-                   for f in db.query(Formula).filter_by(is_active=True).all()}
-    global_vars = {gv.name: gv.value for gv in db.query(GlobalVariable).all()}
-    result = calculate_bom(bom_items, dims, body_vars, formula_lib, global_vars)
-    _attach_formula_debug(result, body_vars, formula_lib, global_vars)
-    result = _apply_chassis_and_margin(result, body, db)
-    result = _apply_discount(result, body)
+        body_opt_sel  = {str(k): bool(v) for k, v in body.get("body_option_selections", {}).items()}
+        excluded_cats = body.get("excluded_categories") or []
+        flag_overrides = {str(k): bool(v) for k, v in (body.get("flag_overrides") or {}).items()}
+        include_all_items = bool(body.get("include_all_items"))
+        user_excluded_bom_ids = body.get("user_excluded_bom_ids") or []
+        optional_sections_enabled = body.get("optional_sections_enabled") or []
+        insulation_foam = pu_foam.normalise(body.get("insulation_foam"))
+        bom_items = _build_bom_items(bom_rows, dims, overrides, body_opt_sel, db, excluded_cats, trailer=tt, flag_overrides=flag_overrides, include_all_items=include_all_items, user_excluded_bom_ids=user_excluded_bom_ids, optional_sections_enabled=optional_sections_enabled, formula_overrides=body.get("formula_overrides"), insulation_foam=insulation_foam)
+        free_hand_lines = _append_free_hand_lines(bom_items, body, optional_sections_enabled)
+        body_vars = _build_body_variables(bom_rows)
+        _apply_body_variable_overrides(body_vars, body.get("body_variable_overrides"))
+        formula_lib = frozen_quote.active_library(db)
+        global_vars = frozen_quote.active_globals(db)
+        result = calculate_bom(bom_items, dims, body_vars, formula_lib, global_vars)
+        _attach_formula_debug(result, body_vars, formula_lib, global_vars)
+        result = _apply_chassis_and_margin(result, body, db)
+        result = _apply_discount(result, body)
+        if repriced_from:
+            # RT8 — the re-priced revision: equals the screen to the cent, and records what changed
+            rec0, data0 = _frozen_record(db, repriced_from)
+            if rec0.trailer_type_id is None or int(rec0.trailer_type_id) != int(trailer_id):
+                raise HTTPException(status_code=409, detail="That costing is for a different body type.")
+            _check_screen(result, screen)
+            result["repriced"] = _repriced_block(rec0, data0, result, body, today_bom_ids={r.id for r in bom_rows})
+        # RT8 — the three keys that let a later edit stay at saved prices whatever moves in the meantime
+        result["pu_foam_4g_factor"] = pu_foam.get_4g_factor(db)
+        result["formula_library"] = formula_lib
 
-    mat_updated = {row.material.name: (row.material.last_updated.isoformat()
-                   if row.material.last_updated else None) for row in bom_rows}
-    for item in result["items"]:
-        # A free-hand line has no material behind it — never stamp it with a
-        # catalogue date just because its description happens to match a name.
-        if item.get("free_hand"):
-            continue
-        item["last_updated"] = mat_updated.get(item["material"])
+        mat_updated = {row.material.name: (row.material.last_updated.isoformat()
+                       if row.material.last_updated else None) for row in bom_rows}
+        for item in result["items"]:
+            # A free-hand line has no material behind it — never stamp it with a
+            # catalogue date just because its description happens to match a name.
+            if item.get("free_hand"):
+                continue
+            item["last_updated"] = mat_updated.get(item["material"])
 
-    bom_id_to_name = {str(row.id): row.material.name for row in bom_rows}
-    result["overrides_by_bom"]  = {k: v for k, v in overrides.items() if k in bom_id_to_name}
-    result["overrides_by_name"] = {bom_id_to_name[k]: v for k, v in overrides.items() if k in bom_id_to_name}
-    result["override_reasons_by_bom"]  = {k: r for k, r in override_reasons.items() if k in bom_id_to_name}
-    result["override_reasons_by_name"] = {bom_id_to_name[k]: r for k, r in override_reasons.items() if k in bom_id_to_name}
+        bom_id_to_name = {str(row.id): row.material.name for row in bom_rows}
+        result["overrides_by_bom"]  = {k: v for k, v in overrides.items() if k in bom_id_to_name}
+        result["overrides_by_name"] = {bom_id_to_name[k]: v for k, v in overrides.items() if k in bom_id_to_name}
+        result["override_reasons_by_bom"]  = {k: r for k, r in override_reasons.items() if k in bom_id_to_name}
+        result["override_reasons_by_name"] = {bom_id_to_name[k]: r for k, r in override_reasons.items() if k in bom_id_to_name}
 
-    # Snapshot the raw input selections so a later EDIT can faithfully re-hydrate
-    # the calculator (body options, optional sections, exclusions, overrides).
-    # Stored inside result_json — additive and backward compatible (old records
-    # simply lack the key and fall back to recomputed defaults on edit).
-    result["input_state"] = {
-        "overrides":                 overrides,
-        "override_reasons":          override_reasons,
-        "body_option_selections":    body_opt_sel,
-        # v1.51 — the PU foam grade this quote was priced at. A record saved
-        # before this lane has no key here and reads as 32D (the default), which
-        # is exactly what those quotes were priced at.
-        "insulation_foam":           insulation_foam,
-        "excluded_categories":       excluded_cats,
-        "flag_overrides":            flag_overrides,
-        "user_excluded_bom_ids":     user_excluded_bom_ids,
-        "optional_sections_enabled": optional_sections_enabled,
-        # v1.47 — free-hand OPTIONAL EXTRAS live ON THE COSTING and nowhere else.
-        # They ride the snapshot so an edit re-hydrates them; nothing is ever
-        # written to the materials master. Note this key is invisible to the
-        # validated-reference fingerprint (canonical_config picks named keys only),
-        # which is the ratified behaviour: extras are not part of identity, so a
-        # free-hand extra's cost surfaces as DRIFT rather than as "no match".
-        "free_hand_lines":           free_hand.snapshot(free_hand_lines),
-        "profit_margin":             profit_margin,
-        "is_repair":                 is_repair,
-        "ratio_value":               body.get("ratio_value"),
-        "ratio_label":               body.get("ratio_label"),
-        "chassis":                   body.get("chassis"),
-        # Complete client-side UI snapshot (body options, DRD/SRD, configurator
-        # draft states, optional sections, full price overrides, chassis, body
-        # variable values). Lets an edit re-hydrate the calculator exactly so the
-        # recomputed total balances with the saved quote. Opaque to the backend.
-        "ui_snapshot":               body.get("ui_snapshot"),
-    }
+        # Snapshot the raw input selections so a later EDIT can faithfully re-hydrate
+        # the calculator (body options, optional sections, exclusions, overrides).
+        # Stored inside result_json — additive and backward compatible (old records
+        # simply lack the key and fall back to recomputed defaults on edit).
+        result["input_state"] = {
+            "overrides":                 overrides,
+            "override_reasons":          override_reasons,
+            "body_option_selections":    body_opt_sel,
+            # v1.51 — the PU foam grade this quote was priced at. A record saved
+            # before this lane has no key here and reads as 32D (the default), which
+            # is exactly what those quotes were priced at.
+            "insulation_foam":           insulation_foam,
+            "excluded_categories":       excluded_cats,
+            "flag_overrides":            flag_overrides,
+            "user_excluded_bom_ids":     user_excluded_bom_ids,
+            "optional_sections_enabled": optional_sections_enabled,
+            # v1.47 — free-hand OPTIONAL EXTRAS live ON THE COSTING and nowhere else.
+            # They ride the snapshot so an edit re-hydrates them; nothing is ever
+            # written to the materials master. Note this key is invisible to the
+            # validated-reference fingerprint (canonical_config picks named keys only),
+            # which is the ratified behaviour: extras are not part of identity, so a
+            # free-hand extra's cost surfaces as DRIFT rather than as "no match".
+            "free_hand_lines":           free_hand.snapshot(free_hand_lines),
+            "profit_margin":             profit_margin,
+            "is_repair":                 is_repair,
+            "ratio_value":               body.get("ratio_value"),
+            "ratio_label":               body.get("ratio_label"),
+            "chassis":                   body.get("chassis"),
+            # Complete client-side UI snapshot (body options, DRD/SRD, configurator
+            # draft states, optional sections, full price overrides, chassis, body
+            # variable values). Lets an edit re-hydrate the calculator exactly so the
+            # recomputed total balances with the saved quote. Opaque to the backend.
+            "ui_snapshot":               body.get("ui_snapshot"),
+        }
+    result["saved_at"] = frozen_quote.now_iso()      # RT8 — every save, Overwrite included, stamps its date
 
     async with _approve_lock:
         # ── EDIT: overwrite an existing PENDING costing in place ──────────────
@@ -1409,6 +1660,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
             result["end_user_company"] = rec.end_user_company
             result["sales_rep_user_id"]  = attribution.rep_user_id(rec)
             result["sales_rep_username"] = attribution.rep_username(rec, None)
+            if frozen_meta:
+                result["frozen"] = frozen_meta
             return JSONResponse(result)
 
         if customer_id and version_action is None:
@@ -1507,6 +1760,8 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     result["end_user_company"] = rec.end_user_company
     result["sales_rep_user_id"]  = attribution.rep_user_id(rec)
     result["sales_rep_username"] = attribution.rep_username(rec, None)
+    if frozen_meta:
+        result["frozen"] = frozen_meta
     return JSONResponse(result)
 
 
@@ -2135,6 +2390,7 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
                 .all())
     body_options_display = _derive_body_options_display(
         bom_rows, input_state, result_data.get("body_variables"))
+    _frozen_ok, _frozen_why = frozen_quote.capability(rec, result_data)
     return {
         "id": rec.id,
         "trailer_type_id": rec.trailer_type_id,
@@ -2237,6 +2493,16 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         "saved_result":  {k: v for k, v in order_result_items(
                               db, result_data, rec.trailer_type_id).items()
                           if k != "input_state"},
+        # RT8 — frozen editing: can this record be edited at its saved prices (else it opens read-only, with
+        # re-pricing as the way to edit it); when it was last saved (every save from v1.62.0 stamps it; an older
+        # record has none, and created_at would mislead for an overwritten quote); how its formula library is held;
+        # and, on a re-priced revision, where it came from and what changed.
+        "frozen_capable":  _frozen_ok,
+        "frozen_reason":   _frozen_why,
+        "saved_at":        result_data.get("saved_at"),
+        "frozen_library":  ("stored" if isinstance(result_data.get("formula_library"), dict)
+                            else "values" if result_data.get("formula_library_resolved") else "none"),
+        "repriced":        result_data.get("repriced"),
         # Derived door/insulation/floor-type summary for the costing detail page
         # (v1.42 body options panel). None when nothing is derivable.
         "body_options_display": body_options_display,

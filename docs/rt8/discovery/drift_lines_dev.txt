@@ -1,0 +1,12 @@
+A32795/07/2026   removed=0  (R      0.00) added=0  (R      0.00) price=17 (R -9,045.09) qty=0   renamed=10 moved=0  mfg_delta=R  -9,045.07
+A32810/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=23 (R -4,408.25) qty=2   renamed=11 moved=0  mfg_delta=R  -3,735.82
+A32812/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=27 (R -9,882.68) qty=1   renamed=8  moved=0  mfg_delta=R  -9,882.66
+A32814/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=23 (R -8,072.03) qty=2   renamed=11 moved=0  mfg_delta=R  -8,072.03
+A32817/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=0  (R      0.00) qty=0   renamed=0  moved=0  mfg_delta=R       0.00
+A32826/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=29 (R -8,731.20) qty=1   renamed=8  moved=0  mfg_delta=R  -8,731.20
+A32827/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=29 (R -9,133.97) qty=1   renamed=8  moved=0  mfg_delta=R  -9,133.96
+A32828/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=29 (R -9,133.97) qty=1   renamed=8  moved=0  mfg_delta=R  -9,133.96
+A32829/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=29 (R -8,023.63) qty=1   renamed=8  moved=0  mfg_delta=R  -8,023.65
+A32830/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=23 (R -7,742.02) qty=2   renamed=11 moved=0  mfg_delta=R  -7,742.02
+A32831/08/2026   removed=0  (R      0.00) added=0  (R      0.00) price=23 (R -2,924.05) qty=1   renamed=11 moved=0  mfg_delta=R  -2,924.07
+A32844/09/2026   removed=0  (R      0.00) added=0  (R      0.00) price=0  (R      0.00) qty=0   renamed=0  moved=0  mfg_delta=R       0.00

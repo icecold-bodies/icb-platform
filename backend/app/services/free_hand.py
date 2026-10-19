@@ -110,8 +110,13 @@ def _number(raw, *, field: str, ceiling: float) -> float:
 
 
 def parse_lines(raw, *, allow_stock: bool = False, allow_total_only: bool = False,
-                db=None) -> list[dict]:
+                db=None, frozen_lines: dict | None = None) -> list[dict]:
     """Validate + normalise a client ``free_hand_lines`` / ``repair_lines`` list.
+
+    ``frozen_lines`` (RT8, v1.62.0): {line key: the saved line} for the stock lines of a saved repair that is being
+    edited at its saved prices. A stock line whose key is in it takes the saved description, unit and unit price —
+    the catalogue is not read, so a material since deleted no longer blocks the edit or the save. A stock line that
+    is not in it (added during the edit) is priced at today's catalogue, as always.
 
     Returns one normalised dict per line:
         {kind, key, description, qty, unit, unit_price, line_total, total_only,
@@ -160,7 +165,21 @@ def parse_lines(raw, *, allow_stock: bool = False, allow_total_only: bool = Fals
         # Display + grouping metadata only; it never touches the money.
         origin = _text(item.get("origin"), field="Origin", cap=200) or None
 
-        if kind == "stock":
+        frozen = (frozen_lines or {}).get(key) if kind == "stock" else None
+        if kind == "stock" and isinstance(frozen, dict):
+            # RT8 — the line as it was quoted: its saved price, never today's catalogue.
+            try:
+                mat_id = int(frozen.get("material_id")) if frozen.get("material_id") not in (None, "") else None
+            except (TypeError, ValueError):
+                mat_id = None
+            description = (_text(frozen.get("description"), field="Description", cap=MAX_DESCRIPTION)
+                           or str(item.get("description") or "").strip() or "Stock item")
+            unit        = _text(frozen.get("unit"), field="Unit", cap=MAX_UNIT) or "each"
+            unit_price  = float(frozen.get("unit_price") or 0)
+            qty = _number(item.get("qty"), field="Quantity", ceiling=MAX_QTY)
+            line_total = round(qty * unit_price, 2)
+            total_only = False
+        elif kind == "stock":
             mat_id = item.get("material_id")
             try:
                 mat_id = int(mat_id)

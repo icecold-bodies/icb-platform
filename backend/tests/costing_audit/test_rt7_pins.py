@@ -109,6 +109,25 @@ def test_a_one_sided_cell_keeps_its_own_reason_through_reaccept():
     assert again.cells[0].status == "ACCEPTED", again.cells[0].reason
 
 
+def test_a_cell_accepted_on_its_own_reason_alone_gets_that_reason_back():
+    """A whole MES section Burt's sheet lacks: the cell's reason (EXTRA_SECTION_IN_MES) is the ONLY text that names
+    the mechanism — its likely cause is a line ('EXTRA_IN_MES ...'). Without base_reason a reaccept would judge it on
+    the line alone and leave it a PRESENCE."""
+    g = _golden({"FLOOR": _gsec([_line("PLY", 1.0, 100.0)])})
+    m = _mes({"FLOOR": [_ml("FLOOR", "PLY", 1.0, 100.0)], "LIGHT BOX": [_ml("LIGHT BOX", "LED STRIP", 2.0, 50.0)]})
+    key = "t~as_sheet | LIGHT BOX"
+    def ent(v):
+        return Accepted(body="*", section="LIGHT BOX", variant="*", reason="x", owner="BA", review_by=FAR, index=0,
+                        cause="EXTRA_SECTION_IN_MES", amounts={key: v}, mechanism="burt_decision_pending", refs=["B-99"])
+    rep = build_report(pack_name="t", tolerance_pct=1.0, manifest={}, mes_source="t", goldens={"s": g},
+                       results={"s": m}, scenario_ids=["s"], accepted=[ent(1.0)], warnings=[])
+    c = next(x for x in rep.cells if x.section_mes == "LIGHT BOX")
+    assert c.status == "FLAG" and c.base_reason == "EXTRA_SECTION_IN_MES"
+    again = reapply_accepted(json.loads(json.dumps(rep.to_dict(), default=str)), [ent(100.0)])
+    cell = next(x for x in again.cells if x.section_mes == "LIGHT BOX")
+    assert cell.status == "ACCEPTED", (cell.status, cell.reason)
+
+
 # ── review_by ────────────────────────────────────────────────────────────────
 
 def test_review_by_expiry_fails_the_run_loudly():

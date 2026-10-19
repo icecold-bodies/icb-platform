@@ -83,6 +83,14 @@ case "$*" in
   *) exec python3 "$@" ;;
 esac
 EOF
+cat > .venv/bin/alembic <<'EOF'
+#!/bin/bash
+# v1.61.1 migrates nothing: icb-deploy.sh's RESUME path still runs `alembic upgrade head` (a no-op at head)
+case "$1" in
+  upgrade) echo "INFO  [alembic] (stub) already at head $(cat "$SIMSTATE/alembic")" ;;
+  current) echo "$(cat "$SIMSTATE/alembic") (head)" ;;
+esac
+EOF
 chmod +x .venv/bin/*
 cp -a /etc "$SIM/etc" && mkdir -p "$SIM/etc/icb"
 echo "export PATH=$SIM/bin:\$PATH SIMSTATE=$SIMSTATE" >> "$SIM/etc/profile"

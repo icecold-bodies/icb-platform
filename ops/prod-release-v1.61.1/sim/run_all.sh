@@ -20,7 +20,7 @@ row factor      "FAIL FACTOR = '1.317073170731707'.*PREFLIGHT: [0-9]+ check\(s\)
 row notag       'STOP \[TAG_ON_ORIGIN\]|PREFLIGHT: [0-9]+ check\(s\) FAILED.*STOP \[TAG\]'
 row moved       'STOP \[WHERE\]: WRONG PLACE — code is at [0-9a-f]{7}, this step expects 5e37b0a [0-9a-f]{7}; nothing was run'
 row traceback   'STOP \[TRACEBACKS\]'
-row resume      'STOP \[DEPLOY\].*RESUME.*######## DEPLOYED.*######## VERIFY: 0 check\(s\) failed'
+row resume      'STOP \[DEPLOY\].*RESUME.*######## DEPLOYED.*rebuilt by the resume.*######## VERIFY: 0 check\(s\) failed.*npm builds: 1'
 row nobackup    'STOP \[BACKUP\]: backup [^ ]*: holds no icb_costings.calculations data'
 row pgdumpfail  'STOP \[BACKUP\]: backup [^ ]*: pg_dump exited 1'
 row cfstale     'STOP \[VERSION_CF\]: got .?v1\.61\.0'

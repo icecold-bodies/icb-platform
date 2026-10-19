@@ -353,7 +353,9 @@ ok "deploy record: completed ${TARGET:0:7}"
 
 say "9. post-deploy asserts, the three doors included (waiting 20 s for all workers to log startup)"
 sleep 20
-post_checks "@$T0" "$T0" "$B_SPA"
+# a RESUME re-runs icb-deploy.sh's idempotent steps, its SPA build among them: only a FRESH deploy must leave the
+# bundle byte-identical; after a resume the SPA must still be served = disk (checked in post_checks either way)
+post_checks "@$T0" "$T0" "$( [ "$RESUME" = 0 ] && echo "$B_SPA")"
 TB=$(tb_since "@$T0")
 
 cat > "$OUT/OUTCOME.txt" <<EOF
@@ -371,7 +373,7 @@ health        $(code_url "$LOCAL/health")
 version       local $(health_version "$LOCAL") · lan $(health_version "$LAN") · cloudflare $(health_version "$CF")
 test banner   local $(banner_on "$LOCAL") · lan $(banner_on "$LAN") · cloudflare $(banner_on "$CF") (bars/[TEST] titles; prod 0/0)
 no session    local: $(noauth_report "$LOCAL") · lan: $(noauth_report "$LAN") · cloudflare: $(noauth_report "$CF")
-spa           $B_SPA -> $(spa_report | cut -d' ' -f1-2) (untouched; local = lan = disk)
+spa           $B_SPA -> $(spa_report | cut -d' ' -f1-2) ($( [ "$RESUME" = 0 ] && echo untouched || echo "rebuilt by the resume"); local = lan = disk)
 finished      $(date -Is)
 EOF
 chmod -R a+rX "$OUT"

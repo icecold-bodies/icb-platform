@@ -1,14 +1,14 @@
 {
  "pack": "icecream",
  "pack_fingerprint": "9671335ad722",
- "generated_at": "2026-10-01T18:00:46+00:00",
+ "generated_at": "2026-10-19T12:50:08+00:00",
  "tool_version": "1.57.0",
  "workbook_month": "2026-09",
  "workbook": {
-  "dir": "C:\\Users\\micge\\AppData\\Local\\Temp\\claude\\C--Users-micge-Documents-icb-platform\\d84d6f7c-e11a-4a32-9edb-960ee9d6b10c\\scratchpad\\rt2wb\\corrected",
+  "dir": "C:\\Users\\micge\\AppData\\Local\\Temp\\claude\\C--Users-micge-Documents-icb-platform\\a90b1f1c-bf81-41db-be7d-d3fe74c4a58d\\scratchpad\\rt7wb\\c3\\corrected",
   "files": {
-   "GRP Costings 2018.xlsx": "04c774e2a7de631458a67fb9e01663973ae20a621b58157cdeb63d0ef59e70bb",
-   "PRICE 2017 MARCH.xlsx": "b85f25aefcdffcfc6cef7df3ecf886532be304c6a2fe9de4b6a4d1f32f5cc75e",
+   "GRP Costings 2018.xlsx": "ed4d57bcd6d5093a3fef34df2296cbfd5dec1314cb00d369c8553762a8b406e8",
+   "PRICE 2017 MARCH.xlsx": "088f43dc74bbce098d0afd3344415f95a515595374c576ae1a0075783d973500",
    "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f"
   },
   "provenance": {
@@ -120,6 +120,30 @@
        "to": "='[1]MILD STEEL'!$D$27/2.98"
       }
      ]
+    },
+    {
+     "file": "PRICE 2017 MARCH.xlsx",
+     "sheet": "PU",
+     "cell": "C19",
+     "from": "5581",
+     "to": "5400",
+     "what": "4G FOAM sheet price",
+     "authority": "Burt's price list PRICE 2017 MARCH.xlsx saved 19 Oct 2026 07:43 UTC (09:43 SAST), PU!C19 4G FOAM R5 581 -> R5 400; prod's 4G factor set to 5400/4100 by Michael on 19 Oct (RT7_RULING_1A)",
+     "id": 3,
+     "cells_changed": [
+      "formula PU!C18: 4358 -> 4590",
+      "formula PU!C19: 5581 -> 5400",
+      "formula PU!C20: 10232 -> 8000",
+      "value PU!C18: 4358 -> 4590",
+      "value PU!C19: 5581 -> 5400",
+      "value PU!C20: 10232 -> 8000",
+      "cache externalLink1.xml PU!C19: '5581' -> '5400'"
+     ],
+     "applied_to": [
+      "PRICE 2017 MARCH.xlsx: Burt's 19 Oct file, byte for byte (sha256 088f43dc74bbce098d0afd3344415f95a515595374c576ae1a0075783d973500)",
+      "GRP Costings 2018.xlsx xl/externalLinks/externalLink1.xml cached [1]PU!C19"
+     ],
+     "not_in_the_golden": "PU!C18 4358 -> 4590 and PU!C20 10232 -> 8000 moved in the price list too; the GRP references neither (not in its link cache), so they cannot reach the golden"
     }
    ],
    "note": "LibreOffice headless prices external references from the GRP's own link cache, never from the adjacent PRICE file (PRICE PU!C17 = 9999 moved nothing) \u2014 so a price correction is made in the cache too, and a new price list only reaches the golden through a GRP saved with its links updated.",
@@ -134,28 +158,21 @@
      "PRICE 2017 MARCH.xlsx": "b85f25aefcdffcfc6cef7df3ecf886532be304c6a2fe9de4b6a4d1f32f5cc75e",
      "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f"
     },
-    "corrected": {
+    "rt2_corrected": {
      "GRP Costings 2018.xlsx": "04c774e2a7de631458a67fb9e01663973ae20a621b58157cdeb63d0ef59e70bb",
      "PRICE 2017 MARCH.xlsx": "b85f25aefcdffcfc6cef7df3ecf886532be304c6a2fe9de4b6a4d1f32f5cc75e",
+     "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f"
+    },
+    "corrected": {
+     "GRP Costings 2018.xlsx": "ed4d57bcd6d5093a3fef34df2296cbfd5dec1314cb00d369c8553762a8b406e8",
+     "PRICE 2017 MARCH.xlsx": "088f43dc74bbce098d0afd3344415f95a515595374c576ae1a0075783d973500",
      "FORMULAS 2018.xls": "f90db787b47a2f81763a5518fa2e0c1ddbbb4c502b2f828861283aa50e1e2f3f"
     }
    },
    "first_check_on_burts_next_set": "both corrections must already be in his file (RT2_RULING_1 R1)",
-   "proof": {
-    "script": "docs/audit/rt2_2026-10/golden/prove_corrections.py",
-    "ran_at": "2026-10-01T17:53:36+00:00",
-    "prove_then_trust_on_original": "OK on all 12 pack sheets",
-    "move_only": {
-     "correction 1 (PU!C17 4095 -> 4100)": {
-      "lines_moved": 40,
-      "sections_moved": 40
-     },
-     "correction 2 (SUB FRAME galv $D$28 -> $D$27)": {
-      "lines_moved": 7,
-      "sections_moved": 7
-     }
-    },
-    "result": "OK \u2014 0 other lines, 0 other sections moved"
+   "rt7": {
+    "ruling": "RT7_RULING_1A (19 Oct 2026): the golden is regenerated for exactly the 4G change",
+    "price_list_19oct_sha256": "088f43dc74bbce098d0afd3344415f95a515595374c576ae1a0075783d973500"
    }
   }
  },

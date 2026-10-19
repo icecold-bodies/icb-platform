@@ -1,0 +1,11 @@
+14:44:37  run  1/10    10s  PASS
+14:44:46  run  2/10    10s  PASS
+14:44:56  run  3/10    10s  PASS
+14:45:06  run  4/10    10s  PASS
+14:45:15  run  5/10     9s  PASS
+14:45:25  run  6/10     9s  PASS
+14:45:35  run  7/10    10s  PASS
+14:45:45  run  8/10    10s  PASS
+14:45:54  run  9/10     9s  PASS
+14:46:03  run 10/10     9s  PASS
+== build1x throttle x1 : 0/10 failed (0%)

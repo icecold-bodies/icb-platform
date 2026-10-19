@@ -198,6 +198,12 @@ FREEZER_KEEP = lambda n: not (n.endswith(" EPS") and n.split()[0] in ("FRONT", "
 
 
 def _drafts_as_michael_left_them(w):
+    # RT7: the other chiller / freezer bodies carry no draft. A shared test database can hold one a lane's test left
+    # (icb_test: body 25, 6 Oct); since RT7's loader gives every snapshot body its prod family, those bodies are in
+    # scope here, so the world says it explicitly (rolled back with the rest).
+    for tid in (19, 21, 25, 27):
+        w.conn.execute(text("delete from configurator_draft_snapshots where trailer_type_id = :t"), {"t": tid})
+        w.conn.execute(text("delete from configurator_drafts where trailer_type_id = :t"), {"t": tid})
     for tid, keep, at in ((26, CHILLER_KEEP, "2026-10-04 11:00"), (20, FREEZER_KEEP, "2026-10-04 11:05")):
         w.conn.execute(text("delete from configurator_draft_snapshots where trailer_type_id = :t"), {"t": tid})
         w.conn.execute(text("delete from configurator_drafts where trailer_type_id = :t"), {"t": tid})

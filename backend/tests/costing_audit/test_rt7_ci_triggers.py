@@ -1,6 +1,7 @@
 """RT7 (RT7_RULING_1 Q4): the costing audit runs ALL FIVE packs on every PR (no path filter), on every push to
 backport/v1.39-base (the squash commit Michael merges), and on demand — and has no `schedule` (GitHub fires
-schedules only from the default branch, so the old nightly never ran for this branch)."""
+schedules only from the default branch, so the old nightly never ran for this branch).
+RT7_RULING_1B G1: the snapshot is loaded and checked column for column in its own step, BEFORE the pack run."""
 from pathlib import Path
 
 import yaml
@@ -23,6 +24,9 @@ jobs:
     strategy:
       matrix:
         pack: ${{ fromJSON(github.event_name == 'pull_request' && '["smoke"]' || '["smoke","chillers","freezers","icecream","explosive"]') }}
+    steps:
+      - name: Audit run
+        run: python -m tools.costing_audit run --pack ${{ matrix.pack }} --mes-snapshot --env prod
 """
 
 
@@ -44,6 +48,11 @@ def problems(text: str) -> list[str]:
     pack = doc["jobs"]["audit"]["strategy"]["matrix"]["pack"]
     if pack != PACKS:
         out.append(f"the matrix is not the five packs on every trigger: {pack!r}")
+    runs = [st.get("run", "") for st in doc["jobs"]["audit"].get("steps", [])]
+    load = next((i for i, r in enumerate(runs) if "tools.costing_audit load-snapshot" in r), None)
+    run = next((i for i, r in enumerate(runs) if "tools.costing_audit run " in r), None)
+    if load is None or run is None or load > run:
+        out.append("no load-fidelity step (`audit load-snapshot`) before the pack run")
     return out
 
 
@@ -57,3 +66,4 @@ def test_negative_control_the_pre_rt7_triggers_are_refused():
     assert any("push must run" in p for p in found)
     assert any("schedule" in p for p in found)
     assert any("matrix is not the five packs" in p for p in found)
+    assert any("no load-fidelity step" in p for p in found)

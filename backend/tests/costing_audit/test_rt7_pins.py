@@ -233,3 +233,126 @@ def test_the_committed_prod_list_and_snapshot_are_a_matched_pair(tmp_path):
     data[data.index(b"0")] = ord("1")
     one_byte.write_bytes(bytes(data))
     assert snapshot_digest(one_byte) != pair["snapshot_sha256"]
+
+
+# ── the loader: the SNAPSHOT's rows win (RT7_RULING_1B §1, G1, F6 — the CI red RT7's first PR run found) ──────────
+
+FACTOR = "costings.pu_foam_4g_factor"
+SEED = "1.363109048723898"              # migration 0046's FACTOR_SEED
+
+
+def _needs_test_db():
+    from app.config import settings
+    from app.db_guard import resolve_db_name
+    if not resolve_db_name(settings.DATABASE_URL).endswith("_test"):
+        pytest.skip("needs the isolated _test database")
+
+
+@pytest.fixture
+def txn():
+    """One connection inside a transaction that is rolled back: the shared test database is left as found."""
+    _needs_test_db()
+    from app.database import engine
+    c = engine.connect()
+    t = c.begin()
+    try:
+        yield c
+    finally:
+        t.rollback()
+        c.close()
+
+
+def _seed_the_factor_under_another_id(c) -> dict:
+    """What `alembic upgrade head` leaves on a fresh CI database: the factor row, seeded under its own id."""
+    from sqlalchemy import text
+    from tools.costing_audit.mes_snapshot import snapshot_path
+    row = next(r for r in json.loads(snapshot_path("all").read_text(encoding="utf-8"))["tables"]["admin_settings"]
+               if r["key"] == FACTOR)
+    assert row["value"] != SEED
+    c.execute(text("DELETE FROM admin_settings WHERE key = :k"), {"k": FACTOR})
+    c.execute(text("INSERT INTO admin_settings (id, key, value) "
+                   "VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM admin_settings WHERE id <> :sid) + :sid, :k, :v)"),
+              {"k": FACTOR, "v": SEED, "sid": row["id"]})
+    return row
+
+
+def test_the_snapshots_rows_win_over_a_migration_seed_and_the_fidelity_check_proves_it(txn):
+    """Migration 0046 seeds the 4G factor under its own id; the loader was ON CONFLICT DO NOTHING, so on CI's fresh
+    database the snapshot's row was skipped and 4G priced at the seed (PR #220's first run: 81 foam_4g cells FLAG).
+    Now the snapshot's row replaces the seeded one, id and value, and check_fidelity finds every snapshot row as
+    written."""
+    from sqlalchemy import text
+    from tools.costing_audit.mes_snapshot import check_fidelity, load_snapshot, snapshot_path
+    row = _seed_the_factor_under_another_id(txn)
+    load_snapshot(snapshot_path("all"), conn=txn, log=lambda *_: None)
+    got = txn.execute(text("SELECT id, value FROM admin_settings WHERE key = :k"), {"k": FACTOR}).one()
+    assert tuple(got) == (row["id"], row["value"])
+    assert check_fidelity(snapshot_path("all"), conn=txn, log=lambda *_: None) == []
+
+
+def test_negative_control_with_do_nothing_put_back_the_fidelity_check_names_the_seeded_row(txn, monkeypatch):
+    """F6: the loader as it was (ON CONFLICT DO NOTHING, nothing moved aside) — the check fails on admin_settings."""
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+    from tools.costing_audit import mes_snapshot as ms
+    row = _seed_the_factor_under_another_id(txn)
+    monkeypatch.setattr(ms, "_unique_keys", lambda t: [])
+    monkeypatch.setattr(ms, "_write", lambda conn, t, chunk, pk_cols:
+                        conn.execute(pg_insert(t).values(chunk).on_conflict_do_nothing()))
+    ms.load_snapshot(ms.snapshot_path("all"), conn=txn, log=lambda *_: None)
+    monkeypatch.undo()
+    problems = ms.check_fidelity(ms.snapshot_path("all"), conn=txn, log=lambda *_: None)
+    assert f"admin_settings id={row['id']} (key='{FACTOR}'): not in the database" in problems
+
+
+def _rows(c, table, ids):
+    from sqlalchemy import text
+    return [tuple(r) for r in c.execute(text(f"SELECT * FROM {table} WHERE id = ANY(:ids) ORDER BY id"), {"ids": ids})]
+
+
+def test_a_seeded_row_under_another_id_is_replaced_its_referrers_follow_and_unload_puts_it_all_back(txn, tmp_path):
+    """The app's startup seeds (the FREEZER group, the freezer_quote template, the recipes) hold snapshot rows'
+    natural keys under their own ids, and other rows point at them. The load moves the seeded row aside, writes the
+    snapshot's, re-points the referrers and deletes the seeded row; unload_snapshot replays the log backwards."""
+    from sqlalchemy import text
+    from tools.costing_audit.mes_snapshot import UNDO, check_fidelity, load_snapshot, unload_snapshot
+    base = txn.execute(text("SELECT COALESCE(MAX(id), 0) FROM report_templates")).scalar()
+    gid = txn.execute(text("SELECT COALESCE(MAX(id), 0) + 1 FROM trailer_groups")).scalar()
+    snap_id, seeded_id = base + 1, base + 2
+    txn.execute(text("INSERT INTO report_templates (id, name, slug, kind, is_active) "
+                     "VALUES (:i, 'seeded', 'rt7-loader-test', 'html', true)"), {"i": seeded_id})
+    txn.execute(text("INSERT INTO trailer_groups (id, name, report_template_id, sort_order) "
+                     "VALUES (:g, 'RT7 LOADER TEST', :t, 100)"), {"g": gid, "t": seeded_id})
+    before = (_rows(txn, "report_templates", [snap_id, seeded_id]), _rows(txn, "trailer_groups", [gid]))
+    snap = tmp_path / "one.json"
+    snap.write_text(json.dumps({"tables": {"report_templates": [{
+        "id": snap_id, "name": "from the snapshot", "slug": "rt7-loader-test", "description": None, "is_active": True,
+        "kind": "html", "pdf_template_id": None, "created_at": "2026-10-19T12:00:00",
+        "updated_at": "2026-10-19T12:00:00"}]}}), encoding="utf-8")
+    inserted: dict = {}
+    load_snapshot(snap, conn=txn, inserted=inserted, log=lambda *_: None)
+    assert [r[0] for r in _rows(txn, "report_templates", [snap_id, seeded_id])] == [snap_id]     # the seeded row gone
+    assert txn.execute(text("SELECT report_template_id FROM trailer_groups WHERE id = :g"), {"g": gid}).scalar() == snap_id
+    assert check_fidelity(snap, conn=txn, log=lambda *_: None) == []
+    assert inserted["report_templates"] == [(snap_id,)] and inserted[UNDO]
+    unload_snapshot(inserted, conn=txn, log=lambda *_: None)
+    assert (_rows(txn, "report_templates", [snap_id, seeded_id]), _rows(txn, "trailer_groups", [gid])) == before
+
+
+def test_a_row_under_a_snapshot_parent_that_the_snapshot_lacks_is_flagged_then_removed(txn):
+    """A body's BOM rows and a recipe's items are the snapshot's to say: a row under a snapshot parent that the
+    snapshot does not carry (deleted on prod since, or left by a seed) would be priced. The check names it (the
+    negative control); the load removes it."""
+    from sqlalchemy import text
+    from app.database import Base
+    from tools.costing_audit.mes_snapshot import check_fidelity, load_snapshot, snapshot_path
+    snap = snapshot_path("all")
+    item = json.loads(snap.read_text(encoding="utf-8"))["tables"]["skin_formula_items"][0]
+    load_snapshot(snap, conn=txn, log=lambda *_: None)
+    extra = txn.execute(text("SELECT COALESCE(MAX(id), 0) + 1 FROM skin_formula_items")).scalar()
+    txn.execute(Base.metadata.tables["skin_formula_items"].insert().values({**item, "id": extra}))
+    assert check_fidelity(snap, conn=txn, log=lambda *_: None) == [
+        f"skin_formula_items id={extra}: formula_id={item['formula_id']} is a snapshot skin_formulas, "
+        "but the row is not in the snapshot"]
+    load_snapshot(snap, conn=txn, log=lambda *_: None)
+    assert _rows(txn, "skin_formula_items", [extra]) == []
+    assert check_fidelity(snap, conn=txn, log=lambda *_: None) == []

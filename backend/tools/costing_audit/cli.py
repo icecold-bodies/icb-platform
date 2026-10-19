@@ -114,11 +114,12 @@ def cmd_run(a) -> int:
                 sheet_maps=a.sheet_maps, prove=not a.no_prove)
     manifest, goldens, warnings = golden_for(pack, a.golden_dir)
     if a.mes_snapshot is not None:
-        from .mes_snapshot import load_snapshot, snapshot_path
+        from .mes_snapshot import snapshot_path
         snap = Path(a.mes_snapshot) if a.mes_snapshot else snapshot_path(pack.name)
         if not snap.is_file() and not a.mes_snapshot:
             snap = snapshot_path("all")          # one snapshot covering every pack's bodies
-        load_snapshot(snap, allow_non_test_db=a.allow_non_test_db, log=_log)
+        if _load_and_check(snap, a.allow_non_test_db):
+            return 2                             # RT7 G1: never price a database that does not hold the snapshot
     tolerance = float(a.tolerance) if a.tolerance is not None else pack.tolerance_pct
     accepted_path = _accepted_path(a.accepted, a.env)
     accepted = load_accepted(accepted_path)
@@ -256,6 +257,23 @@ def _db_label() -> str:
 
 # ── snapshot ────────────────────────────────────────────────────────────
 
+def _load_and_check(snap: Path, allow_non_test_db: bool) -> list[str]:
+    """Load the snapshot (its rows win) and run the fidelity check; the mismatches, empty when faithful."""
+    from .mes_snapshot import check_fidelity, load_snapshot
+    load_snapshot(snap, allow_non_test_db=allow_non_test_db, log=_log)
+    problems = check_fidelity(snap, log=_log)
+    if problems:
+        _log(f"[fidelity] FAILED: {len(problems)} snapshot value(s) are not what the database holds — the audit would "
+             "price something other than the snapshot. Nothing was priced.")
+    return problems
+
+
+def cmd_load_snapshot(a) -> int:
+    """RT7 (RT7_RULING_1B G1): CI's step before the packs — load, then prove every row column for column."""
+    from .mes_snapshot import snapshot_path
+    return 1 if _load_and_check(Path(a.snapshot) if a.snapshot else snapshot_path("all"), a.allow_non_test_db) else 0
+
+
 def cmd_snapshot(a) -> int:
     from .mes_snapshot import export_snapshot, snapshot_path
     from .scenarios import load_pack
@@ -303,7 +321,8 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--tolerance", type=float, default=None, help="percent; overrides the pack")
     r.add_argument("--base-url", default=None, help="hit a running side-port server instead of in-process")
     r.add_argument("--mes-snapshot", nargs="?", const="", default=None,
-                   help="load tests/costing_audit/mes_snapshot/<pack>.json (or PATH) into the _test DB first")
+                   help="load tests/costing_audit/mes_snapshot/<pack>.json (or PATH) into the _test DB first "
+                        "(its rows win), check it column for column, then run")
     r.add_argument("--allow-non-test-db", action="store_true", help=argparse.SUPPRESS)
     r.add_argument("--accepted", default=None, help=f"default {ACCEPTED_FILE}")
     r.add_argument("--env", default=None, help="use tests/costing_audit/accepted_differences.<env>.yaml (e.g. prod)")
@@ -328,6 +347,12 @@ def build_parser() -> argparse.ArgumentParser:
                    help="extra trailer ids beyond the packs' bodies, comma-separated (RT2's 15-body CI snapshot adds "
                         "12,15,36: the two MEAT HANGERs and RHINORANGE, which test_g1 reads)")
     s.set_defaults(fn=cmd_snapshot)
+
+    ls = sub.add_parser("load-snapshot", help="RT7: load a snapshot into the _test DB (its rows win), then check "
+                                              "every row column for column; exit 1 on any mismatch")
+    ls.add_argument("--snapshot", default=None, help="default tests/costing_audit/mes_snapshot/all.json")
+    ls.add_argument("--allow-non-test-db", action="store_true", help=argparse.SUPPRESS)
+    ls.set_defaults(fn=cmd_load_snapshot)
 
     pn = sub.add_parser("pin", help="RT7: write each accepted entry's amounts from saved reports (dry-run unless --write)")
     pn.add_argument("--report", required=True, action="append", help="report JSON of ONE reference run (repeatable)")

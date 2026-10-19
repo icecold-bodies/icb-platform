@@ -15,7 +15,8 @@ name: Costing audit
 #   for backport/v1.39-base.) tests/costing_audit/test_rt7_ci_triggers.py keeps these three.
 #
 # The MES master data comes from tests/costing_audit/mes_snapshot/all.json,
-# loaded into the isolated CI database (icb_test) — CI has no ICB database, so
+# loaded into the isolated CI database (icb_test), its rows winning, and checked
+# column for column before any pack runs (RT7) — CI has no ICB database, so
 # this is an ENGINE-drift gate over PROD's pricing (v1.57.3): the snapshot is
 # exported from prod and paired with prod's accepted list (`--env prod`), whose
 # entries pin their amounts (RT7). Dev is Michael's workbench and keeps its own
@@ -81,10 +82,17 @@ jobs:
         working-directory: backend
         run: pytest tests/costing_audit -o addopts=""
 
+      # RT7 (RT7_RULING_1B §1, G1): the snapshot's rows WIN over anything a migration or seed put here (until RT7
+      # the loader skipped them: migration 0046's seeded 4G factor priced every CI run), then every snapshot row is
+      # checked column for column — any mismatch fails here, naming table, key and column, before a pack is priced.
+      - name: Load the prod snapshot + the load-fidelity check
+        working-directory: backend
+        run: python -m tools.costing_audit load-snapshot
+
       - name: Audit run — pack ${{ matrix.pack }}
         working-directory: backend
         run: |
-          python -m tools.costing_audit run --pack ${{ matrix.pack }} --mes-snapshot --env prod \
+          python -m tools.costing_audit run --pack ${{ matrix.pack }} --env prod \
             --out ../costing_audit_reports --stem costing_audit_${{ matrix.pack }}
 
       - name: Upload report

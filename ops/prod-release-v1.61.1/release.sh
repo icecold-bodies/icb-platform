@@ -199,7 +199,7 @@ post_checks() { # $1 journal --since, $2 epoch the code moved (deploy) or empty,
   check NOAUTH_LOCAL "$(noauth_report "$LOCAL")" "all $N_PROBES as expected"
   check NOAUTH_LAN "$(noauth_report "$LAN")" "all $N_PROBES as expected"
   check NOAUTH_CF "$(noauth_report "$CF")" "all $N_PROBES as expected"
-  say "served bytes: the SPA is untouched by this release (local = lan = disk$( [ -n "${3:-}" ] && echo ' = before'))"
+  say "served bytes: the SPA served = the bundle on disk (local = lan = disk$( [ -n "${3:-}" ] && echo ' = before: untouched by this release'))"
   set -- "$1" "${2:-}" "${3:-}" $(spa_report)
   check SPA_LOCAL "$6" "$5"
   check SPA_LAN "$7" "$5"
@@ -334,7 +334,8 @@ if [ "$RESUME" = 0 ]; then
   grep -q 'Service restart *YES' "$OUT/icb-deploy-dryrun.txt" || stop DRYRUN "plan does not say: service restart YES"
   grep -q 'dependency manifests changed' "$OUT/icb-deploy-dryrun.txt" && stop DRYRUN "the plan warns that dependency manifests changed"
 fi
-ok "plan: no migration, no SPA rebuild, restart"
+if [ "$RESUME" = 0 ]; then ok "plan: no migration, no SPA rebuild, restart"
+else ok "plan: RESUME — icb-deploy.sh re-runs its idempotent steps (alembic at head, the SPA rebuilt from the same sources), restart"; fi
 
 say "8. deploy (fast-forward, its own backup, restart, health, completion record)"
 PID_BEFORE=$(systemctl show "$SERVICE" -p MainPID --value)

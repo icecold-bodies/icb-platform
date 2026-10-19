@@ -294,7 +294,9 @@ function showSection(i){
   h += '<div class="small" style="margin-bottom:6px">Excel <b>'+fmt(c.excel_total)+'</b> · MES <b>'+fmt(c.mes_total)+'</b>'+(c.variance_pct!=null?' · '+fmt(c.variance_pct)+' %':'')+
        (c.likely_cause?' · likely cause: <b>'+esc(c.likely_cause)+'</b>':'')+'</div>';
   if (c.accepted) for (const a of [c.accepted, ...(c.accepted.also||[])])
-    h += '<div class="warn">'+(a.kind==='known_defect'?'Known defect':'Accepted')+': '+esc(a.reason)+' — '+esc(a.owner)+', review by '+esc(a.review_by)+'</div>';
+    h += '<div class="warn">'+(a.kind==='known_defect'?'Known defect':'Accepted')+': '+esc(a.reason)+' — '+esc(a.owner)+', review by '+esc(a.review_by)+
+         (a.mechanism?' · <b>'+esc(a.mechanism)+'</b>':'')+(a.pinned!=null?' · pinned at <b>'+fmt(a.pinned)+'</b>':'')+
+         (a.refs&&a.refs.length?' · clears with '+esc(a.refs.join(', ')):'')+'</div>';
   const tri = c.triage || [];
   if (!tri.length){
     h += '<div class="placeholder">'+(c.status==='PASS'?'Within tolerance — the line comparison is only recorded for sections that differ.'

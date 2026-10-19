@@ -31,10 +31,42 @@ rulings `RT7_RULING_1` (17 Oct) and `RT7_RULING_1A` (19 Oct: prod's 4G factor mo
 - **Tests only:** the flaky repair journey and the 14 other sites sharing its assumption wait for the calculator's init
   to finish (`_common.wait_calculator_ready`).
 
-## Expected numbers (re-derived from the build paste; written here BEFORE the window)
+## Expected numbers (from the build paste, 19 Oct 15:15; proven on the mirror — `docs/audit/rt7_2026-10/mirror/MIRROR_PROOF.md`)
 
-__FROM_THE_BUILD_PASTE__ — the All after the deploy: **0 FLAG**, ACCEPTED per pack, page = CLI. Filled in from the
-build paste's reference run against the refreshed golden, and proven on the mirror loaded from the new snapshot.
+Prod's data as the build paste read it (19 Oct 15:15 SAST: prod `5e37b0a`, alembic 0053, the 4G factor exactly
+`1.3170731707317074`). If prod's pricing moves before the window, these move with it: re-derive them first.
+
+**Window step 1 — All BEFORE** (the deployed v1.61.0: the old golden, the old list): the paste's own counts.
+
+| pack | FLAG | ACCEPTED | PASS | SKIP | UNVERIFIABLE |
+|---|---|---|---|---|---|
+| chillers | 0 | 0 | 590 | 126 | — |
+| freezers | 71 | 24 | 478 | 117 | — |
+| icecream | 37 | 32 | 387 | 116 | 40 |
+| explosive | 6 | 3 | 522 | 117 | 36 |
+| **All (2 702)** | **114** | **59** | 1 977 | 476 | 76 |
+| smoke (234) | 15 | 18 | 156 | 45 | — |
+
+(114 = FREEZER MEDIUM's 48 hand edits − 4 of them that the 4G change now nets under 1 % + the 4G cells: 27 freezers,
+37 icecream, 6 explosive — the old golden still prices 4G at R5 581.)
+
+**Window step 4 — All AFTER** (v1.61.1: the refreshed golden, the pinned list): **0 FLAG**, PAGE = CLI.
+
+| pack | FLAG | ACCEPTED | PASS | SKIP | UNVERIFIABLE |
+|---|---|---|---|---|---|
+| chillers | 0 | 0 | 590 | 126 | — |
+| freezers | 0 | **72** | 501 | 117 | — |
+| icecream | 0 | **40** | 416 | 116 | 40 |
+| explosive | 0 | **3** | 528 | 117 | 36 |
+| **All (2 702)** | **0** | **115** | 2 035 | 476 | 76 |
+| smoke (234) | 0 | **33** | 156 | 45 | — |
+
+ACCEPTED 115 = 52 before RT6's window − 0 pruned (the eight pruned entries covered no cell) + 15 (ICECREAM MEDIUM FLOOR
+back under the probe-limit entry once the lamination returned to Burt's price) + 48 (FREEZER MEDIUM's three hand edits).
+
+**Verify BEFORE the deploy fails on exactly 7** (the simulation's list): `HEAD`, `TAG_LOCAL`, `DESCRIBE`, `LIST` (the
+v1.61.0 tool has no pinned list), `VERSION_LOCAL / _LAN / _CF` (v1.61.0). Everything else passes — the factor, the
+autologin, the environment key, the SPA, the 46 probes × 3.
 
 ## The kits (committed, staged byte-exact from the merge commit by ONE script)
 

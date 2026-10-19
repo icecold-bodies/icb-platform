@@ -324,7 +324,8 @@ def _mark(cell: Cell, primary: Accepted, others: list[Accepted], today: date | N
     if primary.amounts is not None:
         cell.accepted["pinned"] = primary.pinned(pin_key(cell))
     if others:
-        cell.accepted["also"] = [o.to_dict() for o in others]
+        cell.accepted["also"] = [dict(o.to_dict(), pinned=o.pinned(pin_key(cell))) if o.amounts is not None
+                                 else o.to_dict() for o in others]
         if any(o.kind == "known_defect" for o in others):
             cell.accepted["kind"] = "known_defect"
     expired = [a for a in [primary, *others] if a.expired(today)]

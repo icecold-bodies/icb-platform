@@ -1,0 +1,20 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  5e37b0a4  RT6 (v1.61.0): Burt's insulation rules enforced (0053), the TEST
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  5511355f25d9868636854db60c747a719efccae5 already present - no fetch needed
+[32m  ok[0m  5511355f25d9868636854db60c747a719efccae5 = 5511355f
+
+[1m== 2. plan[0m
+  5e37b0a4 -> 5511355f   (2 commit(s), 188 file(s))
+    5511355 RT7 (v1.61.1): the audit's truth — pinned acceptances, CI snapshot = prod, the 19 Oct 4G golden, all packs in CI, the flaky journeys, the reboot guard (#220)
+    9017c0b docs(release): v1.61.0 OUTCOME + RT6 close — prod = 5e37b0a (alembic 0053), Burt's two rules enforced, nothing priced moved; RULING_3's probe-check and sim fix (#219)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 22 Python file(s) changed
+
+[32m  ok[0m  dry run - nothing changed.

@@ -156,4 +156,78 @@ ALREADY DEPLOYED and verifies; the kit's pg_dump runs at alembic 0053; no npm bu
 
 ## OUTCOME
 
-(appended after the window)
+**20 Oct 2026, 13:03–13:25 SAST: prod = v1.61.1 `5511355`, alembic 0053. 0 FLAG / 115 ACCEPTED, smoke 0 / 33,
+PAGE = CLI. Nothing priced moved.** Evidence: `docs/audit/rt7_2026-10/prod/window_20261020/` (the kits' out folders,
+`window_pastes.txt`, `cells_window.txt`). The window tar is `Downloads\rt7-window-back-20261020-132023.tar`, sha256
+`92e4b07c…`, 12 564 480 B.
+
+**Before the window:**
+- **Merge:** #220 squash `5511355` (09:00 UTC), parent `9017c0b`, tree = the tested `cce0fb0`, 7 / 7 checks green on
+  it.
+- **Tag:** `v1.61.1` = tag object `771b032`, local = origin, peeling to `5511355`.
+- **:8000:** the main clone was fast-forwarded `9017c0b → 5511355`. Michael's 235 local entries are byte-identical
+  before and after (digest d64dc329). `/health/version` reads `{"version":"v1.61.1","environment":"unset"}`.
+  Admin → Costing audit run #12 (dev list, dev data): pass 1584 · flag 54 · accepted 512 · unverifiable 76.
+  - These are dev's own numbers. :8000 audits the database `icb` with the dev list, so RULING_2 G2's "0 / 115" and the
+    mechanism / pinned line could not appear there.
+  - They appeared on prod in step 5a.
+- **Kits:** staged from `5511355` (release `d48801dd`, all `8f2e629c`, doors `2960d270`).
+
+| # | step | result |
+|---|---|---|
+| 0 | copy (13:03:43) | 3 kits verified and stamped; prod boot 2026-10-11 08:02:53 (no reboot since RT6) |
+| 1 | preflight (13:05:57) | **PASSED**: the factor exactly `1.3170731707317074`, v1.61.0 on the three doors, 46 probes × 3, the tag on origin |
+| 2 | verify, before | **8 failed, not 7.** The expected 7 (`HEAD`, `TAG_LOCAL`, `DESCRIBE`, `LIST`, `VERSION_*` × 3) plus `TRACEBACKS = 12`. A read-only listing (13:08:28) showed all 12 are 4 `starlette.requests.ClientDisconnect` (dropped browser requests, 3 traceback lines each) under v1.61.0 on 19 Oct, 11:14:05 × 2 and 14:13:25 × 2. Cleared as pre-existing: the deploy counts from its own restart |
+| 3 | All before (13:10) | page #48 PASS 1977 / **FLAG 114 / ACCEPTED 59** / UNVERIFIABLE 76; the CLI per pack = the table above, smoke 15 / 18; **PAGE = CLI** 2 702 / 2 702; = the 19 Oct build paste **cell for cell, 2 936 / 2 936** |
+| 4 | deploy (13:12:34–13:13:25) | **DEPLOYED `5e37b0a → 5511355`**. Backup `icb_platform_pre-v1.61.1_20261020-131234.dump`, 3 807 433 B, sha256 `c165f72d…`, checked. No migration; restart 13:12:40 (pid 34561 → 76017), 4 workers, 0 tracebacks. The factor unchanged; `LIST = 7 336dd05e… pair=snapshot`; `{"version":"v1.61.1","environment":"prod"}` on 127.0.0.1, then LAN, then Cloudflare; no TEST bar; 46 probes × 3; the SPA byte-identical. The fetch printed `! [rejected] v1.47.1 (would clobber existing tag)`: prod's own old tag, left alone (standing rule) |
+| 5 | All after (13:14) | page #49 PASS 2035 / **FLAG 0 / ACCEPTED 115** / UNVERIFIABLE 76, golden `ed4d57bc`; the CLI per pack = the table above, smoke **0 / 33**; **PAGE = CLI** 2 702 / 2 702; = the mirror's final run **cell for cell, 2 936 / 2 936**. A FREEZER MEDIUM DRD DOOR FITTINGS cell reads `… review by 2026-11-30 · mes_updated_ahead_of_burt · pinned at -293,46 · clears with E-03` |
+| 6 | doors (13:19:10) | **SUMMARY: 14 OK**; no exceptions |
+| 7 | verify, after (13:19:36) | **0 failed** |
+| 8 | fetch (13:20:23) | the tar above |
+| close | prod `/tmp` (13:24–13:25) | `icb-rt7-discovery/`, `icb-rt7-discovery.tar`, `icb-rt7-export/` and `icb-rt7-export.tar` (with the out folders and tars inside): **gone, read back**. The three window kits and their tars stay: not named by the ruling, their outputs fetched, and a reboot clears `/tmp` |
+
+**Recorded (RT7_RULING_2, the close):**
+- **The 4G factor:** set by hand on prod by Michael on 19 Oct, by SQL, value only:
+  - `'1.361219512195122'` (F2, as the 16 Oct export read it) → `'1.3170731707317074'` (5400 / 4100);
+  - its `updated_at` still reads `2026-10-01 12:44:36`;
+  - no backup was taken before that SQL, and the BA's F3 kit was not run (RT7_RULING_1A).
+- **bom 3216** (CHILLER MEDIUM / DRD DOOR FITTINGS / 2317 DOOR RUBBER):
+  - its formula ends `* 0`, a hand edit on prod after 2 Oct (seen 16 Oct);
+  - intended (Michael, 19 Oct): Burt's sheet types that total as 0. B-07;
+  - named by its exact expression in `test_v1_58`'s `LATER_PROD_EDITS`.
+- **MEAT HANGER LARGE FRONT PU, bom 5842:**
+  - `/2.99` in the 19 Oct export: on purpose, to match a quote (BA);
+  - Michael put it back to `/2.98` on prod on 19 Oct, after the export. RT7 did not read that back: no pack covers MEAT,
+    and there is no re-export;
+  - the CI snapshot keeps `/2.99` until the next export.
+- **The three extra bodies, against the 2 Oct snapshot** (no pack covers them):
+  - **MEAT HANGER LARGE (12):** SIDES plywood 4MM PF → 6MM BIRCH (same price R171.14); ROOF row 5913 conditioned on
+    `6MM PF PLYWOOD`, plus a new 4MM PF PLYWOOD row (11223); FRONT 5842 `/2.99` (above); FRONT 5846's formula rewritten
+    (panel deductions).
+  - **MEAT HANGER SMALL-MEDIUM (36):** the same ROOF radio (6221 conditioned, plus a new 11224).
+  - **RHINORANGE (15):** the 256.50 `unit_price_override` removed on FRONT 1794, DRD 1805 and SIDES 1827; FLOOR
+    1854 / 1855 lost a `*2`.
+- **CI's snapshot loader (RULING_1B):**
+  - every CI run since v1.57.3 had priced 4G with migration 0046's seeded factor;
+  - fixed before the merge: the snapshot's rows win, and the fidelity check runs before the packs
+    (`docs/audit/rt7_2026-10/ci_loader/`).
+- **Q2** (body 51's seven dangling FKs, pinned): its own PR after the window (Michael's choice),
+  icecold-bodies/icb-platform#222.
+- **The 16 Oct near-miss:** a missing ssh stub in a CA runner test let the real ssh reach prod: a read-only probe plus a
+  failed tar, nothing written. Disclosed in RT7_RETURN_1 and accepted. Since then, stub tests point at 127.0.0.9 and
+  assert the stubs resolve first.
+- **20 Oct, the shared local `icb_test` (disclosure):**
+  - while checking Q2, the CA ran `audit load-snapshot` against the shared local `icb_test`. It **commits**: the 15
+    snapshot bodies now carry the 19 Oct prod data;
+  - the four seeded rows that share a snapshot row's name now sit under the snapshot's ids, with their referrers
+    re-pointed: the FREEZER group, `freezer_quote`, Waste and the 4G factor;
+  - stale rows under those bodies are gone, and the sequences are forward;
+  - RT8's side-port server (:8013) was running on `icb_test` at the time;
+  - the state is CI's after-load state and the full suite is built for it, but it cannot be undone exactly: the CLI keeps
+    no undo log, and the 19 Oct dump would wipe newer work;
+  - the lesson: `load-snapshot` and `run --mes-snapshot` are for CI and scratch databases, never a shared one.
+- **Queued (RULING_2):**
+  - no side-port server on `icb_test` while a suite runs on it;
+  - body 51's clean-up (clears the seven);
+  - from earlier rulings: the Manni gap job, the old-stylesheet clean-up, the role review, the Trailer Designer console
+    error, the duplicate route; the calculator's init-restore race → RT8.

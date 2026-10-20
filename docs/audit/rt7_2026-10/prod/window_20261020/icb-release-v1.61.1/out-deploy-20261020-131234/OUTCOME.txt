@@ -1,0 +1,16 @@
+deployed      5e37b0a -> 5511355 (5511355f25d9868636854db60c747a719efccae5)
+tag           v1.61.1 = 771b032a35ab5d4ed4da3ce5d51016d1201739cd (local = origin, peels to the target); git describe = v1.61.1
+alembic       0053 -> 0053 (no migration)
+4G factor     1.3170731707317074 (unchanged; Michael's 19 Oct value, 5400/4100)
+audit list    7 336dd05e24138dfa56e94b85e3d719ae6a1cdb466480c0cf52b614ec388ddd5c pair=snapshot (entries, pair sha256, pair = the deployed snapshot)
+golden month  2026-09
+environment   ICB_ENVIRONMENT=prod in /etc/icb/backend.env; autologin empty: yes
+backup        /var/backups/postgres/icb_platform_pre-v1.61.1_20261020-131234.dump  3807433 bytes  sha256 c165f72d1e156f5db613d25edc1d675413fe64838a51e1eb7831b3c786dda21a (checked: alembic_version, admin_settings, trailer_types, bill_of_materials, materials, calculations)
+restart       Thu 2026-10-15 13:01:18 SAST -> Tue 2026-10-20 13:12:40 SAST (pid 34561 -> 76017), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks
+health        200
+version       local {"version":"v1.61.1","environment":"prod"} · lan {"version":"v1.61.1","environment":"prod"} · cloudflare {"version":"v1.61.1","environment":"prod"}
+test banner   local 0/0 · lan 0/0 · cloudflare 0/0 (bars/[TEST] titles; prod 0/0)
+no session    local: all 46 as expected · lan: all 46 as expected · cloudflare: all 46 as expected
+spa           assets/index-BBI2d9Oo.js cd39cb56c57560978799f07eabaf27abbf6b95f3fb74a214b4aedb60ecaa5606 -> assets/index-BBI2d9Oo.js cd39cb56c57560978799f07eabaf27abbf6b95f3fb74a214b4aedb60ecaa5606 (untouched; local = lan = disk)
+finished      2026-10-20T13:13:25+02:00

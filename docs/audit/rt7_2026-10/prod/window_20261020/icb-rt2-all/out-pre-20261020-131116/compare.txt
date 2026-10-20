@@ -1,0 +1,14 @@
+page run #48: All, flagged, started 2026-10-20 13:10:02.331457+02, finished 2026-10-20 13:10:07.799131+02 (1 min ago)
+   environment prod · database icb_platform · accepted list accepted_differences.prod.yaml · golden 04c774e2a7de6314
+   stored counts: PASS 1977  FLAG 114  ACCEPTED 59  EXPIRED 0  UNVERIFIABLE 76
+
+CLI, per pack (the deployed code's golden, packs and prod list):
+   chillers   PASS 590  SKIP 126  (cells 716)
+   freezers   PASS 478  ACCEPTED 24  SKIP 117  FLAG 71  (cells 690)
+   icecream   PASS 387  ACCEPTED 32  SKIP 116  UNVERIFIABLE 40  FLAG 37  (cells 612)
+   explosive  PASS 522  ACCEPTED 3  SKIP 117  UNVERIFIABLE 36  FLAG 6  (cells 684)
+   ALL        PASS 1977  ACCEPTED 59  SKIP 476  UNVERIFIABLE 76  FLAG 114  (cells 2702)
+page       PASS 1977  ACCEPTED 59  SKIP 476  UNVERIFIABLE 76  FLAG 114  (cells 2702)
+
+cells: page 2702, CLI 2702, identical 2702, differ 0, page only 0, CLI only 0
+PAGE_EQUALS_CLI: yes (2702 of 2702 cells identical)

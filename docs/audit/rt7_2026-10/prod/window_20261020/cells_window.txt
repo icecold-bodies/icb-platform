@@ -1,0 +1,9 @@
+RT7 window, 20 Oct 2026 — the window's reports, cell by cell (cmp_window.py: status, MES total and Excel total to the cent)
+
+prod AFTER  (icb-rt2-all/out-post-20261020-131725, v1.61.1)  vs the mirror's final run (19 Oct; the committed golden + list):
+    2936 of 2936 cells identical; 0 differ
+prod BEFORE (icb-rt2-all/out-pre-20261020-131116, v1.61.0)  vs the 19 Oct 15:15 build paste (out-20261019-151523):
+    2936 of 2936 cells identical; 0 differ
+
+So nothing the packs price moved on prod between the build paste and the window, and v1.61.1 on prod prices exactly
+what the mirror priced from the committed snapshot.

@@ -1,0 +1,41 @@
+(the line above, as run: machine icb-mes-prod, db icb_platform @ 127.0.0.1:5432, head 5511355f25d9868636854db60c747a719efccae5, boot 2026-10-11 08:02:53 SAST, mode verify)
+== prod: db=icb_platform alembic=0053 code=5511355 mode=verify target=5511355 (v1.61.1) 2026-10-20T13:19:36+02:00
+== code + tag; the schema and the data do not move (no migration; the 4G factor is data)
+   PASS HEAD = 5511355f25d9868636854db60c747a719efccae5
+   PASS TAG_LOCAL = 771b032a35ab5d4ed4da3ce5d51016d1201739cd
+   PASS DESCRIBE = v1.61.1
+   PASS ALEMBIC = 0053
+   PASS FACTOR = 1.3170731707317074
+== the deployed audit: the prod list loads strictly (every entry pinned) and is paired with the deployed snapshot
+   PASS LIST = 7 336dd05e24138dfa56e94b85e3d719ae6a1cdb466480c0cf52b614ec388ddd5c pair=snapshot
+   PASS GOLDEN_MONTH = 2026-09
+== the environment key and autologin
+   PASS ENV_KEY = ICB_ENVIRONMENT=prod
+   PASS AUTOLOGIN_EMPTY = yes
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+   PASS TRACEBACKS = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+== /health/version on the three doors (no session): the version and the environment the RUNNING process reports
+   PASS VERSION_LOCAL = v1.61.1
+   PASS ENVIRONMENT_LOCAL = prod
+   PASS NO_TEST_BANNER_LOCAL = 0/0
+   PASS VERSION_LAN = v1.61.1
+   PASS ENVIRONMENT_LAN = prod
+   PASS NO_TEST_BANNER_LAN = 0/0
+   PASS VERSION_CF = v1.61.1
+   PASS ENVIRONMENT_CF = prod
+   PASS NO_TEST_BANNER_CF = 0/0
+== no session, Accept JSON: every path in probe_paths.txt answers its listed status, on the three doors
+   PASS NOAUTH_LOCAL = all 46 as expected
+   PASS NOAUTH_LAN = all 46 as expected
+   PASS NOAUTH_CF = all 46 as expected
+== served bytes: the SPA served = the bundle on disk (local = lan = disk)
+   PASS SPA_LOCAL = cd39cb56c57560978799f07eabaf27abbf6b95f3fb74a214b4aedb60ecaa5606
+   PASS SPA_LAN = cd39cb56c57560978799f07eabaf27abbf6b95f3fb74a214b4aedb60ecaa5606
+
+######## VERIFY: 0 check(s) failed — tell the CA: /tmp/icb-release-v1.61.1/out-verify-20261020-131936

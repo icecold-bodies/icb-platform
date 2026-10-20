@@ -1,0 +1,26 @@
+== prod: db=icb_platform alembic=0053 code=5e37b0a label=pre staged=5511355  2026-10-20T13:11:17+02:00
+== 1. the five packs, --env prod (the deployed code, read-only sessions)
+   smoke exit=1  - Cells: FLAG 15, ACCEPTED 18, PASS 156, SKIP 45
+   chillers exit=0  - Cells: PASS 590, SKIP 126
+   freezers exit=1  - Cells: FLAG 71, ACCEPTED 24, PASS 478, SKIP 117
+   icecream exit=1  - Cells: FLAG 37, UNVERIFIABLE 40, ACCEPTED 32, PASS 387, SKIP 116
+   explosive exit=1  - Cells: FLAG 6, UNVERIFIABLE 36, ACCEPTED 3, PASS 522, SKIP 117
+== NOTE: unaccepted cells in: smoke freezers icecream explosive (reported, not a stop: the window table says which are expected)
+== 2. the page's newest All against the CLI
+   last data change on prod (a data-kit apply or revert journal in /var/backups/icb-rt2-2026-10 /var/backups/icb-rt4-2026-10 /var/backups/icb-rt5-2026-10 /var/backups/icb-rt6-2026-10): 2026-10-15T13:07:27+02:00
+page run #48: All, flagged, started 2026-10-20 13:10:02.331457+02, finished 2026-10-20 13:10:07.799131+02 (1 min ago)
+   environment prod · database icb_platform · accepted list accepted_differences.prod.yaml · golden 04c774e2a7de6314
+   stored counts: PASS 1977  FLAG 114  ACCEPTED 59  EXPIRED 0  UNVERIFIABLE 76
+
+CLI, per pack (the deployed code's golden, packs and prod list):
+   chillers   PASS 590  SKIP 126  (cells 716)
+   freezers   PASS 478  ACCEPTED 24  SKIP 117  FLAG 71  (cells 690)
+   icecream   PASS 387  ACCEPTED 32  SKIP 116  UNVERIFIABLE 40  FLAG 37  (cells 612)
+   explosive  PASS 522  ACCEPTED 3  SKIP 117  UNVERIFIABLE 36  FLAG 6  (cells 684)
+   ALL        PASS 1977  ACCEPTED 59  SKIP 476  UNVERIFIABLE 76  FLAG 114  (cells 2702)
+page       PASS 1977  ACCEPTED 59  SKIP 476  UNVERIFIABLE 76  FLAG 114  (cells 2702)
+
+cells: page 2702, CLI 2702, identical 2702, differ 0, page only 0, CLI only 0
+PAGE_EQUALS_CLI: yes (2702 of 2702 cells identical)
+
+######## DONE (pre): PAGE = CLI — tell the CA: /tmp/icb-rt2-all/out-pre-20261020-131116

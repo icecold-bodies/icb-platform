@@ -163,6 +163,14 @@ def _pick(page: Page, tid: int, want=None):
     return _calc(page, lambda: page.select_option("#trailer-select", str(tid)), tid, want)
 
 
+def _reopen(page: Page, rec_id: int) -> None:
+    """RT8 (v1.62.0): a re-opened quote is the SAVED quote — no calculation runs on open; the page shows the stored
+    copy with the quote's own selections restored."""
+    page.goto(f"/mes/calculator?stay=1&edit={rec_id}")
+    expect(page.locator("[data-testid='frozen-saved-line']")).to_be_visible(timeout=T)
+    expect(page.locator("#grand-total")).not_to_have_text("—", timeout=T)
+
+
 def _note(page: Page):
     return page.locator("#body-rule-note")
 
@@ -319,7 +327,8 @@ def test_the_foam_picker_hides_only_when_no_pu_is_offered_or_selected(page: Page
     # (e) the chiller costing saved with PU, re-opened after the removal: SHOWN (PU is selected on it)
     page.goto("/mes/calculator?stay=1")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
-    _calc(page, lambda: page.goto(f"/mes/calculator?stay=1&edit={rec_id}"), ids["chill"], pu_on)
+    _reopen(page, rec_id)
+    assert pu_on({"body_option_selections": page.evaluate("() => bodyOptionSelections")})
     expect(_foam(page)).to_be_visible(timeout=T)
     expect(_note(page)).to_be_visible()
     shot(page, "08-reopened-chiller-costing-with-pu-shows-the-picker", journey=JOURNEY)

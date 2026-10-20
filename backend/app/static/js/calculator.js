@@ -3334,7 +3334,10 @@ async function editCalculation(recordId) {
     //    replaces the figures on screen.
     const meta = {
       recordId: +recordId, saved, savedAt: payload.saved_at || null, quoteNumber: payload.quote_number || null,
-      version: payload.version || 1, library: payload.frozen_library || 'none', repair: false, snap,
+      version: payload.version || 1, library: payload.frozen_library || 'none', repair: false,
+      // the saved option state the re-price lays over today's defaults: the UI snapshot, else (a record saved
+      // before the snapshot existed) its selection snapshot — the same fallback the display above used
+      snap: Object.keys(snap).length ? snap : { body_option_selections: payload.body_option_selections || {} },
       dims: payload.dimensions || {}, reason: payload.frozen_reason || null,
     };
     if (payload.frozen_capable && saved && Array.isArray(saved.items)) {
@@ -3346,16 +3349,21 @@ async function editCalculation(recordId) {
       _frozenReadOnlyMeta = meta;
     }
     if (saved && Array.isArray(saved.items)) {
-      lastResult = saved;
+      // a record saved before the summary fields existed (no category_totals) still opens, read-only, with what
+      // it has: the renderers get the shape they expect
+      const shown = { ...saved, category_totals: saved.category_totals || {}, grand_total: Number(saved.grand_total) || 0 };
+      lastResult = shown;
       lastCalcPayload = frozen ? _buildFrozenPayload(tid) : _buildCalcPayload(tid);
       lastResultPayload = lastCalcPayload;
       lastBodyVars   = saved.body_variables           || {};
       lastFormulaLib = saved.formula_library_resolved || {};
       lastGlobalVars = saved.global_variables         || {};
-      _publishHelpContext(saved);
-      renderSummary(saved);
+      _publishHelpContext(shown);
+      renderSummary(shown);
       renderBOMWithCosts(saved.items, bomData);
-      renderRuleBreaches([]);
+      // RT6 under RT8 — the saved quote's breaches of its family's current rule (from the record, no calculation):
+      // listed in red; Remove on a frozen quote points to re-pricing, where it works
+      renderRuleBreaches(payload.rule_breaches || []);
       renderRuleUnclassified([]);
     }
     _setDisabled('approve-btn', !frozen);
@@ -4338,6 +4346,12 @@ async function loadBOM(options = {}) {
     _resetQuoteVars(tid);          // RT2 — a fresh costing starts from the template's thicknesses
     editBodyVarOverrides = null;   // pinned thicknesses only apply within an edit
     editReplay = null;             // replay state only applies within an edit
+    // RT8 — a different body cannot be priced from the saved lines: frozen / re-priced mode ends here. The edit
+    // binding itself stays, as v1.46.1 left it (Save still asks about the record; the server decides what it takes).
+    frozen = null; repricedFrom = null; _frozenReadOnly = false; _frozenReadOnlyMeta = null;
+    _applyFrozenLock();
+    const _bal = document.getElementById('edit-banner-balance');
+    if (_bal) _bal.innerHTML = '';
     discountKind = null; discountInput = 0;   // discount is per-costing, reset on a fresh trailer
     // Force the next renderBodyOptionsTree call to re-seed from
     // cfg_user_state_<tid>, since we just cleared bodyOptionSelections.

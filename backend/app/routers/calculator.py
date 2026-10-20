@@ -2516,6 +2516,9 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         # and, on a re-priced revision, where it came from and what changed.
         "frozen_capable":  _frozen_ok,
         "frozen_reason":   _frozen_why,
+        # RT6 under RT8 — the saved quote's breaches of its family's CURRENT rule, shown on the frozen screen on
+        # open (no calculation runs there); the save refuses them and points to re-pricing
+        "rule_breaches":   rule_guard.saved_breaches(db, rec),
         "saved_at":        result_data.get("saved_at"),
         "frozen_library":  ("stored" if isinstance(result_data.get("formula_library"), dict)
                             else "values" if result_data.get("formula_library_resolved") else "none"),

@@ -216,6 +216,14 @@ def _open_calculator(page: Page) -> None:
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
 
 
+def _reopen(page: Page, rec_id: int) -> None:
+    """RT8 (v1.62.0): a re-opened quote is the SAVED quote — no calculation runs on open; the stored copy is shown,
+    with the saved quote's breaches of the family's current rule listed from the record."""
+    page.goto(f"/mes/calculator?stay=1&edit={rec_id}")
+    expect(page.locator("[data-testid='frozen-saved-line'], [data-testid='frozen-readonly']").first).to_be_visible(timeout=T)
+    expect(page.locator("#grand-total")).not_to_have_text("—", timeout=T)
+
+
 def _breaches(page: Page):
     return page.locator("#body-rule-breaches")
 
@@ -227,29 +235,49 @@ def _db_selection(rec_id) -> dict:
 
 
 # ── 1 ───────────────────────────────────────────────────────────────────────
-def test_reopen_warns_remove_clears_it_and_the_overwrite_then_saves(page: Page, live_server: str, staged) -> None:
+def test_reopen_warns_remove_clears_it_and_the_new_revision_then_saves(page: Page, live_server: str, staged) -> None:
+    """RT6 under RT8 (v1.62.0): a re-opened quote is the SAVED quote, so its breach is listed from the record, a
+    save at the saved prices is refused and points to re-pricing, Remove on the frozen quote points there too, and
+    after "Update to today's prices" Remove clears the breach and the save is a NEW REVISION — the original stays
+    exactly as sent."""
     ids = staged
     m = ids["freeze_m"]
     rec = _saved(ids, "freeze", {"SIDES": "EPS"}, "PU")
     admin_session(page, base=live_server)
     _open_calculator(page)
-    resp = _calc(page, lambda: page.goto(f"/mes/calculator?stay=1&edit={rec}"), ids["freeze"])
-    assert [(b["panel"], b["insulation"]) for b in resp.json()["rule_breaches"]] == [("SIDES", "EPS")]
+    _reopen(page, rec)
     expect(_breaches(page)).to_be_visible(timeout=T)
     expect(_breaches(page)).to_contain_text("This quote breaks the rule above (1). It cannot be saved until each is removed:")
     expect(_breaches(page)).to_contain_text("✖ EPS insulation on the SIDES")
     expect(page.locator("#body-rule-note")).to_contain_text(NOTE_F)
     shot(page, "01-reopened-freezer-eps-sides-warning")
 
-    # saving it as it is: refused, with the server's sentence
-    overwrite = page.locator("#modal-edit-save button[onclick*=\"editSaveAction('overwrite')\"]")
-    page.click("#approve-btn")
-    with page.expect_response(lambda r: r.url.endswith("/api/approve") and r.request.method == "POST", timeout=T) as ap:
-        overwrite.click()
-    assert ap.value.status == 409
-    expect(page.locator("#toast-container .toast-error .toast-msg").last).to_contain_text(
-        "EPS insulation is not allowed on the SIDES for this body's family. Remove it, then save again.", timeout=T)
+    # a costing saved before frozen editing (this fixture stores no lines) opens READ-ONLY: it cannot be saved as it
+    # is — the way to edit it is Update to today's prices — and the server says the same to a save at saved prices
+    expect(page.locator("[data-testid='frozen-readonly']")).to_be_visible()
+    expect(page.locator("#approve-btn")).to_be_disabled()
+    csrf = page.evaluate("() => document.querySelector('meta[name=csrf-token]')?.content || ''")
+    r = page.request.post(f"{live_server}/api/approve", headers={"X-CSRF-Token": csrf, "Origin": live_server},
+                          data=json.dumps({"trailer_type_id": ids["freeze"], "dimensions": {"length": 6, "width": 2.4, "height": 2.4},
+                                           "profit_margin": 0, "edit_record_id": rec, "frozen_record_id": rec,
+                                           "version_action": "overwrite", "screen": {"grand_total": 1.0}}))
+    assert r.status == 409 and r.json()["detail"]["code"] == "frozen_not_capable", r.text()
     assert _db_selection(rec)[str(m[("SIDES", "EPS")])] is True                 # nothing written
+
+    # Remove on the saved quote only points the way: the options are as saved
+    page.click("#body-rule-breaches .rb-remove")
+    expect(page.locator("#toast-container .toast-msg").last).to_contain_text("Update to today", timeout=T)
+    expect(_breaches(page)).to_be_visible()
+    assert _db_selection(rec)[str(m[("SIDES", "EPS")])] is True
+    overwrite = page.locator("[data-testid='edit-overwrite-btn']")
+
+    # Update to today's prices → Apply: today's template prices the quote, and today's calculation warns as before
+    page.click("[data-testid='frozen-update-prices']")
+    expect(page.locator("[data-testid='reprice-apply']")).to_be_enabled(timeout=T)
+    resp = _calc(page, lambda: page.click("[data-testid='reprice-apply']"), ids["freeze"])
+    assert [(b["panel"], b["insulation"]) for b in resp.json()["rule_breaches"]] == [("SIDES", "EPS")]
+    expect(page.locator("[data-testid='repriced-line']")).to_be_visible(timeout=T)
+    expect(_breaches(page)).to_be_visible(timeout=T)
 
     # Remove: SIDES goes to PU, the thickness carried, no breach left
     sent = _calc(page, lambda: page.click("#body-rule-breaches .rb-remove"), ids["freeze"],
@@ -262,13 +290,19 @@ def test_reopen_warns_remove_clears_it_and_the_overwrite_then_saves(page: Page, 
     assert _db_selection(rec)[str(m[("SIDES", "EPS")])] is True                 # still not written
     shot(page, "02-after-remove")
 
-    # re-approve: the overwrite saves, and the database reads SIDES PU
+    # re-approve: a re-priced quote saves as a NEW REVISION only (Overwrite is not offered); it reads SIDES PU, and
+    # the original stays exactly as sent
     page.click("#approve-btn")
+    expect(page.locator("#modal-edit-save")).to_be_visible(timeout=T)
+    expect(overwrite).to_be_hidden()
     with page.expect_response(lambda r: r.url.endswith("/api/approve") and r.request.method == "POST", timeout=T) as ap:
-        overwrite.click()
+        page.click("#modal-edit-save button:has-text('new Revision')")
     assert ap.value.status == 200, ap.value.text()
-    saved = _db_selection(rec)
+    new_id = ap.value.json()["record_id"]
+    assert new_id != rec
+    saved = _db_selection(new_id)
     assert saved[str(m[("SIDES", "PU")])] is True and saved[str(m[("SIDES", "EPS")])] is False
+    assert _db_selection(rec)[str(m[("SIDES", "EPS")])] is True                 # the original, untouched
 
 
 # ── 2 ───────────────────────────────────────────────────────────────────────
@@ -365,7 +399,7 @@ def test_a_restored_breaching_costing_reopens_with_the_warning(page: Page, live_
     r = page.request.post(f"{live_server}/api/calculations/{rec}/restore",
                           headers={"X-CSRF-Token": csrf, "Origin": live_server})
     assert r.ok, r.text()
-    _calc(page, lambda: page.goto(f"/mes/calculator?stay=1&edit={rec}"), ids["freeze"])
+    _reopen(page, rec)
     expect(_breaches(page)).to_contain_text("✖ EPS insulation on the FRONT", timeout=T)
     expect(page.locator("#body-rule-breaches .rb-remove")).to_be_visible()
 
@@ -378,7 +412,7 @@ def test_a_forbidden_door_insulation_on_the_unused_door_is_named_as_such(page: P
     rec = _saved(ids, "chill_draft", {"SRD": "PU"}, "EPS")             # DRD quoted; SRD PU ticked (hidden, unpriced)
     admin_session(page, base=live_server)
     _open_calculator(page)
-    _calc(page, lambda: page.goto(f"/mes/calculator?stay=1&edit={rec}"), ids["chill_draft"])
+    _reopen(page, rec)
     expect(_breaches(page)).to_contain_text(
         "✖ PU insulation on the SRD (single rear door) — not used on this quote", timeout=T)
     shot(page, "05-unused-door-named")

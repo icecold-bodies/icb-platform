@@ -379,3 +379,43 @@ def test_a_rolled_back_load_never_leaves_a_sequence_behind(txn, tmp_path):
     sp.rollback()                                                    # d is back
     seq = txn.execute(text("SELECT pg_get_serial_sequence('report_templates', 'id')")).scalar()
     assert txn.execute(text(f"SELECT last_value FROM {seq}")).scalar() >= d
+
+
+# ── the dangling foreign keys: exactly body 51's seven (RT7_RULING_2 Q2) ──────────────────────────────────────────
+
+def _dangling(doc) -> dict:
+    """Every foreign key in a snapshot whose target row the snapshot does not carry: {(table, pk, column): value}."""
+    from app.database import Base
+    tables = Base.metadata.tables
+    present = {n: {r[c.name] for r in rows for c in tables[n].primary_key.columns} for n, rows in doc["tables"].items()}
+    out = {}
+    for name, rows in doc["tables"].items():
+        fks = {fk.parent.name: fk.column.table.name for fk in tables[name].foreign_keys}
+        for r in rows:
+            for col, target in fks.items():
+                if r.get(col) is not None and r[col] not in present.get(target, set()):
+                    out[(name, r["id"], col)] = r[col]
+    return out
+
+
+def test_the_allowed_dangling_fks_are_exactly_the_committed_snapshots_seven():
+    """Both ways: every dangling FK in all.json is allowed, and every allowed one is still dangling there. When the body
+    51 clean-up lands and the snapshot is re-exported, this fails until the list shrinks with it."""
+    from tools.costing_audit.mes_snapshot import DANGLING_ALLOWED, snapshot_path
+    assert _dangling(json.loads(snapshot_path("all").read_text(encoding="utf-8"))) == DANGLING_ALLOWED
+    assert len(DANGLING_ALLOWED) == 7
+
+
+def test_negative_control_one_more_dangling_fk_fails_the_fidelity_check(txn, tmp_path):
+    """An 8th dangling FK (a BOM row pointed at a body-option group the snapshot does not carry) is a mismatch; the
+    seven allowed ones stay quiet."""
+    from tools.costing_audit.mes_snapshot import check_fidelity, load_snapshot, snapshot_path
+    doc = json.loads(snapshot_path("all").read_text(encoding="utf-8"))
+    row = next(r for r in doc["tables"]["bill_of_materials"] if r["trailer_type_id"] == 26)
+    row["body_option_group_id"] = 999_999
+    snap = tmp_path / "all.json"
+    snap.write_text(json.dumps(doc), encoding="utf-8")
+    load_snapshot(snap, conn=txn, log=lambda *_: None)
+    problems = check_fidelity(snap, conn=txn, log=lambda *_: None)
+    assert problems == [f"bill_of_materials id={row['id']}: body_option_group_id=999999 points at a body_option_groups "
+                        "row the snapshot does not carry — not one of the 7 allowed (body 51 orphans)"]

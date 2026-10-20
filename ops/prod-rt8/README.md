@@ -6,9 +6,11 @@ body names, the stored lines' figures — never a customer, contact, user or des
 
     powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\micge\Documents\icb-rt8-stage\check\run_check.ps1"
 
-It copies the staged kit to prod `/tmp`, runs `rt8_frozen_check.sh` there over `ssh -t` (sudo asks for the VM
-password), and fetches `Downloads\rt8-check-back-<ts>.tar`. The first line names the machine, database and HEAD and
-refuses the wrong place; every database session is read-only (`PGOPTIONS`, asserted again inside the python).
+It copies the staged kit to prod `/tmp` (stamping the copy time — RT7's reboot guard refuses an unstamped kit or
+one staged before the last boot), runs `rt8_frozen_check.sh` there over `ssh -t` (sudo asks for the VM password),
+and fetches `Downloads\rt8-check-back-<ts>.tar`. The first line names the lane, machine, database, HEAD and boot
+time and refuses the wrong place; every database session is read-only (`PGOPTIONS`, asserted again inside the
+python). At close, prod's `/tmp/icb-rt8-check*` (the kit, its tar, the `out-*` folders) is removed by exact name.
 
 | File | Role |
 |---|---|
@@ -16,6 +18,6 @@ refuses the wrong place; every database session is read-only (`PGOPTIONS`, asser
 | `rt8_frozen_check.sh` | the VM script: where-check, read-only sessions, env loaded silently, outputs + hashes + tar |
 | `mkstage_check.sh` | stages the kit from a COMMIT (LF bytes, sha256-checked), fills `run_check.ps1` |
 | `run_check.ps1` | Michael's one line |
-| `sim/run_check_sim.sh` | the WSL simulation of the VM script (wrong machine, wrong db, tampered kit, not read-only, happy path) |
+| `sim/run_check_sim.sh` | the WSL simulation of the VM script (wrong machine, unstamped kit, stamp before boot, wrong db, tampered kit, not read-only, happy path) |
 
 The allow-lists are pinned by `backend/tests/test_rt8_prod_kit_allowlist.py`, with a negative control.

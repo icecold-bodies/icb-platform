@@ -5,7 +5,8 @@
 # scenario. psql and the venv python are STUBS that refuse a session that is not read-only, and the python stub
 # refuses when DATABASE_URL and SESSION_SECRET are not in its environment (RT7's 16 Oct lesson); the happy-path stub
 # writes the three outputs the real check writes. git is real.
-# What it proves: the FIRST line names machine, database and HEAD; a wrong machine, a wrong database, a tampered
+# What it proves: the FIRST line names the lane, machine, database, HEAD and boot time; a wrong machine, a kit
+# copied without its stamp or stamped before the last boot (RT7's reboot guard), a wrong database, a tampered
 # kit and a python that is not given a read-only session are each refused (STOP, nothing written); the happy path
 # tars its output with no env value in it. The real check's python is proven separately, against icb_test, by
 # backend/tests/test_rt8_prod_kit_allowlist.py and a direct run. Cleans its own folder at the end (the WSL disk
@@ -69,8 +70,15 @@ run wrong-machine 1 'STOP \[WHERE\]'
 # now pretend we are prod (the kit reads hostname -s): patch the expectation to this host for the rest
 sed -i "s/^EXPECT_MACHINE=.*/EXPECT_MACHINE=$(hostname -s)/" "$KIT/expected.env"
 ( cd "$KIT" && find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS )
+# RT7's reboot guard: a kit copied without the stamp is refused (Michael's first paste, 20 Oct 18:40, stopped here);
+# a kit stamped before the machine's last boot is refused too; the copy line's stamp lets it through
+run unstamped 1 'no staging stamp'
+echo 1 > "$KIT/.staged_at"
+run stale-stamp 1 'before this machine'
+date +%s > "$KIT/.staged_at"
 run wrong-db 1 'STOP \[WHERE\]' icb_test
 run happy 0 'DONE (read only)'
+grep -q '^######## RT8 ' "$SIM/happy.log" || fail "the first line does not name the lane"
 ls "$KIT"/out-*/summary.txt >/dev/null || fail "happy path wrote no summary"
 tar -tf "$KIT"/out-*.tar | grep -q summary.txt || fail "happy path tar has no summary"
 # a tampered kit (one byte changed after staging) is refused before anything runs
@@ -82,4 +90,4 @@ PGOPTIONS= ICB_KIT_BASE="$KIT" ICB_REPO="$SIM/opt/icb-platform" ICB_ENV_FILE="$S
   bash -c 'export PGOPTIONS=""; "$0"/bin/python -c x; echo "exit $?"' "$SIM" > "$SIM/ro.log" 2>&1
 grep -q 'NOT read-only' "$SIM/ro.log" || fail "the python stub accepted a non-read-only session"
 echo "ok  not-read-only python refused (stub)"
-echo "SIM PASS: 5 scenarios (wrong machine, wrong db, happy, tampered kit, not read-only)"
+echo "SIM PASS: 7 scenarios (wrong machine, unstamped kit, stamp before boot, wrong db, happy, tampered kit, not read-only)"

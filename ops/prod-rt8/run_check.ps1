@@ -3,11 +3,11 @@
 #
 #     powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\micge\Documents\icb-rt8-stage\check\run_check.ps1"
 #
-# It copies the staged kit to prod /tmp, runs it there over `ssh -t` (sudo asks for your VM password), and fetches
-# the result to Downloads. READ ONLY on prod: it reads pending quotes' numbers, bodies, months and their stored
-# lines' figures - never a customer, contact, user or description. The FIRST line names this machine, prod's
-# machine and prod's HEAD; it refuses when they are not the expected ones. Filled in by mkstage_check.sh:
-# __TAR_SHA256__ __STAGED_FROM__ __EXPECT_HEADS__.
+# It copies the staged kit to prod /tmp (stamping the copy time: the kit refuses itself if prod boots after it),
+# runs it there over `ssh -t` (sudo asks for your VM password), and fetches the result to Downloads. READ ONLY on
+# prod: it reads pending quotes' numbers, bodies, months and their stored lines' figures - never a customer,
+# contact, user or description. The FIRST line names this machine, prod's machine and prod's HEAD; it refuses when
+# they are not the expected ones. Filled in by mkstage_check.sh: __TAR_SHA256__ __STAGED_FROM__ __EXPECT_HEADS__.
 $ErrorActionPreference = 'Continue'   # native ssh / scp write to stderr; every exit code is checked by hand
 $Here      = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Kit       = 'icb-rt8-check'
@@ -47,7 +47,9 @@ Write-Host "== kit ok: $Kit.tar sha256 $($sha.Substring(0,12))..."
 Write-Host "== copy the kit to prod /tmp"
 & scp -q -o BatchMode=yes $Tar "${Vm}:/tmp/$Kit.tar"
 if ($LASTEXITCODE -ne 0) { Stop-Step COPY "scp failed (exit $LASTEXITCODE)" }
-& ssh -o BatchMode=yes $Vm "cd /tmp && tar -xf $Kit.tar && cd $Kit && sha256sum -c --quiet SHA256SUMS && echo '   unpacked and verified on prod'"
+# stamped: the kit's lib/icb_where.sh (RT7's reboot guard) refuses a kit with no .staged_at, or one staged before the
+# machine's last boot (prod's 11 Oct reboot emptied /tmp under RT6's kits)
+& ssh -o BatchMode=yes $Vm "cd /tmp && tar -xf $Kit.tar && cd $Kit && sha256sum -c --quiet SHA256SUMS && date +%s > .staged_at && echo '   unpacked, verified and stamped on prod'"
 if ($LASTEXITCODE -ne 0) { Stop-Step COPY "the kit did not unpack cleanly on prod (exit $LASTEXITCODE)" }
 Write-Host "== run it on prod (sudo asks for your VM password)"
 & ssh -t $Vm "sudo bash /tmp/$Kit/rt8_frozen_check.sh"

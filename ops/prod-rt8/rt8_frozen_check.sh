@@ -17,7 +17,8 @@
 # overrides for the simulation only (sim/run_check_sim.sh); on prod every default applies.
 set -u
 BASE=${ICB_KIT_BASE:-/tmp/icb-rt8-check}
-KIT_DIR=$BASE
+KIT_DIR=$BASE          # lib/icb_where.sh's reboot guard: KIT_DIR/.staged_at (written by the copy line) must post-date the last boot
+ICB_LANE=RT8
 REPO=${ICB_REPO:-/opt/icb-platform}
 ENVF=${ICB_ENV_FILE:-/etc/icb/backend.env}
 PY=${ICB_PY:-$REPO/.venv/bin/python}
@@ -35,10 +36,10 @@ if [ -r "$ENVF" ]; then
 fi
 export PGOPTIONS='-c default_transaction_read_only=on'     # every session below is read-only (libpq reads it)
 # shellcheck disable=SC1091
-. "$BASE/lib/icb_where.sh" 2>/dev/null || { echo "######## RT8 check · machine $(hostname -s) · db ? · head ?"; stop KIT "lib/icb_where.sh missing: copy the kit again"; }
+. "$BASE/lib/icb_where.sh" 2>/dev/null || { echo "######## RT8 frozen-quote check · machine $(hostname -s) · db ? · head ?"; stop KIT "lib/icb_where.sh missing: copy the kit again"; }
 # shellcheck disable=SC1091
 . "$BASE/expected.env" 2>/dev/null || true
-icb_where "RT8 frozen-quote check (read only)" "$REPO" "$URL"
+icb_where "frozen-quote check (read only)" "$REPO" "$URL"     # the line reads "RT8 frozen-quote check …" (ICB_LANE)
 [ -r "$ENVF" ] || stop KIT "cannot read $ENVF (run with sudo: the env file is root-readable only)"
 [ -n "$URL" ] || stop KIT "DATABASE_URL not found in $ENVF"
 for v in EXPECT_MACHINE EXPECT_DB EXPECT_DBHOST EXPECT_HEADS EXPECT_ALEMBIC STAGED_FROM; do [ -n "${!v:-}" ] || stop KIT "expected.env has no $v"; done

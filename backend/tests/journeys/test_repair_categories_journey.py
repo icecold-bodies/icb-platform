@@ -32,7 +32,8 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import _DEFAULT_BASE, admin_session, clear_calculator_ratio, shot  # noqa: E402
+from _common import (_DEFAULT_BASE, admin_session, clear_calculator_ratio, shot,  # noqa: E402
+                     wait_calculator_ready)
 
 T = 20_000
 JOURNEY = "repair_categories"
@@ -163,6 +164,10 @@ def _wait_for_total(page: Page, expected: float) -> float:
 
 
 def _enter_repair_mode(page: Page) -> None:
+    # The calculator's init must have finished first: on the SECOND visit it restores
+    # the first visit's REPAIRS session and re-renders the repair surface, replacing
+    # an already-open source menu under the click (#219, RT7).
+    wait_calculator_ready(page)
     page.select_option("#trailer-select", "repair")
     expect(page.locator("#repair-add-source")).to_be_visible(timeout=T)
 

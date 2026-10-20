@@ -114,11 +114,12 @@ def cmd_run(a) -> int:
                 sheet_maps=a.sheet_maps, prove=not a.no_prove)
     manifest, goldens, warnings = golden_for(pack, a.golden_dir)
     if a.mes_snapshot is not None:
-        from .mes_snapshot import load_snapshot, snapshot_path
+        from .mes_snapshot import snapshot_path
         snap = Path(a.mes_snapshot) if a.mes_snapshot else snapshot_path(pack.name)
         if not snap.is_file() and not a.mes_snapshot:
             snap = snapshot_path("all")          # one snapshot covering every pack's bodies
-        load_snapshot(snap, allow_non_test_db=a.allow_non_test_db, log=_log)
+        if _load_and_check(snap, a.allow_non_test_db):
+            return 2                             # RT7 G1: never price a database that does not hold the snapshot
     tolerance = float(a.tolerance) if a.tolerance is not None else pack.tolerance_pct
     accepted_path = _accepted_path(a.accepted, a.env)
     accepted = load_accepted(accepted_path)
@@ -172,6 +173,79 @@ def cmd_reaccept(a) -> int:
     return rc
 
 
+# ── pin (RT7) ────────────────────────────────────────────────────────────
+
+PIN_HEADER = """\
+# Known, explained Excel <-> MES differences — the PROD baseline (RT7, v1.61.1). WRITTEN BY `audit pin`.
+# Used by `audit run --env prod` (CI over mes_snapshot/all.json; the admin page on prod) and `audit reaccept --env prod`.
+#
+# Every entry PINS ITS AMOUNTS (RT7_RULING_1): `amounts` lists, per cell it accepts, the difference MES - Excel it
+# accepted ("<scenario id> | <section>": rand). A covered cell whose difference moves by more than R0.01, or a cell
+# newly in scope, is a FLAG: ACCEPTED_AMOUNT_CHANGED. `cause:` matches triage LINES; `mechanism:` says what the
+# difference is; `refs:` says what clears it; `review_by` fails the run loudly when it passes.
+# `pair:` records the CI snapshot the pins were taken against: test_rt7_pins.py asserts its digest equals
+# mes_snapshot/all.json, so snapshot and list move together or not at all (H2/H3).
+# To change a pin: re-run the reference run, `audit pin --report ... --env prod --write`, and commit WITH the snapshot.
+"""
+
+
+def cmd_pin(a) -> int:
+    """Pin every entry's `amounts` from saved reports: every cell the list accepts, under every entry covering it.
+    Dry-run unless --write. Refuses to write while the reports still hold unaccepted cells."""
+    import json
+    from datetime import datetime, timezone
+    import yaml
+    from .accepted import load_accepted_doc
+    from .compare import FAILING, cell_net, pin_key, reapply_accepted
+    from .mes_snapshot import snapshot_digest
+    path = _accepted_path(a.accepted, a.env)
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or []
+    items = raw.get("accepted") or [] if isinstance(raw, dict) else raw
+    header = {k: v for k, v in raw.items() if k != "accepted"} if isinstance(raw, dict) else {}
+    _, entries = load_accepted_doc(path, ignore_pins=True)
+    pins: dict[int, dict[str, float]] = {i: {} for i in range(len(items))}
+    failing: list[str] = []
+    for rp in a.report:
+        doc = json.loads(Path(rp).read_text(encoding="utf-8"))
+        rep = reapply_accepted(doc, entries)
+        for c in rep.cells:
+            if c.status in ("ACCEPTED", "EXPIRED"):
+                key, net = pin_key(c), cell_net(c)
+                for d in [c.accepted, *(c.accepted.get("also") or [])]:
+                    have = pins[d["index"]].get(key)
+                    if have is not None and abs(have - net) > 0.005:
+                        raise SystemExit(f"REFUSED: {key} differs between reports ({have:+.2f} vs {net:+.2f}) — "
+                                         "pin from ONE reference run")
+                    pins[d["index"]][key] = net
+            elif c.status in FAILING:
+                failing.append(f"{rep.pack}: {c.status} {pin_key(c)} {c.reason or c.likely_cause or ''}".strip())
+    for i, e in enumerate(items):
+        n = len(pins[i])
+        vals = list(pins[i].values())
+        rng = f"{min(vals):+.2f} .. {max(vals):+.2f}" if vals else "(none)"
+        _log(f"  entry {i:>2} {e.get('mechanism') or '?':<28} {str(e.get('body'))[:34]:<34} "
+             f"{str(e.get('section'))[:22]:<22} {n:>3} cells  {rng}" + ("   <- pins nothing: prune it (H4)" if not n else ""))
+    _log(f"  {sum(len(v) for v in pins.values())} pins over {len(items)} entries; {len(failing)} unaccepted cell(s)")
+    for f in failing[:30]:
+        _log(f"    {f}")
+    if not a.write:
+        _log("dry run — nothing written (--write to write)")
+        return 1 if failing else 0
+    if failing:
+        raise SystemExit(f"REFUSED: {len(failing)} unaccepted cell(s) in the reports — accept them first")
+    for i, e in enumerate(items):
+        e["amounts"] = dict(sorted(pins[i].items()))
+    if a.snapshot:
+        header["pair"] = {"snapshot": "mes_snapshot/all.json", "snapshot_sha256": snapshot_digest(Path(a.snapshot)),
+                          "exported_at": a.exported_at, "prod_code": a.prod_code, "alembic": a.alembic,
+                          "pinned_from": [Path(r).name for r in a.report],
+                          "pinned_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    body = yaml.safe_dump({**header, "accepted": items}, sort_keys=False, allow_unicode=True, width=120)
+    path.write_text(PIN_HEADER + body, encoding="utf-8")
+    _log(f"wrote {path}")
+    return 0
+
+
 def _db_label() -> str:
     try:
         from app.config import settings
@@ -183,11 +257,29 @@ def _db_label() -> str:
 
 # ── snapshot ────────────────────────────────────────────────────────────
 
+def _load_and_check(snap: Path, allow_non_test_db: bool) -> list[str]:
+    """Load the snapshot (its rows win) and run the fidelity check; the mismatches, empty when faithful."""
+    from .mes_snapshot import check_fidelity, load_snapshot
+    load_snapshot(snap, allow_non_test_db=allow_non_test_db, log=_log)
+    problems = check_fidelity(snap, log=_log)
+    if problems:
+        _log(f"[fidelity] FAILED: {len(problems)} snapshot value(s) are not what the database holds — the audit would "
+             "price something other than the snapshot. Nothing was priced.")
+    return problems
+
+
+def cmd_load_snapshot(a) -> int:
+    """RT7 (RT7_RULING_1B G1): CI's step before the packs — load, then prove every row column for column."""
+    from .mes_snapshot import snapshot_path
+    return 1 if _load_and_check(Path(a.snapshot) if a.snapshot else snapshot_path("all"), a.allow_non_test_db) else 0
+
+
 def cmd_snapshot(a) -> int:
     from .mes_snapshot import export_snapshot, snapshot_path
     from .scenarios import load_pack
     packs = [load_pack(_pack_path(x)) for x in a.pack]
-    ids = sorted({SHEET_TO_TRAILER[s] for p in packs for s in p.sheets})
+    ids = sorted({SHEET_TO_TRAILER[s] for p in packs for s in p.sheets}
+                 | {int(t) for t in (a.trailers or "").split(",") if t.strip()})
     out = Path(a.out) if a.out else snapshot_path(packs[0].name if len(packs) == 1 else "all")
     export_snapshot(ids, out, log=_log)
     return 0
@@ -229,7 +321,8 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--tolerance", type=float, default=None, help="percent; overrides the pack")
     r.add_argument("--base-url", default=None, help="hit a running side-port server instead of in-process")
     r.add_argument("--mes-snapshot", nargs="?", const="", default=None,
-                   help="load tests/costing_audit/mes_snapshot/<pack>.json (or PATH) into the _test DB first")
+                   help="load tests/costing_audit/mes_snapshot/<pack>.json (or PATH) into the _test DB first "
+                        "(its rows win), check it column for column, then run")
     r.add_argument("--allow-non-test-db", action="store_true", help=argparse.SUPPRESS)
     r.add_argument("--accepted", default=None, help=f"default {ACCEPTED_FILE}")
     r.add_argument("--env", default=None, help="use tests/costing_audit/accepted_differences.<env>.yaml (e.g. prod)")
@@ -250,7 +343,27 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("snapshot", help="export the MES master data the packs' bodies need (for CI)")
     s.add_argument("--pack", required=True, action="append", help="repeatable; several packs -> mes_snapshot/all.json")
     s.add_argument("--out", default=None)
+    s.add_argument("--trailers", default=None,
+                   help="extra trailer ids beyond the packs' bodies, comma-separated (RT2's 15-body CI snapshot adds "
+                        "12,15,36: the two MEAT HANGERs and RHINORANGE, which test_g1 reads)")
     s.set_defaults(fn=cmd_snapshot)
+
+    ls = sub.add_parser("load-snapshot", help="RT7: load a snapshot into the _test DB (its rows win), then check "
+                                              "every row column for column; exit 1 on any mismatch")
+    ls.add_argument("--snapshot", default=None, help="default tests/costing_audit/mes_snapshot/all.json")
+    ls.add_argument("--allow-non-test-db", action="store_true", help=argparse.SUPPRESS)
+    ls.set_defaults(fn=cmd_load_snapshot)
+
+    pn = sub.add_parser("pin", help="RT7: write each accepted entry's amounts from saved reports (dry-run unless --write)")
+    pn.add_argument("--report", required=True, action="append", help="report JSON of ONE reference run (repeatable)")
+    pn.add_argument("--accepted", default=None)
+    pn.add_argument("--env", default=None)
+    pn.add_argument("--write", action="store_true", help="write the amounts (refused while any cell is unaccepted)")
+    pn.add_argument("--snapshot", default=None, help="the CI snapshot the reports were run against: records the pair")
+    pn.add_argument("--exported-at", default=None, help="when the snapshot was exported on prod (ISO)")
+    pn.add_argument("--prod-code", default=None, help="prod's code at the export (sha)")
+    pn.add_argument("--alembic", default=None, help="prod's alembic head at the export")
+    pn.set_defaults(fn=cmd_pin)
     return p
 
 

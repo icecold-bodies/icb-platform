@@ -30,7 +30,7 @@ import json
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import admin_session, role_session, shot  # noqa: E402  (sys.path set in conftest)
+from _common import wait_embedded_calculator_ready, admin_session, role_session, shot  # noqa: E402  (sys.path set in conftest)
 
 T = 15_000
 JOURNEY = "preview_formats"
@@ -188,6 +188,7 @@ def test_preview_dialog_word_two_ratios(page: Page, live_server: str, staged, tm
 
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
+    wait_embedded_calculator_ready(page)  # RT7: the embedded calculator's init has finished
     # BOM must be loaded BEFORE nudging a dim: the live-calc silently no-ops
     # while bomData is empty, so a fill that races the fetch never calculates
     # and Approve stays disabled (windows-latest red #1).

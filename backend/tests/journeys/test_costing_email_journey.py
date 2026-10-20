@@ -23,7 +23,7 @@ import json
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import admin_session, shot  # noqa: E402
+from _common import wait_embedded_calculator_ready, admin_session, shot  # noqa: E402
 
 T = 15_000
 JOURNEY = "costing_email"
@@ -118,6 +118,7 @@ def test_preview_dialog_email_round_trip(page: Page, live_server: str, staged) -
 
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
+    wait_embedded_calculator_ready(page)  # RT7: the embedded calculator's init has finished
     _select_trailer_and_wait_bom(page, frame, str(ids["trailer"]))
 
     # Pick the customer + its contact so the dialog has something to pre-fill.
@@ -169,6 +170,7 @@ def test_email_send_blocked_until_an_address_is_entered(page: Page, live_server:
     page.goto("/mes-app/costings/new")
     frame = page.frame_locator("iframe[title='Calculator (live costing app)']")
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
+    wait_embedded_calculator_ready(page)  # RT7: the embedded calculator's init has finished
     _select_trailer_and_wait_bom(page, frame, str(ids["trailer"]))
     frame.locator("#f-length").fill("6.5")
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)

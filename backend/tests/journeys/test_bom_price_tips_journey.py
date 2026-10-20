@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import admin_session, shot  # noqa: E402  (sys.path set in conftest)
+from _common import wait_calculator_ready, admin_session, shot  # noqa: E402  (sys.path set in conftest)
 
 T = 15_000
 JOURNEY = "bom_price_tips"
@@ -74,6 +74,7 @@ def staged():
 def _open(page: Page, tt_id: int, row_id: int | None = None) -> None:
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    wait_calculator_ready(page)          # RT7: the calculator's init has finished (restore + listeners)
     page.select_option("#trailer-select", str(tt_id))
     expect(page.locator(".calc-grp-hdr").first).to_be_visible(timeout=T)
     expect(page.locator("#calc-status")).to_have_text("", timeout=T)

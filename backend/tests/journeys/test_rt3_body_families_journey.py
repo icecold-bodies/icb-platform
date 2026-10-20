@@ -16,7 +16,7 @@ import os
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import _DEFAULT_BASE, SCREENSHOT_ROOT, admin_session, shot  # noqa: E402
+from _common import wait_calculator_ready, _DEFAULT_BASE, SCREENSHOT_ROOT, admin_session, shot  # noqa: E402
 
 T = 20_000
 JOURNEY = "rt3_body_families"
@@ -87,6 +87,7 @@ def test_the_body_type_box_groups_and_colours_by_family(page: Page, fams) -> Non
     page.goto("/mes/calculator?stay=1")
     sel = page.locator("#trailer-select")
     expect(sel).to_be_visible(timeout=T)
+    wait_calculator_ready(page)          # RT7: the calculator's init has finished (restore + listeners)
     assert page.evaluate("() => [...document.styleSheets].some(s => (s.href || '').includes('theme-mes'))")
 
     labels = sel.locator("optgroup").evaluate_all("gs => gs.map(g => g.label)")

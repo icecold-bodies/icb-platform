@@ -127,7 +127,19 @@ python -m tools.costing_audit snapshot --pack P [--pack Q ...]
   first, the MES quantity formula under each line). Drag the bar between the
   halves to resize (double-click resets; the browser remembers the split). `--base-url http://127.0.0.1:8011`
   posts to a side-port server instead (never :8000). `--mes-snapshot` loads
-  the pack's MES snapshot first (refuses a non-`_test` database).
+  the pack's MES snapshot first (refuses a non-`_test` database), then runs
+  the fidelity check and prices nothing if it fails.
+* **load-snapshot** (RT7) loads `mes_snapshot/all.json` into the `_test`
+  database with the snapshot's rows WINNING — upsert on the primary key; a row
+  holding a snapshot row's natural key under another id (a migration's or the
+  app's seed) is replaced and its referrers re-pointed; a row under a snapshot
+  body or recipe that the snapshot lacks is deleted — then checks every
+  snapshot row column for column (`check_fidelity`) and exits 1 on any
+  mismatch, naming table, key and column. CI runs it before the packs. Until
+  RT7 the loader was ON CONFLICT DO NOTHING, and CI priced 4G with migration
+  0046's seeded factor instead of prod's. `load_snapshot(inserted=...)` logs
+  every change and `unload_snapshot` replays the log backwards, so a shared
+  test database is left exactly as found.
 * **reaccept** re-applies an accepted list to a saved report JSON and rewrites
   the HTML/CSV/JSON/MD — no MES, no database. This is how a run made on the
   prod VM is re-evaluated on a laptop after the prod list changes.

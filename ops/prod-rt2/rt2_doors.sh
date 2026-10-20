@@ -29,6 +29,8 @@ if [ -f "$BASE/lib/icb_where.sh" ]; then
   fi
   # shellcheck disable=SC1091
   . "$BASE/lib/icb_where.sh"; . "$BASE/expected.env" 2>/dev/null
+  # RT7 reboot guard: an RT7 staging (REBOOT_GUARD=1) refuses a kit copied before prod's last boot or never stamped
+  if [ "${REBOOT_GUARD:-}" = 1 ]; then KIT_DIR=$BASE; ICB_LANE=RT7; fi
   export PGOPTIONS='-c default_transaction_read_only=on'
   icb_where "door report (read only)" /opt/icb-platform "$_U"
   if [ -n "${EXPECT_MACHINE:-}" ]; then icb_where_check || stop WHERE "$WHERE_WHY"; fi

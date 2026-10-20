@@ -246,6 +246,51 @@ def admin_session(page: "Page", base: str = _DEFAULT_BASE) -> "Page":
     return page
 
 
+def wait_calculator_ready(target, timeout: int = 20_000) -> None:
+    """Block until the calculator's DOMContentLoaded init has FINISHED (RT7).
+
+    ``#trailer-select`` is visible long before init ends: five API loads, then the
+    ``?edit=`` / ``?from=`` / ``?trailer=`` load or the LAST SESSION (localStorage,
+    written on every unload — so a second visit in one browser context restores the
+    first visit's body or REPAIRS and re-renders that surface), then
+    ``defaultNewRatio()``, and only then the live-recalc / Enter listeners. A journey
+    that acts before that can be overtaken (#219: the open repair source menu was
+    replaced under the click). Init registers the page shortcuts right after the
+    restore, in the same synchronous run that binds the listeners, so once
+    ``pageShortcuts.save`` is set the whole init has run. Polled on that STATE
+    (python-side: the CSP has no unsafe-eval), never a sleep. ``target`` is a Page or
+    a Frame (the /mes-app/costings/new embed).
+    """
+    import time
+    from playwright.sync_api import Error as PlaywrightError
+    probe = "() => typeof pageShortcuts !== 'undefined' && pageShortcuts.save !== null"
+    deadline = time.monotonic() + timeout / 1000.0
+    while True:
+        try:
+            if target.evaluate(probe):
+                return
+        except PlaywrightError:              # the page is still navigating: its context is not there yet
+            pass
+        if time.monotonic() > deadline:
+            raise AssertionError(f"the calculator's init did not finish within {timeout} ms")
+        target.wait_for_timeout(50)          # Page and Frame both have it; the poll interval, not the wait
+
+
+def wait_embedded_calculator_ready(page: "Page", timeout: int = 30_000):
+    """The /mes-app/costings/new embed: find the calculator's iframe (by its URL, /mes/calculator), then
+    wait_calculator_ready on it. Returns the Frame (frame_locator cannot evaluate)."""
+    import time
+    deadline = time.monotonic() + timeout / 1000.0
+    while True:
+        frame = next((f for f in page.frames if "/mes/calculator" in (f.url or "")), None)
+        if frame is not None:
+            wait_calculator_ready(frame, timeout=max(1, int((deadline - time.monotonic()) * 1000)))
+            return frame
+        if time.monotonic() > deadline:
+            raise AssertionError(f"no /mes/calculator frame on the page within {timeout} ms")
+        page.wait_for_timeout(50)
+
+
 def clear_calculator_ratio(page: "Page", timeout: int = 20_000) -> None:
     """Set the calculator's ratio to "— None —" and make it STAY there.
 

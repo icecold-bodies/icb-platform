@@ -1,0 +1,17 @@
+   session read-only: on
+   costings.pu_foam_4g_factor = '1.3170731707317074'  updated_at 2026-10-01 12:44:36.482581  (expected '1.3170731707317074' = 5400/4100)
+    12 MEAT HANGER LARGE          active=True
+    15 RHINORANGE TRAILER         active=True
+    16 ICECREAM BODY SMALL        active=True
+    17 ICECREAM BODY MEDIUM       active=True
+    18 ICECREAM BODY LARGE        active=True
+    19 FREEZER 2.3 METER          active=True
+    20 FREEZER MEDIUM             active=True
+    21 FREEZER LARGE              active=True
+    24 EXPLOSIVE 4.9 AND UP       active=True
+    25 CHILLER 2.3 METER          active=True
+    26 CHILLER MEDIUM             active=True
+    27 CHILLER LARGE              active=True
+    34 EXPLOSIVE UP TO 2.7        active=True
+    36 MEAT HANGER SMALL-MEDIUM   active=True
+    37 EXPLOSIVE 2.7 TO 4.8       active=True

@@ -24,7 +24,7 @@ import json
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import admin_session, shot  # noqa: E402  (sys.path set in conftest)
+from _common import wait_calculator_ready, admin_session, shot  # noqa: E402  (sys.path set in conftest)
 
 T = 15_000
 JOURNEY = "draft_flag_thickness"
@@ -116,6 +116,7 @@ def _open_body(page: Page, base: str, trailer_id: int) -> None:
     admin_session(page, base=base)
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    wait_calculator_ready(page)          # RT7: the calculator's init has finished (restore + listeners)
     page.select_option("#trailer-select", str(trailer_id))
     expect(page.locator(f"input[data-draft-flag='{MARK} FLOOR PU']")).to_be_attached(timeout=T)
 
@@ -169,6 +170,7 @@ def test_suffix_lifecycle_edit_and_calc(page: Page, live_server: str, staged) ->
     # Persistence: a fresh page load keeps the value (cfg_user_state store).
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    wait_calculator_ready(page)          # RT7: the calculator's init has finished (restore + listeners)
     page.select_option("#trailer-select", str(staged["trailer"]))
     expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} FLOOR PU']")).to_have_text("(0.050 m)", timeout=T)
 
@@ -282,6 +284,7 @@ def test_server_default_inherited_and_tombstone(page: Page, live_server: str, st
 
     page.goto("/calculator")
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    wait_calculator_ready(page)          # RT7: the calculator's init has finished (restore + listeners)
     page.select_option("#trailer-select", str(staged["trailer"]))
     expect(page.locator(f".flag-var-edit[data-flag-var='{MARK} DECK PU']")).to_have_text("(set thickness)", timeout=T)
     shot(page, "08-tombstone-survives-reload", journey=JOURNEY)

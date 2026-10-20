@@ -30,7 +30,7 @@ from __future__ import annotations
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import role_session, shot  # noqa: E402  (sys.path set in conftest)
+from _common import wait_embedded_calculator_ready, role_session, shot  # noqa: E402  (sys.path set in conftest)
 
 T = 15_000
 JOURNEY = "validated_references"
@@ -404,6 +404,7 @@ def test_mark_recall_drift_and_retire(page: Page, live_server: str,
     page.goto("/mes-app/costings/new")
     frame = page.frame_locator(_EMBED)
     expect(frame.locator("#trailer-select")).to_be_visible(timeout=30_000)
+    wait_embedded_calculator_ready(page)  # RT7: the embedded calculator's init has finished
     _select_trailer_and_wait_bom(page, frame, str(ids["trailer"]))
     expect(frame.locator("#approve-btn")).to_be_enabled(timeout=30_000)
 

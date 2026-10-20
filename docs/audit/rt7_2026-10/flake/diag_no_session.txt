@@ -1,0 +1,11 @@
+13:36:21  run  1/10     9s  PASS
+13:36:30  run  2/10     9s  PASS
+13:36:39  run  3/10     9s  PASS
+13:36:48  run  4/10     9s  PASS
+13:36:57  run  5/10     9s  PASS
+13:37:06  run  6/10     9s  PASS
+13:37:15  run  7/10     9s  PASS
+13:37:24  run  8/10     9s  PASS
+13:37:33  run  9/10     9s  PASS
+13:37:42  run 10/10     9s  PASS
+== diag_no_session throttle x1 : 0/10 failed (0%)

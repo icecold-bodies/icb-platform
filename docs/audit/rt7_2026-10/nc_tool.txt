@@ -1,0 +1,13 @@
+NC: the amount pin (compare._pin_failure returns None)
+    6 failed, 11 passed, 1 deselected in 0.51s
+    failing: ['test_a_cell_accepted_on_its_own_reason_alone_gets_that_reason_back', 'test_a_cell_newly_in_scope_flags', 'test_a_moved_amount_flags_naming_pinned_and_actual', 'test_a_one_sided_cell_keeps_its_own_reason_through_reaccept', 'test_a_shared_cell_needs_every_covering_entry_to_pin_it', 'test_the_pin_holds_to_one_cent_and_no_further']
+NC: the strict prod list (accepted._parse never strict)
+    4 failed, 13 passed, 1 deselected in 0.49s
+    failing: ['test_the_prod_list_refuses_an_entry_missing_a_pin_field[amounts]', 'test_the_prod_list_refuses_an_entry_missing_a_pin_field[mechanism]', 'test_the_prod_list_refuses_an_entry_missing_a_pin_field[refs]', 'test_the_prod_list_refuses_an_entry_missing_a_pin_field[review_by]']
+NC: the one-sided cell's own reason (reapply drops base_reason)
+    1 failed, 16 passed, 1 deselected in 0.48s
+    failing: ['test_a_cell_accepted_on_its_own_reason_alone_gets_that_reason_back']
+NC: review_by expiry (Accepted.expired always False)
+    1 failed, 16 passed, 1 deselected in 0.49s
+    failing: ['test_review_by_expiry_fails_the_run_loudly']
+restored: clean

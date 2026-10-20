@@ -1,0 +1,11 @@
+14:49:40  run  1/10    23s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+14:50:03  run  2/10    23s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+14:50:26  run  3/10    23s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+14:50:48  run  4/10    23s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+14:50:58  run  5/10    10s  PASS
+14:51:22  run  6/10    23s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+14:51:45  run  7/10    24s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+14:52:08  run  8/10    23s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+14:52:31  run  9/10    23s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+14:52:54  run 10/10    22s  FAIL rc=1 at test_repair_categories_journey.py:340 :: playwright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.
+== buildNC throttle x1 : 9/10 failed (90%)

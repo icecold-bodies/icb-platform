@@ -5838,12 +5838,12 @@
     "section_map": {},
     "foam_explicit": true
    },
-   "grand_total": 85490.0015124463,
+   "grand_total": 84378.2196914949,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 6365.80179,
-     "raw_total": 6365.80178963946,
+     "total": 6236.628456,
+     "raw_total": 6236.62845636913,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5875,8 +5875,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 3982.96338663946,
+       "price": 647.304161073825,
+       "total": 3853.79005336913,
        "stale": false
       },
       {
@@ -5911,8 +5911,8 @@
      "multiplier": 1.0
     },
     "SRD": {
-     "total": 7405.52679,
-     "raw_total": 7405.52678963946,
+     "total": 7276.353456,
+     "raw_total": 7276.35345636913,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -5946,8 +5946,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 3982.96338663946,
+       "price": 647.304161073825,
+       "total": 3853.79005336913,
        "stale": false
       },
       {
@@ -6317,8 +6317,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 20493.090558,
-     "raw_total": 10246.5452790188,
+     "total": 20106.629356,
+     "raw_total": 10053.3146780201,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6350,8 +6350,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 5958.12145952215,
+       "price": 647.304161073825,
+       "total": 5764.89085852349,
        "stale": false
       },
       {
@@ -6393,8 +6393,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 11763.930099,
-     "raw_total": 11763.9300988242,
+     "total": 11530.443123,
+     "raw_total": 11530.4431226174,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6426,8 +6426,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 808.376012080537,
-       "total": 7199.39676358926,
+       "price": 782.159194630872,
+       "total": 6965.90978738255,
        "stale": false
       },
       {
@@ -6455,8 +6455,8 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 16878.072431,
-     "raw_total": 16878.072430762,
+     "total": 16644.585455,
+     "raw_total": 16644.5854545553,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -6488,8 +6488,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 808.376012080537,
-       "total": 7199.39676358926,
+       "price": 782.159194630872,
+       "total": 6965.90978738255,
        "stale": false
       },
       {
@@ -12300,12 +12300,12 @@
     "section_map": {},
     "foam_explicit": true
    },
-   "grand_total": 94522.8149951963,
+   "grand_total": 93270.7424639307,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 6365.80179,
-     "raw_total": 6365.80178963946,
+     "total": 6236.628456,
+     "raw_total": 6236.62845636913,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12337,8 +12337,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 3982.96338663946,
+       "price": 647.304161073825,
+       "total": 3853.79005336913,
        "stale": false
       },
       {
@@ -12373,8 +12373,8 @@
      "multiplier": 1.0
     },
     "SRD": {
-     "total": 7405.52679,
-     "raw_total": 7405.52678963946,
+     "total": 7276.353456,
+     "raw_total": 7276.35345636913,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12408,8 +12408,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 3982.96338663946,
+       "price": 647.304161073825,
+       "total": 3853.79005336913,
        "stale": false
       },
       {
@@ -12779,8 +12779,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 23807.09377,
-     "raw_total": 11903.5468852416,
+     "total": 23357.1047,
+     "raw_total": 11678.5523498322,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12812,8 +12812,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 6937.53868574497,
+       "price": 647.304161073825,
+       "total": 6712.54415033557,
        "stale": false
       },
       {
@@ -12855,8 +12855,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 13682.876781,
-     "raw_total": 13682.8767805101,
+     "total": 13411.008384,
+     "raw_total": 13411.008383557,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12888,8 +12888,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 808.376012080537,
-       "total": 8382.85924527517,
+       "price": 782.159194630872,
+       "total": 8110.99084832215,
        "stale": false
       },
       {
@@ -12917,8 +12917,8 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 19623.244019,
-     "raw_total": 19623.2440193804,
+     "total": 19351.375622,
+     "raw_total": 19351.3756224274,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -12950,8 +12950,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 808.376012080537,
-       "total": 8382.85924527517,
+       "price": 782.159194630872,
+       "total": 8110.99084832215,
        "stale": false
       },
       {
@@ -18762,12 +18762,12 @@
     "section_map": {},
     "foam_explicit": true
    },
-   "grand_total": 103555.628477946,
+   "grand_total": 102163.265236367,
    "findings": [],
    "sections": {
     "FRONT": {
-     "total": 6365.80179,
-     "raw_total": 6365.80178963946,
+     "total": 6236.628456,
+     "raw_total": 6236.62845636913,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -18799,8 +18799,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 3982.96338663946,
+       "price": 647.304161073825,
+       "total": 3853.79005336913,
        "stale": false
       },
       {
@@ -18835,8 +18835,8 @@
      "multiplier": 1.0
     },
     "SRD": {
-     "total": 7405.52679,
-     "raw_total": 7405.52678963946,
+     "total": 7276.353456,
+     "raw_total": 7276.35345636913,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -18870,8 +18870,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 3982.96338663946,
+       "price": 647.304161073825,
+       "total": 3853.79005336913,
        "stale": false
       },
       {
@@ -19241,8 +19241,8 @@
      "multiplier": 1.0
     },
     "SIDES": {
-     "total": 27121.096983,
-     "raw_total": 13560.5484914644,
+     "total": 26607.580043,
+     "raw_total": 13303.7900216443,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -19274,8 +19274,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 669.000837583893,
-       "total": 7916.95591196778,
+       "price": 647.304161073825,
+       "total": 7660.19744214765,
        "stale": false
       },
       {
@@ -19317,8 +19317,8 @@
      "multiplier": 2.0
     },
     "ROOF": {
-     "total": 15601.823462,
-     "raw_total": 15601.823462196,
+     "total": 15291.573644,
+     "raw_total": 15291.5736444966,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -19350,8 +19350,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 808.376012080537,
-       "total": 9566.32172696107,
+       "price": 782.159194630872,
+       "total": 9256.07190926174,
        "stale": false
       },
       {
@@ -19379,8 +19379,8 @@
      "multiplier": 1.0
     },
     "FLOOR": {
-     "total": 22368.415608,
-     "raw_total": 22368.4156079988,
+     "total": 22058.16579,
+     "raw_total": 22058.1657902995,
      "status": "OK",
      "reason": null,
      "gates": {
@@ -19412,8 +19412,8 @@
       {
        "desc": "PU",
        "qty": 2.9768,
-       "price": 808.376012080537,
-       "total": 9566.32172696107,
+       "price": 782.159194630872,
+       "total": 9256.07190926174,
        "stale": false
       },
       {

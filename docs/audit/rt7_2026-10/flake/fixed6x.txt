@@ -1,0 +1,11 @@
+13:43:11  run  1/10    20s  PASS
+13:43:31  run  2/10    20s  PASS
+13:43:50  run  3/10    19s  PASS
+13:44:09  run  4/10    19s  PASS
+13:44:29  run  5/10    19s  PASS
+13:44:48  run  6/10    20s  PASS
+13:45:08  run  7/10    20s  PASS
+13:45:27  run  8/10    19s  PASS
+13:45:46  run  9/10    19s  PASS
+13:46:04  run 10/10    18s  PASS
+== fixed6x throttle x6 : 0/10 failed (0%)

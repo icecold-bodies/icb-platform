@@ -327,21 +327,61 @@ def test_the_committed_manifest_substitutions_hold_at_6_7_m():
     assert PC.check_equivalences(changes, {"Waste": 0.05}) == []
 
 
-# Prod moved on after the v1.58 apply, deliberately, and the CI snapshot is prod's pricing (RT1 Stage 3, 1 Oct 2026):
-# on 29 Sep Michael put these two single-rear-door PU lines onto the shared PU material (ratified: RT1 ruling 1, Q-A),
-# dropping the own R4 100 that F1 gave them; the material is R4 100 again since 1 Oct (Burt's corrected 32D), so they
-# price as F1 intended. Each must sit exactly at its later value; every other entry stays wholly at guard or new.
-LATER_PROD = {
-    ("F1", 3576, "unit_price_override"): None,   # FREEZER 2.3 METER / SRD / PU
-    ("F1", 2415, "unit_price_override"): None,   # FREEZER MEDIUM / SRD / PU
-    # RT2 Manifest P (2 Oct 2026, ratified RT2_RULING_1 Part 3 + RULING_2) moved F1's other own-priced SRD PU lines
-    # onto the shared PU price the same way (P1: the formula was already Burt's row).
-    ("F1", 2560, "unit_price_override"): None,   # FREEZER LARGE / SRD / PU
-    ("F1", 5306, "unit_price_override"): None,   # ICECREAM BODY LARGE / SRD / PU
-    ("F1", 5184, "unit_price_override"): None,   # EXPLOSIVE UP TO 2.7 / SRD / PU
-    ("F1", 6345, "unit_price_override"): None,   # EXPLOSIVE 2.7 TO 4.8 / SRD / PU
-    ("F1", 3948, "unit_price_override"): None,   # EXPLOSIVE 4.9 AND UP / SRD / PU
-}
+# Prod moved on after the v1.58 apply, deliberately, and the CI snapshot is prod's pricing. Each such edit is NAMED here
+# — the line (finding, bom id, field), its exact later value, when it was seen, and the authority — and must sit exactly
+# at that value; every other entry stays wholly at guard or new, so any OTHER drift still fails (RT7_RULING_1B §2).
+LATER_PROD_EDITS = [
+    # (finding, bom id, field, the exact later value, seen, ref)
+    # On 29 Sep Michael put these two single-rear-door PU lines onto the shared PU material, dropping the own R4 100 F1
+    # gave them; the material is R4 100 again since 1 Oct (Burt's corrected 32D), so they price as F1 intended.
+    ("F1", 3576, "unit_price_override", None, "29 Sep 2026", "RT1 ruling 1, Q-A"),       # FREEZER 2.3 METER / SRD / PU
+    ("F1", 2415, "unit_price_override", None, "29 Sep 2026", "RT1 ruling 1, Q-A"),       # FREEZER MEDIUM / SRD / PU
+    # RT2 Manifest P moved F1's other own-priced SRD PU lines onto the shared PU price the same way (P1: the formula
+    # was already Burt's row).
+    ("F1", 2560, "unit_price_override", None, "2 Oct 2026", "RT2 Manifest P; RT2_RULING_1 Part 3 + RULING_2"),  # FREEZER LARGE
+    ("F1", 5306, "unit_price_override", None, "2 Oct 2026", "RT2 Manifest P; RT2_RULING_1 Part 3 + RULING_2"),  # ICECREAM BODY LARGE
+    ("F1", 5184, "unit_price_override", None, "2 Oct 2026", "RT2 Manifest P; RT2_RULING_1 Part 3 + RULING_2"),  # EXPLOSIVE UP TO 2.7
+    ("F1", 6345, "unit_price_override", None, "2 Oct 2026", "RT2 Manifest P; RT2_RULING_1 Part 3 + RULING_2"),  # EXPLOSIVE 2.7 TO 4.8
+    ("F1", 3948, "unit_price_override", None, "2 Oct 2026", "RT2 Manifest P; RT2_RULING_1 Part 3 + RULING_2"),  # EXPLOSIVE 4.9 AND UP
+    # CHILLER MEDIUM / DRD DOOR FITTINGS / 2317 DOOR RUBBER: a hand edit on prod after 2 Oct put F4's x0 back, retyped
+    # (the spacing differs from F4's guard) — no rubber on those doors, as Burt's sheet types that total as 0. Seen in
+    # RT7's 16 Oct discovery and the 19 Oct snapshot; Michael confirmed it intended (19 Oct).
+    ("F4", 3216, "formula_expression",
+     "((width-{SRD EPS}-{SRD PU}-{SIDES EPS}-{SIDES PU}+{Waste})*2 + (height-{ROOF EPS}-{ROOF PU}-{FLOOR EPS}+{Waste}) * 3 ) * 0",
+     "19 Oct 2026 snapshot", "B-07 (Burt's fix list); RT7_RULING_1B §2"),
+]
+LATER_PROD = {(f, bom, field): value for f, bom, field, value, _seen, _ref in LATER_PROD_EDITS}
+
+
+def _snapshot_vs_corrections(later: dict) -> list[str]:
+    """Every v1.58 entry against the committed snapshot: the line is real, and its value is the guard or the new value
+    (all one or all the other) — or exactly the named later value. Returns the problems."""
+    snap = json.loads(SNAPSHOT.read_text(encoding="utf-8"))["tables"]
+    bom = {r["id"]: r for r in snap["bill_of_materials"]}
+    tt = {r["id"]: r["name"] for r in snap["trailer_types"]}
+    mat = {r["id"]: r["name"] for r in snap["materials"]}
+    at_current, at_new, out = [], [], []
+    for c in _committed():
+        r = bom.get(c.bom_id)
+        if r is None:
+            out.append(f"{c.key}: not in the snapshot")
+            continue
+        if (r["trailer_type_id"], tt[r["trailer_type_id"]], r["bom_section"], mat[r["material_id"]]) \
+                != (c.body_id, c.body, c.section, c.line):
+            out.append(f"{c.key}: names another line")
+        have = r[c.field]
+        key = (c.finding, c.bom_id, c.field)
+        if key in later:
+            if have != later[key]:
+                out.append(f"{c.key}: the named later value is {later[key]!r}, the snapshot has {have!r}")
+            continue
+        if have not in (c.current, c.new):
+            out.append(f"{c.key}: snapshot has {have!r}")
+            continue
+        (at_current if have == c.current else at_new).append(c.key)
+    if at_current and at_new:
+        out.append(f"half-applied: {len(at_new)} at new, {len(at_current)} at guard")
+    return out
 
 
 def test_the_committed_snapshot_is_wholly_before_or_wholly_after_the_corrections():
@@ -349,25 +389,21 @@ def test_the_committed_snapshot_is_wholly_before_or_wholly_after_the_corrections
     its guard; after the close step (snapshot regenerated from prod) every entry
     sits at its new value. Anything in between means prod drifted or the apply
     was partial — surface it, never commit it. A later, ratified prod change is
-    named in LATER_PROD and must sit exactly at its later value."""
-    snap = json.loads(SNAPSHOT.read_text(encoding="utf-8"))["tables"]
-    bom = {r["id"]: r for r in snap["bill_of_materials"]}
-    tt = {r["id"]: r["name"] for r in snap["trailer_types"]}
-    mat = {r["id"]: r["name"] for r in snap["materials"]}
-    at_current, at_new = [], []
-    for c in _committed():
-        r = bom.get(c.bom_id)
-        assert r is not None, f"{c.key}: not in the snapshot"
-        assert (r["trailer_type_id"], tt[r["trailer_type_id"]], r["bom_section"], mat[r["material_id"]]) \
-            == (c.body_id, c.body, c.section, c.line), c.key
-        have = r[c.field]
-        later = (c.finding, c.bom_id, c.field)
-        if later in LATER_PROD:
-            assert have == LATER_PROD[later], f"{c.key}: the ratified later value is {LATER_PROD[later]!r}, the snapshot has {have!r}"
-            continue
-        assert have in (c.current, c.new), f"{c.key}: snapshot has {have!r}"
-        (at_current if have == c.current else at_new).append(c.key)
-    assert not (at_current and at_new), f"half-applied: {len(at_new)} at new, {len(at_current)} at guard"
+    named in LATER_PROD_EDITS and must sit exactly at its later value."""
+    assert len(LATER_PROD) == len(LATER_PROD_EDITS)                       # one name per line
+    assert all(seen and ref for *_x, seen, ref in LATER_PROD_EDITS)
+    assert _snapshot_vs_corrections(LATER_PROD) == []
+
+
+def test_negative_control_one_character_off_a_named_edit_or_an_unnamed_one_fails():
+    """RT7_RULING_1B §2: the list names exact values — one character changed in bom 3216's expression fails, and so
+    does the same edit left unnamed (it is then drift)."""
+    key = ("F4", 3216, "formula_expression")
+    one_off = dict(LATER_PROD)
+    one_off[key] = LATER_PROD[key][:-1] + "1"                              # '* 0' -> '* 1'
+    assert any("3216" in p and "named later value" in p for p in _snapshot_vs_corrections(one_off))
+    unnamed = {k: v for k, v in LATER_PROD.items() if k != key}
+    assert any("3216" in p for p in _snapshot_vs_corrections(unnamed))
 
 
 # ── v1.58.1 Manifest A (the SRD rear-frame rules) ────────────────────────────

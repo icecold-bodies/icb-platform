@@ -22,7 +22,9 @@ from . import insulation_rules as ir
 
 log = logging.getLogger("burtcost")
 
-ACCEPT_HINT = "Re-open it, Remove, save, then accept."
+# RT8_RULING_2 — the way out of a breach is the RT8 one: re-pricing, which saves as a new revision
+ACCEPT_HINT = ("Re-open it, click Update to today's prices, remove the breach, save as a new revision, "
+               "then accept the new revision.")
 
 
 def _group_of(tt):

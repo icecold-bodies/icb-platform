@@ -18,6 +18,7 @@ python). At close, prod's `/tmp/icb-rt8-check*` (the kit, its tar, the `out-*` f
 | `rt8_frozen_check.sh` | the VM script: where-check, read-only sessions, env loaded silently, outputs + hashes + tar |
 | `mkstage_check.sh` | stages the kit from a COMMIT (LF bytes, sha256-checked), fills `run_check.ps1` |
 | `run_check.ps1` | Michael's one line |
+| `cleanup_check.ps1` | the close (RT8_RULING_2): removes the check's residue from prod `/tmp` by exact name (the three `out-*` folders and tars, `.staged_at`, the kit folder, the kit tar) and reads back; refuses off prod |
 | `sim/run_check_sim.sh` | the WSL simulation of the VM script (wrong machine, unstamped kit, stamp before boot, wrong db, tampered kit, not read-only, happy path) |
 
 The allow-lists are pinned by `backend/tests/test_rt8_prod_kit_allowlist.py`, with a negative control.

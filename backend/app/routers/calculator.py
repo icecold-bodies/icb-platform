@@ -1005,26 +1005,21 @@ def _check_screen(result: dict, screen) -> None:
     """Ratified default 5: a frozen or re-priced save stores exactly what the screen shows. The client sends the
     figures on screen; the server's own computation must match them to the cent, else nothing is saved."""
     if not isinstance(screen, dict) or screen.get("grand_total") is None:
-        raise HTTPException(status_code=409, detail={
-            "code": "screen_missing",
-            "message": "The figures on screen did not reach the server, so nothing was saved. Reload the quote and try again."})
+        raise HTTPException(status_code=409, detail=frozen_quote.refusal("screen_missing"))
     for key in ("grand_total", "net_total"):
         if screen.get(key) is None:
             continue
         try:
             shown = float(screen[key])
         except (TypeError, ValueError):
-            raise HTTPException(status_code=409, detail={"code": "screen_missing",
-                                                         "message": "The figures on screen are unreadable; nothing was saved."})
+            raise HTTPException(status_code=409, detail=frozen_quote.refusal("screen_missing"))
         ours = result.get(key)
         if ours is None:
             ours = result.get("selling_price") if key == "net_total" else 0
         if abs(shown - float(ours or 0)) > frozen_quote.CENT:
             label = "Net total" if key == "net_total" else "Materials cost"
-            raise HTTPException(status_code=409, detail={
-                "code": "frozen_mismatch",
-                "message": f"{label} on screen is R{shown:,.2f} but the saved prices give R{float(ours or 0):,.2f}. "
-                           "Nothing was saved. Reload the quote and try again; if it repeats, tell the administrator."})
+            raise HTTPException(status_code=409, detail=frozen_quote.refusal(
+                "frozen_mismatch", label=label, shown=round(float(shown), 2), saved=round(float(ours or 0), 2)))
 
 
 def _repriced_block(rec0: CalculationRecord, data0: dict, result: dict, body: dict,
@@ -1258,21 +1253,14 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     if frozen_id and repriced_from:
         raise HTTPException(status_code=409, detail="A save is either at saved prices or re-priced, not both.")
     if repriced_from and version_action != "new_version":
-        raise HTTPException(status_code=409, detail={
-            "code": "repriced_new_revision_only",
-            "message": "A re-priced quote saves as a new revision only, so the revision the customer received stays as sent."})
+        raise HTTPException(status_code=409, detail=frozen_quote.refusal("repriced_new_revision_only"))
     if frozen_id:
         if not edit_record_id or str(edit_record_id) != str(frozen_id) or version_action not in ("overwrite", "new_version"):
             raise HTTPException(status_code=409, detail="A save at saved prices must overwrite that quote or save a new revision of it.")
     elif edit_record_id and version_action == "overwrite":
-        raise HTTPException(status_code=409, detail={
-            "code": "overwrite_needs_saved_prices",
-            "message": "Overwrite keeps the quote exactly as saved, so it is only offered while the quote shows its saved "
-                       "prices. A re-priced quote saves as a new revision."})
+        raise HTTPException(status_code=409, detail=frozen_quote.refusal("overwrite_needs_saved_prices"))
     if (frozen_id or repriced_from) and screen is None:
-        raise HTTPException(status_code=409, detail={
-            "code": "screen_missing",
-            "message": "The figures on screen did not reach the server, so nothing was saved. Reload the quote and try again."})
+        raise HTTPException(status_code=409, detail=frozen_quote.refusal("screen_missing"))
     frozen_meta = None          # rides the response, never the stored copy
 
     # ── REPAIRS mode (v1.47 Lane C) ───────────────────────────────────────────

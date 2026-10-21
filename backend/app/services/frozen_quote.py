@@ -37,11 +37,35 @@ DIM_KEYS = ("length", "width", "height", "floor_thickness", "panel_thickness", "
 CENT = 0.015
 
 
-class FrozenError(Exception):
-    """A frozen calculation that cannot be done at saved prices. ``code`` is machine-readable; ``message`` is for the
-    user and always names the way out (re-pricing)."""
+# RT8_RULING_2 — the plain words for every refusal the calculator can meet, keyed by code: one source for the API
+# and the page (the page shows the sentence, never the code). Nothing is saved in any of these cases.
+# `frozen_not_capable` keeps its own sentence (the read-only line on open names the reason).
+REFUSALS = {
+    "overwrite_needs_saved_prices":
+        "This page is out of date. Reload it (Ctrl+F5) and save again. Your quote has not been changed.",
+    "frozen_mismatch":
+        "The figures changed while saving, so nothing was saved. Reload the quote and try again.",
+    "screen_missing":
+        "The figures changed while saving, so nothing was saved. Reload the quote and try again.",
+    "repriced_new_revision_only":
+        "A quote moved to today's prices saves as a new revision, so the one the customer has stays as sent.",
+    "frozen_library_missing":
+        "This quote was saved before size changes could keep its prices. To change the size, use Update to today's prices.",
+}
 
-    def __init__(self, code: str, message: str):
+
+def refusal(code: str, **extra) -> dict:
+    """The 409 body: the code, its plain words and whatever figures the caller adds for the audit. Without the
+    table's entry the words are the code itself — the negative control pinned by the tests."""
+    return {"code": code, "message": REFUSALS.get(code, code), **extra}
+
+
+class FrozenError(Exception):
+    """A frozen calculation that cannot be done at saved prices. ``code`` is machine-readable; ``message`` is the
+    code's plain words (REFUSALS) unless the raiser gives its own."""
+
+    def __init__(self, code: str, message: str | None = None):
+        message = message or REFUSALS.get(code, code)
         super().__init__(message)
         self.code = code
         self.message = message
@@ -166,10 +190,7 @@ def resolve_library(data: dict, dims: dict, dims_saved: dict, tokens: set[str]) 
     resolved = data.get("formula_library_resolved")
     if isinstance(resolved, dict) and _same_dims(dims, dims_saved):
         return {}, {str(k): v for k, v in resolved.items() if str(k).lower() in tokens}, "values"
-    raise FrozenError(
-        "frozen_library_missing",
-        "This quote was saved before its formula library was stored, so its size cannot be changed at saved "
-        "prices. Click Update to today's prices to edit it (it saves as a new revision).")
+    raise FrozenError("frozen_library_missing")
 
 
 def replay_body(db, rec, data: dict, body: dict) -> dict:

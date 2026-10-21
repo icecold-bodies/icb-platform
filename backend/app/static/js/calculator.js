@@ -7253,6 +7253,9 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       _savedCountdown(result.quote_number);
     }
   } catch(e) {
+    // RT8_RULING_2 — a refusal the server names by code (frozen_mismatch, screen_missing, overwrite_needs_saved_prices,
+    // repriced_new_revision_only) carries its plain words: show the sentence alone, never the code, never a raw 409.
+    if (e && e.detail && typeof e.detail === 'object' && e.detail.code) { toast(e.detail.message || e.message, 'warn', 9000); return; }
     toast('Approve failed: ' + e.message, 'error');
     btn.disabled = false;
   } finally {

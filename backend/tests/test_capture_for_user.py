@@ -361,6 +361,17 @@ def test_the_detail_payload_hydrates_the_dropdown_with_the_rep(client, people, s
 _VOLATILE = ("id", "created_at", "quote_number")
 
 
+def _as_saved(row: dict) -> dict:
+    """The row as a save stores it, without what two saves can never share: the volatile columns and — since
+    v1.62.0 stamps every save (RT8) — the second-resolution `saved_at` inside result_json (CI, 21 Oct 2026: two saves
+    straddled 06:38:58 → :59 on windows and read as 'different JSON')."""
+    out = {k: v for k, v in row.items() if k not in _VOLATILE}
+    stored = json.loads(out["result_json"])
+    stored.pop("saved_at", None)
+    out["result_json"] = json.dumps(stored, sort_keys=True)
+    return out
+
+
 def test_choosing_yourself_stores_exactly_what_no_dropdown_stores(client, people, seeded):
     """The admin's dropdown defaults to the admin. Sending that must be indistinguishable
     from a save by a calculator that has no dropdown at all: NULL, no journal, same JSON."""
@@ -369,8 +380,7 @@ def test_choosing_yourself_stores_exactly_what_no_dropdown_stores(client, people
     without = _save(client, h, _body(seeded))
     a, b = _row(with_self["record_id"]), _row(without["record_id"])
     assert a["sales_rep_user_id"] is None and b["sales_rep_user_id"] is None
-    assert {k: v for k, v in a.items() if k not in _VOLATILE} == \
-           {k: v for k, v in b.items() if k not in _VOLATILE}
+    assert _as_saved(a) == _as_saved(b)
     assert _journal(with_self["record_id"]) == [] and _journal(without["record_id"]) == []
     stored = json.loads(a["result_json"])
     assert not any("sales_rep" in k for k in stored), "attribution must not leak into result_json"

@@ -295,11 +295,22 @@ def _documents(client, headers, rec_id, monkeypatch) -> dict:
     """The four customer documents of one costing, as text. The quote report renders through WeasyPrint (absent
     locally and in CI), so — as test_costing_bom_order does — the renderer is stubbed and EVERYTHING it is handed
     (the template's whole context) is the report's text."""
+    from datetime import datetime as _real_datetime
     from docx import Document
     import openpyxl
     from pypdf import PdfReader
     import app.report_engine as report_engine
+    import app.routers.exports as exports
     out, seen = {}, {}
+
+    # RT8_RULING_2 — the clock is frozen: the Word document prints "generated at" to the minute, and the two renders
+    # this test compares once straddled 04:50 → 04:51 UTC in CI (21 Oct 2026), reading as "the word changed".
+    class _FrozenClock(_real_datetime):
+        @classmethod
+        def now(cls, tz=None):
+            fixed = cls(2026, 10, 21, 7, 0, 0)
+            return fixed.replace(tzinfo=tz) if tz else fixed
+    monkeypatch.setattr(exports, "datetime", _FrozenClock)
 
     def fake_render(**kw):
         seen.update(kw)

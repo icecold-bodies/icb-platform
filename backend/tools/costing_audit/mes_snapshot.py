@@ -155,6 +155,20 @@ UNDO = "__undo__"       # inserted[UNDO]: the load's undo log, replayed backward
 # there by a seed or an earlier load) is stale: the load removes it and the fidelity check refuses it.
 OWNED_BY = {"bill_of_materials": "trailer_type_id", "skin_formula_items": "formula_id",
             "taping_block_items": "block_id", "floor_plate_items": "plate_id", "mounting_cleat_items": "cleat_id"}
+# RT7_RULING_2 Q2: the dangling foreign keys check_fidelity allows — EXACTLY these, by (table, primary key, column), with
+# the value the snapshot carries. Their targets are not in the snapshot, so the loader writes them NULL. They are rows of
+# a trailer 51 that prod no longer has (a queued clean-up item); any other dangling FK, or one more, fails the check.
+# test_rt7_pins.py holds this list equal to the committed snapshot's dangling FKs: it shrinks when the clean-up lands.
+DANGLING_REF = "body 51 orphans"
+DANGLING_ALLOWED = {
+    ("bill_of_materials", 7238, "trailer_type_id"): 51,
+    ("bill_of_materials", 7238, "body_option_group_id"): 21,
+    ("bill_of_materials", 7239, "trailer_type_id"): 51,
+    ("bill_of_materials", 7239, "body_option_group_id"): 21,
+    ("bill_of_materials", 7362, "trailer_type_id"): 51,
+    ("bill_of_materials", 7418, "trailer_type_id"): 51,
+    ("bill_of_materials", 7418, "body_option_subgroup_id"): 59,
+}
 
 
 def _guard_test_db(allow_non_test_db: bool, what: str) -> None:
@@ -470,11 +484,15 @@ def _same(snap, db) -> bool:
     return json.loads(json.dumps(db, default=str)) == snap
 
 
+_NOT_ALLOWED = object()
+
+
 def check_fidelity(path: Path, *, conn=None, log=print) -> list[str]:
     """RT7 (RT7_RULING_1B §1, G1) — after a load, every snapshot row equals its database row, column for column, and
     no row a snapshot parent owns (OWNED_BY) is in the database without being in the snapshot. Returns the mismatches,
     each naming the table, the key and the column (empty = the database holds the snapshot). The one allowed difference
-    is the loader's own: a foreign key whose target the snapshot does not carry must read NULL (logged, counted)."""
+    is the loader's own: a foreign key whose target the snapshot does not carry must read NULL — and only for the
+    DANGLING_ALLOWED keys (RT7_RULING_2 Q2); any other dangling foreign key is a mismatch."""
     _ensure_backend_on_path()
     from sqlalchemy import select
     from app.database import Base, engine
@@ -508,6 +526,9 @@ def check_fidelity(path: Path, *, conn=None, log=print) -> list[str]:
                     if col in fks and v is not None and (v,) not in present.get(fks[col], set()):
                         want = None                      # dangling: written NULL by the loader
                         n_null += 1
+                        if DANGLING_ALLOWED.get((name, pk[0] if len(pk) == 1 else pk, col), _NOT_ALLOWED) != v:
+                            problems.append(f"{who}: {col}={v!r} points at a {fks[col]} row the snapshot does not "
+                                            f"carry — not one of the {len(DANGLING_ALLOWED)} allowed ({DANGLING_REF})")
                     n_cells += 1
                     if not _same(want, db[col]):
                         problems.append(f"{who}: {col} — snapshot {want!r}, database {db[col]!r}")
@@ -528,7 +549,8 @@ def check_fidelity(path: Path, *, conn=None, log=print) -> list[str]:
     else:
         with engine.connect() as c:
             run(c)
-    log(f"[fidelity] {n_rows} snapshot rows, {n_cells} values compared ({n_null} dangling FK(s) NULL, as written): "
+    log(f"[fidelity] {n_rows} snapshot rows, {n_cells} values compared ({n_null} dangling FK(s) NULL, as written; "
+        f"{len(DANGLING_ALLOWED)} allowed: {DANGLING_REF}): "
         + (f"{len(problems)} MISMATCH(ES)" if problems else "the database holds the snapshot"))
     for p in problems[:40]:
         log(f"[fidelity]   {p}")

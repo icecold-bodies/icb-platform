@@ -1,0 +1,36 @@
+(the line above, as run: machine icb-mes-prod, db icb_platform @ 127.0.0.1:5432, head 5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d, boot 2026-10-11 08:02:53 SAST, mode preflight)
+== prod: db=icb_platform alembic=0053 code=5e37b0a mode=preflight target=5511355 (v1.61.1) 2026-10-20T13:05:57+02:00
+== anchors
+   PASS ALEMBIC = 0053
+   PASS HEAD = 5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d
+   PASS TRACKED_CLEAN = 0
+== autologin: MES_DEMO_AUTOLOGIN_USER must be EMPTY on prod (only 'empty: yes/no' is ever printed)
+   PASS AUTOLOGIN_EMPTY = yes
+   PASS ENV_KEY = ICB_ENVIRONMENT=prod
+== the 4G factor (RT7_RULING_1A: exactly 5400/4100, set by Michael on 19 Oct)
+   PASS FACTOR = 1.3170731707317074
+== served bytes (the SPA: unchanged by this release)
+   PASS SPA_DISK_NAME = assets/index-BBI2d9Oo.js
+   PASS SPA_LOCAL = cd39cb56c57560978799f07eabaf27abbf6b95f3fb74a214b4aedb60ecaa5606
+   PASS SPA_LAN = cd39cb56c57560978799f07eabaf27abbf6b95f3fb74a214b4aedb60ecaa5606
+   PASS HEALTH = 200
+== today, on the three doors: v1.61.0 answers, and RT4's no-session gate holds (this release adds no route)
+   PASS VERSION_LOCAL = v1.61.0
+   PASS VERSION_LAN = v1.61.0
+   PASS VERSION_CF = v1.61.0
+   PASS NOAUTH_LOCAL = all 46 as expected
+   PASS NOAUTH_LAN = all 46 as expected
+   PASS NOAUTH_CF = all 46 as expected
+== PyYAML (installed by v1.59.0; this release installs nothing)
+   PASS PYYAML = 6.0.2
+== the tag is on origin BEFORE the window
+   PASS TAG_ON_ORIGIN = 771b032a35ab5d4ed4da3ce5d51016d1201739cd
+== backup location
+   PASS BACKUP_DIR = writable
+   free space: /dev/mapper/ubuntu--vg-ubuntu--lv   98G   10G   83G  11% /
+== deploy tooling on prod
+   PASS DEPLOY_SCRIPT = 012d701097d2671c6f0468479d600368e7ae3e2b5dc533bd57f8a5e671d23317
+   PASS ICB_SUDO = nopasswd
+   deploy record: completed 5e37b0a4f7388107032d99ff5190c0a5f5f2ee1d (owner icb)
+
+######## PREFLIGHT PASSED — tell the CA: /tmp/icb-release-v1.61.1/out-preflight-20261020-130557

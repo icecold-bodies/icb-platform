@@ -1,0 +1,75 @@
+RT7 window, 20 Oct 2026 — Michael's pastes that no kit wrote to disk (copied from the session as pasted; quote cells only)
+
+== step 0 (Windows, run_window_copy.ps1) 13:03:43
+######## RT7 window copy . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . db icb_platform (checked by each kit on the VM) . head 5e37b0a . boot 2026-10-11 08:02:53 SAST . stage 5511355 . 2026-10-20 13:03:43
+== kit ok: icb-release-v1.61.1.tar sha256 d48801dd365c...
+== kit ok: icb-rt2-all.tar sha256 8f2e629ca4dd...
+== kit ok: icb-rt2-doors.tar sha256 2960d2705871...
+== copy the 3 kits to prod /tmp
+   icb-release-v1.61.1 unpacked, verified and stamped on prod
+   icb-rt2-all unpacked, verified and stamped on prod
+   icb-rt2-doors unpacked, verified and stamped on prod
+######## DONE - the kits are in prod /tmp, verified and stamped (a reboot after this makes each one refuse: copy again). Next: the runbook's step 1 (All, pre).
+
+== step 2 follow-up (VM, read only) 13:08:28 — verify-before failed 8, not 7: the 8th was TRACEBACKS = 12. Every one:
+######## RT7 tracebacks · machine icb-mes-prod · head 5e37b0a · since Thu 2026-10-15 13:01:18 SAST · 2026-10-20 13:08:28 SAST
+      2 2026-10-19T11:14:05 Traceback
+      1 2026-10-19T11:14:05 starlette.requests.ClientDisconnect
+      1 2026-10-19T11:14:05 Traceback
+      1 2026-10-19T11:14:05 starlette.requests.ClientDisconnect
+      2 2026-10-19T11:14:05 Traceback
+      1 2026-10-19T11:14:05 starlette.requests.ClientDisconnect
+      1 2026-10-19T11:14:05 Traceback
+      1 2026-10-19T11:14:05 starlette.requests.ClientDisconnect
+      2 2026-10-19T14:13:25 Traceback
+      1 2026-10-19T14:13:25 starlette.requests.ClientDisconnect
+      1 2026-10-19T14:13:25 Traceback
+      1 2026-10-19T14:13:25 starlette.requests.ClientDisconnect
+      2 2026-10-19T14:13:25 Traceback
+      1 2026-10-19T14:13:25 starlette.requests.ClientDisconnect
+      1 2026-10-19T14:13:25 Traceback
+      1 2026-10-19T14:13:25 starlette.requests.ClientDisconnect
+(12 traceback lines = 4 dropped browser requests, 3 lines each, under v1.61.0. Cleared by the CA as pre-existing: the
+deploy's own TRACEBACKS check counts from its restart, and read 0.)
+
+== step 3a (browser, https://192.168.0.251/admin/costing-audit) 13:10
+all pack
+ran by admin at 20 Oct 2026, 13:10
+environment Production (icb_platform)
+accepted list accepted_differences.prod.yaml
+golden 04c774e2a7de · 05 Oct 2026, 15:49
+tolerance 1 %
+cells: pass 1977 · flag 114 · accepted 59 · expired 0 · unverifiable 76
+took 6 s
+Changed since run #45 (15 Oct 2026, 13:08, admin): 172 status · 13 moved
+
+== step 5a (browser, the same page) 13:14 — page run #49 (its stored counts are in icb-rt2-all/out-post-*/run.txt:
+PASS 2035 FLAG 0 ACCEPTED 115 EXPIRED 0 UNVERIFIABLE 76, golden ed4d57bcd6d5093a). A FREEZER MEDIUM -> DRD DOOR
+FITTINGS cell's yellow line:
+Accepted: [MES AHEAD] FREEZER MEDIUM DRD DOOR FITTINGS: Michael changed prod on purpose - CSLB HINGES 6 -> 4 on the double rear door (bom 2447; -R293.46 = 2 x R146.73); Burt's sheet has not caught up (keep in step: E-03). — BA, review by 2026-11-30 · mes_updated_ahead_of_burt · pinned at -293,46 · clears with E-03
+
+== close: /tmp (VM, read only) 13:24:30
+######## RT7 /tmp listing · machine icb-mes-prod · head 5511355 · 2026-10-20 13:24:30 SAST
+drwxr-xr-x 7 mickeyger mickeyger    4096 2026-10-20_13:19:36 /tmp/icb-release-v1.61.1
+-rw-rw-r-- 1 mickeyger mickeyger   51200 2026-10-20_13:03:43 /tmp/icb-release-v1.61.1.tar
+drwxr-xr-x 5 mickeyger mickeyger    4096 2026-10-20_13:17:25 /tmp/icb-rt2-all
+-rw-rw-r-- 1 mickeyger mickeyger   30720 2026-10-20_13:03:43 /tmp/icb-rt2-all.tar
+drwxr-xr-x 4 mickeyger mickeyger    4096 2026-10-20_13:19:10 /tmp/icb-rt2-doors
+-rw-rw-r-- 1 mickeyger mickeyger 4014080 2026-10-20_13:03:44 /tmp/icb-rt2-doors.tar
+drwxr-xr-x 5 mickeyger mickeyger    4096 2026-10-16_16:40:18 /tmp/icb-rt7-discovery
+-rw-rw-r-- 1 mickeyger mickeyger   30720 2026-10-16_16:39:52 /tmp/icb-rt7-discovery.tar
+drwxr-xr-x 4 mickeyger mickeyger    4096 2026-10-19_15:15:45 /tmp/icb-rt7-export
+-rw-rw-r-- 1 mickeyger mickeyger   40960 2026-10-19_15:15:17 /tmp/icb-rt7-export.tar
+(+ the two folders' contents: kit files, out-20261016-142851, out-20261016-163958 (+ .tar), out-20261019-151523 (+ .tar))
+
+== close: /tmp tidy (VM; the four exact paths RULING_2 names, read back) 13:25:20
+######## RT7 /tmp tidy · machine icb-mes-prod · head 5511355 · 2026-10-20 13:25:20 SAST
+gone: /tmp/icb-rt7-discovery
+gone: /tmp/icb-rt7-discovery.tar
+gone: /tmp/icb-rt7-export
+gone: /tmp/icb-rt7-export.tar
+
+== :8000 (Michael's dev server, after the post-merge fast-forward; dev list, dev data) 11:06 — run #12
+Development — database icb, not the live prices.
+accepted list accepted_differences.yaml · 22 entries; golden ed4d57bcd6d5 · 19 Oct 2026, 14:52 · 212 scenarios
+cells: pass 1584 · flag 54 · accepted 512 · expired 0 · unverifiable 76   (took 3 s)

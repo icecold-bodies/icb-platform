@@ -136,8 +136,11 @@ Write-Host "== the fake prod's /tmp after the cleanup block, and negative contro
 $down = @(& wsl.exe -u root -- bash (WslPath (Join-Path $PSScriptRoot 'fakeprod_down.sh')) report-only 2>&1 | ForEach-Object { "$_" })
 $listing = @(); $inTmp = $false
 foreach ($l in $down) { if ($l -like '== fake prod /tmp*') { $inTmp = $true; continue }; if ($l -like '==*') { $inTmp = $false }; if ($inTmp) { $listing += $l.Trim() } }
-$left = @($listing | Where-Object { $_ -like 'icb-*' -or $_ -like 'rt9-*' })
-if ($left.Count -eq 0) { Ok "after the cleanup block the fake prod's /tmp holds no icb-* / rt9-* name (what is left: $($listing -join ', '))" } else { Bad "names left in the fake /tmp: $($left -join ', ')" }
+# icb-deploy.sh (the repo's deploy script) writes /tmp/icb-rollback-<ts>.txt on EVERY deploy, as on 20 Oct: its own
+# record, not a kit; the cleanup leaves it, and this check names it rather than counting it
+$rollback = @($listing | Where-Object { $_ -match '^icb-rollback-\d{8}-\d{6}\.txt$' })
+$left = @($listing | Where-Object { ($_ -like 'icb-*' -or $_ -like 'rt9-*') -and $_ -notmatch '^icb-rollback-\d{8}-\d{6}\.txt$' })
+if ($left.Count -eq 0 -and $rollback.Count -eq 1) { Ok "after the cleanup block the fake prod's /tmp holds no kit name; only icb-deploy.sh's own $($rollback[0]) (every deploy writes one)" } else { Bad "names left in the fake /tmp: $($left -join ', ') (rollback records: $($rollback.Count))" }
 # a. RT8's fault, in cleanup_check.ps1 v1's exact shape: a here-string with double quotes inside, as ONE ssh argument
 $nc = Invoke-Paste ("`$remote = @'`r`nbash -c 'set -u; echo `"######## NC ran`"; echo second'`r`n'@`r`n& ssh -o BatchMode=yes stubuser@127.0.0.9 `$remote") 'nc-rt8-v1-shape'
 $got = Get-ChildItem $Req -Filter 'ssh-*.req.cmdline' | Sort-Object LastWriteTime | Select-Object -Last 1 | ForEach-Object { [System.IO.File]::ReadAllText($_.FullName) }

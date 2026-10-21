@@ -42,14 +42,13 @@ function Enter-Window($label) {
   }
   $sshErr = ((Get-Content $errFile -ErrorAction SilentlyContinue) -join ' ').Trim()
   Remove-Item $errFile -ErrorAction SilentlyContinue
+  $said = if ($sshErr) { $sshErr } else { '(nothing)' }
+  $hint = if ($sshErr -match 'timed out|No route|unreachable|Could not resolve') { 'prod is not reachable on the LAN address - connect the VPN, then paste the same line again' } else { 'tell the CA' }
   $short = if ($vmHead.Length -ge 7) { $vmHead.Substring(0, 7) } else { $vmHead }
   Write-Host "######## RT9 window $label . machine $env:COMPUTERNAME -> $vmHost . head $short . boot $vmBoot . stage $($Staged.Substring(0,7)) . $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-  if ($why) { $t, $w = $why.Split('|', 2); Stop-Step $t $w }
+  if ($why) { $t, $w = $why.Split('|', 2); if ($t -eq 'WHERE') { $w = "$w. It said: $said. $hint" }; Stop-Step $t $w }
   if ($env:COMPUTERNAME -ne $PcName) { Stop-Step WHERE "this is $env:COMPUTERNAME; the stage lives on $PcName" }
-  if ($vmHost -ne $VmName) {
-    $hint = if ($sshErr -match 'timed out|No route|unreachable|Could not resolve') { 'prod is not reachable on the LAN address - connect the VPN, then paste the same line again' } else { 'tell the CA' }
-    Stop-Step WHERE "ssh $Vm reached '$vmHost', not $VmName. ssh said: $(if ($sshErr) { $sshErr } else { '(nothing)' }). $hint"
-  }
+  if ($vmHost -ne $VmName) { Stop-Step WHERE "ssh $Vm reached '$vmHost', not $VmName. ssh said: $said. $hint" }
   if ($vmBoot -notmatch '^\d{4}-\d{2}-\d{2} ') { Stop-Step WHERE "prod's boot time could not be read ('$vmBoot') - tell the CA" }
   if ($Heads -notcontains $vmHead) { Stop-Step WHERE "prod's code is $short, this window expects $(($Heads | ForEach-Object { $_.Substring(0,7) }) -join ' or ')" }
   $script:VmHead = $vmHead

@@ -231,7 +231,8 @@ IF YOU SEE "STOP": nothing was changed; paste it back to me
 
 **10. Remove the window's kits from prod `/tmp`** by exact name (the list is in `rt9_vm.sh`: the three RT9 kits and
 their tars — RT7's old out folders inside the reused All and door folders go with them — RT7's v1.61.1 release kit
-and tar, and the window start mark), then read every name back.
+and tar, and the window start mark), then read every name back. Not touched: `/tmp/icb-rollback-<ts>.txt`, which the
+repo's own `icb-deploy.sh` writes on every deploy (its rollback anchor; earlier deploys left theirs too).
 
 📋 PASTE INTO: PowerShell (your laptop)
 ```

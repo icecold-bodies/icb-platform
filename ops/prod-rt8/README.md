@@ -14,7 +14,7 @@ python). At close, prod's `/tmp/icb-rt8-check*` (the kit, its tar, the `out-*` f
 
 | File | Role |
 |---|---|
-| `rt8_frozen_check.py` | the check: counts by month and body, the replay check per pending body quote (prod's own engine), repairs' stock lines, N10022/10/2026 named; allow-lists asserted at import |
+| `rt8_frozen_check.py` | the check: counts by month and body, the replay check per pending body quote (prod's own engine: every line to the cent, then the engine's own category totals and grand total — never a re-sum of the rounded lines), repairs' stock lines, N10022/10/2026 named; allow-lists asserted at import |
 | `rt8_frozen_check.sh` | the VM script: where-check, read-only sessions, env loaded silently, outputs + hashes + tar |
 | `mkstage_check.sh` | stages the kit from a COMMIT (LF bytes, sha256-checked), fills `run_check.ps1` |
 | `run_check.ps1` | Michael's one line |

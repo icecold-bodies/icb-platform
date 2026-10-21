@@ -93,3 +93,36 @@ def test_the_replay_check_matches_the_frozen_engine_on_a_saved_shape(kit):
     lib = {**data, "global_variables": {}, "formula_library_resolved": {"roof_factor": 0.1}}
     r = kit.replay(lib, dims, calculate_bom)
     assert r["pass"] and r["library"] == "values" and r["library_tokens"] == ["roof_factor"]
+
+
+def test_the_totals_are_compared_the_engines_way(kit):
+    """The engine sums the UNROUNDED line costs into category_totals and rounds once; each stored line carries its
+    cost rounded to the cent. On 21 Oct every one of prod's 69 pending bodies replayed line for line yet read FAIL,
+    because the kit re-summed the rounded lines (seven lines of 0.8667 already differ by two cents). The kit now
+    takes the engine's own totals, free-hand lines replayed through the engine too, and adds the chassis subtotal
+    the way the router does. Negative controls: a stored category total or grand total one cent off still fails,
+    and a moved price still fails on its line."""
+    from app.formula_engine import calculate_bom
+    dims = {"length": 2.6, "width": 2.6, "height": 2.56}
+    bom = [{"bom_id": i, "material_name": f"M{i}", "category_name": "ROOF", "formula_expression": "length/3",
+            "waste_percentage": 0, "price_per_unit": 1.0, "unit_of_measure": "m", "material_code": "",
+            "section_multiplier": 1.0, "excluded": False} for i in range(1, 8)]
+    bom.append({"bom_id": None, "free_hand": True, "free_hand_key": "fh1", "free_hand_kind": "free_hand",
+                "material_name": "typed", "category_name": "EXTRAS", "quantity": 3.0, "price_per_unit": 1.2345,
+                "total_only": False, "unit_of_measure": "", "material_code": "", "waste_percentage": 0,
+                "section_multiplier": 1.0, "excluded": False})
+    saved = calculate_bom(bom, dims, {}, {}, {})                 # what /api/approve stores
+    roof_rounded = round(sum(it["line_cost"] for it in saved["items"] if it["category"] == "ROOF"), 2)
+    assert roof_rounded != saved["category_totals"]["ROOF"], "the fixture must carry a real rounding gap"
+    data = {"items": saved["items"], "category_totals": saved["category_totals"],
+            "materials_total": saved["grand_total"], "chassis": {"subtotal": 1500.0},
+            "grand_total": round(saved["grand_total"] + 1500.0, 2), "body_variables": {}, "global_variables": {}}
+    r = kit.replay(data, dims, calculate_bom)
+    assert r["pass"] and r["bad_lines"] == 0 and r["cat_ok"] and r["gt_ok"], r
+    off_cat = {**data, "category_totals": {**data["category_totals"],
+                                           "ROOF": round(data["category_totals"]["ROOF"] + 0.01, 2)}}
+    assert not kit.replay(off_cat, dims, calculate_bom)["pass"]
+    off_gt = {**data, "grand_total": round(data["grand_total"] + 0.01, 2)}
+    assert not kit.replay(off_gt, dims, calculate_bom)["pass"]
+    moved = {**data, "items": [dict(data["items"][0], unit_price=1.01)] + data["items"][1:]}
+    assert kit.replay(moved, dims, calculate_bom)["bad_lines"] == 1

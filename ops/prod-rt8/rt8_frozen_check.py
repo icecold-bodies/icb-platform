@@ -7,7 +7,7 @@ customer, contact, user, rep, address or description — and reports, by save mo
   * pending, and how many can be frozen (lines complete, totals and variables present);
   * the REPLAY CHECK: every pending body quote replayed from its stored lines — each line's saved formula, price,
     waste and section multiplier at the saved size with the saved variables — must give the stored quantities,
-    line costs, section totals and grand total to the cent; a fail names the number of differing lines and the
+    line costs, then the engine's own category totals and grand total to the cent; a fail names the number of differing lines and the
     largest difference (a quote that fails gets the read-only treatment, ratified default 10);
   * quotes whose saved formulas reference the formula LIBRARY (they cannot change size at saved prices until
     re-priced: the expressions were not stored before v1.62.0);
@@ -133,9 +133,20 @@ def replay(data: dict, dims: dict, calculate_bom) -> dict:
     global_vars = {str(k): v for k, v in (data.get("global_variables") or {}).items()}
     known = {k.strip().upper() for k in body_vars} | {k.strip().upper() for k in global_vars}
     lib_tokens = set()
-    bom_items = []
+    bom_items, saved_seq = [], []
     for it in data.get("items") or []:
         if it.get("free_hand"):
+            # typed money: the engine takes a free-hand line's quantity and price as they are (no expression), so the
+            # stored line replays to its unrounded cost exactly as at save time — and so counts in the totals below
+            bom_items.append({
+                "bom_id": None, "free_hand": True, "free_hand_key": it.get("free_hand_key"),
+                "material_name": "", "category_name": it.get("category") or "Uncategorised",
+                "quantity": float(it.get("quantity") or 0), "price_per_unit": float(it.get("unit_price") or 0),
+                "waste_percentage": it.get("waste_pct") or 0, "section_multiplier": it.get("section_multiplier") or 1.0,
+                "total_only": bool(it.get("total_only")), "unit_of_measure": "", "material_code": "",
+                "excluded": bool(it.get("excluded")), "excluded_reason": None,
+            })
+            saved_seq.append(it)
             continue
         unknown = {str(u).strip().upper() for u in (it.get("formula_unknown_vars") or [])}
         for tok in _TOK.findall(str(it.get("formula") or "")):
@@ -150,6 +161,7 @@ def replay(data: dict, dims: dict, calculate_bom) -> dict:
             "material_code": "", "section_multiplier": it.get("section_multiplier") or 1.0,
             "excluded": bool(it.get("excluded")), "excluded_reason": None,
         })
+        saved_seq.append(it)
     extra = {}
     lib = data.get("formula_library") if isinstance(data.get("formula_library"), dict) else {}
     source = "none"
@@ -162,36 +174,28 @@ def replay(data: dict, dims: dict, calculate_bom) -> dict:
             lib = {}
             source = "values"
     res = calculate_bom(bom_items, dims, {**body_vars, **extra}, {str(k).lower(): v for k, v in lib.items()}, global_vars)
-    by_saved = {}
-    for it in data.get("items") or []:
-        if not it.get("free_hand") and it.get("bom_id") is not None:
-            by_saved[int(it["bom_id"])] = it
-    bad, max_diff = 0, 0.0
-    for it in res["items"]:
-        s = by_saved.get(int(it["bom_id"])) if it.get("bom_id") is not None else None
-        if s is None:
-            bad += 1
-            continue
+    # line by line, in order: the engine keeps its input order, so the n-th result is the n-th stored line
+    got = res["items"]
+    bad, max_diff = abs(len(got) - len(saved_seq)), 0.0
+    for it, s in zip(got, saved_seq):
         dq = abs(float(it["quantity"]) - float(s.get("quantity") or 0))
         dc = abs(float(it["line_cost"]) - float(s.get("line_cost") or 0))
         if dq > 0.00005 or dc > 0.005:
             bad += 1
             max_diff = max(max_diff, dc)
-    # free-hand money is typed, never replayed: add the stored free-hand lines back for the totals
-    fh = sum(float(it.get("line_cost") or 0) for it in data.get("items") or [] if it.get("free_hand") and not it.get("excluded"))
-    cats = collections.defaultdict(float)
-    for it in res["items"]:
-        if not it["excluded"]:
-            cats[it["category"]] += float(it["line_cost"])
-    for it in data.get("items") or []:
-        if it.get("free_hand") and not it.get("excluded"):
-            cats[it.get("category") or "Uncategorised"] += float(it.get("line_cost") or 0)
-    cat_ok = all(abs(round(cats.get(str(k), 0.0), 2) - round(float(v), 2)) <= 0.005
-                 for k, v in (data.get("category_totals") or {}).items())
-    mats = sum(cats.values())
-    ch = data.get("chassis") or {}
-    gt = mats + (float(ch.get("subtotal") or 0) if ch else 0.0)
-    gt_ok = abs(round(gt, 2) - round(float(data.get("grand_total") or 0), 2)) <= 0.005
+    # the totals the engine's way (formula_engine.calculate_bom): category_totals sum the UNROUNDED line costs and
+    # round once, so re-summing the rounded lines drifts by cents on a long quote (prod, 21 Oct: 69 of 69 read
+    # FAIL with every line exact). The saved grand_total is that materials total plus the chassis subtotal, rounded
+    # once (routers/calculator.py, _apply_chassis_and_margin); materials_total, when stored, is the engine's total.
+    cats = {str(k): float(v) for k, v in (res.get("category_totals") or {}).items()}
+    saved_cats = {str(k): round(float(v or 0), 2) for k, v in (data.get("category_totals") or {}).items()}
+    cat_ok = all(abs(cats.get(k, 0.0) - saved_cats.get(k, 0.0)) <= 0.005 for k in set(cats) | set(saved_cats))
+    ch = data.get("chassis") if isinstance(data.get("chassis"), dict) else {}
+    mats = float(res.get("grand_total") or 0)
+    gt = round(mats + float(ch.get("subtotal") or 0), 2)
+    gt_ok = abs(gt - round(float(data.get("grand_total") or 0), 2)) <= 0.005
+    if data.get("materials_total") is not None:
+        gt_ok = gt_ok and abs(mats - round(float(data.get("materials_total") or 0), 2)) <= 0.005
     return {"pass": bad == 0 and cat_ok and gt_ok, "bad_lines": bad, "max_diff": round(max_diff, 2),
             "cat_ok": cat_ok, "gt_ok": gt_ok, "library": source, "library_tokens": sorted(lib_tokens)}
 

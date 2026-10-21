@@ -19,7 +19,7 @@ fp_origin() {
   ksha=$($G -C "$REPO" rev-parse "$KIT^{commit}") || { echo "SIM: no branch $KIT in $REPO"; return 1; }
   PREV=$($G -C "$REPO" rev-parse "v1.61.1^{commit}") || return 1
   [ "${PREV:0:7}" = 5511355 ] || { echo "SIM: v1.61.1 is ${PREV:0:7}, prod runs 5511355"; return 1; }
-  cache=/root/rt9sim-cache/$ksha
+  cache=${RT9SIM_CACHE:-/root/rt9sim-cache}/$ksha
   if [ ! -d "$cache/origin.git" ]; then
     rm -rf "$cache"; mkdir -p "$cache"
     $G clone -q --bare --single-branch --branch backport/v1.39-base "$REPO" "$cache/origin.git" || return 1

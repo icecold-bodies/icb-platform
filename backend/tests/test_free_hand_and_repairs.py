@@ -361,6 +361,16 @@ def _repair(seeded, **over):
     return payload
 
 
+def _edit(client, headers, payload, rec) -> dict:
+    """RT8 (v1.62.0): an edit saves the quote at its SAVED prices — the calculator sends frozen_record_id and the
+    figures on screen, which the server must equal to the cent. The same payload, as the calculator would send it."""
+    calc = client.post("/api/calculate", json={**payload, "frozen_record_id": rec}, headers=headers)
+    assert calc.status_code == 200, calc.text[:600]
+    d = calc.json()
+    return {**payload, "frozen_record_id": rec,
+            "screen": {"grand_total": d["grand_total"], "net_total": d["net_total"]}}
+
+
 def test_repair_costs_without_a_body(client, admin_headers, seeded):
     r = client.post("/api/calculate", json=_repair(seeded), headers=admin_headers)
     assert r.status_code == 200, r.text
@@ -512,10 +522,10 @@ def test_a_repair_save_returns_its_document_number_and_resaves_keep_it(
 
     with SessionLocal() as db:
         before = int(get_or_create_counter(db, SERIES_REPAIR_DOC).next_value)
-    r2 = client.post("/api/approve", json=_repair(
+    r2 = client.post("/api/approve", json=_edit(client, admin_headers, _repair(
         seeded, customer_id=seeded["customer"],
         repair_type="Side panel replacement (rev)",
-        version_action="overwrite", edit_record_id=rec_id), headers=admin_headers)
+        version_action="overwrite", edit_record_id=rec_id), rec_id), headers=admin_headers)
     assert r2.status_code == 200, r2.text
     assert r2.json()["repair_document_number"] == doc, \
         "D6 — the number is immutable across re-saves"
@@ -549,17 +559,17 @@ def test_a_pre_series_repair_is_issued_its_number_on_its_next_save(
     got = client.get(f"/api/calculations/{rec_id}", headers=admin_headers).json()
     assert not got.get("repair_document_number"), "the stripped record is the premise"
 
-    r2 = client.post("/api/approve", json=_repair(
+    r2 = client.post("/api/approve", json=_edit(client, admin_headers, _repair(
         seeded, customer_id=seeded["customer"],
-        version_action="overwrite", edit_record_id=rec_id), headers=admin_headers)
+        version_action="overwrite", edit_record_id=rec_id), rec_id), headers=admin_headers)
     assert r2.status_code == 200, r2.text
     issued = r2.json()["repair_document_number"]
     assert issued and issued.startswith("R-"), \
         "the edit-save must issue the number the record never got"
 
-    r3 = client.post("/api/approve", json=_repair(
+    r3 = client.post("/api/approve", json=_edit(client, admin_headers, _repair(
         seeded, customer_id=seeded["customer"],
-        version_action="overwrite", edit_record_id=rec_id), headers=admin_headers)
+        version_action="overwrite", edit_record_id=rec_id), rec_id), headers=admin_headers)
     assert r3.status_code == 200, r3.text
     assert r3.json()["repair_document_number"] == issued, \
         "issued once — then immutable, exactly like a first-save number"
@@ -673,8 +683,10 @@ def test_a_repair_save_cannot_overwrite_a_body_costing(client, admin_headers, se
     assert made.status_code == 200, made.text
     body_id = made.json()["record_id"]
 
+    # RT8: an Overwrite is a save at the quote's SAVED prices (frozen_record_id + the figures on screen); the
+    # symmetry guard still fires first, before anything is computed
     r = client.post("/api/approve", json=_repair(
-        seeded, customer_id=seeded["customer"],
+        seeded, customer_id=seeded["customer"], frozen_record_id=body_id, screen={"grand_total": 0},
         version_action="overwrite", edit_record_id=body_id), headers=admin_headers)
     assert r.status_code == 409, r.text
     assert "not a repair" in r.json()["detail"]
@@ -696,7 +708,7 @@ def test_a_body_save_cannot_overwrite_a_repair(client, admin_headers, seeded):
     repair_id = made.json()["record_id"]
 
     r = client.post("/api/approve", json=_body(
-        seeded, customer_id=seeded["customer"],
+        seeded, customer_id=seeded["customer"], frozen_record_id=repair_id, screen={"grand_total": 0},
         version_action="overwrite", edit_record_id=repair_id), headers=admin_headers)
     assert r.status_code == 409, r.text
     assert "is a repair" in r.json()["detail"]

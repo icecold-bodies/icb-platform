@@ -236,6 +236,29 @@ function _quoteVarsPayload() {
 // their saved formulas + prices. { userExcluded:[], formulaOverrides:{},
 // savedPrices:{}, optionalEnabled:[] }. Null = normal/snapshot editing.
 let editReplay = null;
+// ── RT8 (v1.62.0) — frozen editing ──────────────────────────────────────────
+// frozen: the pending costing open for Edit at its SAVED prices { recordId, saved (the stored result), savedAt,
+//   quoteNumber, version, library, repair, snap (its UI snapshot), dims (its saved size) } — null otherwise.
+// repricedFrom: after "Update to today's prices" { recordId, quoteNumber, savedAt, newOptions, repricedAt }; the
+//   quote now prices at today's template and saves as a new revision only.
+// _frozenReadOnly / _frozenReadOnlyMeta: a record whose saved copy cannot be replayed (ratified default 10) opens
+//   read-only, with re-pricing as the way to edit it.
+// _calcGen: the calculation generation — a result that started before a newer calculation or save is dropped.
+// _calcSuspended: while a saved quote is being opened no calculation may start (the queued auto-calc that used to
+//   land after the balance check — RT8_RETURN_1 §4 — is impossible by construction).
+// _todayOptionState: today's option defaults as loadBOM seeded them, captured before the saved snapshot replaces
+//   them; the re-price lays the snapshot OVER them (the overlay rule). _overlayPicks: the user's choices for new
+//   option groups that have no template default. _userTouchedBody: the user changed the body while the page was
+//   still loading, so the last-session restore stands down (RT7's Q5).
+let frozen = null;
+let repricedFrom = null;
+let _frozenReadOnly = false;
+let _frozenReadOnlyMeta = null;
+let _calcGen = 0;
+let _calcSuspended = false;
+let _todayOptionState = null;
+let _overlayPicks = {};
+let _userTouchedBody = false;
 let bodyOptionSelections = {};  // bomId (string) → boolean
 let drdSrdEnabled = {};         // groupName → boolean; master ON/OFF toggle for DRD / SRD
 // Settings-page draft flag states (v2 trailers only).
@@ -394,6 +417,11 @@ function _puInsulationSelected(items) {
 }
 
 function onInsFoamChange(grade) {
+  if (frozen || _frozenReadOnly) {   // RT8 — the foam grade is as saved
+    renderInsulationFoam(bomData);
+    toast(FROZEN_LOCK_TEXT, 'warn');
+    return;
+  }
   const next = normaliseInsFoam(grade);
   if (next === insulationFoam) return;
   insulationFoam = next;
@@ -543,6 +571,10 @@ function saveLastSession() {
 }
 
 async function restoreLastSession() {
+  // RT8 (RT7's Q5) — the page's five awaited loads run before this; a user who picked a body in the meantime has
+  // started a costing, and the restore stands down rather than overwrite it (the re-render that replaced an open
+  // menu was RT7's flaky repair journey).
+  if (_userTouchedBody) return false;
   let session;
   try {
     const raw = localStorage.getItem(LAST_SESSION_KEY);
@@ -578,6 +610,7 @@ async function restoreLastSession() {
 
   sel.value = session.trailer_type_id;
   await loadBOM({ preserveInputs: true });
+  if (_userTouchedBody) return false;   // RT8 — the user changed the body during the load: theirs wins
 
   // Restore dimension + config fields
   const _set = (id, val) => {
@@ -1086,6 +1119,7 @@ async function editBodyVariable(span) {
   const bomId = span.dataset.bomId;
   const name  = span.dataset.name;
   if (!bomId) return;
+  if (frozen || _frozenReadOnly) { toast(FROZEN_LOCK_TEXT, 'warn'); return; }   // RT8 — thicknesses are as saved
   const current = (span.textContent.match(/[-0-9.]+/) || [''])[0];
   // Replace the span with an inline input
   const inp = document.createElement('input');
@@ -1466,17 +1500,18 @@ async function _restoreReturnState(tid) {
   const ok = sessTrailerOk ? await restoreLastSession() : false;
   if (!ok) await loadBOM();
 
-  // Hard-restore the configurator draft stores AFTER loadBOM's one-time seed
-  // and pin the trailer — mirrors the ?edit= reopen path. Without the pin the
+  // Restore the configurator draft stores AFTER loadBOM's one-time seed and
+  // pin the trailer — mirrors the ?edit= reopen path. Without the pin the
   // next renderBodyOptionsFromDraft re-seeds from the server draft and the
   // body panel snaps back to defaults.
+  // RT8 — laid OVER today's seeded defaults (the overlay rule, RT8_RULING_1): an option group created since the
+  // detour keeps its template default instead of ending up with nothing selected.
   if (typeof _draftFlagStateTrailer !== 'undefined') _draftFlagStateTrailer = +tid;
-  if (st.draft_flag_state     && typeof draftFlagState          !== 'undefined') draftFlagState          = { ...st.draft_flag_state };
-  if (st.draft_category_radio && typeof draftCategoryRadioState !== 'undefined') draftCategoryRadioState = { ...st.draft_category_radio };
-  if (st.draft_masterless_cat && typeof draftMasterlessCatState !== 'undefined') draftMasterlessCatState = { ...st.draft_masterless_cat };
-  if (st.draft_folder         && typeof draftFolderState        !== 'undefined') draftFolderState        = { ...st.draft_folder };
-  bodyOptionSelections = { ...(st.body_option_selections || {}) };
-  drdSrdEnabled        = { ...(st.drd_srd || {}) };
+  _applyOptionState(_overlaySnapshot(_captureOptionState(), {
+    body_option_selections: st.body_option_selections, drd_srd: st.drd_srd,
+    draft_flag_state: st.draft_flag_state, draft_category_radio: st.draft_category_radio,
+    draft_masterless_cat: st.draft_masterless_cat, draft_folder: st.draft_folder,
+  }));
   // RT2 — the quote's own foam grade and thicknesses come back on BOTH paths
   // (the degraded plain loadBOM() above starts a fresh overlay + the body default).
   if (st.insulation_foam) insulationFoam = normaliseInsFoam(st.insulation_foam);
@@ -1523,6 +1558,13 @@ function showCtxMenu(e, materialId, materialName, originalPrice, bomId, formula)
   menu.dataset.originalPrice = originalPrice;
   menu.dataset.bomId         = bomId || '';
   menu.dataset.formula       = formula || '';
+  // RT8 — a frozen quote prices from its saved lines: the template edits (permanent price, section price, formula)
+  // would not reach it, so only the quote-only price stays on the menu
+  const _tplLocked = !!(frozen || _frozenReadOnly);
+  ['ctx-edit-permanent-section-item', 'ctx-edit-permanent-item', 'ctx-edit-formula-item'].forEach(id => {
+    const it = document.getElementById(id);
+    if (it && _tplLocked) it.style.display = 'none';
+  });
   // When already overridden, show the existing override price in the modal
   const ovKey = String(bomId || '');
   if (priceOverrides[ovKey]) {
@@ -2240,6 +2282,11 @@ function formulaInsert(token) {
 }
 
 async function saveFormulaEdit() {
+  // RT8 — a frozen quote prices from its SAVED formulas: a template formula edit would not reach it
+  if (frozen || _frozenReadOnly) {
+    toast('This quote uses its saved formulas. Edit the template from Body Templates, then Update to today’s prices.', 'warn', 7000);
+    return;
+  }
   const modal = document.getElementById('modal-formula-edit');
   const bomId = modal.dataset.bomId;
   const newFormula = document.getElementById('formula-edit-input').value.trim();
@@ -2407,6 +2454,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function scheduleCalc() {
   clearTimeout(calcTimer);
+  // RT8 — nothing may be queued while a saved quote is being opened: the queued calculation used to fire 700 ms
+  // later, after the balance check, and put today's figures under a banner that said "saved".
+  if (_calcSuspended) return;
   // v1.47 — a REPAIRS costing has no bomData, so the length gate would swallow
   // every margin / ratio / discount change on the repair surface.
   calcTimer = setTimeout(() => { if (repairMode || bomData.length) runCalc(); }, 700);
@@ -2454,6 +2504,7 @@ function _enterChainFields() {
  *  entry point the debounce uses, so a repair (no bomData) still recalculates. */
 function _recalcNow() {
   clearTimeout(calcTimer);
+  if (_calcSuspended) return;   // RT8 — see scheduleCalc
   if (repairMode || bomData.length) runCalc();
 }
 
@@ -2955,6 +3006,10 @@ function _restoreLines(saved) {
 // Rebuild the repair surface from a saved costing. `forEdit` keeps the record
 // identity so Save can overwrite it; a copy starts clean.
 async function _openSavedRepair(payload, recordId, forEdit) {
+  // RT8 — a saved repair opens as the saved repair (see editCalculation): no calculation while it is restored
+  _calcSuspended = true;
+  clearTimeout(calcTimer);
+  frozen = null; repricedFrom = null; _frozenReadOnly = false; _frozenReadOnlyMeta = null; _lastReprice = null;
   const sel = document.getElementById('trailer-select');
   if (sel) sel.value = 'repair';
   enterRepairMode();
@@ -3013,6 +3068,31 @@ async function _openSavedRepair(payload, recordId, forEdit) {
   _resetSavedOnce();
   onRepairMetaInput();
   renderRepairSurface();
+  const saved = payload.saved_result || null;
+  if (forEdit && saved && Array.isArray(saved.items)) {
+    // RT8 — the saved repair, to the cent; its stock lines keep the prices they were quoted at. Recalculations
+    // replay through the server with frozen_record_id. A record without its lines opens read-only.
+    const meta = { recordId: +recordId, saved, savedAt: payload.saved_at || null, quoteNumber: payload.quote_number || null,
+                   version: payload.version || 1, library: 'none', repair: true, snap: {}, dims: {},
+                   reason: payload.frozen_reason || null };
+    if (payload.frozen_capable) frozen = meta;
+    else { _frozenReadOnly = true; _frozenReadOnlyMeta = meta; }
+    lastCalcPayload = _buildRepairPayload();
+    if (frozen) lastCalcPayload.frozen_record_id = frozen.recordId;
+    lastResult = saved;
+    lastResultPayload = lastCalcPayload;
+    renderSummary(saved);
+    renderRepairSurface();
+    const included = repairLines.filter(function (l) { return !l.excluded; });
+    _setDisabled('approve-btn', !(frozen && _repairMetaValid() && included.length));
+    showEditBanner(payload);
+    _renderFrozenLine(null, meta.reason);
+    _calcSuspended = false;
+    clearTimeout(calcTimer);
+    _frozenDriftCheck();
+    return;
+  }
+  _calcSuspended = false;
   await runRepairCalc();
 }
 
@@ -3033,6 +3113,7 @@ async function prefillCalculation(recordId) {
     _resetQuoteVars(payload.trailer_type_id);   // RT2 — never inherit another quote's thicknesses
     await loadBOM({ preserveInputs: true });
     applyCalculationInputs(payload);
+    _overlayCopyOptions(payload);   // RT8 — the source's option choices laid over today's defaults
     // WO v4.30 — a copy keeps the SOURCE ratio (applyCalculationInputs doesn't set it); reuse the
     // edit-ratio restorer so copy matches edit and never falls through to the 55% new-costing default.
     restoreEditRatio(payload.ratio_value, (payload.ui_snapshot || {}).ratio);
@@ -3049,6 +3130,21 @@ async function prefillCalculation(recordId) {
   } finally {
     doneLoading();
   }
+}
+
+// RT8 — a COPY (?from=, or the non-pending "opening a copy") carries the source's option choices laid OVER
+// today's defaults (the overlay rule): the choices the source made are kept, an option group created since gets
+// its template default, and the pin stops the next render from re-seeding. Copies price at today's rates, as
+// before (ratified default 8).
+function _overlayCopyOptions(payload) {
+  const tid = +(payload.trailer_type_id || 0);
+  const snap = payload.ui_snapshot || {};
+  const src = Object.keys(snap).length ? snap : { body_option_selections: payload.body_option_selections };
+  if (!tid) return;
+  _draftFlagStateTrailer = tid;
+  _applyOptionState(_overlaySnapshot(_captureOptionState(), src));
+  try { renderBodyOptions(bomData); } catch (_) {}
+  refreshBomDisplay();
 }
 
 // Rebuild the in-memory priceOverrides map from a saved record's overrides.
@@ -3126,15 +3222,25 @@ async function editCalculation(recordId) {
       _resetQuoteVars(payload.trailer_type_id);   // RT2 — never inherit another quote's thicknesses
       await loadBOM({ preserveInputs: true });
       applyCalculationInputs(payload);
+      _overlayCopyOptions(payload);   // RT8 — the source's option choices laid over today's defaults
       lastRecordId = null;
       _resetSavedOnce();   // v1.49 rule 2 - a fresh costing may be saved
-        await runCalc();
+      await runCalc();
       return;
     }
 
     const snap  = payload.ui_snapshot || {};
     const saved = payload.saved_result || null;
     const tid   = +payload.trailer_type_id;
+
+    // RT8 — a saved quote opens as the saved quote. No calculation may start while it is being restored, and
+    // whatever the load queues is cancelled: the 700 ms auto-calc used to land after the balance check and put
+    // today's figures under a banner that said "saved" (RT8_RETURN_1 §4, 20 of 20 opens).
+    _calcSuspended = true;
+    clearTimeout(calcTimer);
+    frozen = null; repricedFrom = null; _frozenReadOnly = false; _frozenReadOnlyMeta = null;
+    _overlayPicks = {};
+    _lastReprice = null;
 
     clearOverrideSession();
     document.getElementById('trailer-select').value = payload.trailer_type_id;
@@ -3161,6 +3267,9 @@ async function editCalculation(recordId) {
 
     await loadBOM({ preserveInputs: true });
     applyCalculationInputs(payload);             // dims, margin, customer, body options
+    // RT8 — today's option state as loadBOM seeded it (a group created after the save carries its template
+    // default), captured BEFORE the saved snapshot replaces it below: the re-price lays the snapshot OVER this.
+    _todayOptionState = _captureOptionState();
 
     // 2) Hard-restore ALL configurator draft stores AFTER loadBOM's one-time
     //    seed, and pin the trailer so runCalc's payload build uses these exact
@@ -3178,12 +3287,10 @@ async function editCalculation(recordId) {
     // recompute reproduces them regardless of later global copy-on-switches.
     editBodyVarOverrides = (saved && saved.body_variables && Object.keys(saved.body_variables).length)
       ? { ...saved.body_variables } : null;
-    // Legacy records (no UI snapshot) can't have their configurator state
-    // reconstructed reliably — replay the saved result exactly instead. Records
-    // that DO carry a snapshot keep full, interactive editing.
-    const _hasSnapshot = !!(snap && snap.body_option_selections
-                            && Object.keys(snap.body_option_selections).length);
-    editReplay = _hasSnapshot ? null : buildEditReplay(saved && saved.items);
+    // RT8 — every pending quote is edited from its SAVED lines (frozen mode), snapshot or not; the legacy
+    // replay (include_all_items + saved prices as overrides) is retired on this path. It could not carry a
+    // deleted row and read today's section, waste and formula text.
+    editReplay = null;
 
     // Restore the saved discount so the Net Total reproduces on edit.
     discountKind  = (payload.discount_kind === 'percent' || payload.discount_kind === 'amount')
@@ -3220,15 +3327,57 @@ async function editCalculation(recordId) {
     setCaptureFor(payload.sales_rep_user_id, payload.sales_rep_username);
     showEditBanner(payload);
 
-    // 6) Recompute from the fully-restored state, then prove it balances with
-    //    the saved quote (acceptance gate — any drift is surfaced, never silent).
-    await runCalc();
-    verifyEditBalance(saved);
+    // 6) RT8 — NO calculation on open. The screen shows the stored copy, to the cent: every line (a line whose
+    //    template row has since gone included), every section total, the summary, margin, ratio, discount and
+    //    net. Recalculations from here replay the saved lines on the server (frozen_record_id). The difference
+    //    today's prices would make is worked out in the background and shown on the quiet line; it never
+    //    replaces the figures on screen.
+    const meta = {
+      recordId: +recordId, saved, savedAt: payload.saved_at || null, quoteNumber: payload.quote_number || null,
+      version: payload.version || 1, library: payload.frozen_library || 'none', repair: false,
+      // the saved option state the re-price lays over today's defaults: the UI snapshot, else (a record saved
+      // before the snapshot existed) its selection snapshot — the same fallback the display above used
+      snap: Object.keys(snap).length ? snap : { body_option_selections: payload.body_option_selections || {} },
+      dims: payload.dimensions || {}, reason: payload.frozen_reason || null,
+    };
+    if (payload.frozen_capable && saved && Array.isArray(saved.items)) {
+      frozen = meta;
+    } else {
+      // ratified default 10: a record whose saved copy cannot be replayed opens READ-ONLY, with re-pricing as the
+      // way to edit it
+      _frozenReadOnly = true;
+      _frozenReadOnlyMeta = meta;
+    }
+    if (saved && Array.isArray(saved.items)) {
+      // a record saved before the summary fields existed (no category_totals) still opens, read-only, with what
+      // it has: the renderers get the shape they expect
+      const shown = { ...saved, category_totals: saved.category_totals || {}, grand_total: Number(saved.grand_total) || 0 };
+      lastResult = shown;
+      lastCalcPayload = frozen ? _buildFrozenPayload(tid) : _buildCalcPayload(tid);
+      lastResultPayload = lastCalcPayload;
+      lastBodyVars   = saved.body_variables           || {};
+      lastFormulaLib = saved.formula_library_resolved || {};
+      lastGlobalVars = saved.global_variables         || {};
+      _publishHelpContext(shown);
+      renderSummary(shown);
+      renderBOMWithCosts(saved.items, bomData);
+      // RT6 under RT8 — the saved quote's breaches of its family's current rule (from the record, no calculation):
+      // listed in red; Remove on a frozen quote points to re-pricing, where it works
+      renderRuleBreaches(payload.rule_breaches || []);
+      renderRuleUnclassified([]);
+    }
+    _setDisabled('approve-btn', !frozen);
+    _applyFrozenLock();
+    _renderFrozenLine(null, meta.reason);
+    _calcSuspended = false;
+    clearTimeout(calcTimer);
+    _frozenDriftCheck();   // background — never touches the figures on screen
 
     toast(`Editing ${editingQuoteNumber || ('#'+recordId)} · Rev${editingVersion}`, 'info');
   } catch (e) {
     toast('Failed to load costing for editing: ' + e.message, 'error');
   } finally {
+    _calcSuspended = false;   // RT8 — never left on by a failed open
     doneLoading();
   }
 }
@@ -3253,6 +3402,7 @@ function cancelEdit() {
   editingRecordId = null;
   editReplay = null;
   editBodyVarOverrides = null;
+  frozen = null; repricedFrom = null; _frozenReadOnly = false; _frozenReadOnlyMeta = null;   // RT8
   // v1.39.8 — this JS is shared by /calculator (dark legacy) and /mes/calculator
   // (MES skin, embedded in /costings/new). A hardcoded '/calculator' dumped the
   // MES iframe onto the dark theme on Cancel; pathname keeps the skin we were
@@ -3462,11 +3612,547 @@ function verifyEditBalance(saved) {
     `Showing the saved figures; your next edit switches to the updated ones.</span>`;
 }
 
+// ═══ RT8 (v1.62.0) — a re-opened quote is the saved quote ═══════════════════════════════════════════════════════
+// Michael's rule (19 Oct 2026): when a quote is saved, an exact copy is saved, and anyone editing that quote gets
+// that exact copy back. Today's template and prices enter a saved quote only when a user asks for them, after
+// seeing line by line what would change.
+//
+// FROZEN mode (`frozen` set): the screen shows the stored lines; every recalculation goes to the server with
+// frozen_record_id and replays those lines (services/frozen_quote) at the user's size / margin / ratio / discount /
+// price overrides / optional extras / free-hand lines. Body options, thicknesses, the foam grade and the chassis
+// are LOCKED (the options that were not quoted were never stored); changing them goes through re-pricing.
+// RE-PRICED mode (`repricedFrom` set): today's template and prices, after the user saw the comparison and
+// clicked Apply; saves as a NEW REVISION only, and the revision records the comparison.
+// The quiet line under the edit banner replaces the old orange drift banner: the difference today's prices would
+// make is worked out in the background and never replaces the displayed quote.
+
+function _fmtSavedAt(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// The figures the user sees — sent with every frozen or re-priced save; the server's own computation must equal
+// them to the cent or nothing is saved (ratified default 5).
+function _screenTotals() {
+  if (!lastResult) return null;
+  const disc = computeDiscount(lastGrossTotal);
+  return { grand_total: lastResult.grand_total, net_total: disc.net };
+}
+
+// A frozen size change the saved copy cannot price: the inputs go back to the saved ones.
+function _frozenRevertInputs() {
+  if (!frozen || !frozen.dims) return;
+  const d = frozen.dims;
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+  set('f-length', d.length); set('f-width', d.width); set('f-height', d.height);
+  set('f-floor-thick', d.floor_thickness); set('f-panel-thick', d.panel_thickness);
+  set('f-insul-thick', d.insulation_thickness); set('f-axles', d.num_axles); set('f-doors', d.num_doors);
+}
+
+// ── the lock ────────────────────────────────────────────────────────────────
+const FROZEN_LOCK_TEXT = 'Options and chassis are as saved. To change them, click Update to today’s prices; '
+  + 'this saves as a new revision.';
+const _CHASSIS_INPUT_IDS = ['f-chassis-on', 'f-ch-length', 'f-ch-axles', 'f-ch-tyre-style', 'f-ch-suspension',
+                            'f-ch-brake', 'f-ch-tyre', 'f-ch-rim', 'f-ch-lift-type', 'f-ch-lift-count'];
+const _DIM_INPUT_IDS = ['f-length', 'f-width', 'f-height', 'f-margin', 'f-ratio'];
+
+function _lockNote(host, id, text, before) {
+  let note = document.getElementById(id);
+  if (!text) { if (note) note.remove(); return; }
+  if (!note) {
+    note = document.createElement('div');
+    note.id = id;
+    note.setAttribute('data-testid', id);
+    note.setAttribute('role', 'note');
+    note.style.cssText = 'margin:0 0 10px;padding:7px 10px;border:1px solid rgba(88,166,255,.45);border-radius:6px;'
+      + 'background:rgba(88,166,255,.08);color:var(--text);font-size:11px;line-height:1.4';
+    if (host) host.insertBefore(note, before || host.firstChild);
+  }
+  note.textContent = text;
+}
+
+// Applied after every render of the options panel while a quote is frozen or read-only; removed otherwise.
+function _applyFrozenLock() {
+  const on = !!frozen || _frozenReadOnly;
+  const list = document.getElementById('body-options-list');
+  const section = document.getElementById('body-options-section');
+  const chassisPane = document.getElementById('cfg-pane-chassis');
+  if (list) {
+    list.querySelectorAll('input, select, button').forEach(el => { el.disabled = on; });
+    list.querySelectorAll('.bv-edit').forEach(el => {
+      el.style.pointerEvents = on ? 'none' : '';
+      el.style.borderBottom = on ? 'none' : '';
+      if (on) el.title = 'As saved';
+    });
+  }
+  document.querySelectorAll('#insulation-foam-block input').forEach(el => { el.disabled = on; });
+  const paste = document.getElementById('excel-paste-btn');
+  if (paste) paste.disabled = on;
+  _CHASSIS_INPUT_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = on; });
+  _DIM_INPUT_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = _frozenReadOnly; });
+  const hdr = section ? section.children[0] : null;
+  _lockNote(section, 'frozen-options-note', on ? FROZEN_LOCK_TEXT : '', hdr ? hdr.nextSibling : null);
+  _lockNote(chassisPane, 'frozen-chassis-note', on ? FROZEN_LOCK_TEXT : '', chassisPane ? chassisPane.firstChild : null);
+}
+
+// ── the quiet line ──────────────────────────────────────────────────────────
+// "Saved prices of <date> · today's prices would change the total by −R5,848.16 · [View changes] [Update to
+// today's prices]". Nothing here ever touches the figures on screen.
+let _lastReprice = null;   // the last reprice-preview response for the open quote
+
+function _renderFrozenLine(preview, readOnlyReason, errorText) {
+  const el = document.getElementById('edit-banner-balance');
+  if (!el) return;
+  const on = !!frozen || _frozenReadOnly;
+  if (!on) { el.innerHTML = ''; return; }
+  const savedAt = frozen ? frozen.savedAt : (_frozenReadOnlyMeta && _frozenReadOnlyMeta.savedAt);
+  const dateTxt = _fmtSavedAt(savedAt);
+  const parts = [];
+  if (_frozenReadOnly) {
+    parts.push(`<span data-testid="frozen-readonly">Saved before frozen editing: use Update to today’s prices to edit`
+      + (readOnlyReason ? ` <span style="color:var(--text-dim)">(${escHtml(readOnlyReason)})</span>` : '') + `</span>`);
+  } else {
+    parts.push(`<span data-testid="frozen-saved-line">Saved prices${dateTxt ? ' of ' + escHtml(dateTxt) : ''}</span>`);
+  }
+  if (errorText) {
+    parts.push(`<span style="color:var(--text-dim)">today’s prices could not be checked (${escHtml(errorText)})</span>`);
+  } else if (!preview) {
+    parts.push(`<span style="color:var(--text-dim)" data-testid="frozen-drift-pending">checking today’s prices…</span>`);
+  } else {
+    const t = (preview.comparison && preview.comparison.totals) || {};
+    const dSell = Number(t.delta_selling || 0);
+    const dNet = Number(t.delta_net || 0);
+    const hasDisc = !!(discountKind && discountInput);
+    const d = hasDisc ? dNet : dSell;
+    const sign = d < 0 ? '−' : '+';
+    const c = (preview.comparison && preview.comparison.counts) || {};
+    const anyLine = (c.removed || 0) + (c.added || 0) + (c.qty || 0) + (c.price || 0) + (c.renamed || 0);
+    if (Math.abs(d) < 0.005 && !anyLine) {
+      parts.push(`<span data-testid="frozen-drift" data-delta="0">today’s prices would not change the total</span>`);
+    } else {
+      parts.push(`<span data-testid="frozen-drift" data-delta="${d.toFixed(2)}">today’s prices would change the `
+        + `${hasDisc ? 'net total' : 'total'} by ${sign}${fmt(Math.abs(d))}</span>`);
+    }
+  }
+  const btn = (label, mode, testid) =>
+    `<button type="button" class="btn btn-outline btn-sm" data-testid="${testid}" style="font-size:11px;padding:2px 9px" `
+    + `onclick="openRepriceModal('${mode}')">${label}</button>`;
+  parts.push(btn('View changes', 'view', 'frozen-view-changes'));
+  parts.push(btn('Update to today’s prices', 'apply', 'frozen-update-prices'));
+  el.innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${parts.map(p => `<span>${p}</span>`).join('<span style="color:var(--text-dim)">·</span>')}</div>`;
+}
+
+// ── today's option state and the OVERLAY rule ───────────────────────────────
+// A saved snapshot is laid OVER today's defaults: an option group created after the save keeps its template
+// default instead of ending up with nothing selected (the N10022 mechanism, RT8_RETURN_1 §1.2). Used by the
+// re-price (here), by copies, by the last-session restore and by the return-trip restore.
+function _captureOptionState() {
+  return {
+    bodyOptionSelections:    { ...bodyOptionSelections },
+    drdSrdEnabled:           { ...drdSrdEnabled },
+    draftFlagState:          { ...draftFlagState },
+    draftFlagVars:           { ...draftFlagVars },
+    draftCategoryRadioState: { ...draftCategoryRadioState },
+    draftMasterlessCatState: { ...draftMasterlessCatState },
+    draftFolderState:        { ...draftFolderState },
+  };
+}
+
+function _overlaySnapshot(today, snap) {
+  const t = today || {}, s = snap || {};
+  return {
+    bodyOptionSelections:    { ...(t.bodyOptionSelections || {}),    ...(s.body_option_selections || {}) },
+    drdSrdEnabled:           { ...(t.drdSrdEnabled || {}),           ...(s.drd_srd || {}) },
+    draftFlagState:          { ...(t.draftFlagState || {}),          ...(s.draft_flag_state || {}) },
+    draftFlagVars:           { ...(t.draftFlagVars || {}),           ...(s.draft_flag_vars || {}) },
+    draftCategoryRadioState: { ...(t.draftCategoryRadioState || {}), ...(s.draft_category_radio || {}) },
+    draftMasterlessCatState: { ...(t.draftMasterlessCatState || {}), ...(s.draft_masterless_cat || {}) },
+    draftFolderState:        { ...(t.draftFolderState || {}),        ...(s.draft_folder || {}) },
+  };
+}
+
+function _applyOptionState(st) {
+  bodyOptionSelections    = { ...st.bodyOptionSelections };
+  drdSrdEnabled           = { ...st.drdSrdEnabled };
+  draftFlagState          = { ...st.draftFlagState };
+  draftFlagVars           = { ...st.draftFlagVars };
+  draftCategoryRadioState = { ...st.draftCategoryRadioState };
+  draftMasterlessCatState = { ...st.draftMasterlessCatState };
+  draftFolderState        = { ...st.draftFolderState };
+}
+
+// Run fn with the option globals swapped for `st` (synchronous: nothing else can observe the swap).
+function _withOptionState(st, fn) {
+  const keep = _captureOptionState();
+  _applyOptionState(st);
+  try { return fn(); } finally { _applyOptionState(keep); }
+}
+
+// A draft category's master row ids on this body — the module-level twin of renderBodyOptionsFromDraft's
+// midsForCategory (section-name path through the configurator tree, material-name fallback).
+function _draftCategoryMids(node) {
+  const key = (node && (node.sourceCategoryKey || '') || '').toUpperCase();
+  if (!key) return [];
+  const out = [];
+  if (configuratorTree && configuratorTree.groups) {
+    const visitOption = (opt) => {
+      const m = /^opt-m(\d+)$/.exec(opt.id || '');
+      const ownerId = m ? Number(m[1]) : null;
+      (opt.sections || []).forEach(s => {
+        if ((s.name || '').toUpperCase() === key && ownerId != null && !out.includes(ownerId)) out.push(ownerId);
+      });
+      (opt.linkedFlagGroups || []).forEach(fg => (fg.options || []).forEach(visitOption));
+    };
+    configuratorTree.groups.forEach(g => {
+      (g.options || []).forEach(visitOption);
+      (g.sections || []).forEach(s => {
+        const ownerId = s.bodyOptionMasterId != null ? Number(s.bodyOptionMasterId) : null;
+        if ((s.name || '').toUpperCase() === key && ownerId != null && !out.includes(ownerId)) out.push(ownerId);
+      });
+    });
+  }
+  (bomData || []).forEach(r => {
+    if (r.is_body_option && (r.material_name || '').toUpperCase() === key && !out.includes(r.id)) out.push(r.id);
+  });
+  return out;
+}
+
+// The option groups the template has that the saved snapshot does not know (created after the save), each with
+// its template default. A category radio group without a default blocks Apply until the user picks (ratified
+// default 3); every other kind has a default by construction (on/off, the folder's value).
+function _newOptionGroups(snap) {
+  const tid = +(document.getElementById('trailer-select')?.value || 0);
+  const draft = tid ? _readSettingsDraft(tid) : null;
+  if (!draft || !draft.nodes) return [];
+  const s = snap || {};
+  const sel = s.body_option_selections || {}, radio = s.draft_category_radio || {}, flags = s.draft_flag_state || {},
+        mcat = s.draft_masterless_cat || {}, folders = s.draft_folder || {};
+  const nodes = draft.nodes;
+  const parentLabel = pid => (nodes[pid] && nodes[pid].label) || 'Body options';
+  const out = [];
+
+  // category radio groups (the N10022 shape)
+  const groups = new Map();
+  Object.values(nodes).filter(n => n && n.type === 'category' && (n.selectionMode || 'container') === 'radio')
+    .forEach(n => { const k = String(n.parentId || 'root'); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(n); });
+  groups.forEach((members, pid) => {
+    const known = (pid in radio) || members.some(n => _draftCategoryMids(n).some(m => String(m) in sel));
+    if (known) return;
+    const mems = members.map(n => {
+      const mids = _draftCategoryMids(n);
+      const isDefault = Number(n.selectionValue) === 1
+        || mids.some(m => { const r = (bomData || []).find(b => b.id === m); return !!(r && r.body_option_default); });
+      return { key: String(n.id), label: n.label || n.sourceCategoryKey || '', isDefault, mids, catKey: n.sourceCategoryKey || null };
+    });
+    const def = mems.find(m => m.isDefault) || null;
+    const gkey = 'cat:' + pid;
+    const chosen = _overlayPicks[gkey] || (def ? def.key : null);
+    out.push({ key: gkey, kind: 'category_radio', label: parentLabel(pid), parentKey: pid, members: mems,
+               default: def ? def.key : null, chosen, blocking: !chosen,
+               chosen_label: chosen ? ((mems.find(m => m.key === chosen) || {}).label || '') : null,
+               is_default: !!(chosen && def && chosen === def.key) });
+  });
+
+  // flag radio groups: at most one on; "none" is a valid default
+  const fgroups = new Map();
+  Object.values(nodes).filter(n => n && n.type === 'flag' && (n.flagMode || 'tickbox') === 'radio')
+    .forEach(n => { const k = String(n.parentId || 'root'); if (!fgroups.has(k)) fgroups.set(k, []); fgroups.get(k).push(n); });
+  const flagKnown = n => n.flagBindingId ? (String(n.flagBindingId) in sel) : ((n.flagBindingName || n.label || '') in flags);
+  fgroups.forEach((members, pid) => {
+    if (members.some(flagKnown)) return;
+    const def = members.find(n => Number(n.flagValue) === 1) || null;
+    out.push({ key: 'flag:' + pid, kind: 'flag_radio', label: parentLabel(pid), parentKey: pid,
+               members: members.map(n => ({ key: String(n.id), label: n.label || n.flagBindingName || '', isDefault: Number(n.flagValue) === 1 })),
+               default: def ? String(def.id) : 'none', chosen: def ? String(def.id) : 'none', blocking: false,
+               chosen_label: def ? (def.label || def.flagBindingName || '') : 'none', is_default: true });
+  });
+
+  // tickbox flags, masterless tickbox categories, master-bearing tickbox categories, radio/tickbox folders:
+  // on/off from the template, always a default
+  Object.values(nodes).filter(n => n && n.type === 'flag' && (n.flagMode || 'tickbox') === 'tickbox' && !flagKnown(n))
+    .forEach(n => out.push({ key: 'flag:' + n.id, kind: 'flag_tickbox', label: n.label || n.flagBindingName || '',
+                             members: [], default: Number(n.flagValue) === 1 ? 'on' : 'off',
+                             chosen: Number(n.flagValue) === 1 ? 'on' : 'off', blocking: false,
+                             chosen_label: Number(n.flagValue) === 1 ? 'on' : 'off', is_default: true }));
+  Object.values(nodes).filter(n => n && n.type === 'category' && (n.selectionMode || 'container') === 'tickbox')
+    .forEach(n => {
+      const mids = _draftCategoryMids(n);
+      const known = mids.length ? mids.some(m => String(m) in sel) : ((n.sourceCategoryKey || '') in mcat);
+      if (known) return;
+      const on = Number(n.selectionValue) === 1
+        || mids.some(m => { const r = (bomData || []).find(b => b.id === m); return !!(r && r.body_option_default); });
+      out.push({ key: 'tick:' + n.id, kind: 'category_tickbox', label: n.label || n.sourceCategoryKey || '', members: [],
+                 default: on ? 'on' : 'off', chosen: on ? 'on' : 'off', blocking: false, chosen_label: on ? 'on' : 'off', is_default: true });
+    });
+  Object.values(nodes).filter(n => n && n.type === 'folder' && ['radio', 'tickbox'].includes(n.folderMode || 'container'))
+    .forEach(n => {
+      if (String(n.id) in folders) return;
+      const on = Number(n.folderValue) === 1;
+      out.push({ key: 'folder:' + n.id, kind: 'folder', label: n.label || '', members: [], default: on ? 'on' : 'off',
+                 chosen: on ? 'on' : 'off', blocking: false, chosen_label: on ? 'on' : 'off', is_default: true });
+    });
+  return out;
+}
+
+// Today's defaults with the saved snapshot laid over them, the user's picks for new groups applied, and every
+// category radio group left with at most one member on (the snapshot's, where both could be).
+function _overlayState() {
+  const snap = frozen ? (frozen.snap || {}) : (_frozenReadOnlyMeta ? (_frozenReadOnlyMeta.snap || {}) : {});
+  const st = _overlaySnapshot(_todayOptionState, snap);
+  const sel = snap.body_option_selections || {};
+  _newOptionGroups(snap).forEach(g => {
+    if (g.kind !== 'category_radio') return;
+    g.members.forEach(m => {
+      const on = !!g.chosen && m.key === g.chosen;
+      m.mids.forEach(mid => { st.bodyOptionSelections[String(mid)] = on; });
+      if (on && !m.mids.length && m.catKey) st.draftCategoryRadioState[String(g.parentKey)] = m.catKey;
+    });
+  });
+  // a radio group where today's default AND the snapshot's choice are both on: the snapshot's wins
+  const tid = +(document.getElementById('trailer-select')?.value || 0);
+  const draft = tid ? _readSettingsDraft(tid) : null;
+  if (draft && draft.nodes) {
+    const groups = new Map();
+    Object.values(draft.nodes).filter(n => n && n.type === 'category' && (n.selectionMode || 'container') === 'radio')
+      .forEach(n => { const k = String(n.parentId || 'root'); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(n); });
+    groups.forEach(members => {
+      const withMids = members.map(n => ({ n, mids: _draftCategoryMids(n) })).filter(x => x.mids.length);
+      const on = withMids.filter(x => x.mids.some(m => !!st.bodyOptionSelections[String(m)]));
+      if (on.length <= 1) return;
+      const keep = on.find(x => x.mids.some(m => sel[String(m)] === true)) || on[0];
+      on.forEach(x => { if (x !== keep) x.mids.forEach(m => { st.bodyOptionSelections[String(m)] = false; }); });
+    });
+  }
+  return st;
+}
+
+// ── the re-price preview (the quiet line's figure, and the "View changes" comparison) ───────────────────────
+function _repricePayload() {
+  const tid = document.getElementById('trailer-select')?.value;
+  let payload;
+  if (repairMode) {
+    payload = _buildRepairPayload();
+  } else {
+    payload = _withOptionState(_overlayState(), () => _buildCalcPayload(tid));
+    delete payload.frozen_record_id;
+    const r = parseFloat(document.getElementById('f-ratio')?.value);
+    payload.ratio_value = (!isNaN(r) && r > 0) ? r : null;
+    payload.ratio_label = document.getElementById('f-ratio')?.selectedOptions?.[0]?.text || null;
+    payload.discount_kind = discountKind;
+    payload.discount_input = discountKind ? discountInput : null;
+    const snap = frozen ? (frozen.snap || {}) : (_frozenReadOnlyMeta ? (_frozenReadOnlyMeta.snap || {}) : {});
+    payload.new_options = _newOptionGroups(snap).map(g => ({
+      key: g.key, kind: g.kind, label: `${g.label}: new option`, chosen: g.chosen,
+      chosen_label: g.chosen_label, is_default: g.is_default,
+      text: `${g.label}: new option → ${g.chosen_label || 'not chosen'}${g.chosen ? (g.is_default ? ' (default)' : ' (your pick)') : ''}`,
+      members: g.members.map(m => ({ key: m.key, label: m.label, is_default: m.isDefault })),
+    }));
+  }
+  return payload;
+}
+
+async function _frozenDriftCheck() {
+  const rid = frozen ? frozen.recordId : (_frozenReadOnlyMeta ? _frozenReadOnlyMeta.recordId : null);
+  if (!rid) return null;
+  try {
+    const r = await api('POST', `/api/calculations/${rid}/reprice-preview`, _repricePayload());
+    const still = frozen ? frozen.recordId === rid : (_frozenReadOnlyMeta && _frozenReadOnlyMeta.recordId === rid);
+    if (!still) return null;
+    _lastReprice = r;
+    _renderFrozenLine(r, _frozenReadOnlyMeta ? _frozenReadOnlyMeta.reason : null);
+    return r;
+  } catch (e) {
+    _renderFrozenLine(null, _frozenReadOnlyMeta ? _frozenReadOnlyMeta.reason : null, e && e.message ? e.message : String(e));
+    return null;
+  }
+}
+
+const _REPRICE_KIND_LABEL = {
+  removed_from_template: 'removed from template', removed: 'removed', added: 'added', qty: 'quantity',
+  price: 'unit price', qty_price: 'quantity + unit price', renamed: 'renamed', moved: 'moved',
+};
+
+function _renderRepriceBody(r, mode) {
+  const c = r.comparison || {};
+  const t = c.totals || {};
+  const lines = c.lines || [];
+  const q = v => (v == null ? '' : (Math.round(Number(v) * 10000) / 10000).toString());
+  let html = '';
+  // new options (an option group created after the save), with a pick where the template has no default
+  const newOpts = c.new_options || [];
+  if (newOpts.length) {
+    html += `<div style="margin-bottom:10px"><div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px">New options since the save</div>`;
+    newOpts.forEach(o => {
+      html += `<div style="padding:4px 0;border-bottom:1px solid var(--border)" data-testid="reprice-new-option">${escHtml(o.text || o.label || '')}`;
+      if (!o.chosen && (o.members || []).length) {
+        html += `<div style="margin:4px 0 0 14px;display:flex;gap:14px;flex-wrap:wrap">` + o.members.map(m =>
+          `<label style="display:flex;gap:5px;align-items:center;font-size:12px;cursor:pointer"><input type="radio" name="rp-${escHtml(o.key)}" value="${escHtml(m.key)}" onchange="repricePick('${escHtml(o.key)}', this.value)"> ${escHtml(m.label)}</label>`).join('') + `</div>`;
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+  const dc = (v) => { const n = Number(v || 0); return `<span style="color:${n < 0 ? '#4ade80' : n > 0 ? '#ffb340' : 'var(--text-dim)'}">${n < 0 ? '−' : n > 0 ? '+' : ''}${fmt(Math.abs(n))}</span>`; };
+  if (lines.length) {
+    html += `<table style="width:100%;border-collapse:collapse;font-size:11px" data-testid="reprice-lines"><thead><tr style="color:var(--text-dim)">
+      <th style="text-align:left;padding:3px 4px">Section</th><th style="text-align:left;padding:3px 4px">Line</th><th style="text-align:left;padding:3px 4px">Change</th>
+      <th style="text-align:right;padding:3px 4px">Saved</th><th style="text-align:right;padding:3px 4px">Today</th><th style="text-align:right;padding:3px 4px">Difference</th></tr></thead><tbody>`;
+    lines.forEach(ln => {
+      const s = ln.saved, d = ln.today;
+      const cell = v => v ? `${q(v.quantity)} × ${fmt(v.unit_price)} = ${fmt(v.line_cost)}` : '—';
+      let name = escHtml(ln.material || '');
+      if (ln.today_material) name += ` <span style="color:var(--text-dim)">→ ${escHtml(ln.today_material)}</span>`;
+      html += `<tr data-kind="${escHtml(ln.kind)}" style="border-top:1px solid var(--border)"><td style="padding:3px 4px;color:var(--text-dim)">${escHtml(ln.category || '')}</td>
+        <td style="padding:3px 4px">${name}</td><td style="padding:3px 4px">${escHtml(_REPRICE_KIND_LABEL[ln.kind] || ln.kind)}</td>
+        <td style="padding:3px 4px;text-align:right;white-space:nowrap">${cell(s)}</td><td style="padding:3px 4px;text-align:right;white-space:nowrap">${cell(d)}</td>
+        <td style="padding:3px 4px;text-align:right">${dc(ln.delta_cost)}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  } else {
+    html += `<div style="color:var(--text-dim);padding:6px 0" data-testid="reprice-no-lines">No line changes.</div>`;
+  }
+  if ((c.kept_saved_price || []).length) {
+    html += `<div style="margin-top:8px;font-size:11px;color:var(--text-dim)">Material no longer in the list, keeps its saved price: ${c.kept_saved_price.map(escHtml).join(', ')}</div>`;
+  }
+  const secs = c.sections || [];
+  if (secs.length) {
+    html += `<div style="margin-top:12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)">Per section</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px" data-testid="reprice-sections">`;
+    secs.forEach(s => {
+      html += `<tr style="border-top:1px solid var(--border)"><td style="padding:3px 4px">${escHtml(s.category)}</td>
+        <td style="padding:3px 4px;text-align:right">${fmt(s.saved_total)}</td><td style="padding:3px 4px;text-align:right">${fmt(s.today_total)}</td>
+        <td style="padding:3px 4px;text-align:right">${dc(s.delta)}</td></tr>`;
+    });
+    html += `</table>`;
+  }
+  const sv = t.saved || {}, tv = t.today || {};
+  html += `<div style="margin-top:12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)">In total</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px" data-testid="reprice-totals">
+      <tr><td style="padding:3px 4px">Materials cost</td><td style="text-align:right">${fmt(sv.grand_total)}</td><td style="text-align:right">${fmt(tv.grand_total)}</td><td style="text-align:right" data-testid="reprice-delta-cost">${dc(t.delta_cost)}</td></tr>
+      <tr><td style="padding:3px 4px">Total (selling)</td><td style="text-align:right">${fmt(sv.selling_price)}</td><td style="text-align:right">${fmt(tv.selling_price)}</td><td style="text-align:right" data-testid="reprice-delta-selling">${dc(t.delta_selling)}</td></tr>
+      ${(discountKind && discountInput) ? `<tr><td style="padding:3px 4px">Net total</td><td style="text-align:right">${fmt(sv.net_total)}</td><td style="text-align:right">${fmt(tv.net_total)}</td><td style="text-align:right">${dc(t.delta_net)}</td></tr>` : ''}
+    </table>`;
+  return html;
+}
+
+function _repriceApplyAllowed(r) {
+  const c = (r && r.comparison) || {};
+  return !((c.blocked || []).length);
+}
+
+async function openRepriceModal(mode) {
+  const modal = document.getElementById('modal-reprice');
+  if (!modal) return;
+  const body = document.getElementById('reprice-body');
+  const title = document.getElementById('reprice-title');
+  const applyBtn = document.getElementById('reprice-apply-btn');
+  const blocked = document.getElementById('reprice-blocked');
+  modal.dataset.mode = mode || 'view';
+  if (title) title.textContent = mode === 'apply' ? 'Update to today’s prices' : 'What today’s prices would change';
+  if (body) body.innerHTML = '<div style="padding:16px;text-align:center"><span class="spinner"></span></div>';
+  if (applyBtn) applyBtn.disabled = true;
+  if (blocked) blocked.textContent = '';
+  modal.classList.remove('hidden');
+  const r = await _frozenDriftCheck();
+  if (!r) { if (body) body.innerHTML = '<div style="color:var(--red);padding:10px">Today’s prices could not be worked out. Close and try again.</div>'; return; }
+  if (body) body.innerHTML = _renderRepriceBody(r, mode);
+  const ok = _repriceApplyAllowed(r);
+  if (applyBtn) applyBtn.disabled = !ok;
+  if (blocked) blocked.textContent = ok ? '' : (r.comparison.blocked || []).join(' · ');
+}
+
+function repricePick(groupKey, memberKey) {
+  _overlayPicks[groupKey] = memberKey;
+  openRepriceModal(document.getElementById('modal-reprice')?.dataset.mode || 'view');
+}
+
+// Apply: today's template and prices, with the overlay; from here the quote saves as a NEW REVISION only.
+async function applyReprice() {
+  const r = _lastReprice;
+  if (!r || !_repriceApplyAllowed(r)) return;
+  const from = frozen ? frozen : _frozenReadOnlyMeta;
+  if (!from) return;
+  closeModal('modal-reprice');
+  const tid = +(document.getElementById('trailer-select')?.value || 0);
+  const newOptions = ((r.comparison || {}).new_options) || [];
+  if (!repairMode) {
+    _applyOptionState(_overlayState());
+    _draftFlagStateTrailer = tid;
+    try { saveBodyOptSel(); } catch (_) {}
+  }
+  repricedFrom = { recordId: from.recordId, quoteNumber: from.quoteNumber || editingQuoteNumber, savedAt: from.savedAt || null,
+                   newOptions, repricedAt: new Date().toISOString() };
+  frozen = null;
+  _frozenReadOnly = false;
+  _frozenReadOnlyMeta = null;
+  _applyFrozenLock();
+  _renderRepricedLine();
+  if (repairMode) {
+    renderRepairSurface();
+    await runRepairCalc();
+  } else {
+    try { renderBodyOptions(bomData); } catch (_) {}
+    refreshBomDisplay();
+    await runCalc();
+  }
+  toast('Re-priced at today’s prices. Saving will create a new revision.', 'info');
+}
+
+function _renderRepricedLine() {
+  const el = document.getElementById('edit-banner-balance');
+  if (!el || !repricedFrom) return;
+  const back = `<button type="button" class="btn btn-outline btn-sm" data-testid="repriced-back" style="font-size:11px;padding:2px 9px" onclick="cancelReprice()">Back to saved prices</button>`;
+  el.innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span data-testid="repriced-line">Re-priced at today’s prices on ${escHtml(_fmtSavedAt(repricedFrom.repricedAt))} · saves as a new revision only</span>${back}</div>`;
+}
+
+// Back to the saved quote: the cheapest exact way is to re-open it.
+function cancelReprice() {
+  const rid = repricedFrom && repricedFrom.recordId;
+  if (!rid) return;
+  window.location.href = _skinnify(window.location.pathname) + '?edit=' + encodeURIComponent(rid);
+}
+
+// ── repairs ─────────────────────────────────────────────────────────────────
+function _buildRepairPayload() {
+  const scopeEl = document.getElementById('f-repair-scope');
+  return {
+    is_repair:       true,
+    trailer_type_id: null,
+    repair_type:     String(document.getElementById('f-repair-type').value || '').trim(),
+    repair_scope:    String(scopeEl ? scopeEl.value : '').trim() || null,
+    repair_lines:    repairLines.map(_fhWireLine),
+    profit_margin:   +document.getElementById('f-margin').value || 0,
+    // v1.47 Lane D (D8) — the quotation document's header fields, all per-quote.
+    ...(_repairDocFields()),
+    // v1.47 — the RATIO and the DISCOUNT must go to the server with the calc.
+    // Without them the server returned ratio_amount 0 while renderSummary
+    // computed the ratio client-side, so the repair rail printed "÷ RATIO
+    // R 0,00" next to a summary reading "Ratio (55%) + R 110,90" — the same
+    // repair, two different totals on one screen. The server is the single
+    // source of truth for this money (it is the same margin/ratio/discount
+    // functions a body costing uses), so it has to be told.
+    ratio_value:     _repairRatio().value,
+    ratio_label:     _repairRatio().label,
+    discount_kind:   discountKind,
+    discount_input:  discountKind ? discountInput : null,
+    // v1.50 P3 — the vehicle block (body type + dims). Its own key, NEVER the
+    // top-level trailer_type_id/dimensions: those must stay null/{} or the
+    // server would treat this as a body costing.
+    repair_vehicle:  _readRepairVehicle(),
+    dimensions:      {},
+  };
+}
+
 // Load trailer defaults then pre-select from URL param
 let _calcTapingBlocks = [];
 let _calcFloorPlates  = [];
 let _calcCleats       = [];
 window.addEventListener('DOMContentLoaded', async () => {
+  // RT8 (RT7's Q5) — registered before the first await: a body the user picks while the loads below are still
+  // running is theirs, and the last-session restore stands down.
+  document.getElementById('trailer-select')?.addEventListener('change', () => { _userTouchedBody = true; });
   try {
     const trailers = await api('GET', '/api/trailers');
     trailers.forEach(t => { trailerDefaults[t.id] = t; });
@@ -3660,6 +4346,12 @@ async function loadBOM(options = {}) {
     _resetQuoteVars(tid);          // RT2 — a fresh costing starts from the template's thicknesses
     editBodyVarOverrides = null;   // pinned thicknesses only apply within an edit
     editReplay = null;             // replay state only applies within an edit
+    // RT8 — a different body cannot be priced from the saved lines: frozen / re-priced mode ends here. The edit
+    // binding itself stays, as v1.46.1 left it (Save still asks about the record; the server decides what it takes).
+    frozen = null; repricedFrom = null; _frozenReadOnly = false; _frozenReadOnlyMeta = null;
+    _applyFrozenLock();
+    const _bal = document.getElementById('edit-banner-balance');
+    if (_bal) _bal.innerHTML = '';
     discountKind = null; discountInput = 0;   // discount is per-costing, reset on a fresh trailer
     // Force the next renderBodyOptionsTree call to re-seed from
     // cfg_user_state_<tid>, since we just cleared bodyOptionSelections.
@@ -5372,14 +6064,19 @@ function renderBodyOptions(bomItems) {
   renderBodyRuleNote();   // RT5 — outside #body-options-list: drawn from the OUTER function, like the foam block
   _renderBodyOptionsInner(bomItems);
   _greyRuleForbidden();   // RT6 — every renderer's forbidden choice, greyed with the family's rule as its tooltip
-  _enforceInsulationInvariant();
-  _enforceRearDoorInvariant();
+  // RT8 — a frozen quote's options are as saved: the heals (which change a thickness and queue a calculation)
+  // do not run on it; the panel is locked after every render.
+  if (!frozen && !_frozenReadOnly) {
+    _enforceInsulationInvariant();
+    _enforceRearDoorInvariant();
+  }
   validateInsulationPairs();
   _updateNoDoorsWarning();   // v1.43 — no-doors amber guard (both renderers)
   // v1.51 — the foam grade is a costing-level choice, not a BOM row, so it
   // renders from the OUTER function: the three inner renderers (legacy flat,
   // settings draft, configurator tree) each return early on their own path.
   renderInsulationFoam(bomItems);
+  if (frozen || _frozenReadOnly) _applyFrozenLock();
 }
 
 // RT5 — the body family's rule note (Burt's product rule) in red under BODY OPTIONS: the selected body's
@@ -5503,6 +6200,11 @@ function renderRuleUnclassified(items) {
  *  snapshot-less re-open (edit replay) excludes the forbidden line and brings in the allowed one. Nothing is written
  *  until the user saves — and the save is checked again on the server. */
 async function removeRuleBreach(b) {
+  // RT8 — a frozen quote's options are as saved: the breach is removed after re-pricing, and saved as a new revision
+  if (frozen || _frozenReadOnly) {
+    toast('This quote shows its saved prices. Click Update to today’s prices, then Remove, and save as a new revision.', 'warn', 9000);
+    return;
+  }
   const panel = b.panel, ins = b.insulation;
   const masters = (bomData || []).filter(r => r.is_body_option && r.rule_class && r.rule_class.kind === 'master'
                                               && r.rule_class.panel === panel);
@@ -5994,18 +6696,10 @@ function catTagPlain(cat) {
   return map[cat] || '◆';
 }
 
-async function runCalc() {
-  const tid = document.getElementById('trailer-select').value;
-  // v1.47 — the REPAIRS surface has its own calculate path (no dimensions, no
-  // BOM). Everything below assumes a body type.
-  if (repairMode) { await runRepairCalc(); return; }
-  if (!tid) return;
-  if (!validateDims()) {
-    toast('Fix the highlighted fields before calculating', 'warn');
-    return;
-  }
-  clearValidation();
-
+// RT8 — the live payload (today's template, today's prices, this screen's option state), as /api/calculate and
+// /api/approve read it. Split out of runCalc so the re-price preview can build it over a DIFFERENT option state
+// (_withOptionState) without touching the screen.
+function _buildCalcPayload(tid) {
   // Build overrides as { "bomId": newPrice }; reasons sent in parallel map.
   const overridesPayload = {};
   const reasonsPayload   = {};
@@ -6213,7 +6907,7 @@ async function runCalc() {
   // Edit pins still win on collision: a reopened quote reproduces its saved figures.
   const quoteVarsPayload = (quoteVarTrailer === String(tid)) ? _quoteVarsPayload() : {};
 
-  lastCalcPayload = {
+  const payload = {
     trailer_type_id: +tid,
     dimensions: getDims(),
     profit_margin: +document.getElementById('f-margin').value || 0,
@@ -6238,15 +6932,59 @@ async function runCalc() {
   // exactly — include only the saved-included rows with their saved formulas, and
   // use the saved unit prices as the baseline with any user price edits on top.
   if (editReplay) {
-    lastCalcPayload.include_all_items        = true;
-    lastCalcPayload.user_excluded_bom_ids    = editReplay.userExcluded;
-    lastCalcPayload.optional_sections_enabled = editReplay.optionalEnabled;
-    lastCalcPayload.formula_overrides        = editReplay.formulaOverrides;
-    lastCalcPayload.excluded_categories      = undefined;
-    lastCalcPayload.body_option_selections   = undefined;
-    lastCalcPayload.flag_overrides           = undefined;
-    lastCalcPayload.overrides                = { ...editReplay.savedPrices, ...overridesPayload };
+    payload.include_all_items        = true;
+    payload.user_excluded_bom_ids    = editReplay.userExcluded;
+    payload.optional_sections_enabled = editReplay.optionalEnabled;
+    payload.formula_overrides        = editReplay.formulaOverrides;
+    payload.excluded_categories      = undefined;
+    payload.body_option_selections   = undefined;
+    payload.flag_overrides           = undefined;
+    payload.overrides                = { ...editReplay.savedPrices, ...overridesPayload };
   }
+  return payload;
+}
+
+// RT8 — the FROZEN payload: what the user may change at saved prices. The server loads the stored record itself
+// and replays its saved lines; no option, flag, thickness, foam grade or chassis rides this (they are locked).
+function _buildFrozenPayload(tid) {
+  const overridesPayload = {};
+  const reasonsPayload   = {};
+  Object.entries(priceOverrides).forEach(([bid, o]) => {
+    overridesPayload[bid] = o.newPrice;
+    if (o.reason) reasonsPayload[bid] = o.reason;
+  });
+  return {
+    frozen_record_id: frozen.recordId,
+    trailer_type_id: +tid,
+    dimensions: getDims(),
+    profit_margin: +document.getElementById('f-margin').value || 0,
+    overrides: overridesPayload,
+    override_reasons: reasonsPayload,
+    user_excluded_bom_ids: (window.OptionalSections && tid) ? [...window.OptionalSections.loadRowExcl(+tid, 'c1')] : [],
+    optional_sections_enabled: (window.OptionalSections && tid) ? [...window.OptionalSections.loadEnabled(+tid)] : [],
+    free_hand_lines: freeHandLines.length ? freeHandLines.map(_fhWireLine) : undefined,
+  };
+}
+
+async function runCalc() {
+  // RT8 — while a saved quote is being opened, no calculation may start: the saved copy is what the user sees.
+  if (_calcSuspended) return;
+  const tid = document.getElementById('trailer-select').value;
+  // v1.47 — the REPAIRS surface has its own calculate path (no dimensions, no
+  // BOM). Everything below assumes a body type.
+  if (repairMode) { await runRepairCalc(); return; }
+  if (!tid) return;
+  if (!validateDims()) {
+    toast('Fix the highlighted fields before calculating', 'warn');
+    return;
+  }
+  clearValidation();
+
+  // RT8 (E3) — a generation counter: a result that started before a newer calculation (or a save) is dropped,
+  // whatever order the responses land in. Every writer of lastResult takes a generation.
+  const gen = ++_calcGen;
+  lastCalcPayload = frozen ? _buildFrozenPayload(tid) : _buildCalcPayload(tid);
+  if (repricedFrom) lastCalcPayload.repriced_from_record_id = repricedFrom.recordId;
 
   const status = document.getElementById('calc-status');
   document.getElementById('approve-btn').disabled = true;
@@ -6254,6 +6992,7 @@ async function runCalc() {
   try {
     const _sent = lastCalcPayload;
     const result = await api('POST', '/api/calculate', _sent);
+    if (gen !== _calcGen) return;   // stale: a newer calculation owns the screen
     lastResult = result;
     lastResultPayload = _sent;
     lastBodyVars   = result.body_variables           || {};
@@ -6279,7 +7018,15 @@ async function runCalc() {
       _scrollToBomId = null;
     }
   } catch(e) {
+    if (gen !== _calcGen) return;
     status.textContent = '';
+    // RT8 — a frozen size change the saved copy cannot price (its formula library was not stored): the size goes
+    // back to the saved one, the quote stays as saved, and the message names the way out (re-pricing).
+    if (frozen && e && e.detail && e.detail.code === 'frozen_library_missing') {
+      _frozenRevertInputs();
+      toast(e.message, 'warn', 9000);
+      return;
+    }
     toast('Calculation failed: ' + e.message, 'error');
   }
 }
@@ -6332,6 +7079,12 @@ async function approveCosting() {
       (_pendingApproveBase.customer_id ? '' : ' <span style="color:var(--text-dim)">(no customer linked)</span>');
     document.getElementById('edit-overwrite-ver').textContent = editingVersion;
     document.getElementById('edit-newver-ver').textContent    = _pendingNextVersion;
+    // RT8 (ratified default 4) — a re-priced quote saves as a NEW REVISION only: Overwrite is not offered, so the
+    // revision the customer received stays exactly as sent. The server refuses it too.
+    const _ow = document.getElementById('edit-overwrite-btn');
+    if (_ow) _ow.style.display = repricedFrom ? 'none' : '';
+    const _rpNote = document.getElementById('edit-save-repriced-note');
+    if (_rpNote) _rpNote.style.display = repricedFrom ? '' : 'none';
     const reuseWrap = document.getElementById('edit-reuse-qno-wrap');
     const reuseBox  = document.getElementById('edit-reuse-qno');
     const reuseVal  = document.getElementById('edit-reuse-qno-val');
@@ -6415,6 +7168,10 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
   // Capture ratio at save time so the stored selling_price matches the calc panel total.
   const _ratioRaw = parseFloat(document.getElementById('f-ratio')?.value);
   const _ratioLbl = document.getElementById('f-ratio')?.selectedOptions?.[0]?.text || '';
+  // RT8 (E3) — the save takes a generation too: a calculation still in flight when the user saved must not land on
+  // top of the saved figures.
+  ++_calcGen;
+  clearTimeout(calcTimer);
   try {
     const result = await api('POST', '/api/approve', {
       ..._pendingApproveBase,
@@ -6427,6 +7184,12 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       discount_kind:  discountKind,
       discount_input: discountKind ? discountInput : null,
       ..._captureForPayload(),   // v1.52 — who this costing is FOR (absent without the control)
+      // RT8 — a frozen save replays the saved lines on the server; a re-priced one saves as a new revision and
+      // records the comparison; both must equal the screen to the cent (`screen`), else nothing is saved.
+      frozen_record_id:         frozen ? frozen.recordId : undefined,
+      repriced_from_record_id:  repricedFrom ? repricedFrom.recordId : undefined,
+      new_options:              repricedFrom ? repricedFrom.newOptions : undefined,
+      screen:                   (frozen || repricedFrom) ? _screenTotals() : undefined,
     });
     lastRecordId   = result.record_id;
     justSavedHere  = true;   // v1.49 rule 2 — arms the save-once gate + the line lock
@@ -6465,6 +7228,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       editingVersion     = 1;
       editReplay         = null;
       editBodyVarOverrides = null;
+      frozen = null; repricedFrom = null; _frozenReadOnly = false; _frozenReadOnlyMeta = null;   // RT8
       document.getElementById('edit-mode-banner')?.classList.add('hidden');
       try { history.replaceState(null, '', _skinnify(window.location.pathname)); } catch(_) {}
     } else {
@@ -7998,6 +8762,11 @@ function switchCfgTab(tab) {
 }
 
 async function onChassisToggle() {
+  if (frozen || _frozenReadOnly) {   // RT8 — the chassis is as saved
+    document.getElementById('f-chassis-on').checked = !document.getElementById('f-chassis-on').checked;
+    toast(FROZEN_LOCK_TEXT, 'warn');
+    return;
+  }
   const on = document.getElementById('f-chassis-on').checked;
   const wrap = document.getElementById('chassis-fields');
   wrap.style.display = on ? '' : 'none';
@@ -9325,6 +10094,7 @@ function _xpApplyDraftTick(tick) {
 // The tail runs even when a PUT fails mid-way (finally) so the panel, the
 // localStorage stores and the template never end up rendering different states.
 async function applyExcelPastePlan(plan) {
+  if (frozen || _frozenReadOnly) { toast(FROZEN_LOCK_TEXT, 'warn'); return 0; }   // RT8 — options are as saved
   if (plan.tid !== (document.getElementById('trailer-select')?.value || '')) {
     toast('Body type changed since the paste — nothing applied', 'warn');
     return 0;
@@ -9458,6 +10228,7 @@ function _xpRenderPreview() {
 }
 
 function openExcelPasteModal() {
+  if (frozen || _frozenReadOnly) { toast(FROZEN_LOCK_TEXT, 'warn'); return; }   // RT8 — options are as saved
   const inp = document.getElementById('excel-paste-input');
   const box = document.getElementById('excel-paste-preview');
   if (inp) inp.value = '';
@@ -10230,39 +11001,21 @@ async function runRepairCalc() {
     _repairClearTotals();
     return;
   }
-  const scopeEl = document.getElementById('f-repair-scope');
-  lastCalcPayload = {
-    is_repair:       true,
-    trailer_type_id: null,
-    repair_type:     String(document.getElementById('f-repair-type').value || '').trim(),
-    repair_scope:    String(scopeEl ? scopeEl.value : '').trim() || null,
-    repair_lines:    repairLines.map(_fhWireLine),
-    profit_margin:   +document.getElementById('f-margin').value || 0,
-    // v1.47 Lane D (D8) — the quotation document's header fields, all per-quote.
-    ...(_repairDocFields()),
-    // v1.47 — the RATIO and the DISCOUNT must go to the server with the calc.
-    // Without them the server returned ratio_amount 0 while renderSummary
-    // computed the ratio client-side, so the repair rail printed "÷ RATIO
-    // R 0,00" next to a summary reading "Ratio (55%) + R 110,90" — the same
-    // repair, two different totals on one screen. The server is the single
-    // source of truth for this money (it is the same margin/ratio/discount
-    // functions a body costing uses), so it has to be told.
-    ratio_value:     _repairRatio().value,
-    ratio_label:     _repairRatio().label,
-    discount_kind:   discountKind,
-    discount_input:  discountKind ? discountInput : null,
-    // v1.50 P3 — the vehicle block (body type + dims). Its own key, NEVER the
-    // top-level trailer_type_id/dimensions: those must stay null/{} or the
-    // server would treat this as a body costing.
-    repair_vehicle:  _readRepairVehicle(),
-    dimensions:      {},
-  };
+  if (_calcSuspended) return;   // RT8 — a saved repair is being opened: it shows its saved copy
+  // RT8 — the payload builder is shared with the re-price preview (_buildRepairPayload); a frozen repair tells the
+  // server which record's saved stock prices to use; a re-priced one which record it came from.
+  lastCalcPayload = _buildRepairPayload();
+  if (frozen && frozen.repair) lastCalcPayload.frozen_record_id = frozen.recordId;
+  if (repricedFrom) lastCalcPayload.repriced_from_record_id = repricedFrom.recordId;
+  const gen = ++_calcGen;   // RT8 (E3) — a stale response never renders
   const status = document.getElementById('calc-status');
   _setDisabled('approve-btn', true);
   status.innerHTML = '<span class="spinner spinner-sm"></span> Calculating…';
   try {
     const result = await api('POST', '/api/calculate', lastCalcPayload);
+    if (gen !== _calcGen) return;
     lastResult = result;
+    lastResultPayload = lastCalcPayload;
     renderSummary(result);
     renderRepairSurface();
     // Priced, but only SAVEABLE once the repair has a type AND something is
@@ -10272,6 +11025,7 @@ async function runRepairCalc() {
     _setDisabled('approve-btn', !(_repairMetaValid() && included.length));
     status.textContent = '';
   } catch (e) {
+    if (gen !== _calcGen) return;
     status.textContent = '';
     // Log as well as toast: a render error inside the success path would
     // otherwise be swallowed here and read as "the calc silently did nothing".

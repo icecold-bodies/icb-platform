@@ -148,6 +148,15 @@ def _calc_until(page: Page, action, want: dict, tid: int):
     return r.value.request.post_data_json, r.value.json()
 
 
+def _reopen(page: Page, rec_id: int) -> dict:
+    """RT8 (v1.62.0): a re-opened quote is the SAVED quote — no calculation runs on open. The figures, and the
+    thicknesses AS PRICED (body_variables), are the stored copy, read off the page once it is shown."""
+    page.goto(f"/calculator?edit={rec_id}")
+    expect(page.locator("[data-testid='frozen-saved-line']")).to_be_visible(timeout=T)
+    expect(page.locator("#grand-total")).not_to_have_text("—", timeout=T)
+    return page.evaluate("() => lastResult")
+
+
 def _item(res: dict, bom_id: int) -> dict:
     return next(i for i in res.get("items") or [] if i.get("bom_id") == bom_id)
 
@@ -221,11 +230,12 @@ def test_toggles_price_the_quote_and_never_write_the_template(page: Page, live_s
     assert (sbv["SRD EPS"], sbv["DRD EPS"], sbv["FRONT PU"], sbv["FRONT EPS"]) == (0.06, 0.0, 0.06, 0.0), sbv
     _still_untouched(ids)
 
-    # Re-open it: ITS door (SRD) and ITS thicknesses come back.
+    # Re-open it: ITS door (SRD) and ITS thicknesses come back — the saved copy, as RT8 shows it (no calculation).
     page.goto("/calculator")                              # a fresh page load, same browser
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
-    _, res = _calc_until(page, lambda: page.goto(f"/calculator?edit={rec_id}"),
-                         {"SRD EPS": 0.06, "DRD EPS": 0.0, "FRONT PU": 0.06, "FRONT EPS": 0.0}, tid)
+    res = _reopen(page, rec_id)
+    rbv = _bv(res)
+    assert (rbv["SRD EPS"], rbv["DRD EPS"], rbv["FRONT PU"], rbv["FRONT EPS"]) == (0.06, 0.0, 0.06, 0.0), rbv
     expect(page.locator("#drd-srd-SRD")).to_be_checked(timeout=T)
     expect(page.locator(f"#body-options-list input[type='radio'][data-bom-id='{m['FRONT PU']}']")).to_be_checked()
     assert _item(res, ids["door_foam"])["line_cost"] == pytest.approx(FOAM_QTY_AT_60MM * 4100.0, abs=0.5)
@@ -286,8 +296,9 @@ def test_a_new_costing_opens_on_the_bodys_default_foam(page: Page, live_server: 
             break
     assert rec_id, "the costing did not save"
     assert page.request.get(f"{live_server.rstrip('/')}/api/calculations/{rec_id}").json()["insulation_foam"] == "32D"
-    req, _ = _calc_until(page, lambda: page.goto(f"/calculator?edit={rec_id}"), {"FRONT PU": 0.06}, tid)
-    assert req["insulation_foam"] == "32D"
+    res = _reopen(page, rec_id)                           # RT8: the saved copy, no calculation on open
+    assert _bv(res).get("FRONT PU") == 0.06
+    assert page.evaluate("() => insulationFoam") == "32D"
     expect(_foam_block(page).locator("input[value='32D']")).to_be_checked(timeout=T)
     expect(_foam_block(page)).to_contain_text("4G FOAM (body default)")    # the default still shows where it is
     shot(page, "06-saved-32d-costing-reopens-on-32d", journey=JOURNEY)

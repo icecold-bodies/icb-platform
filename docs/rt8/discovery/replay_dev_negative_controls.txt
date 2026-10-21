@@ -1,0 +1,2 @@
+NC len: {'pending_body': 12, 'pending_body_exact_saved_lib': 0, 'pending_body_exact_expr_lib': 0}
+NC price: {'pending_body': 12, 'pending_body_exact_saved_lib': 0, 'pending_body_exact_expr_lib': 0}

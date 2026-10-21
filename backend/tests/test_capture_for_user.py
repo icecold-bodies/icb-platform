@@ -210,6 +210,16 @@ def _save(client, headers, payload) -> dict:
     return r.json()
 
 
+def _edit(client, headers, payload, rec) -> dict:
+    """RT8 (v1.62.0): an edit saves the quote at its SAVED prices — the calculator sends frozen_record_id and the
+    figures on screen, which the server must equal to the cent. The same payload, as the calculator would send it."""
+    calc = client.post("/api/calculate", json={**payload, "frozen_record_id": rec}, headers=headers)
+    assert calc.status_code == 200, calc.text[:600]
+    d = calc.json()
+    return {**payload, "frozen_record_id": rec,
+            "screen": {"grand_total": d["grand_total"], "net_total": d["net_total"]}}
+
+
 # ── the key ──────────────────────────────────────────────────────────────────
 
 def test_the_key_is_in_the_catalogue_for_admin_only(app_mod):
@@ -422,8 +432,9 @@ def test_REFUSED_before_replace_deletes_anything(client, people, seeded):
 def test_REFUSED_non_admin_reattributing_their_own_costing_by_editing_it(client, people, seeded):
     rec = _save(client, people["nadie"]["headers"], _repair(seeded))["record_id"]
     r = client.post("/api/approve", headers=people["nadie"]["headers"],
-                    json=_repair(seeded, version_action="overwrite", edit_record_id=rec,
-                                 repair_type="edited", sales_rep_user_id=people["lezette"]["id"]))
+                    json=_edit(client, people["nadie"]["headers"],
+                               _repair(seeded, version_action="overwrite", edit_record_id=rec,
+                                       repair_type="edited", sales_rep_user_id=people["lezette"]["id"]), rec))
     assert r.status_code == 403, r.text[:400]
     row = _row(rec)
     assert row["sales_rep_user_id"] is None
@@ -438,8 +449,9 @@ def test_REFUSED_non_admin_taking_or_clearing_an_attribution_by_editing(client, 
                 _body(seeded, sales_rep_user_id=people["nadie"]["id"]))["record_id"]
     for who, value in (("lezette", people["lezette"]["id"]), ("nadie", None)):
         r = client.post("/api/approve", headers=people[who]["headers"],
-                        json=_body(seeded, version_action="overwrite", edit_record_id=rec,
-                                   sales_rep_user_id=value))
+                        json=_edit(client, people[who]["headers"],
+                                   _body(seeded, version_action="overwrite", edit_record_id=rec,
+                                         sales_rep_user_id=value), rec))
         assert r.status_code == 403, (who, r.text[:400])
     assert _row(rec)["sales_rep_user_id"] == people["nadie"]["id"]
     assert [j["action"] for j in _journal(rec)] == ["capture"]
@@ -492,7 +504,8 @@ def test_an_edit_without_the_field_keeps_the_attribution(client, people, seeded)
                 _body(seeded, sales_rep_user_id=people["nadie"]["id"]))["record_id"]
     for who in ("admin", "nadie"):
         _save(client, people[who]["headers"],
-              _body(seeded, version_action="overwrite", edit_record_id=rec))
+              _edit(client, people[who]["headers"],
+                    _body(seeded, version_action="overwrite", edit_record_id=rec), rec))
         row = _row(rec)
         assert row["sales_rep_user_id"] == people["nadie"]["id"], who
         assert row["user_id"] == people["admin"]["id"]
@@ -503,8 +516,9 @@ def test_admin_changing_the_dropdown_on_an_edit_journals_a_reassign(client, peop
     rec = _save(client, people["admin"]["headers"],
                 _repair(seeded, sales_rep_user_id=people["nadie"]["id"]))["record_id"]
     _save(client, people["admin"]["headers"],
-          _repair(seeded, version_action="overwrite", edit_record_id=rec,
-                  sales_rep_user_id=people["lezette"]["id"]))
+          _edit(client, people["admin"]["headers"],
+                _repair(seeded, version_action="overwrite", edit_record_id=rec,
+                        sales_rep_user_id=people["lezette"]["id"]), rec))
     assert _row(rec)["sales_rep_user_id"] == people["lezette"]["id"]
     j = _journal(rec)
     assert [x["action"] for x in j] == ["capture", "reassign"]

@@ -26,6 +26,13 @@ $Req       = Join-Path $Work 'req'
 $StubDir   = Join-Path $Work 'stub'
 $Home2     = Join-Path $Work 'home'
 New-Item -ItemType Directory -Force -Path $Stage, $Req, $StubDir, (Join-Path $Home2 'Downloads') | Out-Null
+# Every paste runs FROM the work folder: a child powershell.exe here once wrote its ModuleAnalysisCache to a relative
+# path in the folder it was started from (21 Oct: Michael's main clone). The clone's untracked list is read before
+# and after (read only) and must not change.
+Set-Location $Work
+$Clone = 'C:\Users\micge\Documents\icb-platform'
+function Untracked() { $env:GIT_OPTIONAL_LOCKS = '0'; @(& git -C $Clone status --porcelain=v1 -uall 2>$null | Where-Object { $_ -like '`?`? *' }) }
+$UntrackedBefore = Untracked
 function WslPath($p) { $f = [System.IO.Path]::GetFullPath($p); '/mnt/' + $f.Substring(0,1).ToLower() + $f.Substring(2).Replace('\', '/') }
 $Script:Pass = 0; $Script:Fail = 0
 function Ok($m)  { $Script:Pass++; Write-Host "  ok    $m" }
@@ -163,6 +170,9 @@ if ($Script:LastRc -eq 1 -and ($o -match 'STOP \[KIT\]')) { Ok "a tampered rt9_v
 # e. the stub without its settings refuses (fail closed)
 $o = Invoke-Paste "`$env:RT9_STUB_REQ=''; & ssh stubuser@127.0.0.9 'echo x'; `"rc=`$LASTEXITCODE`"" 'nc-stub-unset'
 if (($o -match 'rc=255') -and ($o -match 'refusing')) { Ok "the stub without RT9_STUB_REQ refuses (exit 255)" } else { Bad "stub fail-closed: $o" }
+
+$new = @(Compare-Object $UntrackedBefore (Untracked) | ForEach-Object { "$($_.SideIndicator) $($_.InputObject)" })
+if ($new.Count -eq 0) { Ok "Michael's clone: the untracked list is the same before and after the run ($(@($UntrackedBefore).Count) entries)" } else { Bad "Michael's clone changed: $($new -join '; ')" }
 
 # ---- 5. report + remove ---------------------------------------------------------------------------------------------
 $down | ForEach-Object { Write-Host "   $_" }

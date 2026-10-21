@@ -521,6 +521,7 @@ def test_a_size_change_needs_the_stored_library_expressions(client, admin, stage
     assert "Update to today" in r.json()["detail"]["message"]
     g = client.get(f"/api/calculations/{rid}", headers=admin).json()
     assert g["frozen_library"] == "values" and g["saved_at"] is None
+    ids.update({"lib_rec": rid, "lib_tt": lib_tt, "lib_dims": dims})   # the refusal tests below meet this gate again
 
 
 # ── 9. repairs ───────────────────────────────────────────────────────────────
@@ -629,3 +630,67 @@ def test_calculator_js_keeps_the_race_guards():
     assert "_calcSuspended = true;" in edit and "_frozenDriftCheck();" in edit
     assert "await runCalc();\n    verifyEditBalance(saved);" not in edit.replace("\r\n", "\n"), "no calculation on open"
     assert "if (_userTouchedBody) return false;" in src, "the init restore stands down once the user changed the body"
+
+
+# ── RT8_RULING_2: plain words for every refusal, nothing saved, and the negative control ─────────────────────────
+PLAIN = {   # the ruling's table, verbatim — pinned here independently of the module's constant
+    "overwrite_needs_saved_prices": "This page is out of date. Reload it (Ctrl+F5) and save again. Your quote has not been changed.",
+    "frozen_mismatch": "The figures changed while saving, so nothing was saved. Reload the quote and try again.",
+    "screen_missing": "The figures changed while saving, so nothing was saved. Reload the quote and try again.",
+    "repriced_new_revision_only": "A quote moved to today's prices saves as a new revision, so the one the customer has stays as sent.",
+    "frozen_library_missing": "This quote was saved before size changes could keep its prices. To change the size, use Update to today's prices.",
+}
+
+
+def _records() -> int:
+    from app.database import CalculationRecord, SessionLocal
+    with SessionLocal() as db:
+        return db.query(CalculationRecord).count()
+
+
+def _meet(client, admin, ids, code):
+    """One request that meets the gate named by `code`, the way the calculator (or a stale tab) would send it."""
+    base = {"customer_id": ids["customer"], "edit_record_id": ids["rec"], "version_action": "overwrite"}
+    if code == "overwrite_needs_saved_prices":            # a stale tab: today's payload, no frozen_record_id
+        calc = client.post("/api/calculate", json=_today_calc(ids), headers=admin).json()
+        return client.post("/api/approve", json={**_today_calc(ids), **base, "screen": _screen(calc)}, headers=admin)
+    if code == "frozen_mismatch":                         # the screen no longer equals what the saved prices give
+        calc = client.post("/api/calculate", json=_frozen_calc(ids), headers=admin).json()
+        return client.post("/api/approve", json={**_frozen_calc(ids), **base, "ui_snapshot": _snapshot(),
+                                                 "screen": {"grand_total": calc["grand_total"] + 1.0, "net_total": calc["net_total"]}}, headers=admin)
+    if code == "screen_missing":                          # the figures never reached the server
+        return client.post("/api/approve", json={**_frozen_calc(ids), **base, "ui_snapshot": _snapshot()}, headers=admin)
+    if code == "repriced_new_revision_only":              # Overwrite after Update to today's prices
+        today = client.post("/api/calculate", json={**_today_calc(ids), "repriced_from_record_id": ids["rec"]}, headers=admin).json()
+        return client.post("/api/approve", json={**_today_calc(ids), **base, "repriced_from_record_id": ids["rec"],
+                                                 "screen": _screen(today), "ui_snapshot": _snapshot(draft_category_radio={"1": "6MM PF PLYWOOD"})}, headers=admin)
+    if code == "frozen_library_missing":                  # a size change on a record saved before the expressions were kept
+        return client.post("/api/calculate", json={"frozen_record_id": ids["lib_rec"], "trailer_type_id": ids["lib_tt"],
+                                                   "profit_margin": 5, "overrides": {}, "dimensions": {**ids["lib_dims"], "length": 7.0}}, headers=admin)
+    raise AssertionError(code)
+
+
+@pytest.mark.parametrize("code", list(PLAIN))
+def test_the_refusal_reads_in_plain_words_and_saves_nothing(client, admin, staged, code):
+    """RT8_RULING_2 — no raw 409 reaches a user: each refusal carries the ruling's sentence, and nothing is saved."""
+    from app.services import frozen_quote
+    ids = staged
+    rid = ids["lib_rec"] if code == "frozen_library_missing" else ids["rec"]
+    before, n = _raw_result_json(rid), _records()
+    r = _meet(client, admin, ids, code)
+    assert r.status_code == 409, r.text
+    d = r.json()["detail"]
+    assert d["code"] == code and d["message"] == PLAIN[code] == frozen_quote.REFUSALS[code]
+    assert code not in d["message"] and "409" not in d["message"]
+    if code == "frozen_mismatch":
+        assert d["label"] and d["shown"] == pytest.approx(d["saved"] + 1.0, abs=0.005)   # the figures ride for the audit
+    assert _raw_result_json(rid) == before and _records() == n
+
+
+def test_without_the_mapping_the_raw_code_shows(client, admin, staged, monkeypatch):
+    """The negative control: with the table gone, the sentence IS the code — on a gate and on a FrozenError alike."""
+    from app.services import frozen_quote
+    monkeypatch.setattr(frozen_quote, "REFUSALS", {})
+    for code in ("overwrite_needs_saved_prices", "frozen_library_missing"):
+        d = _meet(client, admin, staged, code).json()["detail"]
+        assert d["code"] == code and d["message"] == code, d

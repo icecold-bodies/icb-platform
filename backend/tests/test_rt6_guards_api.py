@@ -322,7 +322,8 @@ def test_accept_refuses_a_saved_costing_that_breaches_the_current_rule(client, u
     assert r.status_code == 409, r.text
     msg = r.json()["detail"]["message"]
     assert "cannot be accepted" in msg and "EPS insulation is not allowed on the FRONT" in msg
-    assert msg.endswith("Re-open it, Remove, save, then accept.")
+    assert msg.endswith("Re-open it, click Update to today's prices, remove the breach, save as a new revision, "
+                        "then accept the new revision.")
     assert row_fingerprint(rec) == fp                     # still pending, never altered
 
 

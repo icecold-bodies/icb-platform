@@ -474,3 +474,33 @@ def test_a_saved_repair_opens_at_its_saved_prices(page: Page, live_server: str, 
     assert [f"{MARK} REPAIR HINGE", 120.0] in rows, rows
     expect(page.locator("[data-testid='frozen-drift']")).to_be_visible(timeout=T)
     shot(page, "04-repair-saved-prices", journey=JOURNEY)
+
+
+def test_a_refusal_reads_in_plain_words_on_the_page(page: Page, live_server: str, staged) -> None:
+    """RT8_RULING_2 — no raw 409 reaches a user. A save whose figures no longer equal the screen (the request's
+    screen total bumped on its way out, as a stale tab would send it) is refused with the ruling's sentence alone:
+    not the code, not "Approve failed", and nothing is saved."""
+    from app.services.frozen_quote import REFUSALS
+    ids = staged
+    _install_nc(page)
+    admin_session(page, base=live_server)
+    before = _raw(ids["rec"])
+    _open_edit(page, ids["rec"])
+    _settle(page)
+
+    def bump(route):
+        body = route.request.post_data_json
+        body["screen"]["grand_total"] = float(body["screen"]["grand_total"]) + 1000.0
+        route.continue_(post_data=json.dumps(body))
+    page.route("**/api/approve", bump)
+    page.click("#approve-btn")
+    expect(page.locator("#modal-edit-save")).to_be_visible(timeout=T)
+    expect(page.locator("[data-testid='edit-overwrite-btn']")).to_be_visible()
+    page.click("[data-testid='edit-overwrite-btn']")
+    msg = page.locator("#toast-container .toast-msg").last
+    expect(msg).to_have_text(REFUSALS["frozen_mismatch"], timeout=T)
+    text = msg.inner_text()
+    assert "frozen_mismatch" not in text and "Approve failed" not in text and "409" not in text, text
+    page.unroute("**/api/approve")
+    assert _raw(ids["rec"]) == before, "nothing was saved"
+    shot(page, "05-refusal-in-plain-words", journey=JOURNEY)

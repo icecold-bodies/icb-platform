@@ -73,7 +73,8 @@ if [ "$SCEN" = quotes ] || [ "$SCEN" = quoteschanged ]; then
   echo; echo "################ the close's quotes check: 3 rows saved after the deploy$( [ "$SCEN" = quoteschanged ] && echo ', and a deploy-time row changed')"
   fp_run "sudo bash /tmp/icb-rt9-quotes/rt9_quotes.sh"; echo "   -> exit $?"
   echo "== G4: contact or customer names in the kit's output (want 0): $(cat "$SIM"/tmp/icb-rt9-quotes/out-*/rows.txt "$SIM"/tmp/icb-rt9-quotes/out-*/run.log 2>/dev/null | grep -c -E 'Person|Example Farming|Never Printed')"
-  echo "== nothing extracted to the fake /tmp by the check (want only out-*): $(cd "$SIM/tmp/icb-rt9-quotes" && ls -A | grep -v -E '^(out-|lib$|\.staged_at$|SHA256SUMS$|expected\.env$|rt9_quotes\.sh$|rt9_quotes_filter\.py$)' | tr '\n' ' ')"
+  extra=$(cd "$SIM/tmp/icb-rt9-quotes" && ls -A | grep -v -E '^(out-|lib$|\.staged_at$|SHA256SUMS$|expected\.env$|rt9_quotes\.sh$|rt9_quotes_filter\.py$)' | tr '\n' ' ')
+  echo "== nothing extracted to the fake /tmp by the check (want NONE): ${extra:-NONE}"
 fi
 echo; echo "################ deploy again (must say ALREADY DEPLOYED and verify)"; fp_run "$R deploy"; echo "   -> exit $?"
 echo; echo "== sim state: prod HEAD $(git -C "$SIM/opt/icb-platform" rev-parse --short HEAD), describe $(git -C "$SIM/opt/icb-platform" describe --tags --abbrev=0 HEAD 2>/dev/null), alembic $(cat "$SIMSTATE/alembic"), record '$(cat "$SIM/vartmp/icb-deploy-state")', spa $(grep -o 'index-[A-Za-z0-9_-]*' "$SIM/opt/icb-platform/frontend/dist/index.html")"

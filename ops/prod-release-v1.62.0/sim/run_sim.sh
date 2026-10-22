@@ -2,6 +2,7 @@
 # v1.62.0 release-kit simulation, run as root in WSL:  bash run_sim.sh <scenario> [kit-branch]
 # Scenarios: happy | moved | wrongplace | wrongdb | staleboot | unstamped | nobackup | pgdumpfail | traceback |
 #            routeopen | cfstale | cfcached | resume | saved | factor | autologin | noenv | notag
+#            quotes | quoteschanged   (the close's read-only quotes check after 3 saves; and with a changed row)
 # Builds a throw-away prod (sim/fakeprod.sh: v1.61.1 5511355 with the v1.61.1 tag but WITHOUT v1.62.0, as the real VM)
 # and runs the STAGED kit — staged by the real mkstage_window.sh (and through it mkstage.sh) from a sim origin whose
 # backport/v1.39-base carries the kit branch and an annotated v1.62.0 tag. The REAL deploy/prod/icb-deploy.sh runs;
@@ -25,7 +26,7 @@ echo "== the sim origin, the stage (the real mkstage_window.sh), the fake prod a
 fp_origin || exit 1
 fp_stage || exit 1
 fp_prod || exit 1
-tar -xf "$SIM/stageout/icb-release-v1.62.0.tar" -C "$SIM/tmp" || exit 1
+tar -xf "$SIM/stageout/window/icb-release-v1.62.0.tar" -C "$SIM/tmp" || exit 1
 KITD=$SIM/tmp/icb-release-v1.62.0
 BOOT=$(awk '/^btime/{print $2}' /proc/stat)
 case "$SCEN" in
@@ -63,6 +64,17 @@ if [ "$SCEN" = resume ]; then
 fi
 [ "$SCEN" = saved ] && echo "73 9a8b7c6d5e4f30211203f4e5d6c7b8a9" > "$SIMSTATE/quotes" && echo "   (saved) a quote is saved after the deploy"
 echo; echo "################ verify AFTER the deploy (and the acceptance)"; fp_run "$R verify"; echo "   -> exit $?"
+if [ "$SCEN" = quotes ] || [ "$SCEN" = quoteschanged ]; then
+  # the close: staged now (it pins the deploy's backup); 3 costings saved after the deploy, and, for the negative
+  # control, one deploy-time row changed too (the repair's contact_name: the filter names the column, never the value)
+  fp_stage_close || exit 1
+  touch "$SIMSTATE/saved3"; [ "$SCEN" = quoteschanged ] && touch "$SIMSTATE/changed"
+  tar -xf "$SIM/stageout/close/icb-rt9-quotes.tar" -C "$SIM/tmp" && date +%s > "$SIM/tmp/icb-rt9-quotes/.staged_at" || exit 1
+  echo; echo "################ the close's quotes check: 3 rows saved after the deploy$( [ "$SCEN" = quoteschanged ] && echo ', and a deploy-time row changed')"
+  fp_run "sudo bash /tmp/icb-rt9-quotes/rt9_quotes.sh"; echo "   -> exit $?"
+  echo "== G4: contact or customer names in the kit's output (want 0): $(cat "$SIM"/tmp/icb-rt9-quotes/out-*/rows.txt "$SIM"/tmp/icb-rt9-quotes/out-*/run.log 2>/dev/null | grep -c -E 'Person|Example Farming|Never Printed')"
+  echo "== nothing extracted to the fake /tmp by the check (want only out-*): $(cd "$SIM/tmp/icb-rt9-quotes" && ls -A | grep -v -E '^(out-|lib$|\.staged_at$|SHA256SUMS$|expected\.env$|rt9_quotes\.sh$|rt9_quotes_filter\.py$)' | tr '\n' ' ')"
+fi
 echo; echo "################ deploy again (must say ALREADY DEPLOYED and verify)"; fp_run "$R deploy"; echo "   -> exit $?"
 echo; echo "== sim state: prod HEAD $(git -C "$SIM/opt/icb-platform" rev-parse --short HEAD), describe $(git -C "$SIM/opt/icb-platform" describe --tags --abbrev=0 HEAD 2>/dev/null), alembic $(cat "$SIMSTATE/alembic"), record '$(cat "$SIM/vartmp/icb-deploy-state")', spa $(grep -o 'index-[A-Za-z0-9_-]*' "$SIM/opt/icb-platform/frontend/dist/index.html")"
 echo "== backups: $(ls "$SIM/varbackups/postgres" | tr '\n' ' ')  (the kit's pg_dump ran at alembic $(cat "$SIMSTATE/backup_at_alembic" 2>/dev/null || echo -)); npm builds: $(cat "$SIMSTATE/npm.log" 2>/dev/null | wc -l)"

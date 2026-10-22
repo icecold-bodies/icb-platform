@@ -201,7 +201,11 @@ calculator tab opened before the deploy. Then open `https://mes.icecoldgrp.onlin
 - the quiet line under the edit banner shows today's difference;
 - the options are locked.
 
+**Cancel edit — do not click Update or Save.**
+
 Then click **Cancel edit**. Do **not** save, re-price or overwrite it. Tell the CA what you saw (a screenshot is fine).
+(RT9_RULING_2, lesson 1: the acceptance on prod is view-only. On 22 Oct a revision was saved here instead; the close
+identified and removed it.)
 
 **8. Verify** (read only), after the N10022 check: everything as at the deploy, plus
 `PASS QUOTES_UNCHANGED_SINCE_DEPLOY` (no quote was saved) and 0 tracebacks since the restart (the N10022 re-open
@@ -229,14 +233,51 @@ IF YOU SEE "STOP": nothing was changed; paste it back to me
 
 ### The close (only on the CA's word, after the fetch)
 
-**10. Remove the window's kits from prod `/tmp`** by exact name (the list is in `rt9_vm.sh`: the three RT9 kits and
-their tars — RT7's old out folders inside the reused All and door folders go with them — RT7's v1.61.1 release kit
-and tar, and the window start mark), then read every name back. Not touched: `/tmp/icb-rollback-<ts>.txt`, which the
-repo's own `icb-deploy.sh` writes on every deploy (its rollback anchor; earlier deploys left theirs too).
+The close's lines live in a second stage folder, `C:\Users\micge\Documents\icb-rt9-stage\close` (staged by
+`mkstage_close.sh` from a later commit than the release: its VM helper knows one more kit). The window's folder stays
+as it was.
+
+**Q. The quotes check** (read only; `RT9_RULING_2` Q1 — step 8 read 95 saved costings against 92 at the deploy).
+On prod it (1) reads the deploy's checked backup back by size and sha256; (2) prints the saved costings' count + md5
+now beside the deploy's; (3) streams the backup's costings (`pg_restore --data-only`, never restored: nothing is
+extracted to disk) against the live rows (a read-only COPY, the same pipe) and compares them **row by row**: added,
+changed (the changed columns' **names** only, never their values), removed, and every row created today. It prints only
+id, the quote number's first word (a repair's number carries the customer's name), created as stored, version, status,
+soft-deleted Y/N and the totals: an allow-list in the filter refuses any other field (G4). It ends
+`######## DONE (read only): the backup compared row by row: added …, changed …, removed …`; a STOP means the backup
+is not the deploy's, or the comparison could not run. Run it again after Michael's deletes (Q2): the deleted rows then
+read as changed (`deleted_at, deleted_by`) and soft-deleted Y, and nothing else.
 
 📋 PASTE INTO: PowerShell (your laptop)
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\micge\Documents\icb-rt9-stage\window\run_window_cleanup.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\micge\Documents\icb-rt9-stage\close\run_quotes_check.ps1"
+```
+FIRST LINE YOU SHOULD SEE: ######## RT9 window quotes check (read only) . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . head a29db35 . boot …
+IT WILL ASK FOR: the VM password (sudo); nothing shows while you type
+WHEN IT ENDS: ######## DONE - the quotes check ended with exit 0. → copy the whole window and paste it back to me
+IF YOU SEE "STOP": it is read only: nothing was changed; paste it back to me
+
+**9b. Fetch again** — the close's records (the quotes check's out folder, with the window's) to your Downloads folder,
+in a new tar. This line lives in the close folder: its helper knows the quotes kit.
+
+📋 PASTE INTO: PowerShell (your laptop)
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\micge\Documents\icb-rt9-stage\close\run_window_fetch.ps1"
+```
+FIRST LINE YOU SHOULD SEE: ######## RT9 window fetch (step 9) . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . head …
+IT WILL ASK FOR: nothing (no sudo in this step)
+WHEN IT ENDS: ######## DONE - step 9: … (the tar's full path in your Downloads folder) → copy the whole window and paste it back to me
+IF YOU SEE "STOP": nothing was changed; paste it back to me
+
+**10. Remove the window's kits from prod `/tmp`** by exact name (the list is in `rt9_vm.sh`: the three RT9 window
+kits and their tars — RT7's old out folders inside the reused All and door folders go with them — the quotes check's
+kit and tar, RT7's v1.61.1 release kit and tar, and the window start mark), then read every name back. Not touched:
+`/tmp/icb-rollback-<ts>.txt`, which the repo's own `icb-deploy.sh` writes on every deploy (its rollback anchor;
+earlier deploys left theirs too). This line lives in the close folder too (re-staged with the longer list).
+
+📋 PASTE INTO: PowerShell (your laptop)
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\micge\Documents\icb-rt9-stage\close\run_window_cleanup.ps1"
 ```
 FIRST LINE YOU SHOULD SEE: ######## RT9 window close: prod /tmp cleanup . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . head …
 IT WILL ASK FOR: the VM password (sudo); nothing shows while you type
@@ -266,7 +307,7 @@ IF YOU SEE "STOP": some names may already be gone; paste it back to me
 
 | sim | how | result |
 |---|---|---|
-| the release kit, 18 scenarios | WSL: `ops/prod-release-v1.62.0/sim/run_all.sh` (the real `mkstage_window.sh` + `mkstage.sh`, the real `deploy/prod/icb-deploy.sh`, stub doors that answer for the RUNNING code, a Cloudflare edge that keeps the first bytes per URL) | see `RT9_RETURN_1` |
+| the release kit, 20 scenarios (18, plus the close's quotes check and its negative control) | WSL: `ops/prod-release-v1.62.0/sim/run_all.sh` (the real `mkstage_window.sh` + `mkstage.sh`, the real `deploy/prod/icb-deploy.sh`, stub doors that answer for the RUNNING code, a Cloudflare edge that keeps the first bytes per URL) | see `RT9_RETURN_1` |
 | every paste block above | Windows PowerShell 5.1: `ops/prod-release-v1.62.0/sim/ps51/run_blocks.ps1` — reads THIS runbook's blocks and pastes each into a new PowerShell 5.1 window against a fake prod in WSL (native ssh/scp stand-ins, so the quoting is PowerShell 5.1's own) | see `RT9_RETURN_1` |
 
 ## OUTCOME

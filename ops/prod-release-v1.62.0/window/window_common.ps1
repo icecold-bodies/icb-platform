@@ -30,7 +30,9 @@ function Enter-Window($label) {
   if ($sha -ne $VmSha) {
     $why = "KIT|$VmFile is $sha, the stage wrote $VmSha - re-stage"
   } else {
-    & scp -q -o BatchMode=yes -o ConnectTimeout=10 $VmFile "${Vm}:/tmp/icb-rt9-vm.sh" 2>$errFile
+    # no -q: scp -q also silences ssh's own reason (22 Oct, step 1's first try said only "Connection closed"); its
+    # progress line goes to $null instead, so the ######## line below stays the first thing on the screen
+    & scp -o BatchMode=yes -o ConnectTimeout=10 $VmFile "${Vm}:/tmp/icb-rt9-vm.sh" > $null 2>$errFile
     if ($LASTEXITCODE -ne 0) {
       $why = "WHERE|could not copy the helper to prod (scp exit $LASTEXITCODE)"
     } else {

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -33,6 +34,7 @@ KIT = ROOT / "ops" / "prod-release-v1.62.0"
 RELEASE = KIT / "release.sh"
 PROBES = KIT / "probe_paths.txt"
 WINDOW = KIT / "window"
+CLOSE = KIT / "close"
 RUNBOOK = ROOT / "docs" / "runbooks" / "prod-deploy-v1.62.0.md"
 JSON = {"accept": "application/json"}
 NEW_ROUTE = "/api/calculations/1/reprice-preview"
@@ -271,6 +273,10 @@ def test_the_window_lines_run_files_by_path_never_an_inline_script_and_are_ascii
         raw = p.read_bytes()
         assert all(b < 0x80 for b in raw), f"{p.name} is not ASCII (Windows PowerShell 5.1 reads it as ANSI)"
         assert inline_script_calls(raw.decode("ascii")) == [], p.name
+    for p in sorted(CLOSE.glob("*.ps1")):                 # the close's line: the same rules
+        raw = p.read_bytes()
+        assert all(b < 0x80 for b in raw), p.name
+        assert inline_script_calls(raw.decode("ascii")) == [], p.name
     step = (WINDOW / "run_window_step.ps1").read_text(encoding="ascii")
     remotes = re.findall(r"'((?:sudo )?bash /tmp/[^']+)'", step)
     assert len(remotes) == 6 and all(re.fullmatch(r"sudo bash /tmp/icb-[a-z0-9.-]+/[a-z0-9_]+\.sh( [a-z]+)?", r) for r in remotes)
@@ -293,6 +299,7 @@ def test_the_cleanup_names_are_exact_and_cover_every_kit():
     for k in ("icb-release-v1.62.0", "icb-rt2-all", "icb-rt2-doors"):
         assert f"/tmp/{k}" in names and f"/tmp/{k}.tar" in names, k
     assert "/tmp/icb-release-v1.61.1" in names and "/tmp/icb-release-v1.61.1.tar" in names   # RT7's leftovers
+    assert "/tmp/icb-rt9-quotes" in names and "/tmp/icb-rt9-quotes.tar" in names             # the close's check kit
     assert re.search(r"case \"\$p\" in /tmp/icb-\*\) ;; \*\) stop CLEANUP", text)              # refuses anything else
 
 
@@ -310,6 +317,7 @@ def test_fetch_takes_only_a_checked_name(tmp_path):
 BLOCK = re.compile(r"PASTE INTO: (?P<win>[^\n]+)\n```\n(?P<cmd>[^\n]+)\n```\nFIRST LINE YOU SHOULD SEE: (?P<first>[^\n]+)\n"
                    r"IT WILL ASK FOR: (?P<asks>[^\n]+)\nWHEN IT ENDS: (?P<ends>[^\n]+)\nIF YOU SEE \"STOP\": (?P<stop>[^\n]+)")
 STAGE = r"C:\Users\micge\Documents\icb-rt9-stage\window"
+CLOSE_STAGE = r"C:\Users\micge\Documents\icb-rt9-stage\close"
 
 
 def block_problems(md: str) -> list[str]:
@@ -326,7 +334,10 @@ def block_problems(md: str) -> list[str]:
         m = re.fullmatch(r'powershell -NoProfile -ExecutionPolicy Bypass -File "(?P<path>[^"]+)"(?: (?P<step>\S+))?', cmd)
         if m:
             path, step = m["path"], m["step"]
-            if not path.startswith(STAGE + "\\") or not (WINDOW / path.rsplit("\\", 1)[1]).exists():
+            folder, name = path.rsplit("\\", 1)
+            # the close folder holds its own line plus the window files mkstage_close.sh re-stages (fetch, cleanup)
+            staged = {STAGE: [WINDOW], CLOSE_STAGE: [CLOSE, WINDOW]}.get(folder, [])
+            if not any((d / name).exists() for d in staged):
                 probs.append(f"not a staged line: {path}")
             if path.endswith("run_window_step.ps1"):
                 if step not in plan:
@@ -344,14 +355,19 @@ def block_problems(md: str) -> list[str]:
 def test_the_runbook_blocks_are_paste_safe_and_name_what_the_lines_print():
     md = RUNBOOK.read_text(encoding="utf-8")
     blocks = list(BLOCK.finditer(md.replace("\r\n", "\n")))
-    assert len(blocks) == 11, len(blocks)       # :8000 start + health, the 8 window lines (7 is the browser), the close
+    # :8000 start + health, the 8 window lines (7 is the browser), the close's quotes check, fetch again, cleanup
+    assert len(blocks) == 13, len(blocks)
     assert block_problems(md) == []
     steps = [re.search(r'run_window_step\.ps1" (\S+)$', b["cmd"]) for b in blocks]
     assert [s[1] for s in steps if s] == ["preflight", "all-before", "deploy", "all-after", "doors", "verify"]
+    # the close's lines come from the close folder, never the window's (its helper does not know the quotes kit)
+    close_lines = [b["cmd"] for b in blocks if "run_quotes_check" in b["cmd"] or "run_window_cleanup" in b["cmd"]]
+    assert close_lines and all(CLOSE_STAGE + "\\" in c for c in close_lines), close_lines
     # each .ps1 prints the first line the runbook names
-    for name, label in (("run_window_copy.ps1", "copy (step 1)"), ("run_window_fetch.ps1", "fetch (step 9)"),
-                        ("run_window_cleanup.ps1", "close: prod /tmp cleanup")):
-        assert f"Enter-Window '{label}'" in (WINDOW / name).read_text(encoding="ascii")
+    for d, name, label in ((WINDOW, "run_window_copy.ps1", "copy (step 1)"), (WINDOW, "run_window_fetch.ps1", "fetch (step 9)"),
+                           (WINDOW, "run_window_cleanup.ps1", "close: prod /tmp cleanup"),
+                           (CLOSE, "run_quotes_check.ps1", "quotes check (read only)")):
+        assert f"Enter-Window '{label}'" in (d / name).read_text(encoding="ascii")
         assert f"######## RT9 window {label} . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . head" in md
     assert '"######## RT9 window $label . machine $env:COMPUTERNAME -> $vmHost . head $short . boot $vmBoot' \
         in (WINDOW / "window_common.ps1").read_text(encoding="ascii")
@@ -373,4 +389,102 @@ def test_the_kit_carries_the_reboot_guard_and_the_stager_fills_every_placeholder
     assert "REBOOT_GUARD=1" in st
     for ph in re.findall(r"__[A-Z_]+__", "".join(p.read_text(encoding="ascii") for p in WINDOW.glob("*.ps1"))):
         assert f"s/{ph}/" in st, ph
+    # the close's stager fills every placeholder of the files IT stages: the close's line and the three window files
+    # it re-stages (window_common, the fetch, the cleanup)
+    cl = (KIT / "mkstage_close.sh").read_text(encoding="utf-8")
+    close_files = [*CLOSE.glob("*.ps1"), WINDOW / "window_common.ps1", WINDOW / "run_window_fetch.ps1", WINDOW / "run_window_cleanup.ps1"]
+    for f in close_files:
+        assert f.name in cl, f.name
+    for ph in re.findall(r"__[A-Z_]+__", "".join(p.read_text(encoding="ascii") for p in close_files)):
+        assert f"s/{ph}/" in cl, ph
     assert 'date +%s > "/tmp/$k/.staged_at"' in (WINDOW / "rt9_vm.sh").read_text(encoding="utf-8")
+
+
+# ── the close's quotes check: the filter on two COPY streams (RT9_RULING_2 Q1) ──
+FILTER = CLOSE / "rt9_quotes_filter.py"
+COLS = ["id", "branch_id", "quote_number", "created_at", "status", "deleted_at", "deleted_by", "net_total",
+        "result_json", "contact_name", "customer_id"]
+
+
+def copy_field(v) -> str:
+    if v is None:
+        return "\\N"
+    return str(v).replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n")
+
+
+def copy_row(*vals) -> str:
+    return "\t".join(copy_field(v) for v in vals)
+
+
+def rj(version, total, **extra) -> str:
+    import json
+    return json.dumps({"version": version, "grand_total": total, "customer_name": "Never Printed Ltd", **extra})
+
+
+R1 = (1, 1, "N10021/10/2026", "2026-10-19 15:02:44", "pending", None, None, 289000, rj(1, 289000.0), "Alice Example", 7)
+R2 = (2, 1, "R-2003 Karan Beef Farming (Pty) Ltd 001 ICB GP", "2026-10-22 08:55:30", "pending", None, None, 23410, rj(1, 23410.0), "Bob Example", 9)
+R3 = (3, 1, "N10022/10/2026", "2026-10-19 14:41:09", "pending", None, None, 391853.38, rj(1, 391853.38), "Alice Example", 7)
+R4 = (4, 1, "N10022/10/2026", "2026-10-22 13:02:10", "pending", None, None, 389120, rj(4, 389120.0, repriced={"from_version": 1}), "Alice Example", 7)
+R2_CHANGED = R2[:9] + ("Carol Example", 9)
+R3_DELETED = R3[:5] + ("2026-10-22 13:30:00", "admin") + R3[7:]
+
+
+def streams(tmp_path: Path, dump_rows, now_rows, table: str = "icb_costings.calculations"):
+    dump = tmp_path / "dump.sql"
+    dump.write_text("SET statement_timeout = 0;\nSELECT pg_catalog.set_config('search_path', '', false);\n\n"
+                    f"COPY {table} ({', '.join(COLS)}) FROM stdin;\n"
+                    + "".join(copy_row(*r) + "\n" for r in dump_rows) + "\\.\n\n-- complete\n", encoding="utf-8", newline="\n")
+    now = tmp_path / "now.copy"
+    now.write_text("".join(copy_row(*r) + "\n" for r in now_rows), encoding="utf-8", newline="\n")
+    return dump, now
+
+
+def run_filter(dump: Path, now: Path, deploy_count: int = 3, today: str = "2026-10-22") -> subprocess.CompletedProcess:
+    return subprocess.run([sys.executable, "-I", str(FILTER), "--dump", str(dump), "--now", str(now), "--columns", ",".join(COLS),
+                          "--deploy-count", str(deploy_count), "--today", today], capture_output=True, text=True, encoding="utf-8")
+
+
+def test_the_filter_names_added_changed_and_removed_rows_and_prints_only_the_allow_list(tmp_path):
+    dump, now = streams(tmp_path, [R1, R2, R3], [R1, R2_CHANGED, R3_DELETED, R4])
+    r = run_filter(dump, now)
+    out = r.stdout
+    assert r.returncode == 0, out + r.stderr
+    assert "== the backup: 3 rows (max id 3); now: 4 rows (max id 4)" in out
+    assert "== added since the backup: 1" in out and "   4 | N10022/10/2026 | 2026-10-22 13:02:10 | 4 | pending | N | 389120.00 | 389120.00" in out
+    assert "== changed since the backup: 2" in out
+    assert "   2 | R-2003 | contact_name" in out                       # the changed column's NAME; the repair's first word
+    assert "   3 | N10022/10/2026 | deleted_at, deleted_by" in out      # a soft delete reads as exactly these two
+    assert "== removed since the backup: 0" in out
+    # created today: the added revision (flagged) and the repair saved this morning (not flagged: it is in the backup)
+    assert "newest first: 2" in out
+    today = out.split("newest first: 2")[1]
+    assert "   4 | N10022/10/2026 | 2026-10-22 13:02:10 | 4 | pending | N | 389120.00 | 389120.00   <- added since the backup" in today
+    assert "   2 | R-2003 | 2026-10-22 08:55:30 | 1 | pending | N | 23410.00 | 23410.00\n" in today
+    assert out.rstrip().endswith("SUMMARY: backup 3 rows; now 4 rows; added 1, changed 2, removed 0; created today 2")
+    # G4: no contact's name, no customer's name (from a repair's quote number or from result_json), no value of a changed column
+    for leak in ("Alice", "Bob", "Carol", "Karan", "Beef", "Never Printed", "admin"):
+        assert leak not in out, leak
+
+
+def test_negative_controls_the_allow_list_refuses_a_field_and_a_wrong_table_or_count_stops(tmp_path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("rt9_quotes_filter", FILTER)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    with pytest.raises(mod.RefusedOutput, match="customer_name"):
+        mod.emit({"id": 1, "quote": "N1/10/2026", "customer_name": "x"})
+    assert mod.emit({"id": 1, "quote": "N1/10/2026"}) == "1 | N1/10/2026"
+    # the wrong table in the stream: refused before any row is read
+    dump, now = streams(tmp_path, [R1], [R1], table="icb_mes.calculations")
+    r = run_filter(dump, now, deploy_count=1)
+    assert r.returncode == 2 and "REFUSED: the stream holds icb_mes.calculations" in r.stdout
+    # a backup that is not the deploy's state (row count): exit 3, nothing compared
+    dump, now = streams(tmp_path, [R1, R2], [R1, R2])
+    r = run_filter(dump, now, deploy_count=3)
+    assert r.returncode == 3 and "the backup holds 2 rows; the deploy recorded 3" in r.stdout and "added" not in r.stdout
+    # the kit itself: the dump goes down a pipe (no file in /tmp), the live rows are a read-only COPY, and the dump's
+    # own listing check is the backup helper's, not a restore
+    kit = (CLOSE / "rt9_quotes.sh").read_text(encoding="utf-8")
+    assert "--dump <(pg_restore --data-only -n icb_costings -t calculations -f - \"$BACKUP\")" in kit
+    assert "--now <(psql \"$URL\" -XAtq -v ON_ERROR_STOP=1 -c \"copy (select * from icb_costings.calculations order by id) to stdout\")" in kit
+    assert "pg_restore -d" not in kit and "createdb" not in kit and "default_transaction_read_only=on" in kit

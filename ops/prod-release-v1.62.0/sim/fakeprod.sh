@@ -113,6 +113,7 @@ case "$*" in
     printf '# %s\n- Cells: FLAG 0 · ACCEPTED (sim) · PASS (sim)\n' "$p" > "$out/$stem.md"; echo '{"sim": true}' > "$out/$stem.json" ;;
   *rt2_all_compare.py*) echo "   (sim) All page run #50 vs CLI: 2702 / 2702 cells equal"; echo "PAGE_EQUALS_CLI yes" ;;
   *rt1_door_report.py*) echo "   (sim) 14 bodies"; echo "SUMMARY: 14 OK" ;;
+  *rt9_quotes_filter.py*) exec python3 "$@" ;;      # the close's filter is the REAL one (stdlib only), on the stub streams
   *) echo "python stub: unknown call: $*"; exit 4 ;;
 esac
 EOF

@@ -1,7 +1,8 @@
 #!/bin/bash
 # RT9 PowerShell 5.1 sim — bring up ONE persistent fake prod for run_blocks.ps1 (as root in WSL):
-#     bash fakeprod_up.sh <kit-branch> <windows stage dir, as /mnt/c/...>
-# Builds the sim origin, stages the window with the REAL mkstage_window.sh and the fake prod at v1.61.1 (sim/fakeprod.sh),
+#     bash fakeprod_up.sh <kit-branch> <windows stage ROOT, as /mnt/c/...>     (-> <root>/window and <root>/close)
+# Builds the sim origin, stages the window with the REAL mkstage_window.sh (and the close with mkstage_close.sh when
+# the kit branch carries it) and the fake prod at v1.61.1 (sim/fakeprod.sh),
 # puts RT7's leftovers in the fake /tmp as the real one holds them since 20 Oct (the v1.61.1 release kit, the All and
 # door kits with RT7's old out-* folders), copies the stage to the Windows folder, and records the sim in
 # /root/rt9ps51.current for forward.sh. fakeprod_down.sh removes it.

@@ -5,6 +5,11 @@
 #   target         the v1.62.0 commit (the doors answer v1.62.0 and carry the new route only when it runs)
 #   alembic        the schema head of the fake database (0053 throughout: v1.62.0 migrates nothing)
 #   factor         the 4G factor's exact text;  quotes  the saved costings' "count md5";  dbname  the live database
+#   saved3         flag: 3 costings were saved after the deploy (the count reads 75, the digest moves; the live COPY
+#                  stream carries 3 more rows than the backup's)
+#   changed        flag: one deploy-time row changed too (the repair's contact_name, in the live stream only)
+#   rt9rows        the fake calculations table in COPY text format, shared by the pg_restore (the backup) and psql
+#                  (the live rows) stand-ins: `rt9rows cols | dump | now`
 #   pid aet mono   the fake service; journal = "epoch message" lines
 #   absent_prev    "METHOD path" lines the OLD code lacks (the gate answers 404 there)
 #   cfcache/       Cloudflare's edge: the FIRST bytes it fetched for a /static URL, kept and served again (4 h)
@@ -120,7 +125,12 @@ case "$sql" in
   *current_database*) cat "$S/dbname" 2>/dev/null || echo icb_platform ;;
   *alembic_version*) echo "$mig" ;;
   *pu_foam_4g_factor*) cat "$S/factor" ;;
-  *"from icb_costings.calculations c"*) cat "$S/quotes" ;;
+  # the close's quotes check (rt9_quotes.sh): the database's zone, the live table's columns, the live rows as a COPY
+  # stream (rt9rows now: the backup's 72, plus 3 with saved3, one changed with changed), and release.sh's digest
+  *"show timezone"*) echo Africa/Johannesburg ;;
+  *information_schema.columns*) rt9rows cols ;;
+  *"copy (select * from icb_costings.calculations order by id) to stdout"*) rt9rows now ;;
+  *"from icb_costings.calculations c"*) if [ -f "$S/saved3" ]; then echo "75 9cc317a694c80eb95b824d05b45c3f7b"; else cat "$S/quotes"; fi ;;
   *) echo "psql stub: unknown SQL: $sql"; exit 3 ;;
 esac
 EOF
@@ -135,9 +145,45 @@ EOF
 
 cat > "$B/pg_restore" <<'EOF'
 #!/bin/bash
+# `pg_restore -l <dump>` (the backup helper's check), or `pg_restore --data-only -n icb_costings -t calculations -f -
+# <dump>` (the close's quotes check): the backup's costings as a pg_restore script — one COPY block, the shape the real
+# pg_restore writes. The dump file must exist (the stub never reads it: its 72 rows are rt9rows' fixture).
+case " $* " in
+  *" --data-only "*)
+    f=${*: -1}; [ -f "$f" ] || { echo "pg_restore: error: could not open input file \"$f\"" >&2; exit 1; }
+    echo "--"; echo "-- PostgreSQL database dump (stub)"; echo "--"; echo "SET statement_timeout = 0;"
+    echo "SELECT pg_catalog.set_config('search_path', '', false);"; echo
+    echo "COPY icb_costings.calculations ($(rt9rows cols | sed 's/,/, /g')) FROM stdin;"
+    rt9rows dump; echo '\.'; echo; echo "-- PostgreSQL database dump complete"; exit 0 ;;
+esac
 echo ";"
 for t in alembic_version admin_settings trailer_types bill_of_materials materials; do echo "5001; 0 0 TABLE DATA icb_costings $t icb_app"; done
 [ -f "$SIMSTATE/backup_no_calcs" ] || echo "5009; 0 0 TABLE DATA icb_costings calculations icb_app"
+EOF
+
+cat > "$B/rt9rows" <<'EOF'
+#!/bin/bash
+# The fake icb_costings.calculations in COPY text format (tab-separated, \N = null), the few columns the close's
+# filter needs plus two it must NEVER print (contact_name, customer_id). `dump` = the backup's 72 rows; `now` = the
+# same 72 byte for byte, plus 3 N10022 revisions saved after the deploy when saved3 is set (v1.62.0's "Save as Rev."),
+# and the repair row 1107's contact_name changed when `changed` is set. Row 1107 is a repair whose quote number
+# carries a (made-up) customer's name, as prod's do: the filter prints its first word only.
+S=$SIMSTATE; mode=${1:?cols|dump|now}
+[ "$mode" = cols ] && { echo "id,quote_number,created_at,status,deleted_at,net_total,result_json,contact_name,customer_id"; exit 0; }
+row() { printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$@"; }
+for i in $(seq 1 72); do
+  id=$((1100 + i)); q="N100$(printf '%02d' $i)/10/2026"; contact="Person $i"
+  [ $i = 7 ] && q="R-2003 Example Farming (Pty) Ltd 001 ICB GP"
+  [ "$mode" = now ] && [ -f "$S/changed" ] && [ $i = 7 ] && contact="Changed Person 7"
+  row "$id" "$q" "2026-10-$(printf '%02d' $(( (i % 20) + 1 ))) 09:00:$(printf '%02d' $((i % 60)))" pending '\N' "$((100000 + i)).00" \
+      "{\"version\": 1, \"grand_total\": $((120000 + i)).5, \"customer_name\": \"Never Printed $i\"}" "$contact" "$i"
+done
+if [ "$mode" = now ] && [ -f "$S/saved3" ]; then
+  for v in 4 5 6; do
+    row "$((1234 + v))" "N10022/10/2026" "2026-10-22 13:0$((v - 2)):10" pending '\N' "389120.00" \
+        "{\"version\": $v, \"grand_total\": 389120.0, \"repriced\": {\"from_version\": 1}, \"customer_name\": \"Never Printed 22\"}" "Person 22" 22
+  done
+fi
 EOF
 
 cat > "$B/npm" <<'EOF'

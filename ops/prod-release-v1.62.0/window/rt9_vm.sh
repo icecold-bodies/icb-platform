@@ -13,7 +13,7 @@
 #
 # Deliberately no bare `set -e`: every failure prints a STOP line and exits 1.
 set -u
-KITS="icb-release-v1.62.0 icb-rt2-all icb-rt2-doors"
+KITS="icb-release-v1.62.0 icb-rt2-all icb-rt2-doors icb-rt9-quotes"     # the last: the close's read-only quotes check
 MARK=/tmp/icb-rt9-window.started          # written by the FIRST unpack only: fetch takes the out-* folders newer than it
 SELF=/tmp/icb-rt9-vm.sh
 REPO=/opt/icb-platform
@@ -22,7 +22,8 @@ REPO=/opt/icb-platform
 # the RT9 window reuses RT7's All and door kit folders (/tmp/icb-rt2-all, /tmp/icb-rt2-doors), so RT7's old out-*
 # folders inside them go with them.
 NAMES="/tmp/icb-release-v1.62.0 /tmp/icb-release-v1.62.0.tar /tmp/icb-rt2-all /tmp/icb-rt2-all.tar
-/tmp/icb-rt2-doors /tmp/icb-rt2-doors.tar /tmp/icb-release-v1.61.1 /tmp/icb-release-v1.61.1.tar $MARK"
+/tmp/icb-rt2-doors /tmp/icb-rt2-doors.tar /tmp/icb-release-v1.61.1 /tmp/icb-release-v1.61.1.tar $MARK
+/tmp/icb-rt9-quotes /tmp/icb-rt9-quotes.tar"
 stop() { echo "######## STOP [$1]: $2"; exit 1; }
 is_kit() { case " $KITS " in *" $1 "*) return 0 ;; esac; return 1; }
 

@@ -15,36 +15,77 @@ G="git -c safe.directory=*"
 HOSTNAME_SIM=${HOSTNAME_SIM:-icb-mes-prod}
 
 fp_origin() {
-  local ksha cache w
+  # Before the release (no v1.62.0 in REPO) the sim merges the kit branch into the base and tags its head. After it
+  # (22 Oct: the real annotated tag peels to the squash a29db35, and it rides in the base's clone) the TARGET is the
+  # real tag's commit, and the kit branch (a close branch, say) is pushed beside the base as refs/heads/sim-kit:
+  # the window stages from the release, the close from the kit branch's head.
+  local ksha cache w post=0
   ksha=$($G -C "$REPO" rev-parse "$KIT^{commit}") || { echo "SIM: no branch $KIT in $REPO"; return 1; }
   PREV=$($G -C "$REPO" rev-parse "v1.61.1^{commit}") || return 1
   [ "${PREV:0:7}" = 5511355 ] || { echo "SIM: v1.61.1 is ${PREV:0:7}, prod runs 5511355"; return 1; }
+  $G -C "$REPO" rev-parse -q --verify refs/tags/v1.62.0 > /dev/null && post=1
   cache=${RT9SIM_CACHE:-/root/rt9sim-cache}/$ksha
   if [ ! -d "$cache/origin.git" ]; then
     rm -rf "$cache"; mkdir -p "$cache"
     $G clone -q --bare --single-branch --branch backport/v1.39-base "$REPO" "$cache/origin.git" || return 1
     $G -C "$cache/origin.git" fetch -q "$REPO" "+refs/remotes/origin/backport/v1.39-base:refs/heads/backport/v1.39-base" \
       "+refs/tags/v1.61.1:refs/tags/v1.61.1" || return 1
+    [ $post = 1 ] && { $G -C "$cache/origin.git" fetch -q "$REPO" "+refs/tags/v1.62.0:refs/tags/v1.62.0" || return 1; }
     w=$cache/work; git clone -q "$cache/origin.git" "$w" || return 1
     git -C "$w" -c advice.detachedHead=false checkout -q -B backport/v1.39-base origin/backport/v1.39-base
     $G -C "$w" fetch -q "$REPO" "$KIT" || return 1
-    git -C "$w" -c user.email=sim@x -c user.name=sim merge -q --no-edit FETCH_HEAD || return 1
-    git -C "$w" push -q origin backport/v1.39-base || return 1
-    git -C "$w" -c user.email=sim@x -c user.name=sim tag -a v1.62.0 -m "sim v1.62.0" HEAD && git -C "$w" push -q origin v1.62.0 || return 1
+    if [ $post = 1 ]; then
+      git -C "$w" push -q origin "FETCH_HEAD:refs/heads/sim-kit" || return 1
+    else
+      git -C "$w" -c user.email=sim@x -c user.name=sim merge -q --no-edit FETCH_HEAD || return 1
+      git -C "$w" push -q origin backport/v1.39-base || return 1
+      git -C "$w" -c user.email=sim@x -c user.name=sim tag -a v1.62.0 -m "sim v1.62.0" HEAD && git -C "$w" push -q origin v1.62.0 || return 1
+    fi
     rm -rf "$w"
   fi
   cp -a "$cache/origin.git" "$SIM/origin.git" || return 1
   git clone -q "$SIM/origin.git" "$SIM/work" || return 1
-  git -C "$SIM/work" -c advice.detachedHead=false checkout -q -B backport/v1.39-base origin/backport/v1.39-base
   git -C "$SIM/work" fetch -q origin --tags
-  TARGET=$(git -C "$SIM/work" rev-parse HEAD)
-  echo "   prev ${PREV:0:7}  target ${TARGET:0:7}  tag $(git -C "$SIM/work" rev-parse v1.62.0 | cut -c1-12)"
+  if git -C "$SIM/work" rev-parse -q --verify origin/sim-kit > /dev/null; then
+    git -C "$SIM/work" -c advice.detachedHead=false checkout -q -B sim-kit origin/sim-kit
+    TARGET=$(git -C "$SIM/work" rev-parse "v1.62.0^{commit}")
+  else
+    git -C "$SIM/work" -c advice.detachedHead=false checkout -q -B backport/v1.39-base origin/backport/v1.39-base
+    TARGET=$(git -C "$SIM/work" rev-parse HEAD)
+  fi
+  KITHEAD=$(git -C "$SIM/work" rev-parse HEAD)
+  echo "   prev ${PREV:0:7}  target ${TARGET:0:7}  tag $(git -C "$SIM/work" rev-parse v1.62.0 | cut -c1-12)  kit head ${KITHEAD:0:7}"
 }
 
 fp_stage() {
-  ( cd "$SIM/work" && bash ops/prod-release-v1.62.0/mkstage_window.sh "$SIM/stageout" "$TARGET" ) > "$SIM/stage.log" 2>&1 \
+  ( cd "$SIM/work" && bash ops/prod-release-v1.62.0/mkstage_window.sh "$SIM/stageout/window" "$TARGET" ) > "$SIM/stage.log" 2>&1 \
     || { cat "$SIM/stage.log"; echo "SIM: the window did not stage"; return 1; }
   grep -E '^(staged|calculator)' "$SIM/stage.log"
+}
+
+fp_stage_close() { # AFTER the fake deploy (the close pins the deploy's backup by path, size and sha256): the REAL
+  # mkstage_close.sh from the kit branch's head, against the fake prod's own backup -> $SIM/stageout/close
+  local bk bytes sha
+  bk=$(ls -t "$SIM"/varbackups/postgres/icb_platform_pre-v1.62.0_*.dump 2>/dev/null | head -n1)
+  [ -n "$bk" ] || { echo "SIM: no deploy backup on the fake prod yet"; return 1; }
+  bytes=$(stat -c %s "$bk"); sha=$(sha256sum "$bk" | cut -d' ' -f1)
+  # the stager cross-checks the deploy's COMMITTED OUTCOME.txt (the real 22 Oct one is on the close branch): the sim's
+  # clone carries one with the FAKE deploy's values instead — committed on the sim's own origin only — so the guard
+  # runs for real and agrees with the fake
+  local evid=docs/audit/rt9_2026-10/prod/window_20261022/icb-release-v1.62.0/out-deploy-20261022-123535/OUTCOME.txt
+  if [ -f "$SIM/work/$evid" ]; then
+    sed -i -e "s#^\(backup *\)[^ ]* *[0-9]* bytes *sha256 [0-9a-f]*#\1/var/backups/postgres/$(basename "$bk")  $bytes bytes  sha256 $sha#" \
+           -e "s#^\(quotes *\)[0-9]* [0-9a-f]\{32\} at the deploy#\172 0f1e2d3c4b5a69788796a5b4c3d2e1f0 at the deploy#" "$SIM/work/$evid" || return 1
+    git -C "$SIM/work" -c user.email=sim@x -c user.name=sim commit -q -am "sim: the fake deploy's OUTCOME (backup, quotes)" \
+      && git -C "$SIM/work" push -q origin "HEAD:refs/heads/sim-kit" || { echo "SIM: could not commit the fake OUTCOME"; return 1; }
+    KITHEAD=$(git -C "$SIM/work" rev-parse HEAD)
+    echo "   the sim's clone carries the fake deploy's OUTCOME (${KITHEAD:0:7}); the stager's cross-check runs against it"
+  fi
+  rm -rf "$SIM/stageout/close"
+  ( cd "$SIM/work" && bash ops/prod-release-v1.62.0/mkstage_close.sh "$SIM/stageout/close" "$KITHEAD" 72 0f1e2d3c4b5a69788796a5b4c3d2e1f0 \
+      "/var/backups/postgres/$(basename "$bk")" "$bytes" "$sha" ) > "$SIM/stage_close.log" 2>&1 \
+    || { cat "$SIM/stage_close.log"; echo "SIM: the close did not stage"; return 1; }
+  grep -E '^staged' "$SIM/stage_close.log"
 }
 
 fp_prod() {
@@ -84,6 +125,7 @@ case "$*" in
     printf '# %s\n- Cells: FLAG 0 · ACCEPTED (sim) · PASS (sim)\n' "$p" > "$out/$stem.md"; echo '{"sim": true}' > "$out/$stem.json" ;;
   *rt2_all_compare.py*) echo "   (sim) All page run #50 vs CLI: 2702 / 2702 cells equal"; echo "PAGE_EQUALS_CLI yes" ;;
   *rt1_door_report.py*) echo "   (sim) 14 bodies"; echo "SUMMARY: 14 OK" ;;
+  *rt9_quotes_filter.py*) exec python3 "$@" ;;      # the close's filter is the REAL one (stdlib only), on the stub streams
   *) echo "python stub: unknown call: $*"; exit 4 ;;
 esac
 EOF

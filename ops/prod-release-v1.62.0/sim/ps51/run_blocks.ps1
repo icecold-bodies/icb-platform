@@ -20,8 +20,11 @@ if ($PSVersionTable.PSVersion.Major -ne 5) { Write-Host "run this under Windows 
 $Repo      = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..')).Path
 $Runbook   = Join-Path $Repo 'docs\runbooks\prod-deploy-v1.62.0.md'
 $RealStage = 'C:\Users\micge\Documents\icb-rt9-stage\window'
+$RealClose = 'C:\Users\micge\Documents\icb-rt9-stage\close'
 $Work      = Join-Path $env:TEMP ("rt9ps51-" + (Get-Date -Format 'yyyyMMdd-HHmmss'))
-$Stage     = Join-Path $Work 'stage\window'
+$StageRoot = Join-Path $Work 'stage'
+$Stage     = Join-Path $StageRoot 'window'
+$Close     = Join-Path $StageRoot 'close'
 $Req       = Join-Path $Work 'req'
 $StubDir   = Join-Path $Work 'stub'
 $Home2     = Join-Path $Work 'home'
@@ -60,17 +63,21 @@ Add-Type -TypeDefinition $src -Language CSharp -OutputAssembly (Join-Path $StubD
 Copy-Item (Join-Path $StubDir 'ssh.exe') (Join-Path $StubDir 'scp.exe')
 
 # ---- 2. the fake prod ---------------------------------------------------------------------------------------------
-$up = & wsl.exe -u root -- bash (WslPath (Join-Path $PSScriptRoot 'fakeprod_up.sh')) $Kit (WslPath $Stage) 2>&1 | ForEach-Object { "$_" }
+$up = & wsl.exe -u root -- bash (WslPath (Join-Path $PSScriptRoot 'fakeprod_up.sh')) $Kit (WslPath $StageRoot) 2>&1 | ForEach-Object { "$_" }
 $up | ForEach-Object { Write-Host "   $_" }
 $simLine = $up | Where-Object { $_ -match '^SIM=' } | Select-Object -First 1
 if (-not $simLine) { Quit "the fake prod did not come up" }
 $Sim = $simLine.Substring(4).Trim()
 $Fwd = "$Sim/work/ops/prod-release-v1.62.0/sim/ps51/forward.sh"
-$wc = Join-Path $Stage 'window_common.ps1'
-$orig = [System.IO.File]::ReadAllText($wc)
 $hostLine = "`$Vm     = 'mickeyger@192.168.0.251'"
-if (([regex]::Matches($orig, '192\.168\.0\.251')).Count -ne 1 -or -not $orig.Contains($hostLine)) { Quit "window_common.ps1: the one host line was not found exactly once" }
-[System.IO.File]::WriteAllText($wc, $orig.Replace($hostLine, "`$Vm     = 'stubuser@127.0.0.9'"), (New-Object System.Text.ASCIIEncoding))
+function Patch-Host($dir) {   # that folder's window_common.ps1: its ONE host line -> the stand-in's host
+  $wc = Join-Path $dir 'window_common.ps1'
+  $orig = [System.IO.File]::ReadAllText($wc)
+  if (([regex]::Matches($orig, '192\.168\.0\.251')).Count -ne 1 -or -not $orig.Contains($hostLine)) { Quit "$wc`: the one host line was not found exactly once" }
+  [System.IO.File]::WriteAllText($wc, $orig.Replace($hostLine, "`$Vm     = 'stubuser@127.0.0.9'"), (New-Object System.Text.ASCIIEncoding))
+}
+Patch-Host $Stage
+$HasClose = $false
 Ok "stage copied from the real mkstage_window.sh; the ONE host line pointed at stubuser@127.0.0.9 (nothing else changed)"
 
 $env:PATH = "$StubDir;$env:PATH"
@@ -92,7 +99,7 @@ $bad = @($blocks | Where-Object { $_.Groups['cmd'].Value -match '[^\x20-\x7e]' -
 if ($bad.Count -eq 0 -and $blocks.Count -gt 0) { Ok "every block's command line is plain printable ASCII with no <placeholder> ($($blocks.Count) blocks)" } else { Bad "blocks with non-ASCII or a placeholder: $($bad | ForEach-Object { $_.Groups['cmd'].Value })" }
 
 function Run-Block($b, $label, [int]$wantRc = 0) {
-  $cmd = $b.Groups['cmd'].Value.Replace($RealStage, $Stage)
+  $cmd = $b.Groups['cmd'].Value.Replace($RealStage, $Stage).Replace($RealClose, $Close)
   $before = @(Get-ChildItem $Req -Filter '*.req').Count
   $out = Invoke-Paste $cmd $label
   $rc = $Script:LastRc
@@ -105,16 +112,18 @@ function Run-Block($b, $label, [int]$wantRc = 0) {
   if ($okRc -and $okF -and $okE) { Ok $m } else { Bad $m; $out | Select-Object -Last 25 | ForEach-Object { Write-Host "        | $_" } }
 }
 
-$win = @($blocks | Where-Object { $_.Groups['cmd'].Value -like "*$RealStage*" })
+$win = @($blocks | Where-Object { $_.Groups['cmd'].Value -like "*$RealStage*" -or $_.Groups['cmd'].Value -like "*$RealClose*" })
 $byStep = @{}
 foreach ($b in $win) {
   $c = $b.Groups['cmd'].Value
-  $k = if ($c -match 'run_window_step\.ps1" (\S+)$') { $Matches[1] } elseif ($c -match 'run_window_(\w+)\.ps1"$') { $Matches[1] } else { '?' }
-  $byStep[$k] = $b
+  $folder = if ($c -like "*$RealClose*") { 'close' } else { 'window' }
+  $k = if ($c -match 'run_window_step\.ps1" (\S+)$') { $Matches[1] } elseif ($c -match 'run_window_(\w+)\.ps1"$') { $Matches[1] } elseif ($c -match 'run_quotes_check\.ps1"$') { 'quotes' } else { '?' }
+  $byStep["$folder/$k"] = $b
 }
-$order = 'copy', 'preflight', 'all-before', 'deploy', 'all-after', 'doors', 'verify', 'fetch', 'cleanup'
+# the window's nine lines, then the close's three: the quotes check, the fetch again (a second tar), the cleanup
+$order = 'window/copy', 'window/preflight', 'window/all-before', 'window/deploy', 'window/all-after', 'window/doors', 'window/verify', 'window/fetch', 'close/quotes', 'close/fetch', 'close/cleanup'
 foreach ($k in $order) { if (-not $byStep.ContainsKey($k)) { Bad "the runbook has no block for '$k'" } }
-if ($win.Count -eq $order.Count) { Ok "the runbook has exactly the $($order.Count) window blocks ($($order -join ', '))" } else { Bad "the runbook has $($win.Count) window blocks, expected $($order.Count)" }
+if ($win.Count -eq $order.Count) { Ok "the runbook has exactly the $($order.Count) staged-line blocks ($($order -join ', '))" } else { Bad "the runbook has $($win.Count) staged-line blocks, expected $($order.Count)" }
 
 # the :8000 health line runs for real (a read-only GET of Michael's dev server); the start.bat line only names his script
 $h = @($blocks | Where-Object { $_.Groups['cmd'].Value -like '*127.0.0.1:8000/health/version*' })
@@ -127,16 +136,35 @@ if ($s.Count -eq 1 -and $s[0].Groups['cmd'].Value -eq '"C:\Users\micge\Documents
   Ok ":8000 start line names Michael's own start.bat by its full path (it exists; not run here: :8000 is Michael's)"
 } else { Bad "the :8000 start block is missing or not the one quoted path" }
 
-Write-Host "== the window, in order (the page's All and the N10022 check are browser steps: nothing to paste)"
-foreach ($k in $order) { if ($byStep.ContainsKey($k)) { Run-Block $byStep[$k] $k } }
-$tar = Get-ChildItem (Join-Path $Home2 'Downloads') -Filter 'rt9-window-back-*.tar' | Select-Object -First 1
-if ($tar) {
-  $members = @(& tar.exe -tf $tar.FullName | Where-Object { $_ -match '^[^/]+/out-[^/]+/$' })
+Write-Host "== the window, in order (the page's All and the N10022 check are browser steps: nothing to paste), then the close"
+foreach ($k in $order) {
+  if ($k -eq 'close/quotes') {
+    # between the window and the close, as on 22 Oct: the close is staged from the kit branch against the fake's own
+    # deploy backup (the real mkstage_close.sh), and 3 costings are saved on the fake prod after the deploy
+    $sc = @(& wsl.exe -u root -- bash (WslPath (Join-Path $PSScriptRoot 'stage_close.sh')) (WslPath $StageRoot) 2>&1 | ForEach-Object { "$_" })
+    $sc | ForEach-Object { Write-Host "   $_" }
+    if (-not (Test-Path (Join-Path $Close 'run_quotes_check.ps1'))) { Bad "the close did not stage"; continue }
+    Patch-Host $Close; $HasClose = $true
+    & wsl.exe -u root -- bash -c "touch '$Sim/state/saved3'"
+    Write-Host "   (3 costings saved on the fake prod after the deploy: its count now reads 75)"
+  }
+  if ($byStep.ContainsKey($k)) { Run-Block $byStep[$k] $k }
+}
+$tars = @(Get-ChildItem (Join-Path $Home2 'Downloads') -Filter 'rt9-window-back-*.tar' | Sort-Object Name)
+if ($tars.Count -ge 1) {
+  $members = @(& tar.exe -tf $tars[0].FullName | Where-Object { $_ -match '^[^/]+/out-[^/]+/$' })
   $rt7 = @($members | Where-Object { $_ -match '20261020' })
   $want = 'icb-release-v1.62.0/out-preflight-', 'icb-release-v1.62.0/out-deploy-', 'icb-release-v1.62.0/out-verify-', 'icb-rt2-all/out-pre-', 'icb-rt2-all/out-post-', 'icb-rt2-doors/out-'
   $miss = @($want | Where-Object { $w = $_; -not ($members | Where-Object { $_.StartsWith($w) }) })
-  if ($miss.Count -eq 0 -and $rt7.Count -eq 0) { Ok "the fetched tar holds this window's out folders ($($members.Count)) and none of RT7's 20 Oct ones" } else { Bad "fetched tar: missing $($miss -join ', '); RT7's: $($rt7 -join ', ')" }
+  if ($miss.Count -eq 0 -and $rt7.Count -eq 0) { Ok "the window's tar holds its out folders ($($members.Count)) and none of RT7's 20 Oct ones" } else { Bad "the window's tar: missing $($miss -join ', '); RT7's: $($rt7 -join ', ')" }
 } else { Bad "no rt9-window-back-*.tar in the sim's Downloads" }
+if ($HasClose) {
+  if ($tars.Count -ge 2) {
+    $m2 = @(& tar.exe -tf $tars[-1].FullName | Where-Object { $_ -match '^[^/]+/out-[^/]+/$' })
+    $q = @($m2 | Where-Object { $_.StartsWith('icb-rt9-quotes/out-') })
+    if ($q.Count -eq 1 -and $m2.Count -eq $members.Count + 1) { Ok "the close's tar holds the quotes check's out folder with the window's ($($m2.Count))" } else { Bad "the close's tar: $($m2 -join ', ')" }
+  } else { Bad "the close's fetch left no second tar" }
+}
 
 # ---- 4. negative controls -------------------------------------------------------------------------------------------
 Write-Host "== the fake prod's /tmp after the cleanup block, and negative controls"

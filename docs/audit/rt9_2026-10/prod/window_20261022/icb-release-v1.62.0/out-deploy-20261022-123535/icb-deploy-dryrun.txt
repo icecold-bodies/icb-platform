@@ -1,0 +1,25 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  5511355f  RT7 (v1.61.1): the audit's truth — pinned acceptances, CI snap
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  a29db35e81ec44d2f2fd5a63aef8399bef0c20a7 already present - no fetch needed
+[32m  ok[0m  a29db35e81ec44d2f2fd5a63aef8399bef0c20a7 = a29db35e
+
+[1m== 2. plan[0m
+  5511355f -> a29db35e   (7 commit(s), 120 file(s))
+    a29db35 RT9 (v1.62.0): release — VERSION, CHANGELOG, the runbook with Michael's paste blocks, the release kit + its WSL and PowerShell 5.1 sims (#227)
+    bb5d44e RT8 close: the cleanup paste copies its script to prod and runs it by path (v1 ran nothing) (#226)
+    5b41e24 RT8 follow-up (RULING_2): plain words for every refusal, the accept refusal the RT8 way, RT5's clock frozen (?v=191) (#225)
+    244cbd7 RT8 kit fix: the prod check judges totals the engine's way (21 Oct: 69/69 lines exact, totals mis-summed) (#224)
+    45cf9c4 docs(release): v1.61.1 OUTCOME + RT7 close — prod = 5511355 (alembic 0053), 0 FLAG / 115 ACCEPTED, PAGE = CLI, nothing priced moved (#223)
+    60d5e14 RT7_RULING_2 Q2: the fidelity check allows exactly body 51's seven dangling FKs (#222)
+    90d6ce9 RT8 (v1.62.0): a re-opened quote is the saved quote — frozen editing, re-pricing as a new revision, the race by mechanism, the read-only prod check kit (#221)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 18 Python file(s) changed
+
+[32m  ok[0m  dry run - nothing changed.

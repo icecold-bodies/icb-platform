@@ -1,0 +1,16 @@
+== the backup: 92 rows (max id 130); now: 96 rows (max id 134)
+== added since the backup: 4
+   id | quote | created (as stored) | version | status | deleted | selling (result_json) | net total
+   131 | N10022/10/2026 | 2026-10-22 12:44:59 | 2 | pending | N | 203630.88 | 388749.85
+   132 | N10022/10/2026 | 2026-10-22 13:00:43 | 2 | pending | N | 203630.88 | 388749.85
+   133 | N10022/10/2026 | 2026-10-22 13:01:08 | 2 | pending | N | 203630.88 | 388749.85
+   134 | L10023/10/2026 | 2026-10-22 13:15:07 | 1 | pending | N | 23320.00 | 23320.00
+== changed since the backup: 0  (id | quote | the changed columns' names; never their values)
+== removed since the backup: 0
+== rows created on 2026-10-22 (as stored, 2 h of leeway for the zone), newest first: 4
+   id | quote | created (as stored) | version | status | deleted | selling (result_json) | net total
+   134 | L10023/10/2026 | 2026-10-22 13:15:07 | 1 | pending | N | 23320.00 | 23320.00   <- added since the backup
+   133 | N10022/10/2026 | 2026-10-22 13:01:08 | 2 | pending | N | 203630.88 | 388749.85   <- added since the backup
+   132 | N10022/10/2026 | 2026-10-22 13:00:43 | 2 | pending | N | 203630.88 | 388749.85   <- added since the backup
+   131 | N10022/10/2026 | 2026-10-22 12:44:59 | 2 | pending | N | 203630.88 | 388749.85   <- added since the backup
+SUMMARY: backup 92 rows; now 96 rows; added 4, changed 0, removed 0; created today 4

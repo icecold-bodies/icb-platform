@@ -357,6 +357,37 @@ release fault (RT9_RULING_2). The close identified and removed the test saves (b
   the window runs outside quoting hours, or the BA asks the sales team to pause first (this one ran 12:22–13:23 and
   sales work landed inside it); the kit's quotes check names the rows itself (queued for the next kit).
 
-### The close
+### The close (RT9_RULING_2, 22 Oct 15:03–15:3x SAST)
 
-(appended after block Q, Michael's deletes, the read-back, block 9b and block 10)
+**Block Q, 15:03:38** (`icb-rt9-quotes/out-20261022-150338`): the deploy's backup read back as the deploy's
+(3 928 655 B, `2f8534f8…`); saved costings 92 at the deploy → **96** now; the backup's 92 rows streamed against the live
+96, row by row: **added 4, changed 0, removed 0; created today 4** — so the original N10022 and every row that existed
+at the deploy were byte-identical, and nothing had been saved that morning on v1.61.1 (RT9_RETURN_1b's inference from
+the costings list was wrong: the list showed five N10022 rows for 22 Oct where the database held three — an open
+observation about the list's display, queued with Michael's revision-number request).
+
+| id | quote (first word) | created (as stored, SAST) | version | net total | classification (Michael) |
+|---|---|---|---|---|---|
+| 131 | N10022/10/2026 | 12:44:59 | 2 | 388 749.85 | his step-7 "Save as Rev." → **deleted** |
+| 132 | N10022/10/2026 | 13:00:43 | 2 | 388 749.85 | his "Save as Rev." → **deleted** |
+| 133 | N10022/10/2026 | 13:01:08 | 2 | 388 749.85 | his "Save as Rev." → **deleted** |
+| 134 | L10023/10/2026 | 13:15:07 | 1 | 23 320.00 | Lezette's repair (R-2003), after step 8 → **kept** |
+
+**The deletes** (Q2): the MES Delete is a soft delete of that one row (`api_delete_calculation`: `deleted_at`,
+`deleted_by`, commit; idempotent; refused with blockers). Michael confirmed 131–133 as his, and soft-deleted each on
+`https://mes.icecoldgrp.online/mes-app/costings` (right-click → Delete costing… → Delete), identifying the rows by their
+View link's id. A first read-back at 15:12 (and two more at 15:17 and 15:18) still read N: the deletes had not reached
+prod yet — the read-back doing its job. **15:20:04 (`out-20261022-152004`): 131, 132, 133 deleted Y; 134 N; changed 0,
+removed 0**; the digest `f647e643…` → `7f550428…` (the three delete stamps and nothing else).
+
+**Block 9b, 15:23:07:** `Downloads\rt9-window-back-20261022-152307.tar` (24 954 880 B, sha256 `6a556c88…`), 13 out
+folders (the window's 8, the quotes check's 5), every `SHA256SUMS.out` checked; the close's records committed here under
+`icb-rt9-quotes/`.
+
+**Block 10, 15:25:17:** prod `/tmp` — removed by exact name and read back absent on a second connection:
+`icb-release-v1.62.0{,.tar}`, `icb-rt2-all{,.tar}`, `icb-rt2-doors{,.tar}` (with RT7's old out folders inside),
+`icb-release-v1.61.1{,.tar}` (RT7's leftover, RULING_2 Q1), `icb-rt9-window.started`, `icb-rt9-quotes{,.tar}`; the
+helper `icb-rt9-vm.sh` removed itself. Left as ruled: `icb-rollback-<ts>.txt` (the deploy tool's own anchor).
+
+**State at the close:** prod = v1.62.0 `a29db35`, alembic 0053, 96 saved costings of which 3 soft-deleted today
+(131–133); the original N10022/10/2026 PENDING as sent; L10023 live; prod `/tmp` clean of RT9 and RT7.

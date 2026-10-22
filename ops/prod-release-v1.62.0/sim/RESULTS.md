@@ -159,3 +159,70 @@ The quotes block's output on the fake (the stand-in's 72-row backup; 3 N10022 re
 
 ######## DONE (read only): the backup compared row by row: now 75 rows; added 3, changed 0, removed 0; created today 3 �?" tell the CA: /tmp/icb-rt9-quotes/out-20261022-142104
 ```
+
+## WSL — the release kit + the close, 20 scenarios (sim/run_all.sh rt9/close; the batch on b4523bf, 22 Oct 14:13–14:32, and the two close scenarios on 6205b83, 14:42–14:45)
+
+The batch's two close scenarios failed on the harness, not the kit: the branch moved mid-batch (the real deploy OUTCOME landed on it) and the close stager's cross-check refused the fake's values until the sim committed its own OUTCOME lines; then on my pass patterns (a mid-log end anchor, a trailing space). Both re-run green.
+
+```
+PASS  happy
+PASS  moved
+PASS  wrongplace
+PASS  wrongdb
+PASS  staleboot
+PASS  unstamped
+PASS  nobackup
+PASS  pgdumpfail
+PASS  traceback
+PASS  routeopen
+PASS  cfstale
+PASS  cfcached
+PASS  resume
+PASS  saved
+PASS  factor
+PASS  autologin
+PASS  noenv
+PASS  notag
+PASS  quotes
+PASS  quoteschanged
+== 20 passed, 0 failed
+```
+
+The close's quotes check on the fake (3 N10022 revisions saved after the deploy); and, in the negative control, the repair row 1107's contact_name changed — named by column, its value never printed:
+
+```
+################ the close's quotes check: 3 rows saved after the deploy
+######## RT9 quotes check (read only) · machine icb-mes-prod · db icb_platform @ 127.0.0.1:5432 · head a29db35 · boot 2026-10-22 14:13:41 SAST · 2026-10-22 14:43:20 SAST
+== 1. the deploy's checked backup (2026-10-22 12:35:35 SAST): size and sha256 read back
+   ok   /var/backups/postgres/icb_platform_pre-v1.62.0_20261022-144240.dump  4102 bytes  sha256 a6e36d8a08f97d68... = the deploy's
+== 2. the saved costings' count + md5 (every whole row): now, beside the deploy's
+   at the deploy  72 0f1e2d3c4b5a69788796a5b4c3d2e1f0
+   now            75 9cc317a694c80eb95b824d05b45c3f7b
+   (created times below are as stored; the database's TimeZone setting is Africa/Johannesburg)
+== 3. the backup streamed (pg_restore --data-only, never restored) against the live rows (a read-only COPY), row by row
+   == the backup: 72 rows (max id 1172); now: 75 rows (max id 1240)
+   == added since the backup: 3
+      id | quote | created (as stored) | version | status | deleted | selling (result_json) | net total
+      1238 | N10022/10/2026 | 2026-10-22 13:02:10 | 4 | pending | N | 389120.00 | 389120.00
+      1239 | N10022/10/2026 | 2026-10-22 13:03:10 | 5 | pending | N | 389120.00 | 389120.00
+      1240 | N10022/10/2026 | 2026-10-22 13:04:10 | 6 | pending | N | 389120.00 | 389120.00
+   == changed since the backup: 0  (id | quote | the changed columns' names; never their values)
+   == removed since the backup: 0
+   == rows created on 2026-10-22 (as stored, 2 h of leeway for the zone), newest first: 3
+      id | quote | created (as stored) | version | status | deleted | selling (result_json) | net total
+      1240 | N10022/10/2026 | 2026-10-22 13:04:10 | 6 | pending | N | 389120.00 | 389120.00   <- added since the backup
+      1239 | N10022/10/2026 | 2026-10-22 13:03:10 | 5 | pending | N | 389120.00 | 389120.00   <- added since the backup
+      1238 | N10022/10/2026 | 2026-10-22 13:02:10 | 4 | pending | N | 389120.00 | 389120.00   <- added since the backup
+   SUMMARY: backup 72 rows; now 75 rows; added 3, changed 0, removed 0; created today 3
+######## DONE (read only): the backup compared row by row: added 3, changed 0, removed 0; created today 3 — tell the CA: /tmp/icb-rt9-quotes/out-20261022-144320
+   -> exit 0
+== G4: contact or customer names in the kit's output (want 0): 0
+== nothing extracted to the fake /tmp by the check (want NONE): NONE
+
+--- quoteschanged:
+   == changed since the backup: 1  (id | quote | the changed columns' names; never their values)
+      1107 | R-2003 | contact_name
+   == removed since the backup: 0
+######## DONE (read only): the backup compared row by row: added 3, changed 1, removed 0; created today 3 — tell the CA: /tmp/icb-rt9-quotes/out-20261022-144429
+== G4: contact or customer names in the kit's output (want 0): 0
+```

@@ -1,0 +1,265 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  5511355f  RT7 (v1.61.1): the audit's truth — pinned acceptances, CI snap
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  a29db35e81ec44d2f2fd5a63aef8399bef0c20a7 already present - no fetch needed
+[32m  ok[0m  a29db35e81ec44d2f2fd5a63aef8399bef0c20a7 = a29db35e
+
+[1m== 2. plan[0m
+  5511355f -> a29db35e   (7 commit(s), 120 file(s))
+    a29db35 RT9 (v1.62.0): release — VERSION, CHANGELOG, the runbook with Michael's paste blocks, the release kit + its WSL and PowerShell 5.1 sims (#227)
+    bb5d44e RT8 close: the cleanup paste copies its script to prod and runs it by path (v1 ran nothing) (#226)
+    5b41e24 RT8 follow-up (RULING_2): plain words for every refusal, the accept refusal the RT8 way, RT5's clock frozen (?v=191) (#225)
+    244cbd7 RT8 kit fix: the prod check judges totals the engine's way (21 Oct: 69/69 lines exact, totals mis-summed) (#224)
+    45cf9c4 docs(release): v1.61.1 OUTCOME + RT7 close — prod = 5511355 (alembic 0053), 0 FLAG / 115 ACCEPTED, PAGE = CLI, nothing priced moved (#223)
+    60d5e14 RT7_RULING_2 Q2: the fidelity check allows exactly body 51's seven dangling FKs (#222)
+    90d6ce9 RT8 (v1.62.0): a re-opened quote is the saved quote — frozen editing, re-pricing as a new revision, the race by mechanism, the read-only prod check kit (#221)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      no  (frontend/ untouched)
+  Service restart  YES - 18 Python file(s) changed
+
+  rollback anchor 5511355f saved to /tmp/icb-rollback-20261022-123540.txt
+
+[1m== 3. database backup - skipped (no migration in this range)[0m
+
+[1m== 4. fast-forward the code[0m
+Updating 5511355..a29db35
+Fast-forward
+ CHANGELOG.md                                       |  30 +
+ backend/VERSION                                    |   2 +-
+ backend/app/routers/calculator.py                  | 464 ++++++++---
+ backend/app/services/free_hand.py                  |  23 +-
+ backend/app/services/frozen_quote.py               | 445 ++++++++++
+ backend/app/services/rule_guard.py                 |   4 +-
+ backend/app/static/js/calculator.js                | 895 +++++++++++++++++++--
+ backend/app/templates/calculator.html              |  32 +-
+ backend/tests/costing_audit/test_rt7_pins.py       |  40 +
+ .../journeys/test_frozen_quote_edit_journey.py     | 506 ++++++++++++
+ .../tests/journeys/test_rt2_quote_state_journey.py |  21 +-
+ .../tests/journeys/test_rt5_rule_notes_journey.py  |  11 +-
+ backend/tests/journeys/test_rt6_rules_journey.py   |  66 +-
+ backend/tests/test_calculator_enter_chain.py       |   5 +-
+ backend/tests/test_capture_for_user.py             |  42 +-
+ backend/tests/test_free_hand_and_repairs.py        |  28 +-
+ backend/tests/test_ops_rt9.py                      | 376 +++++++++
+ backend/tests/test_rt5_rule_notes.py               |  11 +
+ backend/tests/test_rt6_guards_api.py               |  30 +-
+ backend/tests/test_rt8_frozen_quote.py             | 696 ++++++++++++++++
+ backend/tests/test_rt8_prod_kit_allowlist.py       | 128 +++
+ backend/tools/costing_audit/mes_snapshot.py        |  26 +-
+ .../prod/window_20261020/cells_window.txt          |   9 +
+ .../rt7_2026-10/prod/window_20261020/cmp_window.py |  45 ++
+ .../out-deploy-20261020-131234/OUTCOME.txt         |  16 +
+ .../icb-deploy-dryrun.txt                          |  20 +
+ .../out-deploy-20261020-131234/icb-deploy.txt      | 381 +++++++++
+ .../out-deploy-20261020-131234/rollback-anchor.txt |   1 +
+ .../out-deploy-20261020-131234/run.txt             | 495 ++++++++++++
+ .../out-preflight-20261020-130557/run.txt          |  36 +
+ .../out-verify-20261020-130634/run.txt             |  81 ++
+ .../out-verify-20261020-131936/run.txt             |  41 +
+ .../out-post-20261020-131725/SHA256SUMS.out        |   6 +
+ .../out-post-20261020-131725/compare.txt           |  14 +
+ .../reports/prod_chillers.md                       |  15 +
+ .../reports/prod_explosive.md                      |  38 +
+ .../reports/prod_freezers.md                       |  24 +
+ .../reports/prod_icecream.md                       |  51 ++
+ .../out-post-20261020-131725/reports/prod_smoke.md |  27 +
+ .../icb-rt2-all/out-post-20261020-131725/run.txt   |  25 +
+ .../out-pre-20261020-131116/SHA256SUMS.out         |   6 +
+ .../out-pre-20261020-131116/compare.txt            |  14 +
+ .../reports/prod_chillers.md                       |  15 +
+ .../reports/prod_explosive.md                      |  49 ++
+ .../reports/prod_freezers.md                       |  94 +++
+ .../reports/prod_icecream.md                       |  90 +++
+ .../out-pre-20261020-131116/reports/prod_smoke.md  |  41 +
+ .../icb-rt2-all/out-pre-20261020-131116/run.txt    |  26 +
+ .../out-20261020-131910/door_report.txt            |  21 +
+ .../prod/window_20261020/window_pastes.txt         |  75 ++
+ docs/rt8/discovery/drift_lines_dev.txt             |  12 +
+ docs/rt8/discovery/drift_scan.json                 | 290 +++++++
+ docs/rt8/discovery/race_10x.json                   | 482 +++++++++++
+ docs/rt8/discovery/race_10x_cancel.json            | 202 +++++
+ docs/rt8/discovery/replay_dev.txt                  |  32 +
+ .../rt8/discovery/replay_dev_negative_controls.txt |   2 +
+ docs/rt8/discovery/rt8_diffsum.py                  |  26 +
+ docs/rt8/discovery/rt8_libref.py                   |  31 +
+ docs/rt8/discovery/rt8_prod_counts.sql             |  36 +
+ docs/rt8/discovery/rt8_race.py                     | 123 +++
+ docs/rt8/discovery/rt8_replay.py                   | 136 ++++
+ docs/rt8/discovery/rt8_replay_nc.py                | 139 ++++
+ docs/rt8/discovery/rt8_shapes.py                   |  75 ++
+ docs/rt8/discovery/serve_rt8.ps1                   |  26 +
+ docs/runbooks/prod-deploy-v1.61.1.md               |  76 +-
+ docs/runbooks/prod-deploy-v1.62.0.md               | 274 +++++++
+ .../frozen_quote_edit/01-reopened-saved-quote.png  | Bin 0 -> 154584 bytes
+ .../journeys/frozen_quote_edit/02-view-changes.png | Bin 0 -> 144254 bytes
+ .../03-save-new-revision-only.png                  | Bin 0 -> 149113 bytes
+ .../frozen_quote_edit/04-repair-saved-prices.png   | Bin 0 -> 164787 bytes
+ .../05-refusal-in-plain-words.png                  | Bin 0 -> 162756 bytes
+ .../rt2_quote_state/01-opened-on-the-template.png  | Bin 0 -> 121593 bytes
+ .../02-srd-and-front-pu-on-the-quote.png           | Bin 0 -> 131429 bytes
+ .../03-reopened-with-its-own-door.png              | Bin 0 -> 153975 bytes
+ .../04-next-user-gets-the-template-door.png        | Bin 0 -> 121704 bytes
+ .../05-4g-default-body-opens-on-4g.png             | Bin 0 -> 115301 bytes
+ .../06-saved-32d-costing-reopens-on-32d.png        | Bin 0 -> 147445 bytes
+ .../07-32d-default-body-unchanged.png              | Bin 0 -> 115028 bytes
+ .../rt5_rule_notes/03-no-note-on-a-plain-body.png  | Bin 26376 -> 26377 bytes
+ ...ed-chiller-costing-with-pu-shows-the-picker.png | Bin 27204 -> 29989 bytes
+ .../01-reopened-freezer-eps-sides-warning.png      | Bin 36522 -> 39097 bytes
+ .../journeys/rt6_rules/02-after-remove.png         | Bin 31098 -> 31127 bytes
+ .../journeys/rt6_rules/05-unused-door-named.png    | Bin 37685 -> 39220 bytes
+ .../validated_references/00-compact-parameters.png | Bin 134472 -> 127443 bytes
+ .../01-mark-action-beside-approve.png              | Bin 127793 -> 127384 bytes
+ .../02-label-prompt-prefilled.png                  | Bin 130898 -> 131124 bytes
+ .../03-references-dropdown-appears.png             | Bin 151793 -> 151859 bytes
+ .../04-recalled-green-tick.png                     | Bin 145054 -> 145347 bytes
+ .../validated_references/05-red-drift-warning.png  | Bin 157735 -> 157523 bytes
+ .../validated_references/06-manage-list.png        | Bin 147504 -> 147587 bytes
+ .../07-retired-no-dropdown.png                     | Bin 151735 -> 151273 bytes
+ .../08-bom-snapshots-untouched.png                 | Bin 73509 -> 72313 bytes
+ .../09-save-first-names-the-dims.png               | Bin 141198 -> 136524 bytes
+ ops/prod-release-v1.62.0/mkstage.sh                | 144 ++++
+ ops/prod-release-v1.62.0/mkstage_window.sh         |  90 +++
+ ops/prod-release-v1.62.0/probe_paths.txt           |  62 ++
+ ops/prod-release-v1.62.0/release.sh                | 481 +++++++++++
+ ops/prod-release-v1.62.0/sim/RESULTS.md            |  97 +++
+ ops/prod-release-v1.62.0/sim/fakeprod.sh           | 133 +++
+ ops/prod-release-v1.62.0/sim/ps51/fakeprod_down.sh |  10 +
+ ops/prod-release-v1.62.0/sim/ps51/fakeprod_up.sh   |  33 +
+ ops/prod-release-v1.62.0/sim/ps51/forward.sh       |  66 ++
+ ops/prod-release-v1.62.0/sim/ps51/run_blocks.ps1   | 182 +++++
+ ops/prod-release-v1.62.0/sim/ps51/stub.cs          |  38 +
+ ops/prod-release-v1.62.0/sim/run_all.sh            |  43 +
+ ops/prod-release-v1.62.0/sim/run_sim.sh            |  70 ++
+ ops/prod-release-v1.62.0/sim/stubs.sh              | 153 ++++
+ ops/prod-release-v1.62.0/window/rt9_vm.sh          |  82 ++
+ .../window/run_window_cleanup.ps1                  |  21 +
+ .../window/run_window_copy.ps1                     |  30 +
+ .../window/run_window_fetch.ps1                    |  23 +
+ .../window/run_window_step.ps1                     |  46 ++
+ ops/prod-release-v1.62.0/window/window_common.ps1  |  55 ++
+ ops/prod-rt8/README.md                             |  24 +
+ ops/prod-rt8/cleanup_check.ps1                     |  57 ++
+ ops/prod-rt8/mkstage_check.sh                      |  57 ++
+ ops/prod-rt8/rt8_frozen_check.py                   | 292 +++++++
+ ops/prod-rt8/rt8_frozen_check.sh                   |  82 ++
+ ops/prod-rt8/run_check.ps1                         |  66 ++
+ ops/prod-rt8/sim/run_check_sim.sh                  |  93 +++
+ 120 files changed, 9910 insertions(+), 219 deletions(-)
+ create mode 100644 backend/app/services/frozen_quote.py
+ create mode 100644 backend/tests/journeys/test_frozen_quote_edit_journey.py
+ create mode 100644 backend/tests/test_ops_rt9.py
+ create mode 100644 backend/tests/test_rt8_frozen_quote.py
+ create mode 100644 backend/tests/test_rt8_prod_kit_allowlist.py
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/cells_window.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/cmp_window.py
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-release-v1.61.1/out-deploy-20261020-131234/OUTCOME.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-release-v1.61.1/out-deploy-20261020-131234/icb-deploy-dryrun.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-release-v1.61.1/out-deploy-20261020-131234/icb-deploy.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-release-v1.61.1/out-deploy-20261020-131234/rollback-anchor.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-release-v1.61.1/out-deploy-20261020-131234/run.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-release-v1.61.1/out-preflight-20261020-130557/run.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-release-v1.61.1/out-verify-20261020-130634/run.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-release-v1.61.1/out-verify-20261020-131936/run.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-post-20261020-131725/SHA256SUMS.out
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-post-20261020-131725/compare.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-post-20261020-131725/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-post-20261020-131725/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-post-20261020-131725/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-post-20261020-131725/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-post-20261020-131725/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-post-20261020-131725/run.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-pre-20261020-131116/SHA256SUMS.out
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-pre-20261020-131116/compare.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-pre-20261020-131116/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-pre-20261020-131116/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-pre-20261020-131116/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-pre-20261020-131116/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-pre-20261020-131116/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-all/out-pre-20261020-131116/run.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/icb-rt2-doors/out-20261020-131910/door_report.txt
+ create mode 100644 docs/audit/rt7_2026-10/prod/window_20261020/window_pastes.txt
+ create mode 100644 docs/rt8/discovery/drift_lines_dev.txt
+ create mode 100644 docs/rt8/discovery/drift_scan.json
+ create mode 100644 docs/rt8/discovery/race_10x.json
+ create mode 100644 docs/rt8/discovery/race_10x_cancel.json
+ create mode 100644 docs/rt8/discovery/replay_dev.txt
+ create mode 100644 docs/rt8/discovery/replay_dev_negative_controls.txt
+ create mode 100644 docs/rt8/discovery/rt8_diffsum.py
+ create mode 100644 docs/rt8/discovery/rt8_libref.py
+ create mode 100644 docs/rt8/discovery/rt8_prod_counts.sql
+ create mode 100644 docs/rt8/discovery/rt8_race.py
+ create mode 100644 docs/rt8/discovery/rt8_replay.py
+ create mode 100644 docs/rt8/discovery/rt8_replay_nc.py
+ create mode 100644 docs/rt8/discovery/rt8_shapes.py
+ create mode 100644 docs/rt8/discovery/serve_rt8.ps1
+ create mode 100644 docs/runbooks/prod-deploy-v1.62.0.md
+ create mode 100644 docs/screenshots/journeys/frozen_quote_edit/01-reopened-saved-quote.png
+ create mode 100644 docs/screenshots/journeys/frozen_quote_edit/02-view-changes.png
+ create mode 100644 docs/screenshots/journeys/frozen_quote_edit/03-save-new-revision-only.png
+ create mode 100644 docs/screenshots/journeys/frozen_quote_edit/04-repair-saved-prices.png
+ create mode 100644 docs/screenshots/journeys/frozen_quote_edit/05-refusal-in-plain-words.png
+ create mode 100644 docs/screenshots/journeys/rt2_quote_state/01-opened-on-the-template.png
+ create mode 100644 docs/screenshots/journeys/rt2_quote_state/02-srd-and-front-pu-on-the-quote.png
+ create mode 100644 docs/screenshots/journeys/rt2_quote_state/03-reopened-with-its-own-door.png
+ create mode 100644 docs/screenshots/journeys/rt2_quote_state/04-next-user-gets-the-template-door.png
+ create mode 100644 docs/screenshots/journeys/rt2_quote_state/05-4g-default-body-opens-on-4g.png
+ create mode 100644 docs/screenshots/journeys/rt2_quote_state/06-saved-32d-costing-reopens-on-32d.png
+ create mode 100644 docs/screenshots/journeys/rt2_quote_state/07-32d-default-body-unchanged.png
+ create mode 100644 ops/prod-release-v1.62.0/mkstage.sh
+ create mode 100644 ops/prod-release-v1.62.0/mkstage_window.sh
+ create mode 100644 ops/prod-release-v1.62.0/probe_paths.txt
+ create mode 100644 ops/prod-release-v1.62.0/release.sh
+ create mode 100644 ops/prod-release-v1.62.0/sim/RESULTS.md
+ create mode 100644 ops/prod-release-v1.62.0/sim/fakeprod.sh
+ create mode 100644 ops/prod-release-v1.62.0/sim/ps51/fakeprod_down.sh
+ create mode 100644 ops/prod-release-v1.62.0/sim/ps51/fakeprod_up.sh
+ create mode 100644 ops/prod-release-v1.62.0/sim/ps51/forward.sh
+ create mode 100644 ops/prod-release-v1.62.0/sim/ps51/run_blocks.ps1
+ create mode 100644 ops/prod-release-v1.62.0/sim/ps51/stub.cs
+ create mode 100644 ops/prod-release-v1.62.0/sim/run_all.sh
+ create mode 100644 ops/prod-release-v1.62.0/sim/run_sim.sh
+ create mode 100644 ops/prod-release-v1.62.0/sim/stubs.sh
+ create mode 100644 ops/prod-release-v1.62.0/window/rt9_vm.sh
+ create mode 100644 ops/prod-release-v1.62.0/window/run_window_cleanup.ps1
+ create mode 100644 ops/prod-release-v1.62.0/window/run_window_copy.ps1
+ create mode 100644 ops/prod-release-v1.62.0/window/run_window_fetch.ps1
+ create mode 100644 ops/prod-release-v1.62.0/window/run_window_step.ps1
+ create mode 100644 ops/prod-release-v1.62.0/window/window_common.ps1
+ create mode 100644 ops/prod-rt8/README.md
+ create mode 100644 ops/prod-rt8/cleanup_check.ps1
+ create mode 100644 ops/prod-rt8/mkstage_check.sh
+ create mode 100644 ops/prod-rt8/rt8_frozen_check.py
+ create mode 100644 ops/prod-rt8/rt8_frozen_check.sh
+ create mode 100644 ops/prod-rt8/run_check.ps1
+ create mode 100644 ops/prod-rt8/sim/run_check_sim.sh
+[32m  ok[0m  at a29db35e (verified by SHA, not by git describe)
+
+[1m== 5. migrations - skipped[0m
+
+[1m== 6. SPA build - skipped (frontend/ untouched in this range)[0m
+
+[1m== 7. restart icb-backend[0m
+  active since (before): Thu 2026-10-22 06:02:17 SAST
+  active since (after):  Thu 2026-10-22 12:35:41 SAST
+[32m  ok[0m  restarted
+
+[1m== 8. verify[0m
+  workers started      4 (expected 4)
+  BOOTSTRAP FAILED     0 (expected 0)
+  https://127.0.0.1/health -> 200
+[32m  ok[0m  healthy
+
+[32m[1mDEPLOYED[0m  5511355f -> a29db35e  (a29db35e81ec44d2f2fd5a63aef8399bef0c20a7)
+
+Rollback (code-only - additive migrations are left in place deliberately):
+    /opt/icb-platform/deploy/prod/icb-rollback.sh 5511355f
+
+  or, without the script:
+    sudo -u icb git -C /opt/icb-platform reset --hard 5511355f
+    sudo systemctl restart icb-backend
+

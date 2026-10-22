@@ -87,4 +87,4 @@ case $rc in
 esac
 SUMMARY=$(sed -n 's/^SUMMARY: //p' "$OUT/rows.txt" | tail -n1)
 [ -n "$SUMMARY" ] || stop FILTER "no SUMMARY line in the comparison's output"
-echo; echo "######## DONE (read only): the backup compared row by row: ${SUMMARY#*; } — tell the CA: $OUT"; exit 0
+echo; echo "######## DONE (read only): the backup compared row by row: ${SUMMARY#*; *; } — tell the CA: $OUT"; exit 0   # drops "backup N rows; now M rows; "

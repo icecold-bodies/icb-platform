@@ -312,4 +312,51 @@ IF YOU SEE "STOP": some names may already be gone; paste it back to me
 
 ## OUTCOME
 
-(appended after the window)
+**22 Oct 2026, 12:22–13:23 SAST: prod = v1.62.0 `a29db35`, alembic 0053. Every release check passed on the three
+doors in order; the costing audit identical before and after, 2 936 / 2 936, PAGE = CLI. The window STOPped at
+step 8 on `QUOTES_UNCHANGED_SINCE_DEPLOY` (92 → 95): costings were saved during it — the check doing its job, not a
+release fault (RT9_RULING_2). The close identified and removed the test saves (below).** Evidence:
+`docs/audit/rt9_2026-10/prod/window_20261022/` (the kits' out folders, without the HTML reports); the window tar is
+`Downloads\rt9-window-back-20261022-132322.tar`, sha256 `bf722a68…`, 24 924 160 B.
+
+**Before the window:**
+- **Merge:** #227 squash `a29db35` (10:03 UTC), parent `bb5d44e`, tree = the tested `a8a7778`, 7 / 7 green on it
+  (the ubuntu build & test on its re-run: one journey flake, `test_preview_formats_journey::test_banner_length_live`,
+  queued).
+- **Tag:** `v1.62.0` = tag object `61edbaa`, local = origin, peeling to `a29db35`.
+- **:8000:** Michael's clone fast-forwarded `bb5d44e → a29db35` at 12:09 once the old :8000 had stopped (it ran in an
+  Explorer-launched `MES start.bat` window; the first window closed was another). 235 local entries byte-identical
+  before and after (`d64dc329`). His restart at 12:11: `{"version":"v1.62.0","environment":"unset"}`, the new route
+  401 with no session, served `calculator.js?v=191` = the checkout = the release (C2).
+- **Kits:** staged from `a29db35` (release `29162f6b`, all `b147dc93`, doors `3847d639`, vm `1b39e8e0`).
+
+| # | step (time) | result |
+|---|---|---|
+| 1 | copy (12:22:32) | 3 kits verified and stamped; prod boot 2026-10-11 08:02:53 (no reboot). **A first try at 12:12 stopped before anything ran:** the helper copy's ssh login was refused ("Connection closed", exit 255) with the VPN up and port 22 open; the same line worked at 12:22. Cause unknown (one-off); the kit's `scp -q` hid ssh's reason (queued) |
+| 2 | preflight (12:28:49) | **PASSED**: 0053, `5511355`, no tracked modifications, autologin empty, `ICB_ENVIRONMENT=prod`, the factor exactly `1.3170731707317074`, `calculator.js?v=189` = disk on the three doors, v1.61.1 × 3, 47 probes × 3 (the new route 404, allowed), the tag on origin, 92 saved costings (`92163e05…`) |
+| 3 | All before (12:31:53) | page **#50** PASS 2035 / **FLAG 0 / ACCEPTED 115** / UNVERIFIABLE 76; the CLI per pack = the table, smoke 0 / 33; **PAGE = CLI** 2 702 / 2 702. (12:30: a first paste stopped by design — the page's All had not been clicked) |
+| 4 | deploy (12:35:35–12:36:27) | **DEPLOYED `5511355 → a29db35`**. Backup `icb_platform_pre-v1.62.0_20261022-123535.dump`, 3 928 655 B, sha256 `2f8534f8…`, checked and read back. No migration, no SPA rebuild; restart 12:35:41 (pid 95897 → 99877), 4 workers, 0 bootstrap failed, **0 tracebacks since**; 18 pre-existing listed (19 Oct × 12, 21 Oct 07:38 × 6, all `ClientDisconnect`), not counted. Disk: `?v=191` = `fb14d2aa…`; then **127.0.0.1 → LAN → Cloudflare**: `{"version":"v1.62.0","environment":"prod"}`, no TEST banner, `calculator.js?v=191` = the release's bytes, **47 / 47** (the new route 401). Factor, audit list (7, pair = snapshot), SPA unchanged; 92 saved costings unchanged at that moment. The fetch printed `! [rejected] v1.47.1` (prod's own tag, left alone) |
+| 5 | All after (12:40:13) | page **#51** (started 12:39:47, after the restart) PASS 2035 / **FLAG 0 / ACCEPTED 115** / UNVERIFIABLE 76; **PAGE = CLI** 2 702 / 2 702. **Before vs after, cell for cell: 2 936 / 2 936 identical** (status, base status, Excel and MES totals; four packs + smoke). (12:38: a first paste compared the pre-deploy page run #50 — the page's All was re-run) |
+| 6 | doors (12:41:38) | **SUMMARY: 14 OK; no exceptions** |
+| 7 | N10022 (browser) | **Not as ruled.** Michael did View changes → Update to today's prices → Approve & Save Costing → **Save as Rev.** instead of Cancel edit. A "Save as Rev." inserts a new row and only reads the original (its quote number): **the original N10022 (19 Oct, R391,853.38) stayed untouched and PENDING.** His list afterwards showed five N10022 rows dated 22 Oct (R389k, today's prices) and Lezette's repair R-2003 saved that morning |
+| 8 | verify (13:11:16) | everything PASS — v1.62.0 / prod and 47 / 47 on the three doors, **0 tracebacks since the restart** (the re-open, View changes, the re-price and the saves included) — **except `QUOTES_UNCHANGED_SINCE_DEPLOY = 95 9cc317a6…` (want 92 92163e05…): STOP.** Only 3 rows were added after 12:35:35, so at least two of the day's N10022 rows were saved that morning on v1.61.1 |
+| 9 | fetch (13:23:22) | the tar above (8 out folders) |
+
+**Recorded (RT9_RULING_2):**
+- **The STOP and its resolution:** the close's read-only quotes check (block Q) named the rows against the deploy's
+  checked backup; Michael's test saves were soft-deleted through the MES Delete, sales work kept; the same check as the
+  read-back. The rows by id and time: see **The close** below.
+- **Prod's `icb-backend` restarted at 06:02:17 that morning** without a reboot (boot 2026-10-11 08:02:53): most likely
+  Ubuntu's unattended upgrades; code unchanged, 0 tracebacks under it. For the Marnus list (automatic restarts).
+- **Queued ops findings (not fixed here):** `scp -q` hiding ssh's reason on the first connection; the sim re-tagging
+  v1.62.0 after the merge (fixed in the sim with the close: a post-release mode); the traceback list's "(exception
+  line not found)" for the first half of a chained traceback.
+- **Queued (Michael, 22 Oct):** the costings list and the costing view should show the revision number ("Rev. n"),
+  so the newest version is visible — beside RT8's queued "re-priced line on the costing page".
+- **Lessons (RULING_2):** the acceptance on prod is view-only, and the runbook says so on its own line (done above);
+  the window runs outside quoting hours, or the BA asks the sales team to pause first (this one ran 12:22–13:23 and
+  sales work landed inside it); the kit's quotes check names the rows itself (queued for the next kit).
+
+### The close
+
+(appended after block Q, Michael's deletes, the read-back, block 9b and block 10)

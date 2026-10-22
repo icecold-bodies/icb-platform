@@ -69,6 +69,18 @@ fp_stage_close() { # AFTER the fake deploy (the close pins the deploy's backup b
   bk=$(ls -t "$SIM"/varbackups/postgres/icb_platform_pre-v1.62.0_*.dump 2>/dev/null | head -n1)
   [ -n "$bk" ] || { echo "SIM: no deploy backup on the fake prod yet"; return 1; }
   bytes=$(stat -c %s "$bk"); sha=$(sha256sum "$bk" | cut -d' ' -f1)
+  # the stager cross-checks the deploy's COMMITTED OUTCOME.txt (the real 22 Oct one is on the close branch): the sim's
+  # clone carries one with the FAKE deploy's values instead — committed on the sim's own origin only — so the guard
+  # runs for real and agrees with the fake
+  local evid=docs/audit/rt9_2026-10/prod/window_20261022/icb-release-v1.62.0/out-deploy-20261022-123535/OUTCOME.txt
+  if [ -f "$SIM/work/$evid" ]; then
+    sed -i -e "s#^\(backup *\)[^ ]* *[0-9]* bytes *sha256 [0-9a-f]*#\1/var/backups/postgres/$(basename "$bk")  $bytes bytes  sha256 $sha#" \
+           -e "s#^\(quotes *\)[0-9]* [0-9a-f]\{32\} at the deploy#\172 0f1e2d3c4b5a69788796a5b4c3d2e1f0 at the deploy#" "$SIM/work/$evid" || return 1
+    git -C "$SIM/work" -c user.email=sim@x -c user.name=sim commit -q -am "sim: the fake deploy's OUTCOME (backup, quotes)" \
+      && git -C "$SIM/work" push -q origin "HEAD:refs/heads/sim-kit" || { echo "SIM: could not commit the fake OUTCOME"; return 1; }
+    KITHEAD=$(git -C "$SIM/work" rev-parse HEAD)
+    echo "   the sim's clone carries the fake deploy's OUTCOME (${KITHEAD:0:7}); the stager's cross-check runs against it"
+  fi
   rm -rf "$SIM/stageout/close"
   ( cd "$SIM/work" && bash ops/prod-release-v1.62.0/mkstage_close.sh "$SIM/stageout/close" "$KITHEAD" 72 0f1e2d3c4b5a69788796a5b4c3d2e1f0 \
       "/var/backups/postgres/$(basename "$bk")" "$bytes" "$sha" ) > "$SIM/stage_close.log" 2>&1 \

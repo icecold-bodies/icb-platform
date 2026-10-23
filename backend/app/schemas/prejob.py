@@ -143,6 +143,7 @@ class PrejobCardOut(BaseModel):
     updated_at: Optional[datetime] = None
     # resolved display fields (router fills)
     quote_number: Optional[str] = None
+    quote_label: Optional[str] = None     # RT10 — N10022/10/2026 · REV 1: the revision the card is for
     customer_name: Optional[str] = None
     template_name: Optional[str] = None
     sales_rep_username: Optional[str] = None
@@ -169,8 +170,6 @@ class PrejobCardSummary(BaseModel):
     # WO — the LIVE linked chassis_records.vin (VIN of record), distinct from the attested vin_number;
     # lets the Planning-ack panel back-fill + lock the VIN box when one has been captured on the chassis.
     chassis_vin: Optional[str] = None
-    # RT10 — N10022/10/2026 · REV 1: the revision the card is for (staff screens show REV 0 too)
-    quote_label: Optional[str] = None
 
 
 class OutstandingSignoffOut(BaseModel):

@@ -360,3 +360,12 @@ def test_the_letterhead_reference_carries_rev_from_rev_1(client, admin, ids, cha
     for rid in (chain["first"], chain["r1"]):
         assert client.get(f"/results/{rid}/report", headers=admin).status_code == 200
     assert got == [chain["qn"], f"{chain['qn']} · REV 1"]
+
+
+def test_the_prejob_card_payloads_carry_the_revision_label():
+    # 23 Oct: the label was first added to the wrong schema class, and every Pre-Job Card create 500'd in CI
+    from app.schemas.prejob import OutstandingSignoffOut, PrejobCardOut
+    assert "quote_label" in PrejobCardOut.model_fields and "quote_label" in OutstandingSignoffOut.model_fields
+    out = PrejobCardOut.model_construct()
+    out.quote_label = "A1/10/2026 · REV 1"                # what routers/prejob_cards._out sets
+    assert out.quote_label.endswith("REV 1")

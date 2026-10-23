@@ -1,0 +1,6 @@
+1 | EXPLOSIVE | explosive_quote | true
+3 | MEAT | meathanger_quote | true
+4 | FREEZER | freezer_quote | true
+5 | CHILLER | - | -
+6 | ICE CREAM | - | -
+7 | OTHER | - | -

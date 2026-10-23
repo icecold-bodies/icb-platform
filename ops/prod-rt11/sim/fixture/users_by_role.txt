@@ -1,0 +1,5 @@
+admin | 2
+full | 1
+planner | 2
+sales | 3
+user | 1

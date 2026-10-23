@@ -1,0 +1,4 @@
+1 | explosive_quote | html | t
+2 | rhinorange_quote | html | t
+3 | meathanger_quote | html | t
+4 | freezer_quote | html | t

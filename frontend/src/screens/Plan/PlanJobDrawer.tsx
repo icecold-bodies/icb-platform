@@ -38,7 +38,7 @@ export interface PlanStageClock {
 export interface PlanJobBundle {
   job: { id: number; job_number: string; customer?: string | null; description?: string | null
          status?: string | null; calculation_id?: number | null }
-  bom: { quote_number?: string | null; version: number; show_cost: boolean
+  bom: { quote_number?: string | null; version: number; label?: string | null; show_cost: boolean
          categories: PlanBomCategory[]; grand_total: number | null } | null
   chassis: Record<string, unknown> | null
   prejob: { id: number; status: string; sent_for_check_at?: string | null; pdf_url: string } | null
@@ -194,7 +194,7 @@ export function PlanJobTabs({ kicker, jobNumber, subtitle, slotLabel, overview, 
           ) : (
             <div data-testid="plan-bom">
               <div className="frow"><span className="k">Costing</span>
-                <span className="v">{bom.quote_number || '—'} · v{bom.version}</span></div>
+                <span className="v" data-testid="plan-bom-label">{bom.label || `${bom.quote_number || '—'} · REV ${Math.max((bom.version || 1) - 1, 0)}`}</span></div>
               <div className="frow"><span className="k">Lines</span>
                 <span className="v">{bom.categories.reduce((a, c) => a + c.count, 0)} items · {bom.categories.length} categories</span></div>
               {bom.categories.map((c) => {

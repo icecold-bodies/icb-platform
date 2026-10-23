@@ -143,6 +143,7 @@ class PrejobCardOut(BaseModel):
     updated_at: Optional[datetime] = None
     # resolved display fields (router fills)
     quote_number: Optional[str] = None
+    quote_label: Optional[str] = None     # RT10 — N10022/10/2026 · REV 1: the revision the card is for
     customer_name: Optional[str] = None
     template_name: Optional[str] = None
     sales_rep_username: Optional[str] = None
@@ -177,6 +178,7 @@ class OutstandingSignoffOut(BaseModel):
     id: int
     production_job_id: Optional[int] = None   # WO v4.36b §3.4 — flag-join key (card carries no job FK)
     quote_number: Optional[str] = None
+    quote_label: Optional[str] = None         # RT10 — N10022/10/2026 · REV 1
     customer_name: Optional[str] = None
     sent_for_check_at: Optional[datetime] = None
     sales_rep_username: Optional[str] = None

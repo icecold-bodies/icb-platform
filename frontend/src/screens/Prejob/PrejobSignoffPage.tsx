@@ -25,7 +25,7 @@ interface PrejobCard {
   fridge_ordering_mode: string | null; fridge_model: string | null; customer_notes: string | null
   sales_rep_username: string | null; sales_rep_signoff_at: string | null; sales_rep_attestation: string | null
   planner_username: string | null; planner_signoff_at: string | null; planner_attestation: string | null
-  quote_number: string | null; customer_name: string | null; template_name: string | null
+  quote_number: string | null; quote_label?: string | null; customer_name: string | null; template_name: string | null
   reject_reason: string | null
 }
 
@@ -73,7 +73,7 @@ export function PrejobSignoffPage() {
   // confirmed text is the audit record, not just a re-derivable assumption.
   const boilerplate = card && meta
     ? `I, ${profile.name} (${meta.label}), confirm that I have reviewed the Pre-Job Card for quote `
-      + `${card.quote_number ?? '—'} and verify the specifications are true and correct. This `
+      + `${card.quote_label ?? card.quote_number ?? '—'} and verify the specifications are true and correct. This `
       + `electronic confirmation is recorded with timestamp and user identity.`
     : ''
 
@@ -132,7 +132,7 @@ export function PrejobSignoffPage() {
                 Pre-Job Card{meta ? ` — ${meta.label} check` : ''}
               </h1>
               <p className="text-xs text-muted">
-                <span className="font-mono font-semibold">{card.quote_number ?? '—'}</span>
+                <span className="font-mono font-semibold">{card.quote_label ?? card.quote_number ?? '—'}</span>
                 {' · '}{card.customer_name ?? '—'} · {card.template_name ?? '—'}
                 {meta ? ` · ${meta.blurb}` : ' · view-only copy (for visibility)'}
               </p>

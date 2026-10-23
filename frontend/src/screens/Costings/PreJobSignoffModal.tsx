@@ -3,6 +3,7 @@ import { Check, Shield } from 'lucide-react'
 import { Modal } from '../../components/ui/overlays'
 import { hhmm, dmy } from '../../lib/format'
 import type { Costing } from '../../data/costingsData'
+import { staffLabel } from '../../lib/revisions'
 
 /**
  * Two-step formal attestation modal (Work Order v4 §5.3).
@@ -43,10 +44,12 @@ export function PreJobSignoffModal({
 
   if (!open || !costing) return null
 
+  // RT10 — the attestation names the exact revision signed off
+  const label = staffLabel(costing.quote_number, costing.version, costing.rev)
   const attestationText =
     role === 'sales'
-      ? `I, ${userName} (${userRoleLabel}), confirm that I have reviewed the client requirements for quote ${costing.quote_number} and verify them as true and correct. This electronic confirmation is recorded with timestamp and user identity.`
-      : `I, ${userName} (${userRoleLabel}), confirm that the build for quote ${costing.quote_number} is feasible, the capacity is available, and the configuration has been reviewed for production. This electronic confirmation is recorded with timestamp and user identity.`
+      ? `I, ${userName} (${userRoleLabel}), confirm that I have reviewed the client requirements for quote ${label} and verify them as true and correct. This electronic confirmation is recorded with timestamp and user identity.`
+      : `I, ${userName} (${userRoleLabel}), confirm that the build for quote ${label} is feasible, the capacity is available, and the configuration has been reviewed for production. This electronic confirmation is recorded with timestamp and user identity.`
 
   return (
     <Modal open={open} onClose={onClose} className="max-w-xl">
@@ -61,7 +64,7 @@ export function PreJobSignoffModal({
       </div>
 
       <div className="mb-3 rounded-md border border-line bg-surface-alt p-3 text-sm">
-        <div className="font-mono font-semibold">{costing.quote_number}</div>
+        <div className="font-mono font-semibold">{label}</div>
         <div className="text-body">{costing.customer_name}</div>
         <div className="text-xs text-muted">{costing.body_type}</div>
         <div className="my-2 border-t border-line" />

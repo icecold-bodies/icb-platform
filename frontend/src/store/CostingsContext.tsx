@@ -20,6 +20,7 @@ import {
 } from '../data/costingsData'
 import { apiGet, apiPost, ApiError, handleApiError } from '../lib/api'
 import { useToast } from '../components/ui/toast'
+import { rowKey, staffLabel } from '../lib/revisions'
 import { useAppData } from './AppDataContext'
 
 // WO v4.19 (Phase 2C-3): CostingsContext now rides the v4.17/v4.18 primitives.
@@ -38,23 +39,26 @@ interface CostingsValue {
   costings: Costing[]
   statusCounts: Record<StatusName | 'Total', number>
   refresh: () => Promise<void>
-  // Per-quote accept progress (WO v4.19 — drives the Accept/Retry button spinner).
+  // Per-ROW accept progress (WO v4.19 — drives the Accept/Retry button spinner), keyed by rowKey (the record id).
   acceptStage: Record<string, AcceptStage>
   // Mutations — POST to FastAPI in Live mode; update local state in Mock mode.
-  firePreJobCard: (quote: string) => Promise<void>
-  confirmPreJobCard: (quote: string) => Promise<void>
-  scheduleRepairPhases: (quote: string, phases: RepairPhaseInsertion[]) => Promise<void>
+  // RT10 — every one takes the costing ROW and acts on ITS record id (calculation_id / production_job_id). They took
+  // the quote number until RT10; every revision of a quote shares it, and the quote → id map resolved it to the
+  // OLDEST row: Accept on REV 2 accepted REV 0 (RT10_RETURN_1 §4.2).
+  firePreJobCard: (c: Costing) => Promise<void>
+  confirmPreJobCard: (c: Costing) => Promise<void>
+  scheduleRepairPhases: (c: Costing, phases: RepairPhaseInsertion[]) => Promise<void>
   // Work Order v4 mutators.
-  acceptCosting: (quote: string) => Promise<void>
+  acceptCosting: (c: Costing) => Promise<void>
   // Legacy-dashboard parity (Michael, 3 Jul): decline a Pending costing with a required reason.
-  declineCosting: (quote: string, reason: string) => Promise<void>
-  signoffPreJob: (quote: string, role: 'sales' | 'production', attestation: string, by: string) => Promise<void>
-  ackPlanning: (quote: string, by: string, payload?: ChassisEtaPayload | null, notes?: string | null) => Promise<void>
+  declineCosting: (c: Costing, reason: string) => Promise<void>
+  signoffPreJob: (c: Costing, role: 'sales' | 'production', attestation: string, by: string) => Promise<void>
+  ackPlanning: (c: Costing, by: string, payload?: ChassisEtaPayload | null, notes?: string | null) => Promise<void>
   // Work Order v4.2 — chassis ETA capture.
-  captureChassisEta: (quote: string, payload: ChassisEtaPayload, by: string) => Promise<void>
+  captureChassisEta: (c: Costing, payload: ChassisEtaPayload, by: string) => Promise<void>
   loadChassisCatalogue: () => Promise<ChassisCatalogue | null>
   // Work Order v4.3 — chassis arrival confirmation (tick box on job card).
-  markChassisReceived: (quote: string, receivedAt: string | null, by: string) => Promise<void>
+  markChassisReceived: (c: Costing, receivedAt: string | null, by: string) => Promise<void>
 }
 
 export interface ChassisEtaPayload {
@@ -142,12 +146,10 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>('loading')
   const [costings, setCostings] = useState<Costing[]>(costingsMock.costings)
   const [acceptStage, setAcceptStageState] = useState<Record<string, AcceptStage>>({})
-  const liveIdByQuote = useRef<Map<string, number>>(new Map())   // quote -> calculation id
-  const pjIdByQuote = useRef<Map<string, number>>(new Map())     // quote -> production_job id
   const catalogueCacheRef = useRef<ChassisCatalogue | null>(null)
 
-  const setStage = useCallback((quote: string, stage: AcceptStage) => {
-    setAcceptStageState((s) => ({ ...s, [quote]: stage }))
+  const setStage = useCallback((key: string, stage: AcceptStage) => {
+    setAcceptStageState((s) => ({ ...s, [key]: stage }))
   }, [])
 
   // refetch() = reads only (calcs spine ⋈ production-jobs). No autologin (§3.5).
@@ -174,10 +176,6 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
         ...mergeProductionJob(liveToCosting(c), pjByCalc.get(c.id)),
         prejob_card: cardByCalc.get(c.id) ?? null,
       }))
-      liveIdByQuote.current = new Map(calcs.map((c) => [c.quote_number ?? `#${c.id}`, c.id]))
-      pjIdByQuote.current = new Map(
-        rows.filter((r) => r.production_job_id != null).map((r) => [r.quote_number, r.production_job_id as number]),
-      )
       setCostings(rows)
       setMode('live')
     } catch {
@@ -212,8 +210,8 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   // POST to a production-job lifecycle action, then refetch. Re-throws nothing —
   // errors surface via handleApiError (422 amber w/ detail, 403 red, etc.).
   const pjPost = useCallback(
-    async (quote: string, path: string, body?: unknown) => {
-      const id = pjIdByQuote.current.get(quote)
+    async (c: Costing, path: string, body?: unknown) => {
+      const id = c.production_job_id
       if (id == null) {
         toast.push({ kind: 'warn', message: 'No production job exists for this costing yet.' })
         return
@@ -238,8 +236,8 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   // POST to a legacy calculation action (chassis-eta / schedule-repair /
   // pre-job-confirm — no production-jobs equivalent; now CSRF-safe via lib/api).
   const legacyPost = useCallback(
-    async (quote: string, path: string, body?: unknown) => {
-      const id = liveIdByQuote.current.get(quote)
+    async (c: Costing, path: string, body?: unknown) => {
+      const id = c.calculation_id
       if (id == null) return
       try {
         await apiPost(`/api/calculations/${id}/${path}`, body)
@@ -257,11 +255,12 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   // /production-jobs/from-calculation (201 new / 200 existing). Both legs idempotent,
   // so this doubles as "Retry job creation" on a partial row (accepted, no job).
   const acceptCosting = useCallback(
-    async (quote: string) => {
+    async (ref: Costing) => {
+      const key = rowKey(ref)
       if (mode !== 'live') {
         setCostings((prev) =>
           prev.map((c) =>
-            c.quote_number === quote && c.status === 'Pending'
+            rowKey(c) === key && c.status === 'Pending'
               ? {
                   ...c,
                   status: 'Accepted' as StatusName,
@@ -273,31 +272,31 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
         )
         return
       }
-      const cId = liveIdByQuote.current.get(quote)
+      const cId = ref.calculation_id
       if (cId == null) return
-      const row = costings.find((c) => c.quote_number === quote)
-      setStage(quote, 'accepting')
+      const row = costings.find((c) => rowKey(c) === key) ?? ref
+      setStage(key, 'accepting')
       let accepted = !!row && row.status !== 'Pending'
       try {
         if (!accepted) {
           await apiPost(`/api/calculations/${cId}/accept`) // step 1 — skip if already accepted (retry)
           accepted = true
         }
-        setStage(quote, 'creating_job')
+        setStage(key, 'creating_job')
         await apiPost(`/api/production-jobs/from-calculation/${cId}`) // step 2
-        setStage(quote, 'done')
+        setStage(key, 'done')
         await refetch()
       } catch (e) {
         // RT6 — a 409 is the body family's insulation rule refusing this costing (accept, or its job): show the
         // sentence ("Re-open it, Remove, save, then accept."). A refused accept leaves the costing Pending — not a
         // partial row.
         if (e instanceof ApiError && e.status === 409) {
-          setStage(quote, accepted ? 'partial' : 'idle')
+          setStage(key, accepted ? 'partial' : 'idle')
           toast.push({ kind: 'error', message: e.detail || 'This costing cannot be accepted.' })
           await refetch()
           return
         }
-        setStage(quote, 'partial') // step 1 ok but step 2 failed → accepted calc, no job
+        setStage(key, 'partial') // step 1 ok but step 2 failed → accepted calc, no job
         handleApiError(e, toast.push)
         await refetch() // reflect the partial state so the Retry button renders
       }
@@ -308,22 +307,22 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   // Decline (legacy-dashboard parity): one POST to the legacy /decline endpoint — sets
   // status='declined' (the list endpoint maps it to the 'Rejected' pill) + stores the reason.
   const declineCosting = useCallback(
-    async (quote: string, reason: string) => {
+    async (ref: Costing, reason: string) => {
       if (mode !== 'live') {
         setCostings((prev) =>
           prev.map((c) =>
-            c.quote_number === quote && c.status === 'Pending'
+            rowKey(c) === rowKey(ref) && c.status === 'Pending'
               ? { ...c, status: 'Rejected' as StatusName, actions_available: ['view'] }
               : c,
           ),
         )
         return
       }
-      const cId = liveIdByQuote.current.get(quote)
+      const cId = ref.calculation_id
       if (cId == null) return
       try {
         await apiPost(`/api/calculations/${cId}/decline`, { reason })
-        toast.push({ kind: 'ok', message: `Costing ${quote} declined.` })
+        toast.push({ kind: 'ok', message: `Costing ${staffLabel(ref.quote_number, ref.version, ref.rev)} declined.` })
         await refetch()
       } catch (e) {
         handleApiError(e, toast.push)
@@ -333,14 +332,14 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   )
 
   const firePreJobCard = useCallback(
-    async (quote: string) => {
+    async (ref: Costing) => {
       if (mode === 'live') {
-        await pjPost(quote, 'pre-job-card')
+        await pjPost(ref, 'pre-job-card')
         return
       }
       setCostings((prev) =>
         prev.map((c) =>
-          c.quote_number === quote && c.status === 'Accepted'
+          rowKey(c) === rowKey(ref) && c.status === 'Accepted'
             ? {
                 ...c,
                 status: 'Pre-Job Sent' as StatusName,
@@ -357,14 +356,14 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   )
 
   const confirmPreJobCard = useCallback(
-    async (quote: string) => {
+    async (ref: Costing) => {
       if (mode === 'live') {
-        await legacyPost(quote, 'pre-job-confirm') // superseded by dual sign-off; kept for back-compat
+        await legacyPost(ref, 'pre-job-confirm') // superseded by dual sign-off; kept for back-compat
         return
       }
       setCostings((prev) =>
         prev.map((c) =>
-          c.quote_number === quote && c.status === 'Pre-Job Sent'
+          rowKey(c) === rowKey(ref) && c.status === 'Pre-Job Sent'
             ? {
                 ...c,
                 status: 'Pre-Job Confirmed' as StatusName,
@@ -380,14 +379,14 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   )
 
   const signoffPreJob = useCallback(
-    async (quote: string, role: 'sales' | 'production', attestation: string, by: string) => {
+    async (ref: Costing, role: 'sales' | 'production', attestation: string, by: string) => {
       if (mode === 'live') {
-        await pjPost(quote, 'pre-job-signoff', { role, attestation }) // server records the actor from the session
+        await pjPost(ref, 'pre-job-signoff', { role, attestation }) // server records the actor from the session
         return
       }
       setCostings((prev) =>
         prev.map((c) => {
-          if (c.quote_number !== quote || c.status !== 'Pre-Job Sent') return c
+          if (rowKey(c) !== rowKey(ref) || c.status !== 'Pre-Job Sent') return c
           const now = new Date().toISOString()
           const next: Costing = {
             ...c,
@@ -419,11 +418,11 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   )
 
   const ackPlanning = useCallback(
-    async (quote: string, by: string, payload: ChassisEtaPayload | null = null, notes: string | null = null) => {
+    async (ref: Costing, by: string, payload: ChassisEtaPayload | null = null, notes: string | null = null) => {
       if (mode === 'live') {
         // WO v4.29 D2: planning-ack captures the chassis ETA + rich chassis data in one step,
         // replacing the deadlocked legacy /api/calculations/{id}/chassis-eta call (ADR 0016).
-        await pjPost(quote, 'planning-ack', {
+        await pjPost(ref, 'planning-ack', {
           chassis_eta: payload?.chassis_eta || null,
           notes,
           chassis_vin: payload?.chassis_vin,
@@ -444,7 +443,7 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
       }
       setCostings((prev) =>
         prev.map((c) =>
-          c.quote_number === quote && c.status === 'Planning' && !c.planning_acknowledged_at
+          rowKey(c) === rowKey(ref) && c.status === 'Planning' && !c.planning_acknowledged_at
             ? {
                 ...c,
                 planning_acknowledged_at: new Date().toISOString(),
@@ -460,14 +459,14 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   // Work Order v4.2 — chassis ETA capture (rich VIN/BOM). No production-jobs
   // endpoint for the rich data → stays on the legacy calc route (CSRF-safe now).
   const captureChassisEta = useCallback(
-    async (quote: string, payload: ChassisEtaPayload, by: string) => {
+    async (ref: Costing, payload: ChassisEtaPayload, by: string) => {
       if (mode === 'live') {
-        await legacyPost(quote, 'chassis-eta', payload)
+        await legacyPost(ref, 'chassis-eta', payload)
         return
       }
       setCostings((prev) =>
         prev.map((c) => {
-          if (c.quote_number !== quote || c.status !== 'Planning') return c
+          if (rowKey(c) !== rowKey(ref) || c.status !== 'Planning') return c
           const now = new Date().toISOString()
           const merged = {
             ...(c.chassis_data ?? {}),
@@ -506,18 +505,18 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   // Work Order v4.3 — mark chassis received. The production-jobs endpoint marks
   // receipt (no payload); there is no server un-tick, so un-tick stays mock-only.
   const markChassisReceived = useCallback(
-    async (quote: string, receivedAt: string | null, by: string) => {
+    async (ref: Costing, receivedAt: string | null, by: string) => {
       if (mode === 'live') {
         if (receivedAt === null) {
           toast.push({ kind: 'warn', message: 'Un-ticking chassis receipt isn’t available in live mode yet.' })
           return
         }
-        await pjPost(quote, 'chassis-received')
+        await pjPost(ref, 'chassis-received')
         return
       }
       setCostings((prev) =>
         prev.map((c) =>
-          c.quote_number === quote
+          rowKey(c) === rowKey(ref)
             ? {
                 ...c,
                 chassis_received_at: receivedAt,
@@ -531,9 +530,9 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
   )
 
   const scheduleRepairPhases = useCallback(
-    async (quote: string, phases: RepairPhaseInsertion[]) => {
+    async (ref: Costing, phases: RepairPhaseInsertion[]) => {
       if (mode === 'live') {
-        await legacyPost(quote, 'schedule-repair', {
+        await legacyPost(ref, 'schedule-repair', {
           phases: phases.map((p) => ({
             phase: p.phase,
             bay_id: p.bay_assignment,
@@ -544,7 +543,7 @@ export function CostingsProvider({ children }: { children: ReactNode }) {
       }
       setCostings((prev) =>
         prev.map((c) =>
-          c.quote_number === quote
+          rowKey(c) === rowKey(ref)
             ? {
                 ...c,
                 repair_phases: phases.map((p) => ({

@@ -29,6 +29,7 @@ from ..services import free_hand   # v1.47 Lane C — free-hand lines + REPAIRS 
 from ..services import insulation_foam as pu_foam   # v1.51 — 32D PU FOAM vs 4G FOAM
 from ..services import rule_guard                   # RT6 — Burt's insulation rules, enforced from the family
 from ..services import frozen_quote                 # RT8 — a re-opened quote is the saved quote
+from ..services import revisions                    # RT10 — REV n, the chain, Latest, server numbering
 from ..services.frozen_quote import FrozenError
 from ..services import quote_document           # v1.51 — print modes
 from ..services.quote_document import has_repair_quote_document  # v1.48
@@ -1097,33 +1098,31 @@ async def check_duplicate(customer_id: int, trailer_type_id: int,
                         _same_quote_type_filter(is_repair))
                 .order_by(CalculationRecord.created_at.desc()).all())
     if not existing:
-        return JSONResponse({"has_duplicate": False, "count": 0, "next_version": 2})
-    max_version  = 1
-    records_info = []
+        return JSONResponse({"has_duplicate": False, "count": 0, "quotes": [], "records": []})
+    # RT10 (RULING_1 Q1) — grouped by QUOTE (the chain): each with its latest live revision and the REV the next
+    # revision will get (max over the whole chain, deleted rows included, + 1 — what the save will issue). The modal's
+    # revision button names the quote it revises; with several quotes the user picks one.
+    chains = revisions.chain_info(db, existing)
+    records_info, quotes = [], {}
     for rec in existing:
-        try:
-            v = int(json.loads(rec.result_json).get("version", 1))
-        except Exception:
-            v = 1
-        max_version = max(max_version, v)
+        c = chains[rec.id]
         records_info.append({
-            "id": rec.id, "version": v,
+            "id": rec.id, "version": c["version"], "rev": c["rev"], "is_latest": c["is_latest"],
             "trailer": rec.trailer_type.name if rec.trailer_type else "—",
             "saved_at": rec.created_at.strftime("%Y-%m-%d %H:%M") if rec.created_at else "—",
             "quote_number": rec.quote_number,
+            "label": revisions.staff_label(rec.quote_number, c["version"], rec.id),
         })
-    # Pick a parent quote number to reuse: highest version that actually has one,
-    # falling back to most-recent (records are already ordered created_at desc).
-    parent_quote_number = None
-    for r in sorted(records_info, key=lambda x: (-x["version"], 0)):
-        if r.get("quote_number"):
-            parent_quote_number = r["quote_number"]
-            break
+        key = rec.quote_number or f"#{rec.id}"
+        q = quotes.setdefault(key, {"quote_number": rec.quote_number, "latest_id": c["latest_id"],
+                                    "latest_rev": c["latest_rev"], "revision_count": c["revision_count"],
+                                    "next_rev": revisions.rev_number(c["max_version"] + 1), "saved_at": None})
+        if rec.id == c["latest_id"]:
+            q["saved_at"] = records_info[-1]["saved_at"]
     return JSONResponse({
         "has_duplicate": True, "count": len(existing),
-        "max_version": max_version, "next_version": max_version + 1,
+        "quotes": sorted(quotes.values(), key=lambda q: q["saved_at"] or "", reverse=True),
         "records": records_info,
-        "parent_quote_number": parent_quote_number,
     })
 
 
@@ -1223,9 +1222,9 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
     overrides      = {str(k): float(v) for k, v in body.get("overrides", {}).items()}
     override_reasons = {str(k): str(v).strip() for k, v in (body.get("override_reasons") or {}).items() if str(v).strip()}
     version_action = body.get("version_action")
-    next_version   = int(body.get("next_version") or 2)
+    # RT10 — `next_version` and `reuse_quote_number` from the client are no longer read: the server numbers a revision
+    # under the chain's row lock and a revision always keeps its quote's number (services/revisions).
     is_repair      = bool(body.get("is_repair"))
-    reuse_quote_number = bool(body.get("reuse_quote_number"))
     # When set, this save is an EDIT of an existing PENDING costing rather than a
     # brand-new one. version_action == "overwrite" updates that record in place;
     # "new_version" saves a fresh revision (optionally reusing its quote number).
@@ -1684,17 +1683,57 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
                            "or 'Replace'."
                 )
 
+        revision_qn = None
         if customer_id and version_action == "replace":
-            db.query(CalculationRecord).filter(
+            # RT10 (RULING_1, G1) — Replace is a SOFT delete, like every other delete: the replaced costings go to the
+            # Deleted pill, restorable, and stay in their chain (their numbers are never issued again). It used to be
+            # a hard delete, which cascaded validated references away and could orphan a production job (no FK —
+            # costing_delete_blockers). A costing that is scheduled is not replaced: nothing changes, and the refusal
+            # names it. Committed with the new costing, in one transaction.
+            doomed = db.query(CalculationRecord).filter(
                 CalculationRecord.customer_id     == customer_id,
                 CalculationRecord.trailer_type_id == trailer_id,
                 _not_deleted(),
                 _same_quote_type_filter(is_repair),
-            ).delete(synchronize_session=False)
-            db.commit()
+            ).order_by(CalculationRecord.created_at).all()
+            stuck = [(r, costing_delete_blockers(db, r.id)) for r in doomed]
+            stuck = [(r, b) for r, b in stuck if b]
+            if stuck:
+                raise HTTPException(status_code=409, detail=(
+                    "Replace was refused, so nothing changed: "
+                    + "; ".join(f"{revisions.staff_label(r.quote_number, revisions.version_of(r.result_json), r.id)} "
+                                f"has {' and '.join(b)}" for r, b in stuck)
+                    + ". Save it as a new costing or a revision instead."))
+            _now = datetime.now(timezone.utc)
+            for r in doomed:
+                r.deleted_at = _now
+                r.deleted_by = getattr(user, "username", None)
+            db.flush()
             result["version"] = 1
         elif version_action == "new_version":
-            result["version"] = next_version
+            # RT10 (RULING_1 Q1) — the quote number IS the chain: a revision always keeps the number of the quote it
+            # revises (server-enforced: the old "Reuse quote number" box is gone), and its version is decided HERE,
+            # under the chain's row lock — max over the whole chain, deleted rows included, + 1. The client's
+            # next_version is ignored (22 Oct: three saves from REV 0 each sent 2 and wrote 2, 2, 2).
+            parent = None
+            if edit_record_id:
+                parent = db.query(CalculationRecord).filter_by(id=int(edit_record_id)).first()
+            elif body.get("revision_of_record_id"):
+                parent = db.query(CalculationRecord).filter_by(id=int(body["revision_of_record_id"])).first()
+                if parent is not None and (parent.customer_id != (int(customer_id) if customer_id else None)
+                                           or parent.trailer_type_id != trailer_id
+                                           or bool(parent.is_repair) != bool(is_repair)):
+                    raise HTTPException(status_code=409, detail=(
+                        "That quote is for another customer or body type — choose one of this customer's quotes for "
+                        "this body, or save it as a new costing."))
+            if parent is None or parent.deleted_at is not None:
+                raise HTTPException(status_code=409, detail=(
+                    "A revision needs the quote it revises — choose the quote in the list, or save it as a new costing."))
+            if parent.quote_number:
+                revision_qn = parent.quote_number
+                result["version"] = revisions.next_version(db, revision_qn)
+            else:
+                result["version"] = revisions.version_of(parent.result_json) + 1   # a numberless legacy row
         elif version_action == "save_as_new":
             # Nadie WO (16 Jul): an INDEPENDENT new costing for the same customer +
             # body type — not a revision, not a replacement. Nothing is deleted,
@@ -1725,28 +1764,11 @@ async def api_approve(request: Request, db: Session = Depends(get_db)):
         db.add(rec)
         db.flush()
         attribution.record_rep_change(db, rec, new_rep, user)
-        if reuse_quote_number and version_action == "new_version" and (customer_id or edit_record_id):
-            # Copy the parent quote's number onto this revision so the whole
-            # revision family shares one identifier. assign_quote_number below
-            # is idempotent — it returns early when rec.quote_number is set,
-            # so the global counter doesn't advance.
-            parent = None
-            # An edit knows its exact parent record — use it directly so reuse
-            # works even for quotes saved without a customer.
-            if edit_record_id:
-                parent = db.query(CalculationRecord).filter_by(id=int(edit_record_id)).first()
-            if (parent is None or not parent.quote_number) and customer_id:
-                parent = (db.query(CalculationRecord)
-                            .filter(CalculationRecord.customer_id     == customer_id,
-                                    CalculationRecord.trailer_type_id == trailer_id,
-                                    CalculationRecord.id              != rec.id,
-                                    CalculationRecord.quote_number.isnot(None),
-                                    _same_quote_type_filter(is_repair))
-                            .order_by(CalculationRecord.created_at.desc())
-                            .first())
-            if parent and parent.quote_number:
-                rec.quote_number = parent.quote_number
-                db.flush()
+        if revision_qn:
+            # RT10 — the revision carries the number of the quote it revises (the chain). assign_quote_number below
+            # is idempotent: it returns early when rec.quote_number is set, so the global counter does not advance.
+            rec.quote_number = revision_qn
+            db.flush()
         try:
             assign_quote_number(rec, db=db, user=user, trailer=tt)
         except Exception:
@@ -1830,6 +1852,9 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
         "recently_updated":  recently_updated,
         "outdated_prices":   outdated_prices,
         "result_version":    result_version,
+        # RT10 — the staff label (N10022/10/2026 · REV 1, REV 0 included) and the chain (Latest / the latest's REV)
+        "rev_staff_label":   revisions.staff_label(rec.quote_number, result_version, rec.id),
+        "rev_chain":         revisions.chain_info(db, [rec])[rec.id],
         "report_template":   report_template,
         # v1.48 — a REPAIRS costing has no trailer type, so resolve_report_template
         # finds nothing and Generate Quote sat greyed out behind "no PDF quote
@@ -1895,6 +1920,9 @@ async def api_list_calculations(
         q = q.filter(_same_quote_type_filter(True))
     records = q.order_by(CalculationRecord.created_at.desc()).limit(limit).all()
     full_access = user_can(user, "bom.view_full_cost", db)
+    # RT10 — each row's REV and its chain (revision_count, latest, is_latest): computed once for the page (the rows
+    # above + at most one query for chain members outside it), never per row.
+    chains = revisions.chain_info(db, records)
     result = []
     for r in records:
         rd = {}
@@ -1971,7 +1999,10 @@ async def api_list_calculations(
             "discount_amount": (float(r.discount_amount) if getattr(r, "discount_amount", None) is not None
                                 else (float(rd["discount_amount"]) if rd.get("discount_amount") is not None else 0)) if full_access else None,
             "discount_kind":   r.discount_kind if getattr(r, "discount_kind", None) is not None else rd.get("discount_kind"),
-            "version":    int(rd.get("version", 1)),
+            # RT10 — the stored version, its REV (= version − 1: the first save is REV 0) and the chain: the live
+            # revisions of this quote number, the latest one (highest version; tie → newer, then higher id), is_latest.
+            **{k: chains[r.id][k] for k in ("version", "rev", "revision_count", "latest_version", "latest_rev",
+                                            "latest_id", "is_latest")},
             "approved":   bool(r.approved_at),
             "approved_at": r.approved_at.strftime("%Y-%m-%d %H:%M") if r.approved_at else None,
             "approver":   r.approver.username if getattr(r, "approver", None) else None,
@@ -2396,6 +2427,7 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
     body_options_display = _derive_body_options_display(
         bom_rows, input_state, result_data.get("body_variables"))
     _frozen_ok, _frozen_why = frozen_quote.capability(rec, result_data)
+    _chain = revisions.chain_info(db, [rec])[rec.id]
     return {
         "id": rec.id,
         "trailer_type_id": rec.trailer_type_id,
@@ -2428,7 +2460,13 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
                                  or input_state.get("profit_margin") or 0),
         # ── Edit-mode fields (used by /calculator?edit=) ──────────────────────
         "status":        status,
-        "version":       int(result_data.get("version", 1) or 1),
+        # RT10 — the same chain fields as the list (one helper), and the Revisions list for the costing view
+        **{k: _chain[k] for k in ("version", "rev", "revision_count", "latest_version", "latest_rev", "latest_id",
+                                  "is_latest")},
+        # the REV a Save as Rev. of this quote will get (max over the chain, deleted rows included, + 1) — what the
+        # edit-save modal offers; the save itself decides it again under the row lock
+        "next_rev":      revisions.rev_number(_chain["max_version"] + 1),
+        "revisions":     revisions.revisions_of(db, rec),
         "quote_number":  rec.quote_number,
         "is_repair":     bool(getattr(rec, "is_repair", False)),
         # v1.47 — repair surface + free-hand line re-hydration for /calculator?edit=.

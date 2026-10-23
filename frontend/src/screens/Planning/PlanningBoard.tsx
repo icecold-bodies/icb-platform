@@ -9,6 +9,7 @@ import { JobDetailStub } from '../../components/JobDetailStub'
 import { Tooltip } from '../../components/ui/Tooltip'
 import { CalendarDays, Wrench } from 'lucide-react'
 import { useCostings } from '../../store/CostingsContext'
+import { rowKey, staffLabel } from '../../lib/revisions'
 import { useAppData } from '../../store/AppDataContext'
 import { PlanningAckPanel } from './PlanningAckPanel'
 import { BayModelLanes } from './BayModelLanes'
@@ -159,9 +160,15 @@ function MockPlanningBoard() {
   // through markChassisReceived when there's a costing match.
   const costingByJobNum = useMemo(() => {
     const m = new Map<string, Costing>()
+    // RT10 — revisions share a quote number: the row with the production job wins its key (a later pending
+    // revision of an accepted quote must never take the job card's place)
+    const put = (k: string, c: Costing) => {
+      const had = m.get(k)
+      if (!had || (c.production_job_id != null && had.production_job_id == null)) m.set(k, c)
+    }
     for (const c of costings) {
-      m.set(c.quote_number.replace(/^Q-/, ''), c)
-      if (c.job_number_assigned) m.set(c.job_number_assigned, c)
+      put(c.quote_number.replace(/^Q-/, ''), c)
+      if (c.job_number_assigned) put(c.job_number_assigned, c)
     }
     return m
   }, [costings])
@@ -183,7 +190,7 @@ function MockPlanningBoard() {
     const by = profile.id === 'rep_burt' ? 'BURT' : profile.id
     const cost = costingByJobNum.get(cell.job_number)
     if (cost) {
-      await markChassisReceived(cost.quote_number, receivedIso, by)
+      await markChassisReceived(cost, receivedIso, by)
       setOpenSlot((s) => (s ? { ...s } : s)) // force re-render of panel
       return
     }
@@ -374,7 +381,7 @@ function MockPlanningBoard() {
                   ? 'planning_board.unack_pulsing_card'
                   : 'planning_board.planning_card_draggable'
                 return (
-                  <Tooltip key={c.quote_number} k={tooltipKey}>
+                  <Tooltip key={rowKey(c)} k={tooltipKey}>
                     <div
                       role="button"
                       tabIndex={0}
@@ -394,7 +401,7 @@ function MockPlanningBoard() {
                       )}
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center justify-between gap-1">
-                          <span className="font-mono text-sm font-semibold">#{c.job_number_assigned ?? c.quote_number}</span>
+                          <span className="font-mono text-sm font-semibold">#{c.job_number_assigned ?? staffLabel(c.quote_number, c.version, c.rev)}</span>
                           {unack && (
                             <span className="rounded bg-[#06B6D4] px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
                               New
@@ -586,7 +593,7 @@ function MockPlanningBoard() {
         onClose={() => setAckTarget(null)}
         onAcknowledge={async (c) => {
           const by = profile.id === 'rep_burt' ? 'BURT' : profile.id
-          await ackPlanning(c.quote_number, by)
+          await ackPlanning(c, by)
           setAckTarget(null)
         }}
       />
@@ -818,7 +825,7 @@ function LivePlanningBoard() {
       toast.push({ kind: 'warn', message: 'Could not match this slot to a costing.' })
       return
     }
-    await markChassisReceived(costing.quote_number, todayIso(), byActor)
+    await markChassisReceived(costing, todayIso(), byActor)
     await refresh()
     setOpenSlot(null)
   }
@@ -966,13 +973,13 @@ function LivePlanningBoard() {
               <div className="mb-3 space-y-2">
                 {ackCandidates.map((c) => (
                   <button
-                    key={c.quote_number}
+                    key={rowKey(c)}
                     onClick={() => setAckTarget(c)}
                     className="flex w-full items-start gap-2 rounded-md border-l-4 border-[#06B6D4] bg-[#06B6D4]/5 p-2 text-left hover:bg-[#06B6D4]/10 animate-pulseRing"
                   >
                     <CalendarDays size={14} className="mt-0.5 text-[#06B6D4]" />
                     <div className="flex-1">
-                      <div className="font-mono text-sm font-semibold">#{c.job_number_assigned ?? c.quote_number}</div>
+                      <div className="font-mono text-sm font-semibold">#{c.job_number_assigned ?? staffLabel(c.quote_number, c.version, c.rev)}</div>
                       <div className="text-xs text-body">{c.customer_name}</div>
                       <div className="mt-1 text-[10px] font-medium text-[#0E7490]">Awaiting Planning ack · click to acknowledge</div>
                     </div>
@@ -1180,7 +1187,7 @@ function LivePlanningBoard() {
         costing={ackTarget}
         onClose={() => setAckTarget(null)}
         onAcknowledge={async (c, payload) => {
-          await ackPlanning(c.quote_number, byActor, payload)
+          await ackPlanning(c, byActor, payload)
           await refresh()
           setAckTarget(null)
         }}

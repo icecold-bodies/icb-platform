@@ -62,3 +62,38 @@ export function QuoteNumberCell({ c }: { c: Costing }) {
     </span>
   )
 }
+
+/**
+ * RT10 — the REV beside the number (Michael, 22 Oct: REV = version − 1; the first save is REV 0), and where this row
+ * stands in its quote's revisions: the latest live one of a quote with several carries **Latest** and the count; an
+ * older one reads "· earlier" in grey; a quote with one revision shows its REV alone (no Latest pill: a board of
+ * single quotes would be all pills — RT10_RULING_1, ratified C4). Never hidden: every revision stays a row.
+ */
+export function RevChip({ c, deleted = false }: { c: Costing; deleted?: boolean }) {
+  const rev = c.rev ?? Math.max((c.version ?? 1) - 1, 0)
+  const several = (c.revision_count ?? 1) > 1
+  if (!deleted && c.is_latest === false) {
+    return (
+      <span data-testid="costing-earlier" className="whitespace-nowrap font-normal text-muted"
+            title={c.latest_rev != null ? `REV ${c.latest_rev} is the latest` : undefined}>
+        {' '}· REV {rev} · earlier
+      </span>
+    )
+  }
+  return (
+    <span className="whitespace-nowrap">
+      <span data-testid="costing-rev">{' '}· REV {rev}</span>
+      {!deleted && several && (
+        <>
+          <span data-testid="costing-latest"
+                className="ml-1 rounded-full bg-status-green/15 px-1.5 py-0.5 font-sans text-[10px] font-bold text-status-green">
+            Latest
+          </span>
+          <span data-testid="costing-revision-count" className="block font-sans text-[10px] font-normal text-muted">
+            {c.revision_count} revisions
+          </span>
+        </>
+      )}
+    </span>
+  )
+}

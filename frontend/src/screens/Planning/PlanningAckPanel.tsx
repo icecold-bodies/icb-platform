@@ -6,6 +6,7 @@ import { SidePanel } from '../../components/ui/overlays'
 import { Tooltip } from '../../components/ui/Tooltip'
 import { useAppData } from '../../store/AppDataContext'
 import { useCostings, type ChassisCatalogue, type ChassisEtaPayload } from '../../store/CostingsContext'
+import { staffLabel } from '../../lib/revisions'
 import { data as mockData } from '../../data/mockData'
 import { apiGet } from '../../lib/api'
 import { ChassisFieldsForm, type ChassisFieldValues, type ChassisFieldLocks } from '../Chassis/ChassisFieldsForm'
@@ -110,14 +111,14 @@ export function PlanningAckPanel({
     // endpoint is status-gated to 'planning' and deadlocked the ack (the calc is still 'accepted' at
     // this point), so it now runs in MOCK mode only (offline-demo local state). See ADR 0016.
     if (apiMode !== 'live') {
-      await captureChassisEta(costing.quote_number, form, by)
+      await captureChassisEta(costing, form, by)
     }
     await onAcknowledge(costing, form)
   }
 
   return (
     <SidePanel
-      title={costing ? `New job · ${costing.quote_number}` : ''}
+      title={costing ? `New job · ${staffLabel(costing.quote_number, costing.version, costing.rev)}` : ''}
       open={!!costing}
       onClose={onClose}
       width="w-[560px]"

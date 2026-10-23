@@ -4451,7 +4451,9 @@ async function runCalc() {
 }
 
 let _pendingApproveBase = null;   // base payload waiting on user's dup choice
-let _pendingNextVersion  = 2;
+let _pendingRevisionOf  = null;   // RT10 — the record id of the quote "Save as Revision" revises
+// RT10 — REV = the stored version − 1 (Michael, 22 Oct): the first save is REV 0
+function revLabel(version) { const v = parseInt(version, 10); return 'REV ' + Math.max((isNaN(v) ? 1 : v) - 1, 0); }
 
 async function approveCosting() {
   if (!lastCalcPayload) { toast('Nothing to approve — select a trailer first', 'error'); return; }
@@ -4478,23 +4480,21 @@ async function approveCosting() {
     const dup = await api('GET', `/api/check-duplicate?customer_id=${customerId}&trailer_type_id=${trailerId}&is_repair=${isRepair}`);
     if (dup.has_duplicate) {
       const custName = allCustomers.find(c => String(c.id) === String(customerId))?.name || 'this customer';
+      // RT10 (RULING_1 Q1) — the quote number is the chain: listed by REV; "Save as Revision" revises the most
+      // recent quote (named on the button) under ITS number, and the server issues the REV. Replace (a soft delete
+      // since RT10) names what it moves to Deleted.
+      const doomed = (dup.records || []).map(r => r.label).filter(Boolean);
       document.getElementById('dup-message').innerHTML =
         `<strong style="color:var(--text-head)">${escHtml(custName)}</strong> already has
-         ${dup.count} costing${dup.count !== 1 ? 's' : ''} saved for this body type:`;
-      document.getElementById('dup-version-list').innerHTML = dup.records
-        .map(r => `<span style="color:var(--blue-hi)">Rev${r.version}</span> &nbsp;·&nbsp; ${escHtml(r.trailer)} &nbsp;·&nbsp; saved ${r.saved_at}`).join('<br>');
-      document.getElementById('dup-next-ver').textContent = dup.next_version;
-      _pendingNextVersion = dup.next_version;
+         ${dup.count} costing${dup.count !== 1 ? 's' : ''} saved for this body type:` +
+        (doomed.length ? `<br><span style="font-size:11px;color:var(--text-dim)">Replace moves them to Deleted (restorable): ${escHtml(doomed.join(', '))}.</span>` : '');
+      document.getElementById('dup-version-list').innerHTML = (dup.records || [])
+        .map(r => `<span style="color:var(--blue-hi)">${escHtml(r.label || revLabel(r.version))}</span> &nbsp;·&nbsp; ${escHtml(r.trailer)} &nbsp;·&nbsp; saved ${r.saved_at}`).join('<br>');
+      const q0 = (dup.quotes || [])[0] || null;
+      _pendingRevisionOf = q0 ? q0.latest_id : null;
+      document.getElementById('dup-next-ver').textContent = q0 ? `— REV ${q0.next_rev} of ${q0.quote_number || ('#' + q0.latest_id)}` : '';
       const reuseWrap = document.getElementById('dup-reuse-qno-wrap');
-      const reuseBox  = document.getElementById('dup-reuse-qno');
-      const reuseVal  = document.getElementById('dup-reuse-qno-val');
-      if (reuseBox) reuseBox.checked = false;
-      if (dup.parent_quote_number && reuseWrap && reuseVal) {
-        reuseVal.textContent = dup.parent_quote_number;
-        reuseWrap.style.display = '';
-      } else if (reuseWrap) {
-        reuseWrap.style.display = 'none';
-      }
+      if (reuseWrap) reuseWrap.style.display = 'none';   // RT10 — a revision always keeps its quote's number
       document.getElementById('modal-duplicate').classList.remove('hidden');
       return;
     }
@@ -4504,13 +4504,11 @@ async function approveCosting() {
 }
 
 async function approveWithAction(action) {
-  const reuseQno = action === 'new_version'
-    && !!document.getElementById('dup-reuse-qno')?.checked;
   closeModal('modal-duplicate');
-  await _doApprove(action, action === 'new_version' ? _pendingNextVersion : null, reuseQno);
+  await _doApprove(action, action === 'new_version' ? _pendingRevisionOf : null);
 }
 
-async function _doApprove(versionAction, nextVersion, reuseQno) {
+async function _doApprove(versionAction, revisionOf) {
   const btn      = document.getElementById('approve-btn');
   const doneBusy = showBusy(btn, 'Saving...');
   // Capture ratio at save time so the stored selling_price matches the calc panel total.
@@ -4520,8 +4518,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     const result = await api('POST', '/api/approve', {
       ..._pendingApproveBase,
       version_action: versionAction,
-      next_version:   nextVersion,
-      reuse_quote_number: versionAction === 'new_version' ? !!reuseQno : false,
+      revision_of_record_id: revisionOf || undefined,   // RT10 — the server numbers the revision
       ratio_value: (!isNaN(_ratioRaw) && _ratioRaw > 0) ? _ratioRaw : null,
       ratio_label: _ratioLbl || null,
       discount_kind:  discountKind,
@@ -4538,7 +4535,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     document.getElementById('view-btn').disabled  = false;
     clearOverrideSession();
     const custName    = result.customer_name ? ` for ${result.customer_name}` : '';
-    const verLabel    = result.version && result.version > 1 ? ` · Rev${result.version}` : '';
+    const verLabel    = ` · ${revLabel(result.version)}`;   // RT10
     toast(`Costing approved${custName}${verLabel} — saved as #${result.record_id}`, 'success');
   } catch(e) {
     toast('Approve failed: ' + e.message, 'error');

@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft,
   Printer,
@@ -35,6 +35,7 @@ import { Toast } from '../../components/ui/overlays'
 import { Tooltip } from '../../components/ui/Tooltip'
 import { zar, dmy, hhmm, lengthSuffix } from '../../lib/format'
 import { ExportOptionsModal } from './ExportOptionsModal'
+import { revNumber, staffLabel } from '../../lib/revisions'
 // v1.39.1 backport (Item 5+7): demoBom/demoBomTotal removed — the BOM is now fetched live (see LiveBom below).
 import { styleForStatus, prettyStatus, StatusPillCosting } from './statusPalette'
 import { PreJobCardModal } from './PreJobCardModal'
@@ -60,6 +61,10 @@ type ValidatedRef = {
 
 export function CostingDetail() {
   const { quote = '' } = useParams<{ quote: string }>()
+  // RT10 — `?id=<record id>` names the revision; without it, the quote's LATEST live revision opens (every revision
+  // shares the quote number, which until RT10 resolved to whichever row came first)
+  const [searchParams] = useSearchParams()
+  const idParam = searchParams.get('id')
   const nav = useNavigate()
   const { mode, costings, refresh, scheduleRepairPhases, signoffPreJob, markChassisReceived } = useCostings()
   const { hasPermission, profile } = useAppData()
@@ -91,19 +96,24 @@ export function CostingDetail() {
   // instead of "not found". `costings` itself stays live-only: many consumers
   // (KPIs, planning, production) rely on that.
   const [deletedFallback, setDeletedFallback] = useState<Costing | null>(null)
-  const liveHit = costings.find((x) => x.quote_number === decodeURIComponent(quote))
+  const qn = decodeURIComponent(quote)
+  const matches = (x: Costing) => (idParam ? String(x.calculation_id) === idParam : x.quote_number === qn)
+  const liveHit = idParam
+    ? costings.find(matches)
+    : (costings.find((x) => x.quote_number === qn && x.is_latest !== false) ?? costings.find(matches))
   useEffect(() => {
     if (liveHit || mode !== 'live') { setDeletedFallback(null); return }
     let alive = true
     apiGet<LiveCalculation[]>('/api/calculations?filter=deleted&limit=200')
       .then((rows) => {
         if (!alive) return
-        const hit = rows.map(liveToCosting).find((x) => x.quote_number === decodeURIComponent(quote))
+        const hit = rows.map(liveToCosting).find(matches)
         setDeletedFallback(hit ?? null)
       })
       .catch(() => { if (alive) setDeletedFallback(null) })
     return () => { alive = false }
-  }, [liveHit, mode, quote])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveHit, mode, quote, idParam])
   const c = liveHit ?? deletedFallback ?? undefined
   // §0.21 — the live Pre-Job Card summary rides on the costing (CostingsContext merges
   // /api/prejob-cards/summaries into every row). When present it supersedes the legacy
@@ -129,6 +139,20 @@ export function CostingDetail() {
   // page, or another tab) is reflected when this costing detail is opened. CostingsContext
   // otherwise loads once at app mount. `refresh` is a stable useCallback (runs once per mount).
   useEffect(() => { void refresh() }, [refresh])
+
+  // RT10 — this revision's chain from the costing GET: the Revisions list (deleted ones marked) and RT8's re-priced
+  // block (RT8 §4.5: "Moved to today's prices on …, from REV n"). Shown when the quote has more than one row.
+  const [chain, setChain] = useState<{ revisions: RevisionRow[]; repriced: Repriced | null } | null>(null)
+  const chainId = c?.calculation_id
+  const chainVersion = c?.version
+  useEffect(() => {
+    if (!chainId) { setChain(null); return }
+    let cancelled = false
+    void apiGet<{ revisions?: RevisionRow[]; repriced?: Repriced | null }>(`/api/calculations/${chainId}`)
+      .then((r) => { if (!cancelled) setChain({ revisions: r.revisions ?? [], repriced: r.repriced ?? null }) })
+      .catch(() => { if (!cancelled) setChain(null) })
+    return () => { cancelled = true }
+  }, [chainId, chainVersion])
 
   // v1.45 — is THIS costing already a validated reference? One cheap filtered
   // read; a failure just leaves the panel in its "not a reference yet" state.
@@ -218,6 +242,16 @@ export function CostingDetail() {
           </Link>
           <h1 className="flex flex-wrap items-center gap-3 text-xl font-bold text-body">
             <span className="font-mono">{c.quote_number}</span>
+            {/* RT10 — REV n; the latest live revision of a quote with several says so, an older one links to it */}
+            <span className="font-mono" data-testid="detail-rev">· REV {c.rev ?? revNumber(c.version)}</span>
+            {c.is_latest !== false && (c.revision_count ?? 1) > 1 && !c.deleted_at && (
+              <span data-testid="detail-latest"
+                    className="rounded-full bg-status-green/15 px-2 py-0.5 text-[12px] font-bold text-status-green">Latest</span>
+            )}
+            {c.is_latest === false && c.latest_id != null && (
+              <Link data-testid="detail-latest-link" to={`/costings/${encodeURIComponent(c.quote_number)}?id=${c.latest_id}`}
+                    className="text-sm font-semibold text-primary underline">REV {c.latest_rev} is the latest →</Link>
+            )}
             <StatusPillCosting
               status={c.status}
               pulsing={c.status === 'Planning' && !c.planning_acknowledged_at}
@@ -252,6 +286,9 @@ export function CostingDetail() {
             )}
           </h1>
           <p className="text-sm text-muted">{c.customer_name} · {c.body_type}{lengthSuffix(c.body_length)}<FamilyChip family={c.body_family} testId="detail-header-family-chip" /></p>
+          {chain && (chain.revisions.length > 1 || chain.repriced) && (
+            <RevisionsCard quote={c.quote_number} me={c.calculation_id ?? null} chain={chain} />
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {canPreJob && c.status === 'Accepted' && (
@@ -576,12 +613,12 @@ export function CostingDetail() {
                 onClick={async () => {
                   const by = profile.id === 'rep_burt' ? 'BURT' : profile.id
                   if (c.chassis_received_at) {
-                    await markChassisReceived(c.quote_number, null, by)
+                    await markChassisReceived(c, null, by)
                     setToast(`Chassis-received tick removed`)
                   } else {
                     const dateIso = chassisReceivedDate || new Date().toISOString().slice(0, 10)
-                    await markChassisReceived(c.quote_number, dateIso, by)
-                    setToast(`Chassis received recorded for ${c.quote_number}`)
+                    await markChassisReceived(c, dateIso, by)
+                    setToast(`Chassis received recorded for ${staffLabel(c.quote_number, c.version, c.rev)}`)
                   }
                 }}
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md border-2 transition disabled:cursor-not-allowed disabled:opacity-50 ${
@@ -669,7 +706,7 @@ export function CostingDetail() {
         costing={repairOpen ? c : null}
         onClose={() => setRepairOpen(false)}
         onSchedule={async (target, phases) => {
-          await scheduleRepairPhases(target.quote_number, phases)
+          await scheduleRepairPhases(target, phases)
           setRepairOpen(false)
           setToast(`Repair plan inserted into MES (${phases.length} phase${phases.length === 1 ? '' : 's'})`)
         }}
@@ -709,7 +746,7 @@ export function CostingDetail() {
           const r = signoffRole!
           // Use the rep_code where we have one (Burt -> 'BURT'), else profile.id.
           const by = profile.id === 'rep_burt' ? 'BURT' : profile.id
-          await signoffPreJob(c.quote_number, r, attestation, by)
+          await signoffPreJob(c, r, attestation, by)
           setSignoffRole(null)
           setToast(`Sign-off recorded (${r === 'sales' ? 'Sales Rep' : 'Production'})`)
         }}
@@ -1478,5 +1515,78 @@ function LiveTimeline({ pjId, refreshKey }: { pjId: number; refreshKey?: string 
         </li>
       ))}
     </ol>
+  )
+}
+
+// RT10 — the costing view's Revisions list (RULING_1 default 4): REV, saved, net total, status, and a link to each
+// other revision; the one on screen is marked; a deleted REV stays listed (muted) so a gap in the numbers explains
+// itself. A re-priced revision says where it came from (RT8's `repriced` block, §4.5).
+interface RevisionRow {
+  id: number
+  rev: number
+  created_at: string | null
+  saved_at: string | null
+  net_total: number | null
+  status: string
+  deleted: boolean
+  is_latest: boolean
+}
+interface Repriced {
+  from_version?: number
+  repriced_at?: string | null
+}
+
+// the costing's own status word (the GET sends the stored one: pending, accepted, declined, pre_job_sent, …)
+function statusWords(s: string): string {
+  const w = s === 'declined' ? 'rejected' : s
+  return w.replace(/_/g, ' ').replace(/^./, (ch) => ch.toUpperCase())
+}
+
+function RevisionsCard({ quote, me, chain }: {
+  quote: string
+  me: number | null
+  chain: { revisions: RevisionRow[]; repriced: Repriced | null }
+}) {
+  const rp = chain.repriced
+  return (
+    <div data-testid="revisions-card" className="mt-3 max-w-3xl rounded-lg border border-line bg-white px-4 py-3 text-sm">
+      <div className="mb-1 font-bold text-body">Revisions</div>
+      {rp && (
+        <div data-testid="repriced-line" className="mb-2 text-status-amber">
+          Moved to today's prices on {rp.repriced_at ? dmy(rp.repriced_at) : '—'}, from REV {revNumber(rp.from_version)}
+        </div>
+      )}
+      {chain.revisions.length > 1 && (
+        <table className="w-full text-left">
+          <thead className="text-[11px] text-muted">
+            <tr><th className="py-1 pr-3">REV</th><th className="px-3">Saved</th><th className="px-3 text-right">Net total</th><th className="px-3">Status</th><th /></tr>
+          </thead>
+          <tbody>
+            {chain.revisions.map((r) => {
+              const mine = r.id === me
+              return (
+                <tr key={r.id} data-testid="revision-row" data-rev={r.rev}
+                    className={`border-t border-line ${mine ? 'bg-primary-light/40' : ''} ${r.deleted ? 'text-muted' : ''}`}>
+                  <td className="py-1 pr-3 font-mono font-bold">
+                    REV {r.rev}
+                    {r.is_latest && (
+                      <span className="ml-1 rounded-full bg-status-green/15 px-1.5 py-0.5 font-sans text-[10px] font-bold text-status-green">Latest</span>
+                    )}
+                  </td>
+                  <td className="px-3">{r.created_at ? `${dmy(r.created_at)} ${hhmm(r.created_at)}` : '—'}</td>
+                  <td className="px-3 text-right tabular-nums">{r.net_total != null ? zar(r.net_total) : '—'}</td>
+                  <td className="px-3">{r.deleted ? 'Deleted' : statusWords(r.status)}</td>
+                  <td className="px-3 text-right">
+                    {mine ? <span className="text-muted">this one</span>
+                      : r.deleted ? null
+                      : <Link to={`/costings/${encodeURIComponent(quote)}?id=${r.id}`} className="text-primary underline">Open</Link>}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
   )
 }

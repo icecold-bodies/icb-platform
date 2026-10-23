@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from app.database import CalculationRecord, User
 from app.models.mes import ChassisRecord, PrejobCard, PrejobTemplate, ProductionJob
+from app.services import revisions   # RT10 — REV n on the card, its PDF and its emails
 from app.services.costing_attribution import rep_user_id
 
 logger = logging.getLogger("icb.prejob")
@@ -254,6 +255,8 @@ def list_outstanding_signoffs(db: Session) -> list[dict]:
             "id": c.id,
             "production_job_id": job_by_calc.get(c.calculation_id),   # WO v4.36b §3.4 — flag-join key
             "quote_number": calc.quote_number if calc else None,
+            "quote_label": (revisions.staff_label(calc.quote_number, revisions.version_of(calc.result_json))
+                            if calc is not None and calc.quote_number else None),   # RT10
             "customer_name": customers.get(calc.customer_id) if (calc and calc.customer_id) else None,
             "sent_for_check_at": c.sent_for_check_at,
             "sales_rep_username": names.get(c.sales_rep_user_id),
@@ -559,7 +562,9 @@ def _deliver_check_emails(emails: list, card_id: int) -> None:
 # ── §3.6 — PDF + email content (the §0.11 transitional mailto pattern) ───────
 def _display_bits(db: Session, card: PrejobCard) -> dict:
     calc = db.get(CalculationRecord, card.calculation_id)
-    quote = calc.quote_number if calc else None
+    # RT10 — the card, its PDF, its emails and its notifications name the exact revision production builds
+    quote = (revisions.staff_label(calc.quote_number, revisions.version_of(calc.result_json))
+             if calc is not None and calc.quote_number else None)
     customer = None
     if calc is not None and calc.customer_id:
         from app.database import Customer

@@ -29,6 +29,7 @@ from sqlalchemy.orm import Session
 
 from ..database import CalculationRecord, TrailerType, ValidatedReference, get_db
 from ..deps import require_admin, require_perm, require_user, user_can
+from ..services import revisions   # RT10
 from ..services.validated_references import (
     compare_to_reference,
     config_fingerprint,
@@ -73,6 +74,8 @@ def _serialize(ref: ValidatedReference, rec: CalculationRecord | None,
         "created_at": ref.created_at.isoformat() if ref.created_at else None,
         "active": bool(ref.active),
         "quote_number": rec.quote_number if rec else None,
+        "quote_label": (revisions.staff_label(rec.quote_number, revisions.version_of(rec.result_json), rec.id)
+                        if rec else None),   # RT10
         "status": (rec.status if rec else None),
         "dims": {k: dims.get(k) for k in ("length", "width", "height")},
         "reference_total": round(manufacturing_total(result), 2),

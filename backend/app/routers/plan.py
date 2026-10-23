@@ -24,6 +24,7 @@ from ..database import CalculationRecord, User, get_db
 from ..deps import require_user, user_can
 from ..models.mes import PlanFloorState, PrejobCard, ProductionJob
 from ..services import chassis as chassis_svc
+from ..services import revisions   # RT10 — the drawer names the costing by its REV
 from ..services.bom_order import order_result_items   # v1.54 — the calculator's BOM line order
 
 router = APIRouter(prefix="/api/plan", tags=["plan"])
@@ -215,6 +216,9 @@ def job_card(job_number: str, db: Session = Depends(get_db), user: User = Depend
             out["bom"] = {
                 "quote_number": rec.quote_number,
                 "version": int(result.get("version", 1) or 1),
+                # RT10 — the drawer reads "N10022/10/2026 · REV 1" (this "version" is the costing's own, REV + 1)
+                "rev": revisions.rev_number(result.get("version", 1)),
+                "label": revisions.staff_label(rec.quote_number, result.get("version", 1), rec.id),
                 "show_cost": show_cost,
                 "categories": categories,
                 "grand_total": (round(sum(cats[c]["total"] for c in order), 2) if show_cost else None),

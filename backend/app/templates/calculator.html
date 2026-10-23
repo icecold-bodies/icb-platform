@@ -656,48 +656,35 @@
 
 <!-- Duplicate costing modal -->
 <div class="modal-backdrop hidden" id="modal-duplicate">
-  <div class="modal" style="max-width:460px">
+  <div class="modal" style="max-width:520px">
     <div class="modal-header">
       <span class="modal-title" style="color:var(--orange)">⚠ Duplicate Costing Found</span>
       <button class="btn btn-icon" onclick="closeModal('modal-duplicate')">✕</button>
     </div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--text);margin-bottom:12px" id="dup-message"></p>
-      <div id="dup-version-list" style="font-family:var(--font-mono);font-size:12px;
+      <!-- RT10 (RULING_1 Q1) — the quote number is the chain: one row per QUOTE (its latest REV), each with the button
+           that saves this costing as that quote's next REV. The number is the quote's own; the server decides the REV. -->
+      <div id="dup-quote-list" data-testid="dup-quote-list" style="font-size:12px;
         background:var(--bg-panel);border:1px solid var(--border);
-        border-radius:var(--radius);padding:10px 14px;margin-bottom:4px;
-        line-height:2"></div>
+        border-radius:var(--radius);padding:8px 12px;margin-bottom:4px"></div>
       <p style="font-size:11px;color:var(--text-dim);margin-top:10px">
         Choose how to proceed:
       </p>
     </div>
-    <!-- Nadie WO (16 Jul): third escape hatch — a genuinely NEW costing (fresh quote number,
-         nothing linked, nothing deleted). Primary: the most common sales intent (three different
-         Meathangers are three quotes, not revisions). The reuse checkbox belongs to the Revision
-         button only, so it lives directly above it and dims while Save-as-new is hovered/focused. -->
+    <!-- Nadie WO (16 Jul): a genuinely NEW costing (fresh quote number, REV 0, nothing linked, nothing deleted) is the
+         primary: three different Meathangers are three quotes, not revisions. A revision is chosen per quote above. -->
     <div class="modal-footer" style="flex-direction:column;gap:8px;align-items:stretch">
       <button class="btn btn-primary" style="width:100%;justify-content:center"
-        id="dup-savenew-btn"
-        onclick="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity='';approveWithAction('save_as_new')"
-        onmouseenter="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity='.35'"
-        onmouseleave="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity=''"
-        onfocus="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity='.35'"
-        onblur="var w=document.getElementById('dup-reuse-qno-wrap');if(w)w.style.opacity=''">
-        ✚ Save as new costing
+        id="dup-savenew-btn" onclick="approveWithAction('save_as_new')">
+        ✚ Save as new costing (a new quote number, REV 0)
       </button>
-      <label id="dup-reuse-qno-wrap" style="display:none;font-size:12px;margin:2px 2px -2px;cursor:pointer;user-select:none">
-        <input type="checkbox" id="dup-reuse-qno" style="vertical-align:middle"> Reuse quote number
-        <span id="dup-reuse-qno-val" style="font-family:var(--font-mono);color:var(--blue-hi)"></span>
-        <span style="color:var(--text-dim)"> for this revision</span>
-      </label>
-      <button class="btn btn-outline" style="width:100%;justify-content:center"
-        id="dup-newver-btn" onclick="approveWithAction('new_version')">
-        ⊞ Save as Revision <span id="dup-next-ver"></span>
-      </button>
-      <button class="btn" style="width:100%;justify-content:center;
+      <!-- RT10 (RULING_1, G1) — Replace is a SOFT delete: it names what it moves to Deleted before the click -->
+      <p id="dup-replace-names" data-testid="dup-replace-names" style="font-size:11px;color:var(--text-dim);margin:2px 2px -2px"></p>
+      <button class="btn" id="dup-replace-btn" style="width:100%;justify-content:center;
         background:rgba(248,81,73,.15);border:1px solid var(--red);color:var(--red)"
         onclick="approveWithAction('replace')">
-        🗑 Replace — delete ALL this customer's costings for this body type, save new
+        🗑 Replace — move them to Deleted and save this as a new costing
       </button>
       <button class="btn btn-outline" style="width:100%;justify-content:center"
         onclick="closeModal('modal-duplicate')">Cancel</button>
@@ -715,11 +702,6 @@
     </div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--text);margin-bottom:12px" id="edit-save-summary"></p>
-      <label id="edit-reuse-qno-wrap" style="display:none;font-size:12px;margin-top:4px;margin-bottom:6px;cursor:pointer;user-select:none">
-        <input type="checkbox" id="edit-reuse-qno" style="vertical-align:middle" checked> Reuse quote number
-        <span id="edit-reuse-qno-val" style="font-family:var(--font-mono);color:var(--blue-hi)"></span>
-        <span style="color:var(--text-dim)"> for the new revision</span>
-      </label>
       <p style="font-size:11px;color:var(--text-dim);margin-top:10px">
         Choose how to save your changes:
       </p>
@@ -732,11 +714,13 @@
     <div class="modal-footer" style="flex-direction:column;gap:8px;align-items:stretch">
       <button class="btn btn-primary" id="edit-overwrite-btn" data-testid="edit-overwrite-btn" style="width:100%;justify-content:center"
         onclick="editSaveAction('overwrite')">
-        💾 Overwrite original — keep Rev<span id="edit-overwrite-ver"></span>
+        💾 Overwrite original — keep <span id="edit-overwrite-ver"></span>
       </button>
-      <button class="btn btn-outline" style="width:100%;justify-content:center"
+      <!-- RT10 — a body: "Save as new revision — REV n" (the quote's number, the server's next REV); a repair: what the
+           server does with it (RULING_1 Q2 a), "Save as a new repair quote" (its own number, REV 0) -->
+      <button class="btn btn-outline" id="edit-newver-btn" data-testid="edit-newver-btn" style="width:100%;justify-content:center"
         onclick="editSaveAction('new_version')">
-        ⊞ Save as new Revision <span id="edit-newver-ver"></span>
+        <span id="edit-newver-label">⊞ Save as new revision — <span id="edit-newver-ver"></span></span>
       </button>
       <button class="btn btn-outline" style="width:100%;justify-content:center;color:var(--text-dim)"
         onclick="closeModal('modal-edit-save')">Cancel</button>
@@ -1727,7 +1711,7 @@ const canCaptureForUser = {{ 'true' if user_can(user, 'costings.capture_for_user
    v=172 rather than either of them: both 170 and 171 have already been
    served, so a fresh number is the only value guaranteed not to hit a
    stale cached copy of one lane's file. #}
-<script defer src="/static/js/calculator.js?v=191"></script>
+<script defer src="/static/js/calculator.js?v=192"></script>
 <script>
 // ── Body Type Parameters accordion ──────────────────────────────────────────
 function toggleBTP() {

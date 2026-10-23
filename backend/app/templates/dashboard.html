@@ -316,11 +316,12 @@
           </td>
           <td class="customer-cell">{{ r.customer.name if r.customer else '—' }}</td>
           <td class="td-mono" style="text-align:center">
+            {# RT10 — REV = the stored version − 1 (Michael, 22 Oct): the first save is REV 0 #}
             {% if ver > 1 %}
             <span style="background:rgba(255,163,67,.15);color:#ffb340;border:1px solid rgba(255,163,67,.35);
-              border-radius:8px;padding:1px 6px;font-size:10px">Rev{{ ver }}</span>
+              border-radius:8px;padding:1px 6px;font-size:10px">REV {{ ver - 1 }}</span>
             {% else %}
-            <span style="color:var(--text-dim);font-size:11px">Rev1</span>
+            <span style="color:var(--text-dim);font-size:11px">REV 0</span>
             {% endif %}
           </td>
           <td>{{ r.rep_username }}</td>
@@ -657,8 +658,8 @@ async function filterRecent(filter, clickedCard) {
     tbody.innerHTML = rows.map(r => {
       const ver = r.version || 1;
       const verBadge = ver > 1
-        ? `<span style="background:rgba(255,163,67,.15);color:#ffb340;border:1px solid rgba(255,163,67,.35);border-radius:8px;padding:1px 6px;font-size:10px">Rev${ver}</span>`
-        : `<span style="color:var(--text-dim);font-size:11px">Rev1</span>`;
+        ? `<span style="background:rgba(255,163,67,.15);color:#ffb340;border:1px solid rgba(255,163,67,.35);border-radius:8px;padding:1px 6px;font-size:10px">REV ${ver - 1}</span>`
+        : `<span style="color:var(--text-dim);font-size:11px">REV 0</span>`;   // RT10 — REV = version − 1
       const st = _statusOf(r);
       const stateBtns = st === 'pending'
         ? `<button class="btn btn-success btn-sm btn-icon-only" title="Accept this calculation" onclick="acceptRecentCalculation(${r.id}, this)">✓</button>

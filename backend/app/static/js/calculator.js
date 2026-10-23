@@ -175,6 +175,19 @@ const OVERRIDE_SESSION_KEY = 'bom_price_overrides';
 let editingRecordId    = null;
 let editingVersion     = 1;
 let editingQuoteNumber = null;
+// RT10 — the edited record's chain, from GET /api/calculations/{id}: is_latest, latest_rev, latest_id, next_rev
+let editingChain       = {};
+
+// RT10 — Michael's rule (22 Oct): REV = the stored version − 1; the first save is REV 0. The one client mapping
+// on this page (services/revisions.py is the server's; frontend/src/lib/revisions.ts the SPA's).
+function revLabel(version) {
+  const v = parseInt(version, 10);
+  return 'REV ' + Math.max((isNaN(v) ? 1 : v) - 1, 0);
+}
+function _chainOf(p) {
+  return { is_latest: !(p && p.is_latest === false), latest_rev: p ? p.latest_rev : null,
+           latest_id: p ? p.latest_id : null, next_rev: p ? p.next_rev : null };
+}
 // While editing, pins the quote's body-variable values (insulation EPS/PU
 // thicknesses, by material name) so the recompute reproduces the saved figures
 // even if the Body Template's defaults changed since the quote saved.
@@ -1440,6 +1453,7 @@ function _saveReturnState(tid) {
         record_id: editingRecordId,
         version:   (typeof editingVersion     !== 'undefined' && editingVersion)     ? editingVersion     : 1,
         quote:     (typeof editingQuoteNumber !== 'undefined' && editingQuoteNumber) ? editingQuoteNumber : null,
+        chain:     (typeof editingChain !== 'undefined') ? editingChain : {},   // RT10
         // Replay-mode edits (legacy records, no ui_snapshot) recompute from the
         // PINNED saved result, not the live stores — the pins must ride along,
         // or the rebind would recompute from defaults and an Overwrite would
@@ -1533,6 +1547,7 @@ async function _restoreReturnState(tid) {
     editingRecordId    = st.editing.record_id;
     editingVersion     = st.editing.version || 1;
     editingQuoteNumber = st.editing.quote || null;
+    editingChain       = st.editing.chain || {};   // RT10
     if (typeof editReplay !== 'undefined' && st.editing.replay) editReplay = st.editing.replay;
     if (typeof editBodyVarOverrides !== 'undefined' && st.editing.body_var_overrides)
       editBodyVarOverrides = st.editing.body_var_overrides;
@@ -3050,6 +3065,7 @@ async function _openSavedRepair(payload, recordId, forEdit) {
     editingRecordId    = recordId;
     editingQuoteNumber = payload.quote_number || null;
     editingVersion     = payload.version || 1;
+    editingChain       = _chainOf(payload);   // RT10
     // v1.52 — the repair's rep, re-selected exactly as the body edit path does.
     setCaptureFor(payload.sales_rep_user_id, payload.sales_rep_username);
     // Kept so the surface can offer the repair QUOTATION (its document number
@@ -3322,6 +3338,7 @@ async function editCalculation(recordId) {
     editingRecordId    = recordId;
     editingVersion     = payload.version || 1;
     editingQuoteNumber = payload.quote_number || null;
+    editingChain       = _chainOf(payload);   // RT10
     // v1.52 — re-select who this costing is FOR, so an admin who only fixes a price
     // saves it back to the same person instead of silently taking it over.
     setCaptureFor(payload.sales_rep_user_id, payload.sales_rep_username);
@@ -3373,7 +3390,7 @@ async function editCalculation(recordId) {
     clearTimeout(calcTimer);
     _frozenDriftCheck();   // background — never touches the figures on screen
 
-    toast(`Editing ${editingQuoteNumber || ('#'+recordId)} · Rev${editingVersion}`, 'info');
+    toast(`Editing ${editingQuoteNumber || ('#'+recordId)} · ${revLabel(editingVersion)}`, 'info');
   } catch (e) {
     toast('Failed to load costing for editing: ' + e.message, 'error');
   } finally {
@@ -3390,10 +3407,18 @@ function showEditBanner(payload) {
     ? (allCustomers.find(c => String(c.id) === String(payload.customer_id))?.name || '')
     : '';
   const idLabel = editingQuoteNumber || ('#' + editingRecordId);
+  // RT10 — the edited revision's REV; editing an OLDER one says which REV is the latest, in one plain line with a
+  // link to it (never blocks: Save as Rev. from an older one still numbers after the whole chain)
+  const ch = (typeof editingChain !== 'undefined' && editingChain) || {};
+  const older = ch.is_latest === false && ch.latest_id && String(ch.latest_id) !== String(editingRecordId);
+  const latestLine = older
+    ? `<div data-testid="edit-banner-latest" style="margin-top:4px;font-size:12px;color:var(--orange)">REV ${escHtml(String(ch.latest_rev))} is the latest. ` +
+      `<a href="${escHtml(_skinnify(window.location.pathname))}?edit=${encodeURIComponent(ch.latest_id)}" style="color:var(--blue-hi);font-weight:600;text-decoration:underline">Open it instead?</a></div>`
+    : '';
   document.getElementById('edit-banner-text').innerHTML =
-    `✏️ Editing <strong>${escHtml(idLabel)}</strong> · Rev${editingVersion}` +
+    `✏️ Editing <strong>${escHtml(idLabel)}</strong> · <span data-testid="edit-banner-rev">${revLabel(editingVersion)}</span>` +
     (custName ? ` · ${escHtml(custName)}` : '') +
-    ` <span style="color:var(--text-dim)">— saving will ask to overwrite the original or save a new revision</span>`;
+    ` <span style="color:var(--text-dim)">— saving will ask to overwrite the original or save a new revision</span>` + latestLine;
   bar.classList.remove('hidden');
 }
 
@@ -7032,7 +7057,6 @@ async function runCalc() {
 }
 
 let _pendingApproveBase = null;   // base payload waiting on user's dup choice
-let _pendingNextVersion  = 2;
 
 async function approveCosting() {
   if (!lastCalcPayload) { toast('Nothing to approve — select a trailer first', 'error'); return; }
@@ -7072,29 +7096,23 @@ async function approveCosting() {
   // the new-quote duplicate flow below.
   if (editingRecordId) {
     _pendingApproveBase.edit_record_id = editingRecordId;
-    _pendingNextVersion = (editingVersion || 1) + 1;
     const idLabel = editingQuoteNumber || ('#' + editingRecordId);
     document.getElementById('edit-save-summary').innerHTML =
-      `You are editing <strong style="color:var(--text-head)">${escHtml(idLabel)}</strong> · Rev${editingVersion}` +
+      `You are editing <strong style="color:var(--text-head)">${escHtml(idLabel)}</strong> · ${revLabel(editingVersion)}` +
       (_pendingApproveBase.customer_id ? '' : ' <span style="color:var(--text-dim)">(no customer linked)</span>');
-    document.getElementById('edit-overwrite-ver').textContent = editingVersion;
-    document.getElementById('edit-newver-ver').textContent    = _pendingNextVersion;
+    document.getElementById('edit-overwrite-ver').textContent = revLabel(editingVersion);
+    // RT10 — the REV a new revision will get is the SERVER's (max over the chain, deleted rows included, + 1; the
+    // save decides it again under the row lock). A repair is saved as a new repair quote (RULING_1 Q2 a): say so.
+    const _nv = document.getElementById('edit-newver-label');
+    if (_nv) _nv.innerHTML = repairMode
+      ? '⊞ Save as a new repair quote'
+      : `⊞ Save as new revision — <span id="edit-newver-ver">REV ${escHtml(String(editingChain.next_rev ?? editingVersion))}</span>`;
     // RT8 (ratified default 4) — a re-priced quote saves as a NEW REVISION only: Overwrite is not offered, so the
     // revision the customer received stays exactly as sent. The server refuses it too.
     const _ow = document.getElementById('edit-overwrite-btn');
     if (_ow) _ow.style.display = repricedFrom ? 'none' : '';
     const _rpNote = document.getElementById('edit-save-repriced-note');
     if (_rpNote) _rpNote.style.display = repricedFrom ? '' : 'none';
-    const reuseWrap = document.getElementById('edit-reuse-qno-wrap');
-    const reuseBox  = document.getElementById('edit-reuse-qno');
-    const reuseVal  = document.getElementById('edit-reuse-qno-val');
-    if (reuseBox) reuseBox.checked = true;            // default: keep the same quote number
-    if (editingQuoteNumber && reuseWrap && reuseVal) {
-      reuseVal.textContent = editingQuoteNumber;
-      reuseWrap.style.display = '';
-    } else if (reuseWrap) {
-      reuseWrap.style.display = 'none';
-    }
     document.getElementById('modal-edit-save').classList.remove('hidden');
     return;
   }
@@ -7121,23 +7139,26 @@ async function approveCosting() {
     const dup = await api('GET', `/api/check-duplicate?customer_id=${customerId}&trailer_type_id=${trailerId}`);
     if (dup.has_duplicate) {
       const custName = allCustomers.find(c => String(c.id) === String(customerId))?.name || 'this customer';
+      const nq = (dup.quotes || []).length;
       document.getElementById('dup-message').innerHTML =
         `<strong style="color:var(--text-head)">${escHtml(custName)}</strong> already has
-         ${dup.count} costing${dup.count !== 1 ? 's' : ''} saved for this body type:`;
-      document.getElementById('dup-version-list').innerHTML = dup.records
-        .map(r => `<span style="color:var(--blue-hi)">Rev${r.version}</span> &nbsp;·&nbsp; ${escHtml(r.trailer)} &nbsp;·&nbsp; saved ${r.saved_at}`).join('<br>');
-      document.getElementById('dup-next-ver').textContent = dup.next_version;
-      _pendingNextVersion = dup.next_version;
-      const reuseWrap = document.getElementById('dup-reuse-qno-wrap');
-      const reuseBox  = document.getElementById('dup-reuse-qno');
-      const reuseVal  = document.getElementById('dup-reuse-qno-val');
-      if (reuseBox) reuseBox.checked = false;
-      if (dup.parent_quote_number && reuseWrap && reuseVal) {
-        reuseVal.textContent = dup.parent_quote_number;
-        reuseWrap.style.display = '';
-      } else if (reuseWrap) {
-        reuseWrap.style.display = 'none';
-      }
+         ${nq} quote${nq !== 1 ? 's' : ''} for this body type. Save this as a revision of one of them, or as a new costing:`;
+      // RT10 (RULING_1 Q1) — one row per QUOTE (its latest REV), with the revision button that names it: the
+      // revision keeps that quote's number and the server issues the REV shown here
+      document.getElementById('dup-quote-list').innerHTML = (dup.quotes || []).map(q => {
+        const qn = q.quote_number || ('#' + q.latest_id);
+        const many = q.revision_count > 1 ? ` · ${q.revision_count} revisions` : '';
+        return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0">
+          <span><strong style="font-family:var(--font-mono)">${escHtml(qn)} · REV ${+q.latest_rev}</strong>
+            <span style="color:var(--text-dim)"> · latest · saved ${escHtml(q.saved_at || '—')}${many}</span></span>
+          <button class="btn btn-outline btn-sm" data-testid="dup-revise-btn" onclick="approveWithAction('new_version', ${+q.latest_id})">⊞ Save as REV ${+q.next_rev} of ${escHtml(qn)}</button>
+        </div>`;
+      }).join('');
+      // RT10 (RULING_1, G1) — Replace is a soft delete: name what it moves to Deleted before the click
+      const doomed = (dup.records || []).map(r => r.label).filter(Boolean);
+      document.getElementById('dup-replace-names').textContent = doomed.length
+        ? `Replace moves ${doomed.length === 1 ? 'this costing' : 'these ' + doomed.length + ' costings'} to Deleted (restorable): ${doomed.join(', ')}.`
+        : '';
       document.getElementById('modal-duplicate').classList.remove('hidden');
       return;
     }
@@ -7146,23 +7167,21 @@ async function approveCosting() {
   await _doApprove(null, null);
 }
 
-async function approveWithAction(action) {
-  const reuseQno = action === 'new_version'
-    && !!document.getElementById('dup-reuse-qno')?.checked;
+// RT10 — `revisionOf` = the record id of the quote this costing revises (the duplicate modal's per-quote button):
+// the revision keeps that quote's number; the server issues the REV.
+async function approveWithAction(action, revisionOf) {
   closeModal('modal-duplicate');
-  await _doApprove(action, action === 'new_version' ? _pendingNextVersion : null, reuseQno);
+  await _doApprove(action, action === 'new_version' ? (revisionOf || null) : null);
 }
 
-// Edit-mode Save: 'overwrite' updates the original record in place; 'new_version'
-// branches a fresh revision (reusing the quote number if the box is ticked).
+// Edit-mode Save: 'overwrite' updates the original record in place; 'new_version' saves the quote's next REV,
+// always under its own number (RT10: the quote number is the chain).
 async function editSaveAction(action) {
-  const reuseQno = action === 'new_version'
-    && !!document.getElementById('edit-reuse-qno')?.checked;
   closeModal('modal-edit-save');
-  await _doApprove(action, action === 'new_version' ? _pendingNextVersion : null, reuseQno);
+  await _doApprove(action, null);
 }
 
-async function _doApprove(versionAction, nextVersion, reuseQno) {
+async function _doApprove(versionAction, revisionOf) {
   const btn      = document.getElementById('approve-btn');
   const doneBusy = showBusy(btn, 'Saving...');
   // Capture ratio at save time so the stored selling_price matches the calc panel total.
@@ -7176,8 +7195,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     const result = await api('POST', '/api/approve', {
       ..._pendingApproveBase,
       version_action: versionAction,
-      next_version:   nextVersion,
-      reuse_quote_number: versionAction === 'new_version' ? !!reuseQno : false,
+      revision_of_record_id: revisionOf || undefined,   // RT10 — the server numbers the revision, under the row lock
       ratio_value: (!isNaN(_ratioRaw) && _ratioRaw > 0) ? _ratioRaw : null,
       ratio_label: _ratioLbl || null,
       ui_snapshot: _buildUiSnapshot(),
@@ -7214,7 +7232,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
     if (docNo) _setRepairDocNumber(docNo);
     const docLabel = docNo ? ` · Document ${docNo}` : '';
     const custName    = result.customer_name ? ` for ${result.customer_name}` : '';
-    const verLabel    = result.version && result.version > 1 ? ` · Rev${result.version}` : '';
+    const verLabel    = ` · ${revLabel(result.version)}`;   // RT10 — REV 0 shown on staff screens too
     const wasEditing  = !!_pendingApproveBase?.edit_record_id;
     if (wasEditing) {
       const verbed = versionAction === 'overwrite' ? 'Overwrote' : 'Saved new revision';
@@ -7226,6 +7244,7 @@ async function _doApprove(versionAction, nextVersion, reuseQno) {
       editingRecordId    = null;
       editingQuoteNumber = null;
       editingVersion     = 1;
+      editingChain       = {};   // RT10
       editReplay         = null;
       editBodyVarOverrides = null;
       frozen = null; repricedFrom = null; _frozenReadOnly = false; _frozenReadOnlyMeta = null;   // RT8
@@ -8436,6 +8455,7 @@ async function recallValidatedReference(refId) {
     editingRecordId    = null;
     editingVersion     = 1;
     editingQuoteNumber = null;
+    editingChain       = {};   // RT10
     editReplay         = null;
     lastRecordId       = null;
     // ...which makes this a fresh-start site like Duplicate and Edit, so it owes

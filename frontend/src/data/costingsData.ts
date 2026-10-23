@@ -93,6 +93,14 @@ export interface Costing {
   // live-only and FKs prejob_cards.calculation_id to it, §0.7).
   calculation_id?: number
   quote_number: string
+  // RT10 — the stored version, its REV (= version − 1) and the chain, from the server (one helper there):
+  // revision_count = the quote's LIVE revisions; latest_* = its highest live version; is_latest on that row only
+  version?: number
+  rev?: number
+  revision_count?: number
+  latest_rev?: number | null
+  latest_id?: number | null
+  is_latest?: boolean
   customer_id: number
   customer_name: string
   contact_name?: string            // customer-contacts WO — attention-of snapshot (0035)
@@ -352,6 +360,14 @@ export const ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
 export interface LiveCalculation {
   id: number
   quote_number: string | null
+  // RT10 — REV and the chain (services/revisions.py chain_info)
+  version?: number
+  rev?: number
+  revision_count?: number
+  latest_version?: number | null
+  latest_rev?: number | null
+  latest_id?: number | null
+  is_latest?: boolean
   trailer: string
   trailer_family?: BodyFamily | null  // RT3 — the body's family {id, name, colour, ink, sort_order}
   body_length?: number | null      // v1.44 R6 — entered length (m)
@@ -431,6 +447,12 @@ export function liveToCosting(r: LiveCalculation): Costing {
   return {
     calculation_id: r.id,            // WO v4.33 — the Pre-Job Card FK anchor (§0.7)
     quote_number: r.quote_number || `#${r.id}`,
+    version: r.version ?? 1,
+    rev: r.rev ?? Math.max((r.version ?? 1) - 1, 0),
+    revision_count: r.revision_count ?? 1,
+    latest_rev: r.latest_rev ?? null,
+    latest_id: r.latest_id ?? null,
+    is_latest: r.is_latest ?? true,
     customer_id: 0,
     customer_name: r.customer || '—',
     contact_name: r.contact_name ?? undefined,

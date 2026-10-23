@@ -1,0 +1,11 @@
+run 1 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 2 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 3 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 4 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 5 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 6 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 7 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 8 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 9 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+run 10 FAIL: E       AssertionError: Locator expected to contain text 'J144PF FORMATS BODY (6 m)' E       Actual value: Now costing body type : J144PF FORMATS BODY (13.6 m) OTHER  E       Call log: 
+== nc_nowait_delay: 0 passed, 10 failed of 10 (CPU throttle 1x, /api/trailers delay 2000 ms, NC=nowait)

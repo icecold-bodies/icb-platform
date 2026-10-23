@@ -21,6 +21,7 @@ import { ApiError } from '../../../lib/api'
 import { useToast } from '../../../components/ui/toast'
 import { useAppData } from '../../../store/AppDataContext'
 import { useCostings } from '../../../store/CostingsContext'
+import { rowKey, staffLabel } from '../../../lib/revisions'
 import { usePlanning } from '../../../store/PlanningContext'
 import { useRefetchOnFocus } from '../../../lib/useRefetchOnFocus'
 import { getChassisState, type PlanningJob, type PlanningSlot, type PlanningWeekCol } from '../../../lib/types'
@@ -279,7 +280,7 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
       toast.push({ kind: 'warn', message: 'Could not match this slot to a costing.' })
       return
     }
-    await markChassisReceived(costing.quote_number, todayIso(), byActor)
+    await markChassisReceived(costing, todayIso(), byActor)
     await refresh()
   }
 
@@ -505,13 +506,13 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
                 <div className="mb-3 space-y-2">
                   {ackCandidates.map((c) => (
                     <button
-                      key={c.quote_number}
+                      key={rowKey(c)}
                       onClick={() => setAckTarget(c)}
                       className="flex w-full items-start gap-2 rounded-md border-l-4 border-[#06B6D4] bg-[#06B6D4]/5 p-2 text-left hover:bg-[#06B6D4]/10 animate-pulseRing"
                     >
                       <CalendarDays size={14} className="mt-0.5 text-[#06B6D4]" />
                       <div className="flex-1">
-                        <div className="font-mono text-sm font-semibold">#{c.job_number_assigned ?? c.quote_number}</div>
+                        <div className="font-mono text-sm font-semibold">#{c.job_number_assigned ?? staffLabel(c.quote_number, c.version, c.rev)}</div>
                         <div className="text-xs text-body">{c.customer_name}</div>
                         <div className="mt-1 text-[10px] font-medium text-[#0E7490]">Awaiting Planning ack · click to acknowledge</div>
                       </div>
@@ -942,7 +943,7 @@ function LiveCockpit({ embedded = false, lockedJobIds, downstreamJobIds, renderS
         costing={ackTarget}
         onClose={() => setAckTarget(null)}
         onAcknowledge={async (c, payload) => {
-          await ackPlanning(c.quote_number, byActor, payload)
+          await ackPlanning(c, byActor, payload)
           await refresh()
           setAckTarget(null)
         }}

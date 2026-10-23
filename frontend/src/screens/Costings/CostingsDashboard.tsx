@@ -24,7 +24,8 @@ import { apiDelete, apiGet, apiPost } from '../../lib/api'
 import { ALL_STATUSES, isMyCosting, liveToCosting, type Costing, type LiveCalculation, type StatusName } from '../../data/costingsData'
 import { Tooltip } from '../../components/ui/Tooltip'
 import { FamilyChip } from '../../components/ui/FamilyChip'
-import { QuoteNumberCell, quoteSearchText } from './quoteIdentity'
+import { QuoteNumberCell, RevChip, quoteSearchText } from './quoteIdentity'
+import { groupRevisions, rowKey, staffLabel } from '../../lib/revisions'
 import { Card } from '../../components/ui/primitives'
 import { STATUS_STYLES, StatusPillCosting, statusFilterTooltipKey } from './statusPalette'
 import { CostingsKpiStrip } from './CostingsKpiStrip'
@@ -51,7 +52,11 @@ export function CostingsDashboard() {
   // for a few seconds, then drop the param so a reload does not re-pulse.
   const [searchParams, setSearchParams] = useSearchParams()
   const highlightQuote = searchParams.get('highlight')
+  // RT10 — the saved ROW (record id, from the embedded calculator); without one, the quote's latest revision
+  const highlightId = searchParams.get('hid')
   const [pulsing, setPulsing] = useState<string | null>(null)
+  const isPulsing = (c: Costing) =>
+    pulsing != null && (pulsing === rowKey(c) || (pulsing === `q:${c.quote_number}` && c.is_latest !== false))
   const highlightRef = useRef<HTMLTableRowElement | null>(null)
   const { mode, costings, statusCounts, acceptStage, refresh, scheduleRepairPhases, acceptCosting, declineCosting } = useCostings()
   const { profile, hasPermission, isAdmin, sessionUsername } = useAppData()
@@ -99,8 +104,8 @@ export function CostingsDashboard() {
   }, [toast])
 
   useEffect(() => {
-    if (!highlightQuote) return
-    setPulsing(highlightQuote)
+    if (!highlightQuote && !highlightId) return
+    setPulsing(highlightId ? `c${highlightId}` : `q:${highlightQuote}`)
     // The row may not be rendered yet (list still refetching) - retry briefly.
     let tries = 0
     const tick = window.setInterval(() => {
@@ -116,11 +121,12 @@ export function CostingsDashboard() {
       setPulsing(null)
       const next = new URLSearchParams(searchParams)
       next.delete('highlight')
+      next.delete('hid')
       setSearchParams(next, { replace: true })
     }, 6000)
     return () => { window.clearInterval(tick); window.clearTimeout(off) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [highlightQuote])
+  }, [highlightQuote, highlightId])
 
   async function doDelete(c: Costing) {
     if (!c.calculation_id) {
@@ -136,7 +142,7 @@ export function CostingsDashboard() {
       // status filter chips are derived from the SAME fetch, so a local removal
       // would leave the counts one ahead of the table.
       await refresh()
-      setToast(`Deleted ${c.quote_number}`)
+      setToast(`Deleted ${staffLabel(c.quote_number, c.version, c.rev)}`)
     } catch (e: any) {
       // The server refuses with 409 (scheduled work) or, since v1.50, 403 (not
       // your draft any more) and a sentence written for this dialog — show it
@@ -166,7 +172,7 @@ export function CostingsDashboard() {
     try {
       await apiPost(`/api/calculations/${c.calculation_id}/restore`, {})
       await Promise.all([loadDeleted(), refresh()])
-      setToast(`Restored ${c.quote_number}`)
+      setToast(`Restored ${staffLabel(c.quote_number, c.version, c.rev)}`)
     } catch (e: any) {
       setToast(e?.detail || e?.message || 'Could not restore this costing')
     }
@@ -230,7 +236,8 @@ export function CostingsDashboard() {
 
   // v1.49 — the Deleted view swaps the table's source. The status chips and the
   // mine/all scope describe LIVE work, so they are not applied to a recycle bin.
-  const rows = showDeleted ? deletedRows : filtered
+  // RT10 — a quote's revisions sit together, latest on top, where its latest falls in the list's order
+  const rows = showDeleted ? deletedRows : groupRevisions(filtered)
 
   function toggleStatus(s: StatusName) {
     setFilter((prev) => {
@@ -240,13 +247,17 @@ export function CostingsDashboard() {
     })
   }
 
-  function toggleSelect(qn: string) {
+  function toggleSelect(key: string) {
     setSelected((prev) => {
       const next = new Set(prev)
-      next.has(qn) ? next.delete(qn) : next.add(qn)
+      next.has(key) ? next.delete(key) : next.add(key)
       return next
     })
   }
+
+  // RT10 — the costing view of THIS row (its record id); a bare /costings/<quote> opens the quote's latest revision
+  const detailPath = (c: Costing) =>
+    `/costings/${encodeURIComponent(c.quote_number)}${c.calculation_id != null ? `?id=${c.calculation_id}` : ''}`
 
   // WO v4.33 §0.19 — bulk Pre-Job send DROPPED: the preview-and-edit flow is per-card
   // (template choice + section edits + signer selection can't be batched). Single-card only.
@@ -408,16 +419,19 @@ export function CostingsDashboard() {
             <tbody>
               {rows.map((c, i) => (
                 <tr
-                  key={c.quote_number}
-                  ref={c.quote_number === pulsing ? highlightRef : undefined}
+                  // RT10 — keyed by the RECORD id: keyed by the quote number, rows of one quote's revisions shared a
+                  // key and React left stale rows behind on a refresh (RT10_RETURN_1 §4.1: 27 rows for 25)
+                  key={rowKey(c)}
+                  ref={isPulsing(c) ? highlightRef : undefined}
                   data-testid="costing-row"
-                  data-highlighted={c.quote_number === pulsing ? 'true' : undefined}
+                  data-record-id={c.calculation_id}
+                  data-highlighted={isPulsing(c) ? 'true' : undefined}
                   className={`cursor-pointer border-b border-line hover:bg-primary-light/40 ${
-                    c.quote_number === pulsing
+                    isPulsing(c)
                       ? 'animate-pulseRing bg-primary-light/60 ring-2 ring-primary'
                       : i % 2 ? 'bg-surface-alt' : 'bg-white'
                   }`}
-                  onClick={() => nav(`/costings/${encodeURIComponent(c.quote_number)}`)}
+                  onClick={() => nav(detailPath(c))}
                   onContextMenu={(e) => {
                     // The browser menu is only suppressed for someone who has
                     // an action on THIS row — everyone else keeps normal
@@ -432,8 +446,8 @@ export function CostingsDashboard() {
                   <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
-                      checked={selected.has(c.quote_number)}
-                      onChange={() => toggleSelect(c.quote_number)}
+                      checked={selected.has(rowKey(c))}
+                      onChange={() => toggleSelect(rowKey(c))}
                       className="h-4 w-4 cursor-pointer"
                     />
                   </td>
@@ -443,6 +457,7 @@ export function CostingsDashboard() {
                       no second number, so the helper returns the bare value. */}
                   <td className="px-3 py-2 font-mono text-xs font-semibold">
                     <QuoteNumberCell c={c} />
+                    <RevChip c={c} deleted={showDeleted} />
                   </td>
                   {/* Nadie (20 Aug) — the END USER (the customer's own customer,
                       snapshotted on the costing in #141) in brackets after the
@@ -552,7 +567,7 @@ export function CostingsDashboard() {
                           </Link>
                         ) : (
                           <Link
-                            to={`/costings/${encodeURIComponent(c.quote_number)}`}
+                            to={detailPath(c)}
                             className="flex items-center gap-1 rounded-md border border-line bg-white px-2 py-1 text-xs font-semibold text-primary hover:bg-primary-light"
                           >
                             <Eye size={12} /> View
@@ -585,11 +600,11 @@ export function CostingsDashboard() {
                       {mode === 'live' && c.status === 'Accepted' && !c.production_job_id ? (
                         <Tooltip text="The costing was accepted but its production job wasn't created — retry (safe, idempotent).">
                           <button
-                            onClick={() => acceptCosting(c.quote_number)}
-                            disabled={acceptStage[c.quote_number] === 'accepting' || acceptStage[c.quote_number] === 'creating_job'}
+                            onClick={() => acceptCosting(c)}
+                            disabled={acceptStage[rowKey(c)] === 'accepting' || acceptStage[rowKey(c)] === 'creating_job'}
                             className="flex items-center gap-1 rounded-md bg-status-amber px-2 py-1 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
                           >
-                            {acceptStage[c.quote_number] === 'accepting' || acceptStage[c.quote_number] === 'creating_job'
+                            {acceptStage[rowKey(c)] === 'accepting' || acceptStage[rowKey(c)] === 'creating_job'
                               ? <Spinner size={12} />
                               : <RotateCw size={12} />} Retry job creation
                           </button>
@@ -658,7 +673,7 @@ export function CostingsDashboard() {
         costing={repairTarget}
         onClose={() => setRepairTarget(null)}
         onSchedule={async (c, phases) => {
-          await scheduleRepairPhases(c.quote_number, phases)
+          await scheduleRepairPhases(c, phases)
           setRepairTarget(null)
         }}
       />
@@ -666,7 +681,7 @@ export function CostingsDashboard() {
         costing={acceptTarget}
         onClose={() => setAcceptTarget(null)}
         onConfirm={async (c) => {
-          await acceptCosting(c.quote_number)
+          await acceptCosting(c)
           setAcceptTarget(null)
         }}
       />
@@ -674,7 +689,7 @@ export function CostingsDashboard() {
         costing={declineTarget}
         onClose={() => setDeclineTarget(null)}
         onConfirm={async (c, reason) => {
-          await declineCosting(c.quote_number, reason)
+          await declineCosting(c, reason)
           setDeclineTarget(null)
         }}
       />
@@ -693,7 +708,7 @@ export function CostingsDashboard() {
                style={{ left: Math.min(ctxMenu.x, window.innerWidth - 240),
                         top: Math.min(ctxMenu.y, window.innerHeight - 80) }}>
             <div className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
-              {ctxMenu.c.quote_number}
+              {staffLabel(ctxMenu.c.quote_number, ctxMenu.c.version, ctxMenu.c.rev)}
             </div>
             {showDeleted && isAdmin ? (
               <button data-testid="costing-ctx-restore"
@@ -723,7 +738,7 @@ export function CostingsDashboard() {
               <h2 className="text-base font-bold">Delete this costing?</h2>
             </div>
             <p className="mb-1 text-sm text-body">
-              <strong>{confirmRow.quote_number}</strong> — {confirmRow.customer_name}
+              <strong>{staffLabel(confirmRow.quote_number, confirmRow.version, confirmRow.rev)}</strong> — {confirmRow.customer_name}
             </p>
             <p className="mb-4 text-sm text-muted">
               It comes off the costings board. Nothing is destroyed — it stays

@@ -30,8 +30,8 @@ $Clone = 'C:\Users\micge\Documents\icb-platform'
 function Untracked() { $env:GIT_OPTIONAL_LOCKS = '0'; @(& git -C $Clone status --porcelain=v1 -uall 2>$null | Where-Object { $_ -like '`?`? *' }) }
 $UntrackedBefore = Untracked
 function WslPath($p) { $f = [System.IO.Path]::GetFullPath($p); '/mnt/' + $f.Substring(0,1).ToLower() + $f.Substring(2).Replace('\', '/') }
-$Up = WslPath (Join-Path $PSScriptRoot 'fakeprod_up.sh')
-function Fake([string[]]$a) { @(& wsl.exe -u root -- bash $Up @a 2>&1 | ForEach-Object { "$_" }) }
+$FakeSh = WslPath (Join-Path $PSScriptRoot 'fakeprod_up.sh')
+function Fake([string[]]$a) { @(& wsl.exe -u root -- bash $FakeSh @a 2>&1 | ForEach-Object { "$_" }) }
 $Script:Pass = 0; $Script:Fail = 0
 function Ok($m)  { $Script:Pass++; Write-Host "  ok    $m" }
 function Bad($m) { $Script:Fail++; Write-Host "  FAIL  $m" }
@@ -57,8 +57,8 @@ Add-Type -TypeDefinition (Get-Content -Raw -Path $StubSrc) -Language CSharp -Out
 Copy-Item (Join-Path $StubDir 'ssh.exe') (Join-Path $StubDir 'scp.exe')
 
 # ---- 2. the fake prod and the stage copy ----------------------------------------------------------------------------
-$up = Fake @('up'); $up | ForEach-Object { Write-Host "   $_" }
-if (-not ($up | Where-Object { $_ -match '^SIM=' })) { Quit "the fake prod did not come up" }
+$upOut = Fake @('up'); $upOut | ForEach-Object { Write-Host "   $_" }
+if (-not ($upOut | Where-Object { $_ -match '^SIM=' })) { Quit "the fake prod did not come up" }
 Copy-Item -Recurse $RealStage $Stage
 $hostLine = "`$Vm     = 'mickeyger@192.168.0.251'"
 $rc1 = Join-Path $Stage 'run_check.ps1'
@@ -86,12 +86,12 @@ $ell = [string][char]0x2026; $arr = [string][char]0x2192
 function Cut($s) { foreach ($m in @(" $ell", " $arr", $ell, $arr)) { $i = $s.IndexOf($m); if ($i -ge 0) { $s = $s.Substring(0, $i) } }; $s.TrimEnd() }
 $WantFirst = Cut $b.Groups['first'].Value; $WantEnd = Cut $b.Groups['ends'].Value
 $Paste = $cmd.Replace($RealStage, $Stage)
-function Check-Run($label, $out, [int]$wantRc, $wantEnd) {
+function Check-Run($label, $out, [int]$wantRc, $endWant) {
   $first = ($out | Where-Object { $_.Trim() -ne '' } | Select-Object -First 1)
   $last = ($out | Where-Object { $_ -like '########*' } | Select-Object -Last 1)
   $okF = "$first".StartsWith($WantFirst.Substring(0, [Math]::Min($WantFirst.Length, 40)))
   $m = "$label`: exit $Script:LastRc; first '$first'; last '$last'"
-  if ($Script:LastRc -eq $wantRc -and $okF -and "$last".StartsWith($wantEnd)) { Ok $m; return $true }
+  if ($Script:LastRc -eq $wantRc -and $okF -and "$last".StartsWith($endWant)) { Ok $m; return $true }
   Bad $m; $out | Select-Object -Last 30 | ForEach-Object { Write-Host "        | $_" }; return $false
 }
 

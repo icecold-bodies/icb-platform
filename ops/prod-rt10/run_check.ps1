@@ -33,12 +33,12 @@ function Stop-Step($tag, $why, $after) {
 # ---- 1. where am I? (the first line, before anything else) ---------------------------------------------------------
 $vmHost = '?'; $vmHead = '?'; $vmBoot = '?'; $why = ''
 $sha = if (Test-Path $VmFile) { (Get-FileHash -Algorithm SHA256 $VmFile).Hash.ToLower() } else { 'missing' }
-$kitSha = if (Test-Path $Tar) { (Get-FileHash -Algorithm SHA256 $Tar).Hash.ToLower() } else { 'missing' }
+$tarSha = if (Test-Path $Tar) { (Get-FileHash -Algorithm SHA256 $Tar).Hash.ToLower() } else { 'missing' }
 $errFile = [System.IO.Path]::GetTempFileName()
 if ($sha -ne $VmSha) {
   $why = "KIT|$VmFile is $sha, the stage wrote $VmSha - tell the CA"
-} elseif ($kitSha -ne $KitSha) {
-  $why = "KIT|$Tar is $kitSha, the stage wrote $KitSha - tell the CA"
+} elseif ($tarSha -ne $KitSha) {
+  $why = "KIT|$Tar is $tarSha, the stage wrote $KitSha - tell the CA"
 } else {
   # no -q: scp -q also silences ssh's own reason (RT9, 22 Oct); its progress line goes to $null instead
   & scp -o BatchMode=yes -o ConnectTimeout=10 $VmFile "${Vm}:/tmp/icb-rt10-vm.sh" > $null 2>$errFile
@@ -64,7 +64,7 @@ if ($vmBoot -notmatch '^\d{4}-\d{2}-\d{2} ') { Stop-Step WHERE "prod's boot time
 if ($Heads -notcontains $vmHead) { Stop-Step WHERE "prod's code is $short, this check expects $(($Heads | ForEach-Object { $_.Substring(0,7) }) -join ' or ')" }
 
 # ---- 2. the kit -----------------------------------------------------------------------------------------------------
-Write-Host "== kit ok: icb-rt10-check.tar sha256 $($kitSha.Substring(0,12))..."
+Write-Host "== kit ok: icb-rt10-check.tar sha256 $($tarSha.Substring(0,12))..."
 & scp -o BatchMode=yes -o ConnectTimeout=10 $Tar "${Vm}:/tmp/icb-rt10-check.tar" > $null
 if ($LASTEXITCODE -ne 0) { Stop-Step COPY "scp of the kit failed (exit $LASTEXITCODE)" "nothing ran on prod. Paste the same line again." }
 & ssh -o BatchMode=yes -o ConnectTimeout=10 $Vm 'bash /tmp/icb-rt10-vm.sh unpack'

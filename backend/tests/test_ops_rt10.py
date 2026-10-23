@@ -193,6 +193,26 @@ def test_the_line_is_ascii_runs_files_by_path_and_never_pipes_the_sudo_session()
     assert "& scp -q" not in text                               # RT9's finding: -q hides ssh's own reason
 
 
+def ps_case_collisions(text: str) -> list[str]:
+    """PowerShell variable names ignore case: `$kitSha = …` overwrites `$KitSha`. Every name must have ONE spelling."""
+    spellings: dict = {}
+    for m in re.finditer(r"\$(?:script:)?([A-Za-z_][A-Za-z0-9_]*)", text):
+        spellings.setdefault(m.group(1).lower(), set()).add(m.group(1))
+    return sorted("/".join(sorted(v)) for v in spellings.values() if len(v) > 1)
+
+
+def test_no_powershell_variable_is_spelled_two_ways_in_the_line_or_its_sim():
+    # 23 Oct: run_check.ps1 computed $kitSha and compared it with $KitSha — one variable in PowerShell — so the
+    # tar's outer sha check always passed; the PS 5.1 sim's tampered-kit negative control caught it
+    for p in (KIT / "run_check.ps1", KIT / "sim" / "ps51" / "run_block.ps1"):
+        assert ps_case_collisions(p.read_text(encoding="ascii")) == [], p.name
+
+
+def test_negative_control_the_23_oct_shape_is_flagged():
+    v = "$KitSha = '602c'\n$kitSha = (Get-FileHash $Tar).Hash\nif ($kitSha -ne $KitSha) { exit 1 }\n"
+    assert ps_case_collisions(v) == ["KitSha/kitSha"]
+
+
 def test_the_vm_helper_acts_only_on_fixed_names():
     text = (KIT / "rt10_vm.sh").read_text(encoding="utf-8")
     names = re.search(r'NAMES="([^"]*)"', text).group(1).replace("$REPORT", "/tmp/icb-rt10-check-report.txt").split()

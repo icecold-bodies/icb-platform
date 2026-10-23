@@ -1,0 +1,32 @@
+{
+ "quote_number": "A156/10/2026",
+ "ids": {
+  "v1": 7067,
+  "v2": 7068,
+  "other": 7069,
+  "v3": 7070
+ },
+ "other_quote_number": "A157/10/2026",
+ "documents": {
+  "rev0": {
+   "heading": "A156/10/2026 — FREEZER MEDIUM (5.6 m)",
+   "email_subject": "Costing — A156/10/2026 — FREEZER MEDIUM (5.6 m)",
+   "word_first_line": "A156/10/2026 — FREEZER MEDIUM (5.6 m)",
+   "excel_first_cell": "A156/10/2026 — FREEZER MEDIUM (5.6 m)"
+  },
+  "rev1": {
+   "heading": "A156/10/2026 · REV 1 — FREEZER MEDIUM (5.6 m)",
+   "email_subject": "Costing — A156/10/2026 · REV 1 — FREEZER MEDIUM (5.6 m)",
+   "word_first_line": "A156/10/2026 · REV 1 — FREEZER MEDIUM (5.6 m)",
+   "excel_first_cell": "A156/10/2026 · REV 1 — FREEZER MEDIUM (5.6 m)"
+  },
+  "letterhead_rev0": {
+   "slug": "freezer_quote",
+   "ref_no": "A156/10/2026"
+  },
+  "letterhead_rev1": {
+   "slug": "freezer_quote",
+   "ref_no": "A156/10/2026 · REV 1"
+  }
+ }
+}

@@ -1,0 +1,29 @@
+db icb read_only on
+rows 31  live 27  deleted 4  repairs 11
+version key missing: 0  version values: {'1': 28, '2': 3}
+no quote number: []
+
+quote numbers with >1 row (all rows): 2   with >1 LIVE row: 1
+  A32795/07/2026: id 1638 v1 2026-07-07 12:40:18 planning, id 1642 v2 2026-07-08 07:18:01 pending
+  A32842/09/2026: id 1704 v1 DEL 2026-09-15 14:36:11 pending, id 1705 v2 DEL 2026-09-15 14:37:00 pending
+
+LIVE duplicate version numbers within one quote number: 0
+
+rows with version > 1 whose quote number is unique (a revision saved under a NEW number): 1
+  id 1631 A32793/07/2026 v2 2026-07-03 10:42:44
+
+rows carrying an RT8 repriced block: 0
+
+newest 12 live rows (created desc, the list API's order):
+  id 1707 A32844/09/2026 v1 2026-09-15 14:42:14 pending
+  id 1706 A32843/09/2026 v1 2026-09-15 14:37:46 R pending
+  id 1703 A32841/08/2026 v1 2026-08-26 08:56:04 R pending
+  id 1702 A32840/08/2026 v1 2026-08-25 17:52:49 R pending
+  id 1701 A32839/08/2026 v1 2026-08-22 07:22:50 R accepted
+  id 1700 A32838/08/2026 v1 2026-08-21 12:28:01 R pending
+  id 1698 A32836/08/2026 v1 2026-08-19 09:33:33 R pending
+  id 1697 A32835/08/2026 v1 2026-08-18 19:46:56 R planning
+  id 1695 A32833/08/2026 v1 2026-08-18 09:49:35 R planning
+  id 1694 A32832/08/2026 v1 2026-08-18 09:44:33 R planning
+  id 1693 A32831/08/2026 v1 2026-08-17 15:56:06 pending
+  id 1692 A32830/08/2026 v1 2026-08-11 10:20:42 pending

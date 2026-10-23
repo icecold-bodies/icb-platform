@@ -1,0 +1,123 @@
+{
+ "A_first_save": {
+  "id": 7053,
+  "quote_number": "A147/10/2026",
+  "stored_version": 1
+ },
+ "A_saves_1_2": [
+  {
+   "id": 7054,
+   "stored_version": 2,
+   "quote_number": "A147/10/2026",
+   "modal_offered": "2",
+   "banner": "\u270f\ufe0f Editing A147/10/2026 \u00b7 Rev1 \u00b7 RT10J CUSTOMER",
+   "summary": "You are editing A147/10/2026 \u00b7 Rev1"
+  },
+  {
+   "id": 7055,
+   "stored_version": 2,
+   "quote_number": "A147/10/2026",
+   "modal_offered": "2",
+   "banner": "\u270f\ufe0f Editing A147/10/2026 \u00b7 Rev1 \u00b7 RT10J CUSTOMER",
+   "summary": "You are editing A147/10/2026 \u00b7 Rev1"
+  },
+  {
+   "id": 7056,
+   "stored_version": 2,
+   "quote_number": "A147/10/2026",
+   "modal_offered": "2",
+   "banner": "\u270f\ufe0f Editing A147/10/2026 \u00b7 Rev1 \u00b7 RT10J CUSTOMER",
+   "summary": "You are editing A147/10/2026 \u00b7 Rev1"
+  }
+ ],
+ "A_save_3": {
+  "id": 7056,
+  "stored_version": 2,
+  "quote_number": "A147/10/2026",
+  "modal_offered": "2",
+  "banner": "\u270f\ufe0f Editing A147/10/2026 \u00b7 Rev1 \u00b7 RT10J CUSTOMER",
+  "summary": "You are editing A147/10/2026 \u00b7 Rev1"
+ },
+ "B_new_costing_on_top": {
+  "id": 7057,
+  "quote_number": "A148/10/2026"
+ },
+ "B_board": {
+  "api_rows": 25,
+  "dom_rows": 27,
+  "api_rows_with_quote": [
+   7056,
+   7055,
+   7054,
+   7053
+  ],
+  "dom_rows_with_quote": [
+   7055,
+   7054,
+   7056,
+   7055,
+   7054,
+   7053
+  ],
+  "dom_top_8": [
+   {
+    "id": 7055,
+    "qn": "A147/10/2026"
+   },
+   {
+    "id": 7054,
+    "qn": "A147/10/2026"
+   },
+   {
+    "id": 7057,
+    "qn": "A148/10/2026"
+   },
+   {
+    "id": 7056,
+    "qn": "A147/10/2026"
+   },
+   {
+    "id": 7055,
+    "qn": "A147/10/2026"
+   },
+   {
+    "id": 7054,
+    "qn": "A147/10/2026"
+   },
+   {
+    "id": 7053,
+    "qn": "A147/10/2026"
+   },
+   {
+    "id": 158,
+    "qn": "Q-32940"
+   }
+  ],
+  "position_of_new_costing_in_dom": 2,
+  "rows_above_new_costing_with_quote": [
+   7055,
+   7054
+  ],
+  "react_duplicate_key_warnings": 0
+ },
+ "B_after_reload": {
+  "dom_rows": 25,
+  "dom_rows_with_quote": [
+   7056,
+   7055,
+   7054,
+   7053
+  ]
+ },
+ "C_accept_clicked_on_row": 7056,
+ "C_requests": [
+  "/api/calculations/7053/accept",
+  "/api/production-jobs/from-calculation/7053"
+ ],
+ "D_row_clicked_record": 7053,
+ "D_url": "/mes-app/costings/A147%2F10%2F2026",
+ "D_detail_resolved_to": [
+  "7056"
+ ]
+}
+purged RT10J* rows

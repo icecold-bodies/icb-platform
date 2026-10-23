@@ -429,6 +429,12 @@ def on_startup():
         from .routers.import_excel import _apply_excel_folder_setting as _aefs; _aefs()
     except Exception as e:
         logger.warning(f"Could not apply excel folder setting on startup: {e}")
+    # RT10_RULING_2 — can this process render the letterhead quote? (WeasyPrint + a one-page smoke render; cached)
+    try:
+        from .report_engine import check_letterhead_quote
+        logger.info(f"Letterhead quote (Generate Quote) available: {check_letterhead_quote()}")
+    except Exception as e:
+        logger.warning(f"Letterhead quote check skipped: {e}")
     # Lazy commodity-quote refresh: if the latest quote is >24h old (or missing),
     # spin up a background thread to re-fetch from Yahoo. Only when the feature
     # is enabled. Belt-and-braces backup for prod cron; primary path for dev.

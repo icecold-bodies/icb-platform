@@ -67,12 +67,20 @@
     <button type="button" class="btn btn-primary btn-sm no-print"
             onclick="downloadRepairQuoteHere()"
             title="Generate the repair quotation on the ICB letterhead">📑 Generate Quote</button>
+    {# RT10_RULING_2 — the body letterhead quote is offered only where it can render (letterhead_quote_available:
+       WeasyPrint + a one-page smoke render, checked at start-up); then exactly as before RT10 #}
+    {% elif letterhead_quote_available and report_template %}
+    <a href="/results/{{ record.id }}/report" target="_blank" class="btn btn-primary btn-sm no-print" data-testid="generate-quote-btn" onclick="onExport(this,'Generating Quote…')" title="Generate {{ report_template.name }}">📑 Generate Quote</a>
+    {% elif letterhead_quote_available %}
+    <button class="btn btn-primary btn-sm no-print" disabled data-testid="generate-quote-btn"
+            style="opacity:.5;cursor:not-allowed"
+            title="No PDF quote template has been configured for this body type. Please contact your system administrator or developer.">📑 Generate Quote</button>
     {% endif %}
   {% endif %}
-  {# RT10_RULING_1A (Michael, 23 Oct) — the sales team sends the official quote from SAP; the MES "Generate Quote"
-     (/results/<id>/report, the letterhead templates) is withheld everywhere and this line stands in its place. The
-     route itself stays, for a later decision. The repair quotation above is Lezette's R-series document: unchanged. #}
-  {% if not repair_quote %}
+  {# RT10_RULING_1A / RULING_2 (Michael, 23 Oct) — where the letterhead quote cannot render (no WeasyPrint: today, on
+     :8000 and prod), the official quote comes from SAP and this line stands in the button's place; RT11 installs it.
+     The route itself is unchanged. The repair quotation above is Lezette's R-series document: unchanged. #}
+  {% if not repair_quote and not letterhead_quote_available %}
   <span class="no-print" data-testid="official-quote-sap" style="font-size:12px;color:var(--text-dim);align-self:center">Official quotes are issued from SAP.</span>
   {% endif %}
   {% endif %}{# /not deleted #}

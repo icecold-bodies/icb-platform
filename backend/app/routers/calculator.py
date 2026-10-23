@@ -2463,6 +2463,9 @@ async def api_get_calculation(record_id: int, request: Request, db: Session = De
         # RT10 — the same chain fields as the list (one helper), and the Revisions list for the costing view
         **{k: _chain[k] for k in ("version", "rev", "revision_count", "latest_version", "latest_rev", "latest_id",
                                   "is_latest")},
+        # the REV a Save as Rev. of this quote will get (max over the chain, deleted rows included, + 1) — what the
+        # edit-save modal offers; the save itself decides it again under the row lock
+        "next_rev":      revisions.rev_number(_chain["max_version"] + 1),
         "revisions":     revisions.revisions_of(db, rec),
         "quote_number":  rec.quote_number,
         "is_repair":     bool(getattr(rec, "is_repair", False)),

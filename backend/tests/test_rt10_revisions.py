@@ -326,6 +326,9 @@ def test_the_results_page_names_the_rev_withholds_generate_quote_and_says_sap(cl
     assert f"/results/{chain['first']}/report" not in html and "Generate Quote" not in html
     latest = client.get(f"/results/{chain['r5']}", headers=admin).text
     assert f"{chain['qn']} · REV 5" in latest and 'data-testid="results-rev-latest"' in latest
+    # the page's own Accept asks first on an older revision, and only there (the negative control: the latest)
+    assert "This is REV 0. REV 5 is the latest. Accept REV 0 anyway?" in html and "Accept an older revision" in html
+    assert "Accept an older revision" not in latest
 
 
 def test_the_costing_exports_show_rev_from_rev_1_and_nothing_on_rev_0(client, admin, chain):

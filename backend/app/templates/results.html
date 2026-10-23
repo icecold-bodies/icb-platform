@@ -720,6 +720,14 @@ function _replaceStatePillsWith(html) {
 }
 
 async function acceptFromResults(btn) {
+  {# RT10 (RULING_1, G1) — Accept on a revision that is not the latest live one asks first, in one plain line (an
+     in-page dialog: a native one dies silently in the MES iframe) #}
+  {% if not rev_chain.is_latest and rev_chain.latest_id and rev_chain.latest_id != record.id %}
+  {% set _rv = (result_version - 1) if (result_version and result_version > 1) else 0 %}
+  const _older = await confirmModal('This is REV {{ _rv }}. REV {{ rev_chain.latest_rev }} is the latest. Accept REV {{ _rv }} anyway?',
+    { title: 'Accept an older revision', okText: 'Accept REV {{ _rv }}' });
+  if (!_older) return;
+  {% endif %}
   const orig = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner spinner-sm"></span> Saving…';

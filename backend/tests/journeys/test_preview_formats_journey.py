@@ -26,11 +26,13 @@ from __future__ import annotations
 import datetime as _dt
 import io
 import json
+import os
 
 import pytest
 from playwright.sync_api import Page, expect
 
-from _common import wait_embedded_calculator_ready, admin_session, role_session, shot  # noqa: E402  (sys.path set in conftest)
+from _common import (wait_calculator_ready, wait_embedded_calculator_ready, admin_session, role_session,  # noqa: E402
+                     shot)  # (sys.path set in conftest)
 
 T = 15_000
 JOURNEY = "preview_formats"
@@ -281,9 +283,21 @@ def test_costing_detail_export_and_length_display(page: Page, live_server: str, 
 def test_banner_length_live(page: Page, live_server: str, staged) -> None:
     ids = staged
     admin_session(page, base=live_server)
+    # RT10 (dispatch default 13) — the RT9 CI flake ("13.6 m" where 6 m was due): the select's onchange (loadBOM)
+    # reads the body's defaults from /api/trailers, which the calculator's init loads first; a body picked before
+    # that answer keeps the length field's HTML default, 13.6. RT10_DELAY_TRAILERS_MS holds that answer back to show
+    # it every time, and RT10_NC=nowait removes the wait below (the negative control). Never set in CI.
+    delay = int(os.environ.get("RT10_DELAY_TRAILERS_MS", "0") or 0)
+    if delay:
+        def _late(route):
+            page.wait_for_timeout(delay)
+            route.continue_()
+        page.route("**/api/trailers", _late)
     page.goto("/calculator")
 
     expect(page.locator("#trailer-select")).to_be_visible(timeout=T)
+    if os.environ.get("RT10_NC") != "nowait":
+        wait_calculator_ready(page)          # RT7's helper: the init (and its /api/trailers) has finished
     page.locator("#trailer-select").select_option(str(ids["trailer"]))
     banner = page.locator("#topbar-title")
     expect(banner).to_contain_text(f"{ids['name']} (6 m)", timeout=30_000)

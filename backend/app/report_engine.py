@@ -103,6 +103,34 @@ def build_explosive_quote_context(
     }
 
 
+# RT10_RULING_2 (Michael chose option B, 23 Oct) — the MES letterhead quote ("Generate Quote", /results/<id>/report)
+# is offered only where it can work: WeasyPrint imports AND a one-page smoke render returns a PDF. Checked once, at
+# start-up (main.on_startup), and cached for the process; RT11 installs WeasyPrint and the page needs no second change.
+# Where it cannot work the results page says "Official quotes are issued from SAP." instead of a button that 500s.
+_LETTERHEAD_OK: Optional[bool] = None
+
+
+def check_letterhead_quote() -> bool:
+    """Can this process render a letterhead quote? Imports WeasyPrint and renders one small page; True only when a
+    PDF comes back. Never raises: any failure (not installed, missing system libraries, a render error) is False."""
+    global _LETTERHEAD_OK
+    try:
+        from weasyprint import HTML
+        pdf = HTML(string="<html><body><p>ICB letterhead check</p></body></html>").write_pdf()
+        ok = isinstance(pdf, (bytes, bytearray)) and bytes(pdf[:5]) == b"%PDF-"
+    except Exception:
+        ok = False
+    _LETTERHEAD_OK = ok
+    return ok
+
+
+def letterhead_quote_available() -> bool:
+    """The cached answer of check_letterhead_quote (checked on first use if start-up did not run it)."""
+    if _LETTERHEAD_OK is None:
+        return check_letterhead_quote()
+    return _LETTERHEAD_OK
+
+
 def render_report(template_name: str, context: Dict[str, Any]) -> bytes:
     """Render a report template to PDF bytes via WeasyPrint."""
     try:

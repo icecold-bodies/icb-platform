@@ -30,6 +30,7 @@ from ..services import insulation_foam as pu_foam   # v1.51 — 32D PU FOAM vs 4
 from ..services import rule_guard                   # RT6 — Burt's insulation rules, enforced from the family
 from ..services import frozen_quote                 # RT8 — a re-opened quote is the saved quote
 from ..services import revisions                    # RT10 — REV n, the chain, Latest, server numbering
+from ..report_engine import letterhead_quote_available   # RT10_RULING_2 — the Generate Quote capability gate
 from ..services.frozen_quote import FrozenError
 from ..services import quote_document           # v1.51 — print modes
 from ..services.quote_document import has_repair_quote_document  # v1.48
@@ -1856,6 +1857,8 @@ async def results_page(record_id: int, request: Request, db: Session = Depends(g
         "rev_staff_label":   revisions.staff_label(rec.quote_number, result_version, rec.id),
         "rev_chain":         revisions.chain_info(db, [rec])[rec.id],
         "report_template":   report_template,
+        # RT10_RULING_2 — Generate Quote is offered only where the letterhead render can work (else the SAP line)
+        "letterhead_quote_available": letterhead_quote_available(),
         # v1.48 — a REPAIRS costing has no trailer type, so resolve_report_template
         # finds nothing and Generate Quote sat greyed out behind "no PDF quote
         # template has been configured for this body type". It DOES have a quote

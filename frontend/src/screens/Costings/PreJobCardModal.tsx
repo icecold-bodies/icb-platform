@@ -19,6 +19,7 @@ import { dmy } from '../../lib/format'
 import { compareTemplatesBySize } from '../../lib/templateSort'
 import { ChassisModelSelect } from '../Chassis/ChassisModelSelect'
 import type { Costing } from '../../data/costingsData'
+import { staffLabel } from '../../lib/revisions'
 
 interface SectionItem { text: string; note?: string | null; sub_items?: string[] | null; sap_item_code?: string | null }
 interface Section { name: string; items: SectionItem[] }
@@ -38,7 +39,7 @@ interface PrejobCard {
   planner_user_id: number | null; planner_signoff_at: string | null
   status: string; sent_for_check_at: string | null; reject_reason: string | null
   cc_recipients: string | null
-  quote_number: string | null; customer_name: string | null; template_name: string | null
+  quote_number: string | null; quote_label?: string | null; customer_name: string | null; template_name: string | null
   sales_rep_username: string | null; planner_username: string | null
 }
 
@@ -341,7 +342,7 @@ export function PreJobCardModal({
             <div className="min-w-0">
               <h3 className="text-lg font-bold text-body">Pre-Job Card</h3>
               <p className="truncate text-xs text-muted">
-                <span className="font-mono font-semibold">{card?.quote_number ?? costing.quote_number}</span>
+                <span className="font-mono font-semibold">{card?.quote_label ?? staffLabel(card?.quote_number ?? costing.quote_number, costing.version, costing.rev)}</span>
                 {' · '}{card?.customer_name ?? costing.customer_name} · internal sign-off (§0.2 — the customer never sees this)
               </p>
             </div>

@@ -4,6 +4,7 @@ import { SidePanel } from '../../components/ui/overlays'
 import { Tooltip } from '../../components/ui/Tooltip'
 import { data } from '../../data/mockData'
 import { costingsMock, type Costing, type RepairPhaseInsertion } from '../../data/costingsData'
+import { staffLabel } from '../../lib/revisions'
 
 // Phase Entry Points the planner can target — same vocabulary the production
 // dashboard uses for bays + the existing bays[] data.
@@ -87,7 +88,7 @@ export function RepairPhasePanel({
   }
 
   return (
-    <SidePanel title={costing ? `Repair · ${costing.quote_number}` : ''} open={!!costing} onClose={onClose} width="w-[520px]">
+    <SidePanel title={costing ? `Repair · ${staffLabel(costing.quote_number, costing.version, costing.rev)}` : ''} open={!!costing} onClose={onClose} width="w-[520px]">
       {costing && (
         <div className="space-y-4">
           <div className="rounded-md border border-line bg-surface-alt p-3">

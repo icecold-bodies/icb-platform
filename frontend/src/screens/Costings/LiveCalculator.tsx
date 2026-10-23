@@ -37,7 +37,7 @@ export function LiveCalculator() {
   // so yanking the page the instant the save returns would break real work
   // (and did break three journeys). "Stay" keeps the page; the lines are
   // already locked by the calculator, so staying cannot edit the record.
-  const [saved, setSaved] = useState<{ quote: string | null; left: number } | null>(null)
+  const [saved, setSaved] = useState<{ quote: string | null; id?: number | null; left: number } | null>(null)
   const [dialog, setDialog] = useState<{
     ratios: RatioOpt[]; selected: number | null; hasResult: boolean; contactEmail?: string
   } | null>(null)
@@ -69,7 +69,8 @@ export function LiveCalculator() {
         // jump — this page still hosts export/email and validated-reference
         // actions on the saved costing.
         const q: string | null = e.data?.quoteNumber ?? null
-        void refresh().then(() => setSaved({ quote: q, left: 5 }))
+        const id: number | null = e.data?.recordId ?? null   // RT10 — highlight THIS row, not every revision
+        void refresh().then(() => setSaved({ quote: q, id, left: 5 }))
       }
       if (e.data?.type === 'mes:export-options') {
         if (openTimer.current != null) { window.clearTimeout(openTimer.current); openTimer.current = null }
@@ -92,7 +93,9 @@ export function LiveCalculator() {
   useEffect(() => {
     if (!saved) return
     if (saved.left <= 0) {
-      nav(saved.quote ? `/costings?highlight=${encodeURIComponent(saved.quote)}` : '/costings')
+      nav(saved.quote
+        ? `/costings?highlight=${encodeURIComponent(saved.quote)}${saved.id != null ? `&hid=${saved.id}` : ''}`
+        : '/costings')
       return
     }
     const t = window.setTimeout(() => setSaved((x) => (x ? { ...x, left: x.left - 1 } : x)), 1000)

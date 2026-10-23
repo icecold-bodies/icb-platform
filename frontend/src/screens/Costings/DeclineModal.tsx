@@ -5,6 +5,7 @@ import { Spinner } from '../../components/ui/feedback'
 import { zar, dmy } from '../../lib/format'
 import { StatusPillCosting } from './statusPalette'
 import type { Costing } from '../../data/costingsData'
+import { staffLabel } from '../../lib/revisions'
 
 /**
  * Decline a Pending costing from the dashboard (Michael, 3 Jul — the legacy dashboard's ✗
@@ -41,7 +42,7 @@ export function DeclineModal({
 
           <div className="mb-3 rounded-md border border-line bg-surface-alt p-3 text-sm">
             <div className="flex items-center justify-between">
-              <span className="font-mono font-semibold">{costing.quote_number}</span>
+              <span className="font-mono font-semibold">{staffLabel(costing.quote_number, costing.version, costing.rev)}</span>
               <StatusPillCosting status={costing.status} />
             </div>
             <div className="mt-1 text-body">{costing.customer_name}</div>

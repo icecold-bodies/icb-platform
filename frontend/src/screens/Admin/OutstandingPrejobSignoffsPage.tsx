@@ -18,6 +18,7 @@ interface Outstanding {
   id: number
   production_job_id: number | null   // WO v4.36b §3.4 — flag-join key
   quote_number: string | null
+  quote_label?: string | null   // RT10 — N10022/10/2026 · REV 1
   customer_name: string | null
   sent_for_check_at: string | null
   sales_rep_username: string | null
@@ -117,7 +118,7 @@ export function OutstandingPrejobSignoffsPage() {
                 {filtered.map((r, i) => (
                   <tr key={r.id} data-testid="outstanding-row" data-id={r.id}
                     className={`border-b border-line ${i % 2 ? 'bg-surface-alt' : 'bg-white'}`}>
-                    <td className="px-3 py-2 font-mono text-xs font-semibold">{r.quote_number ?? '—'}</td>
+                    <td className="px-3 py-2 font-mono text-xs font-semibold">{r.quote_label ?? r.quote_number ?? '—'}</td>
                     <td className="px-3 py-2">
                       {r.customer_name ?? '—'}
                       {r.production_job_id != null && (

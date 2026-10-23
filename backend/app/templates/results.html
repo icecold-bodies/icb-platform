@@ -40,7 +40,7 @@
 {% set _calc = '/mes/calculator' if _mes else '/calculator' %}
 {% block breadcrumb %}
   <a href="{{ _calc }}" style="color:var(--text-dim);text-decoration:none">Calculator</a>
-  &nbsp;/&nbsp; <strong>Results {{ record.quote_number or ('#' ~ record.id) }}</strong>
+  &nbsp;/&nbsp; <strong>Results {{ rev_staff_label }}</strong>
 {% endblock %}
 {% block topbar_actions %}
   <a href="{{ _calc }}?from={{ record.id }}" class="btn btn-outline btn-sm no-print" title="Re-open with same dimensions in calculator">⧉ Duplicate</a>
@@ -67,13 +67,13 @@
     <button type="button" class="btn btn-primary btn-sm no-print"
             onclick="downloadRepairQuoteHere()"
             title="Generate the repair quotation on the ICB letterhead">📑 Generate Quote</button>
-    {% elif report_template %}
-    <a href="/results/{{ record.id }}/report" target="_blank" class="btn btn-primary btn-sm no-print" onclick="onExport(this,'Generating Quote…')" title="Generate {{ report_template.name }}">📑 Generate Quote</a>
-    {% else %}
-    <button class="btn btn-primary btn-sm no-print" disabled
-            style="opacity:.5;cursor:not-allowed"
-            title="No PDF quote template has been configured for this body type. Please contact your system administrator or developer.">📑 Generate Quote</button>
     {% endif %}
+  {% endif %}
+  {# RT10_RULING_1A (Michael, 23 Oct) — the sales team sends the official quote from SAP; the MES "Generate Quote"
+     (/results/<id>/report, the letterhead templates) is withheld everywhere and this line stands in its place. The
+     route itself stays, for a later decision. The repair quotation above is Lezette's R-series document: unchanged. #}
+  {% if not repair_quote %}
+  <span class="no-print" data-testid="official-quote-sap" style="font-size:12px;color:var(--text-dim);align-self:center">Official quotes are issued from SAP.</span>
   {% endif %}
   {% endif %}{# /not deleted #}
   <button class="btn btn-outline btn-sm no-print" onclick="window.print()">🖨 Print</button>
@@ -110,7 +110,7 @@
   <div>
     <div style="font-family:var(--font-mono);font-size:10px;color:var(--blue);
       letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:8px">
-      Costing Report {{ record.quote_number or ('#' ~ record.id) }}
+      Costing Report <span data-testid="results-rev-label">{{ rev_staff_label }}</span>
       {# v1.50 (Lezette, 22 Aug) — the R-series number the quotation prints as
          its Document Number, visible without downloading the PDF. #}
       {% if repair_document_number %}
@@ -120,11 +120,14 @@
         Document {{ repair_document_number }}
       </span>
       {% endif %}
-      {% if result_version and result_version > 1 %}
-      <span style="background:rgba(255,163,67,.15);color:#b45309;border:1px solid rgba(255,163,67,.4);
-        border-radius:10px;padding:1px 8px;font-size:10px;letter-spacing:.5px">
-        Rev{{ result_version }}
-      </span>
+      {# RT10 — REV n (= version − 1) beside the number; the latest live revision of a quote with several says so,
+         an older one names the latest and links to it. #}
+      {% if rev_chain.is_latest and rev_chain.revision_count > 1 %}
+      <span data-testid="results-rev-latest" style="background:rgba(22,163,74,.12);color:#15803d;border:1px solid rgba(22,163,74,.35);
+        border-radius:10px;padding:1px 8px;font-size:10px;letter-spacing:.5px">Latest</span>
+      {% elif not rev_chain.is_latest and rev_chain.latest_id and rev_chain.latest_id != record.id %}
+      <a data-testid="results-rev-latest-link" href="/results/{{ rev_chain.latest_id }}{{ '?skin=mes' if _mes else '' }}"
+        style="color:#b45309;text-transform:none;letter-spacing:0;font-size:11px;text-decoration:underline">REV {{ rev_chain.latest_rev }} is the latest →</a>
       {% endif %}
     </div>
     <h2 style="font-size:22px;color:var(--text-head);display:inline-flex;align-items:center;gap:12px">

@@ -17,6 +17,7 @@ from ..schemas.prejob import (
     RejectRequest, SignOffRequest, SubmitForCheck, TemplateOption, UserOption,
 )
 from ..services import prejob_cards as svc
+from ..services import revisions   # RT10
 
 router = APIRouter(prefix="/api/prejob-cards", tags=["prejob"])
 
@@ -26,6 +27,8 @@ def _out(db: Session, card: PrejobCard) -> PrejobCardOut:
     calc = db.get(CalculationRecord, card.calculation_id)
     if calc is not None:
         out.quote_number = calc.quote_number
+        if calc.quote_number:   # RT10 — the revision the card is for
+            out.quote_label = revisions.staff_label(calc.quote_number, revisions.version_of(calc.result_json))
         if calc.customer_id:
             cust = db.get(Customer, calc.customer_id)
             out.customer_name = cust.name if cust else None

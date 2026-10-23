@@ -169,6 +169,8 @@ class PrejobCardSummary(BaseModel):
     # WO — the LIVE linked chassis_records.vin (VIN of record), distinct from the attested vin_number;
     # lets the Planning-ack panel back-fill + lock the VIN box when one has been captured on the chassis.
     chassis_vin: Optional[str] = None
+    # RT10 — N10022/10/2026 · REV 1: the revision the card is for (staff screens show REV 0 too)
+    quote_label: Optional[str] = None
 
 
 class OutstandingSignoffOut(BaseModel):
@@ -177,6 +179,7 @@ class OutstandingSignoffOut(BaseModel):
     id: int
     production_job_id: Optional[int] = None   # WO v4.36b §3.4 — flag-join key (card carries no job FK)
     quote_number: Optional[str] = None
+    quote_label: Optional[str] = None         # RT10 — N10022/10/2026 · REV 1
     customer_name: Optional[str] = None
     sent_for_check_at: Optional[datetime] = None
     sales_rep_username: Optional[str] = None

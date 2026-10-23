@@ -35,6 +35,7 @@ from ..database import get_db, CalculationRecord, TrailerType, BillOfMaterial
 from ..deps import get_current_user, user_can
 from ..services import resolve_report_template, strip_excluded_items, _bom_load_options
 from ..services.costing_attribution import rep_username   # v1.52 capture-for-user
+from ..services import revisions                          # RT10 — REV n on the documents
 from ..services.bom_order import order_result_items        # v1.54 — the calculator's BOM line order
 from ..services.document_context import (
     VALID_DETAILS, VALID_FORMATS,
@@ -1090,7 +1091,9 @@ def _doc_ctx_for_record(rec: CalculationRecord, db: Session, *, detail, ratios_r
     derived = _derive_body_options_display(
         bom_rows, result.get("input_state") or {}, result.get("body_variables"))
 
-    quote_no = rec.quote_number or f"#{rec.id}"
+    # RT10 (RULING_1 Q4, mock-up approved) — a document shows the quote number alone at REV 0 ("the first save does
+    # not have a REV number ever") and `N · REV n` from REV 1; the email subject inherits this heading.
+    quote_no = revisions.doc_label(rec.quote_number, revisions.version_of(rec.result_json), rec.id)
     is_repair = bool(rec.is_repair)
     # v1.47 REPAIRS surface: a trailer-less repair. Heading names the repair and
     # its type; the spec block carries the repair identity instead of dimensions.
@@ -1625,7 +1628,9 @@ async def report_for_record(record_id: int, request: Request, db: Session = Depe
             dimensions=dims,
             result=result,
             created_at=rec.created_at,
-            quote_number=rec.quote_number,
+            # RT10 — the letterhead's REF. NO. / QUOTE NUMBER / ACCEPTANCE OF QUOTE NO carry `· REV n` from REV 1
+            quote_number=(revisions.doc_label(rec.quote_number, revisions.version_of(rec.result_json))
+                          if rec.quote_number else None),
         )
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))

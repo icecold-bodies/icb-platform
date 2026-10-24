@@ -1,0 +1,20 @@
+######## RT10 prod check (read only) · machine icb-mes-prod · db icb_platform @ 127.0.0.1:5432 · head a29db35 · boot 2026-10-11 08:02:53 SAST · 2026-10-23 17:18:12 SAST
+== prod: alembic 0053 · every session read-only · kit staged from 9345d87 · 2026-10-23 17:18:13 SAST
+== times are as the database stores them; its TimeZone setting is Africa/Johannesburg
+== 1. revisions: quote numbers with 2 or more rows (ids, versions, statuses, times; no names)
+   costings: 97 rows (82 live), 93 quote numbers
+   quote numbers with 2 or more rows: 2
+     N10021/10/2026
+       id 129    v1 REV 0     pending            created 2026-10-19 08:06:04  accepted -                    live     body    no job
+       id 135    v2 REV 1     pending            created 2026-10-22 17:09:19  accepted -                    live     body    no job
+     N10022/10/2026
+       id 130    v1 REV 0     pending            created 2026-10-19 08:09:17  accepted -                    DELETED  body    no job
+       id 131    v2 REV 1     pending            created 2026-10-22 12:44:59  accepted -                    DELETED  body    no job
+       id 132    v2 REV 1     pending            created 2026-10-22 13:00:43  accepted -                    DELETED  body    no job
+       id 133    v2 REV 1     pending            created 2026-10-22 13:01:08  accepted -                    DELETED  body    no job
+   live duplicate version numbers: 0
+   accepted while a newer live revision existed: 0
+   production jobs built from a revision that was not the latest live one when the job was created: 0
+   SUMMARY: 97 costings; 2 quote numbers with 2+ rows; 0 live duplicate versions; 0 accepted while a newer live revision existed; 0 jobs built from an older revision
+
+######## DONE (read only): 97 costings; 2 quote numbers with 2+ rows; 0 live duplicate versions; 0 accepted while a newer live revision existed; 0 jobs built from an older revision

@@ -115,9 +115,11 @@ HEAD=$WHERE_HEAD
 say "prod: db=$DBNAME alembic=$ALEMBIC_NOW code=${HEAD:0:7} mode=$MODE target=${TARGET:0:7} ($TAG) $(date -Is)"
 
 # ---- helpers -----------------------------------------------------------------------------------------------------
-STATICS="$STATIC_1|$STATIC_2"
-each_static() { # $1 = a function taking: template path v_before sha_before v_after sha_after
-  local IFS='|' s; for s in $STATICS; do IFS=' ' read -r t p vb sb va sa <<< "$s"; "$1" "$t" "$p" "$vb" "$sb" "$va" "$sa"; done
+each_static() { # $1 = a function taking: template path v_before sha_before v_after sha_after. IFS is never changed
+  # here: a `local IFS` would reach the called function too (bash scopes are dynamic) and break its word splitting —
+  # the happy sim's first run stopped on exactly that ("LOCAL LAN CF: invalid variable name").
+  local s t p vb sb va sa
+  for s in "$STATIC_1" "$STATIC_2"; do read -r t p vb sb va sa <<< "$s"; "$1" "$t" "$p" "$vb" "$sb" "$va" "$sa"; done
 }
 static_v_disk() { grep -o "${2##*/}?v=[0-9]*" "$REPO/backend/app/templates/$1" 2>/dev/null | cut -d= -f2 | tr '\n' ' ' | sed 's/ $//'; }
 static_sha_disk() { sha256sum "$REPO/backend/app/static/$1" 2>/dev/null | cut -d' ' -f1 || echo missing; }

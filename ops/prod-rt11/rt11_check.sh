@@ -175,8 +175,11 @@ rc=${PIPESTATUS[0]}
 # the kit goes now, DONE or STOP; the report stays only until the laptop has fetched it (then rt11_vm.sh readback)
 rm -rf --one-file-system -- "$BASE" "$BASE.tar"
 if [ -e "$BASE" ] || [ -e "$BASE.tar" ]; then kit="STILL THERE"; else kit="removed"; fi
+# the LAST write to the report comes BEFORE it is handed over: prod runs fs.protected_regular=2, under which even root
+# may not open (O_CREAT, as `tee -a` and `>>` do) a file in sticky /tmp that another user owns (23 Oct: the 3eb8def
+# kit's closing line hit "tee: … Permission denied" and never reached the report; RT11_RULING_0A)
+echo "== the kit on prod (/tmp/icb-rt11-check and its .tar): $kit; the report waits at $REPORT for the laptop" | tee -a "$REPORT"
 owner=${SUDO_USER:-}
 if [ -n "$owner" ] && [ "$owner" != root ]; then chown "$owner" "$REPORT" 2>/dev/null || true; fi
 chmod 644 "$REPORT"
-echo "== the kit on prod (/tmp/icb-rt11-check and its .tar): $kit; the report waits at $REPORT for the laptop" | tee -a "$REPORT"
 exit "$rc"

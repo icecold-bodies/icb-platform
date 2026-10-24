@@ -7,11 +7,13 @@
 #   rt11_vm.sh           the VM helper the line copies first (where / unpack / readback)
 #   run_check.ps1        the line itself, its placeholders filled (stage commit, prod's HEAD, both sha256s)
 # requirements-rt11.txt = the commit's backend/requirements.txt + the WeasyPrint pin (unless it already names one).
-# Prod must run v1.62.0 (v1.62.0^{commit}): the one HEAD the line accepts. LF bytes, no CR, ASCII .ps1, scripts parse.
+# Prod must run v1.62.0, or v1.63.0 once that tag exists (RT11_RULING_0A: RT12 takes prod to v1.63.0 first): the only
+# HEADs the line accepts. LF bytes, no CR, ASCII .ps1, scripts parse.
 set -u
 OUTDIR=${1:?usage: mkstage_check.sh <empty-out-dir> <commit>}
 SHA=$(git rev-parse --verify "${2:?commit}^{commit}") || exit 1
 REL=$(git rev-parse --verify "v1.62.0^{commit}") || { echo "STOP: no tag v1.62.0"; exit 1; }
+REL63=$(git rev-parse --verify -q "v1.63.0^{commit}") && REL="$REL $REL63"
 WEASY_PIN=weasyprint==70.0
 APT_PKGS="libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0"
 [ -n "$(git branch -r --contains "$SHA" 2>/dev/null)" ] || { echo "STOP: ${SHA:0:7} is on no origin branch: push it first"; exit 1; }
@@ -49,5 +51,5 @@ git cat-file blob "$SHA:ops/prod-rt11/run_check.ps1" | sed -e "s/__STAGED_FROM__
 grep -q '__[A-Z_]*__' "$OUTDIR/run_check.ps1" && { echo "STOP: run_check.ps1 still has a placeholder"; exit 1; }
 LC_ALL=C grep -q $'[\x80-\xff]' "$OUTDIR/run_check.ps1" && { echo "STOP: run_check.ps1 is not ASCII"; exit 1; }
 ( cd "$OUTDIR" && sha256sum icb-rt11-check.tar rt11_vm.sh run_check.ps1 > STAGE_SHA256SUMS && echo "STAGED_FROM=$SHA" > STAGED_FROM.txt )
-echo "staged the RT11 prod check from ${SHA:0:7} (prod must run v1.62.0 ${REL:0:7}; pin $WEASY_PIN; apt $APT_PKGS)"
+echo "staged the RT11 prod check from ${SHA:0:7} (prod must run: $(for h in $REL; do printf '%s ' "${h:0:7}"; done); pin $WEASY_PIN; apt $APT_PKGS)"
 cat "$OUTDIR/STAGE_SHA256SUMS"

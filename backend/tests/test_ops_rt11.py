@@ -179,6 +179,29 @@ def test_the_vm_helper_and_the_check_act_only_on_fixed_names():
     assert 'HOME="$BASE/pip/home" TMPDIR="$BASE/pip/tmp"' in CHECK
 
 
+def writes_after_handover(text: str) -> list[str]:
+    """RT11_RULING_0A — prod runs fs.protected_regular=2: once the report in /tmp is chown'd to the sudo user, root may
+    no longer open it with O_CREAT (`tee -a`, `>>`). Every write to it after the chown line is a defect."""
+    i = text.find('chown "$owner" "$REPORT"')
+    tail = text[i:] if i >= 0 else ""
+    return [l.strip() for l in tail.splitlines() if re.search(r'(tee -a|>>?)\s*"\$REPORT"', l)]
+
+
+def test_nothing_is_written_to_the_report_after_it_is_handed_over_and_the_sim_enforces_prods_tmp_rule():
+    assert writes_after_handover(CHECK) == []
+    assert CHECK.index('| tee -a "$REPORT"\nowner=') < CHECK.index('chown "$owner" "$REPORT"')   # the closing line first
+    fake = (KIT / "sim" / "fakeprod.sh").read_text(encoding="utf-8")
+    assert "export SUDO_USER=mickeyger" in fake and 'chmod 1777 "$SIM/tmp"' in fake
+    assert '[ "$(sysctl -n fs.protected_regular 2>/dev/null)" = 2 ]' in fake
+    assert "old_order" in (KIT / "sim" / "run_sim.sh").read_text(encoding="utf-8")   # the sim's negative control
+
+
+def test_negative_control_the_3eb8def_ending_is_caught():
+    old = ('owner=${SUDO_USER:-}\nif [ -n "$owner" ] && [ "$owner" != root ]; then chown "$owner" "$REPORT" 2>/dev/null || '
+           'true; fi\nchmod 644 "$REPORT"\necho "== the kit on prod: $kit" | tee -a "$REPORT"\nexit "$rc"\n')
+    assert writes_after_handover(old) == ['echo "== the kit on prod: $kit" | tee -a "$REPORT"']
+
+
 def test_the_runbook_block_is_the_agreed_shape_and_names_the_stage_line():
     md = RUNBOOK.read_text(encoding="utf-8").replace("\r\n", "\n")
     blocks = list(BLOCK.finditer(md))

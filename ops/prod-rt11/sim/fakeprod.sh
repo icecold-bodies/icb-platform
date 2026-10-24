@@ -25,12 +25,18 @@ fp_prod() {
   export SIMSTATE=$SIM/state
   mkdir -p "$SIM"/{bin,opt/icb-platform,tmp,state} || return 1
   . /etc/os-release; [ "$VERSION_ID" = 24.04 ] || { echo "SIM: run me in the Ubuntu 24.04 clone (this is $PRETTY_NAME)"; return 1; }
+  # prod's /tmp rule (RT11_RULING_0A): a sticky, root-owned 1777 /tmp under fs.protected_regular=2, and a NON-root sudo
+  # user the report is handed to — so a root append after the hand-over fails here exactly as it did on prod (23 Oct)
+  [ "$(sysctl -n fs.protected_regular 2>/dev/null)" = 2 ] || { echo "SIM: fs.protected_regular is not 2 here: the sim cannot prove the /tmp rule"; return 1; }
+  chown root:root "$SIM/tmp" && chmod 1777 "$SIM/tmp" || return 1
   [ -x "$FP_VENV_BASE/bin/python" ] || { echo "SIM: no base venv at $FP_VENV_BASE (fp_venv_base first)"; return 1; }
   ( cd "$SIM/opt/icb-platform" && git init -q && git -c protocol.file.allow=always fetch -q --depth 1 "file://$REPO_WIN" refs/tags/v1.62.0 \
       && git -c advice.detachedHead=false checkout -q --detach 'FETCH_HEAD^{commit}' ) || { echo "SIM: could not fetch v1.62.0"; return 1; }
   git -C "$SIM/opt/icb-platform" rev-parse HEAD > "$SIMSTATE/head"
   cp -a "$FP_VENV_BASE" "$SIM/opt/icb-platform/.venv" || return 1
   cp -a /etc "$SIM/etc" 2>/dev/null; mkdir -p "$SIM/etc/icb"
+  grep -q '^mickeyger:' "$SIM/etc/passwd" || { echo 'mickeyger:x:1500:1500:sim ssh user:/nonexistent:/usr/sbin/nologin' >> "$SIM/etc/passwd"
+    echo 'mickeyger:x:1500:' >> "$SIM/etc/group"; }
   printf '%s\n' 'DATABASE_URL=postgresql+psycopg://icb_app:sim-not-real@127.0.0.1:5432/icb_platform' \
     'SESSION_SECRET=sim-not-real' 'MES_DEMO_AUTOLOGIN_USER=' 'ICB_ENVIRONMENT=prod' > "$SIM/etc/icb/backend.env"
   chmod 600 "$SIM/etc/icb/backend.env"
@@ -62,7 +68,7 @@ EOF
   cat > "$SIM/bin/sudo" <<'EOF'
 #!/bin/bash
 while [ $# -gt 0 ]; do case "$1" in -u) shift 2;; -n|-E|-H) shift;; -*) shift;; *) break;; esac; done
-export SUDO_USER=root
+export SUDO_USER=mickeyger          # as on prod: the ssh user, not root (the check hands its report to this user)
 exec "$@"
 EOF
   chmod +x "$SIM/bin/"*

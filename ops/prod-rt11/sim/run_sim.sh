@@ -38,6 +38,7 @@ line() {
   [ -n "$hook" ] && eval "$hook"
   C=$(fp_run "sudo bash /tmp/icb-rt11-check/rt11_check.sh" 2>&1); CRC=$?
   REP=$(cat "$SIM/tmp/icb-rt11-check-report.txt" 2>/dev/null)
+  REPOWN=$(stat -c %u "$SIM/tmp/icb-rt11-check-report.txt" 2>/dev/null)   # 1500 = the fake prod's mickeyger
   KITLEFT=$(ls -A "$SIM/tmp" | grep -E '^icb-rt11-check(\.tar)?$' | tr '\n' ' ')
   R=$(fp_run "bash /tmp/icb-rt11-vm.sh readback" 2>&1); RRC=$?
   LEFT=$(ls -A "$SIM/tmp" | tr '\n' ' ')
@@ -50,6 +51,15 @@ expect_stop() { # $1 label, $2 the STOP tag, $3 a phrase the STOP line must carr
     bad "$1: exit $CRC, kit left '$KITLEFT', readback $RRC, /tmp '$LEFT'"; echo "$C" | tail -n 8 | sed 's/^/        | /'
   fi
 }
+old_order() { # the 3eb8def kit's ending: hand the report over (chown), THEN append the closing line — re-summed
+  local f=$SIM/tmp/icb-rt11-check/rt11_check.sh n
+  n=$(grep -n '^echo "== the kit on prod' "$f" | cut -d: -f1)
+  sed -n "${n}p" "$f" > "$SIM/closing.txt" && sed -i "${n}d" "$f" && sed -i "/^chmod 644 \"\$REPORT\"$/r $SIM/closing.txt" "$f"
+  [ "$(grep -n '^chmod 644 "$REPORT"$\|^echo "== the kit on prod' "$f" | cut -d: -f2 | cut -c1-5 | paste -sd,)" = "chmod,echo " ] \
+    || echo "SIM: old_order could not rebuild the 3eb8def ending" >&2
+  ( cd "$SIM/tmp/icb-rt11-check" && sha256sum rt11_check.sh lib/icb_where.sh expected.env requirements-rt11.txt > SHA256SUMS )
+}
+KITLINE='== the kit on prod (/tmp/icb-rt11-check and its .tar): removed; the report waits at /tmp/icb-rt11-check-report.txt for the laptop'
 venv_sum() { ( cd "$SIM/opt/icb-platform/.venv" && find . -type f -not -name pip.conf -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -c1-16 ); }
 
 echo "== 1. the happy path"
@@ -76,6 +86,18 @@ grep -qi "sim-not-real\|postgresql://\|icb_app" <<< "$C$REP" && bad "a password,
 [ -z "$KITLEFT" ] && ok "the kit removed itself when the check ended" || bad "kit left: $KITLEFT"
 [ "$RRC" = 0 ] && [ -z "$LEFT" ] && grep -q "absent      /tmp/icb-rt11-vm.sh (removed itself)" <<< "$R" && ok "readback: every name absent, the helper removed itself, /tmp empty" || bad "readback $RRC: $R / left '$LEFT'"
 [ "$(head -n1 <<< "$REP")" = "$(head -n1 <<< "$C")" ] && grep -q '^######## DONE' <<< "$REP" && ok "the report file = the window (first line to DONE)" || bad "the report differs from the window"
+[ "$REPOWN" = 1500 ] && [ "$(tail -n1 <<< "$REP")" = "$KITLINE" ] && ! grep -q 'Permission denied' <<< "$C" \
+  && ok "/tmp rule (sticky 1777, protected_regular=2, sudo user mickeyger): the report ends with the kit line, then is handed to mickeyger; no 'Permission denied'" \
+  || bad "/tmp rule: owner uid '$REPOWN', last line '$(tail -n1 <<< "$REP")', window: $(grep 'Permission denied' <<< "$C")"
+
+echo "== 1b. negative control: the 3eb8def ending (append AFTER the hand-over) fails under the same /tmp rule"
+reset; line 'old_order'
+if [ "$CRC" = 0 ] && grep -q 'tee: /tmp/icb-rt11-check-report.txt: Permission denied' <<< "$C" && [ "$REPOWN" = 1500 ] \
+   && [ "$(tail -n1 <<< "$REP")" != "$KITLINE" ] && [ -z "$LEFT" ]; then
+  ok "the old order: 'tee: … Permission denied' and the report lacks its closing line, as on prod 23 Oct 12:17"
+else
+  bad "the old order did NOT fail: exit $CRC, owner uid '$REPOWN', window: $(grep -c 'Permission denied' <<< "$C") denied, last line '$(tail -n1 <<< "$REP")'"
+fi
 
 echo "== 2. pip cannot reach PyPI: reported, and the check still ends DONE"
 reset; line 'fp_pip_offline on'

@@ -319,7 +319,9 @@ def test_replace_refuses_and_changes_nothing_when_a_costing_has_a_production_job
 
 
 # ── 5. the results page, the documents ───────────────────────────────────────
-def test_the_results_page_names_the_rev_withholds_generate_quote_and_says_sap(client, admin, chain):
+def test_the_results_page_names_the_rev_withholds_generate_quote_and_says_sap(client, admin, chain, monkeypatch):
+    from app import report_engine
+    monkeypatch.setattr(report_engine, "_LETTERHEAD_OK", False)        # no WeasyPrint (today: :8000 and prod)
     html = client.get(f"/results/{chain['first']}", headers=admin).text
     assert f"{chain['qn']} · REV 0" in html and "REV 5 is the latest" in html
     assert "Official quotes are issued from SAP." in html
@@ -369,3 +371,71 @@ def test_the_prejob_card_payloads_carry_the_revision_label():
     out = PrejobCardOut.model_construct()
     out.quote_label = "A1/10/2026 · REV 1"                # what routers/prejob_cards._out sets
     assert out.quote_label.endswith("REV 1")
+
+
+
+# ── 6. RT10_RULING_2 — "Generate Quote" is capability-gated (Michael chose option B; RT11 installs WeasyPrint) ──────
+def _gate_problems(html: str, available: bool, record_id: int) -> list[str]:
+    """What is wrong with the results page's quote area for a body costing, given the flag."""
+    probs = []
+    button = 'data-testid="generate-quote-btn"' in html
+    link = f"/results/{record_id}/report" in html
+    sap = "Official quotes are issued from SAP." in html
+    if available:
+        if not (button and link):
+            probs.append("the Generate Quote button is missing while the letterhead can render")
+        if sap:
+            probs.append("the SAP line shows while the letterhead can render")
+    else:
+        if button or link:
+            probs.append("the Generate Quote button shows while the letterhead cannot render")
+        if not sap:
+            probs.append("the SAP line is missing while the letterhead cannot render")
+    return probs
+
+
+@pytest.mark.parametrize("available", [True, False])
+def test_the_results_page_offers_generate_quote_only_where_the_letterhead_can_render(client, admin, ids, chain,
+                                                                                   monkeypatch, available):
+    if not ids["has_template"]:
+        pytest.skip("no report template in this database")
+    from app import report_engine
+    monkeypatch.setattr(report_engine, "_LETTERHEAD_OK", available)
+    html = client.get(f"/results/{chain['first']}", headers=admin).text
+    assert _gate_problems(html, available, chain["first"]) == []
+
+
+def test_negative_control_a_button_shown_without_the_capability_is_caught():
+    # the page as it would be if the template ignored the flag: the button AND no SAP line, with the flag False
+    shown = '<a href="/results/7/report" data-testid="generate-quote-btn">📑 Generate Quote</a>'
+    assert _gate_problems(shown, False, 7) == [
+        "the Generate Quote button shows while the letterhead cannot render",
+        "the SAP line is missing while the letterhead cannot render"]
+
+
+class _FakeHTML:
+    result = b"%PDF-1.7\n%fake"
+    raises = False
+
+    def __init__(self, string=None, **kw):
+        self.string = string
+
+    def write_pdf(self):
+        if _FakeHTML.raises:
+            raise OSError("cannot load library 'libpango-1.0-0'")
+        return _FakeHTML.result
+
+
+@pytest.mark.parametrize("case, want", [("renders", True), ("raises", False), ("not_a_pdf", False), ("missing", False)])
+def test_the_capability_is_weasyprint_plus_a_one_page_render(monkeypatch, case, want):
+    import sys
+    import types
+    from app import report_engine
+    fake = types.ModuleType("weasyprint")
+    fake.HTML = _FakeHTML
+    monkeypatch.setattr(_FakeHTML, "raises", case == "raises")
+    monkeypatch.setattr(_FakeHTML, "result", b"<html>not a pdf" if case == "not_a_pdf" else b"%PDF-1.7\n%fake")
+    monkeypatch.setitem(sys.modules, "weasyprint", None if case == "missing" else fake)   # None = ImportError
+    monkeypatch.setattr(report_engine, "_LETTERHEAD_OK", None)
+    assert report_engine.check_letterhead_quote() is want
+    assert report_engine.letterhead_quote_available() is want          # cached: no second render

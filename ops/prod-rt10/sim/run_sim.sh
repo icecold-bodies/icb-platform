@@ -38,6 +38,7 @@ line() {
   [ -n "$hook" ] && eval "$hook"
   C=$(fp_run "sudo bash /tmp/icb-rt10-check/rt10_check.sh" 2>&1); CRC=$?
   REP=$(cat "$SIM/tmp/icb-rt10-check-report.txt" 2>/dev/null)
+  ROWNER=$(stat -c %u "$SIM/tmp/icb-rt10-check-report.txt" 2>/dev/null)
   KITLEFT=$(ls -A "$SIM/tmp" | grep -E '^icb-rt10-check(\.tar)?$' | tr '\n' ' ')
   R=$(fp_run "bash /tmp/icb-rt10-vm.sh readback" 2>&1); RRC=$?
   LEFT=$(ls -A "$SIM/tmp" | tr '\n' ' ')
@@ -69,6 +70,14 @@ grep -qi "customer\|contact\|sim-not-real\|postgresql://" <<< "$C$REP" && bad "a
 [ -z "$KITLEFT" ] && ok "the kit removed itself when the check ended" || bad "kit left: $KITLEFT"
 [ "$RRC" = 0 ] && [ -z "$LEFT" ] && grep -q "absent      /tmp/icb-rt10-vm.sh (removed itself)" <<< "$R" && ok "readback: every name absent, the helper removed itself, /tmp empty" || bad "readback $RRC: $R / left '$LEFT'"
 [ "$(head -n1 <<< "$REP")" = "$(head -n1 <<< "$C")" ] && grep -q '^######## DONE' <<< "$REP" && ok "the report file = the window (first line to DONE)" || bad "the report differs from the window"
+# RT10_RULING_3 — prod's sticky /tmp + fs.protected_regular=2 + a non-root sudo user: the kit's last line must reach
+# the report (it is written before the chown) and nothing may say "Permission denied" (23 Oct 17:18 on prod)
+if ! grep -q 'Permission denied' <<< "$C" && tail -n1 <<< "$REP" | grep -q '^== the kit on prod (/tmp/icb-rt10-check and its .tar): removed' \
+   && [ "$ROWNER" = 1500 ]; then
+  ok "sticky /tmp, sudo user mickeyger (uid 1500): no 'Permission denied', the report ends with the kit line and is handed to uid $ROWNER"
+else
+  bad "sticky /tmp: owner '$ROWNER'; window says: $(grep 'Permission denied' <<< "$C" | head -n1); report's last line: $(tail -n1 <<< "$REP")"
+fi
 [ -z "$(find "$SIM/opt/icb-platform" -name __pycache__ | head -n1)" ] && ok "no __pycache__ under /opt/icb-platform" || bad "a __pycache__ appeared under /opt"
 
 echo "== 2. the negative controls: each STOPs for its own reason, and still leaves /tmp empty"

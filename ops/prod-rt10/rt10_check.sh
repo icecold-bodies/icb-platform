@@ -78,8 +78,11 @@ rc=${PIPESTATUS[0]}
 # the kit goes now, DONE or STOP; the report stays only until the laptop has fetched it (then rt10_vm.sh readback)
 rm -rf --one-file-system -- "$BASE" "$BASE.tar"
 if [ -e "$BASE" ] || [ -e "$BASE.tar" ]; then kit="STILL THERE"; else kit="removed"; fi
+# The last line goes in BEFORE the report is handed to the sudo user (RT10_RULING_3): prod's fs.protected_regular=2
+# refuses even root an O_CREAT open of a file another user owns in the sticky /tmp, so an append after the chown
+# printed "tee: … Permission denied" and the line was missing from the report (23 Oct 17:18; RT11 saw it too).
+echo "== the kit on prod (/tmp/icb-rt10-check and its .tar): $kit; the report waits at $REPORT for the laptop" | tee -a "$REPORT"
 owner=${SUDO_USER:-}
 if [ -n "$owner" ] && [ "$owner" != root ]; then chown "$owner" "$REPORT" 2>/dev/null || true; fi
 chmod 644 "$REPORT"
-echo "== the kit on prod (/tmp/icb-rt10-check and its .tar): $kit; the report waits at $REPORT for the laptop" | tee -a "$REPORT"
 exit "$rc"

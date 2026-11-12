@@ -13,6 +13,9 @@ SIMKIT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 fp_prod() {
   export SIMSTATE=$SIM/state
   mkdir -p "$SIM"/{bin,opt/icb-platform,tmp,state,fakepy} || return 1
+  # prod's /tmp: root-owned, world-writable, sticky — with the kernel's fs.protected_regular=2 (WSL2 = prod), root
+  # may not O_CREAT-open a file another user owns there (RT10_RULING_3: the 23 Oct "tee: Permission denied")
+  chmod 1777 "$SIM/tmp" || return 1
   cp -a "$SIMKIT/fakepy/." "$SIM/fakepy/" || return 1
   ( cd "$SIM/opt/icb-platform" && git init -q && git -c protocol.file.allow=always fetch -q --depth 1 "file://$REPO_WIN" refs/tags/v1.62.0 \
       && git -c advice.detachedHead=false checkout -q --detach 'FETCH_HEAD^{commit}' ) || { echo "SIM: could not fetch v1.62.0"; return 1; }
@@ -31,6 +34,9 @@ echo "python stub: unknown call: $*"; exit 4
 EOF
   chmod +x "$SIM/opt/icb-platform/.venv/bin/python"
   cp -a /etc "$SIM/etc" 2>/dev/null; mkdir -p "$SIM/etc/icb"
+  # prod's sudo user, so the kit's chown of the report is real (the fake /etc is the one bind-mounted in fp_run)
+  grep -q '^mickeyger:' "$SIM/etc/passwd" || echo 'mickeyger:x:1500:1500::/nonexistent:/usr/sbin/nologin' >> "$SIM/etc/passwd"
+  grep -q '^mickeyger:' "$SIM/etc/group" || echo 'mickeyger:x:1500:' >> "$SIM/etc/group"
   printf '%s\n' 'DATABASE_URL=postgresql+psycopg://icb_app:sim-not-real@127.0.0.1:5432/icb_platform' \
     'SESSION_SECRET=sim-not-real' 'MES_DEMO_AUTOLOGIN_USER=' 'ICB_ENVIRONMENT=prod' > "$SIM/etc/icb/backend.env"
   chmod 600 "$SIM/etc/icb/backend.env"
@@ -54,7 +60,7 @@ EOF
   cat > "$SIM/bin/sudo" <<'EOF'
 #!/bin/bash
 while [ $# -gt 0 ]; do case "$1" in -u) shift 2;; -n|-E|-H) shift;; -*) shift;; *) break;; esac; done
-export SUDO_USER=root
+export SUDO_USER=mickeyger          # as prod's sudo sets it: the user who typed the password
 exec "$@"
 EOF
   chmod +x "$SIM/bin/"*

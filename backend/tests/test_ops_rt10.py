@@ -213,6 +213,27 @@ def test_negative_control_the_23_oct_shape_is_flagged():
     assert ps_case_collisions(v) == ["KitSha/kitSha"]
 
 
+def appends_after_handover(text: str) -> list[int]:
+    """Line numbers of writes to the report ($REPORT) after the line that hands it to the sudo user (chown): on prod
+    (sticky /tmp, fs.protected_regular=2) root may not O_CREAT-open a file another user owns, so such a write fails."""
+    lines = text.splitlines()
+    ch = next((i for i, ln in enumerate(lines) if re.search(r"\bchown\b.*\$REPORT", ln)), None)
+    if ch is None:
+        return []
+    return [i + 1 for i in range(ch + 1, len(lines)) if re.search(r'(tee -a|>>)\s*"?\$REPORT', lines[i])]
+
+
+def test_nothing_is_written_to_the_report_after_it_is_handed_to_the_sudo_user():
+    # 23 Oct 17:18, prod: "tee: /tmp/icb-rt10-check-report.txt: Permission denied" (RT10_RULING_3)
+    assert appends_after_handover((KIT / "rt10_check.sh").read_text(encoding="utf-8")) == []
+
+
+def test_negative_control_the_23_oct_order_is_flagged():
+    old = ('chown "$owner" "$REPORT" 2>/dev/null || true\nchmod 644 "$REPORT"\n'
+           'echo "== the kit on prod" | tee -a "$REPORT"\nexit "$rc"\n')
+    assert appends_after_handover(old) == [3]
+
+
 def test_the_vm_helper_acts_only_on_fixed_names():
     text = (KIT / "rt10_vm.sh").read_text(encoding="utf-8")
     names = re.search(r'NAMES="([^"]*)"', text).group(1).replace("$REPORT", "/tmp/icb-rt10-check-report.txt").split()

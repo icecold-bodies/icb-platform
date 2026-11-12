@@ -127,19 +127,40 @@ $order = 'copy', 'preflight', 'all-before', 'deploy', 'all-after', 'doors', 'ver
 foreach ($k in $order) { if (-not $byStep.ContainsKey($k)) { Bad "the runbook has no block for '$k'" } }
 if ($win.Count -eq $order.Count) { Ok "the runbook has exactly the $($order.Count) staged-line blocks ($($order -join ', '))" } else { Bad "the runbook has $($win.Count) staged-line blocks, expected $($order.Count)" }
 
-# block B (the :8000 check) runs for real: read-only GETs of Michael's dev server, compared with his clone's files.
-# Before the release :8000 says v1.62.0, so it ends STOP [VERSION] with every byte check "same: yes"; after it, DONE.
+# block B (the :8000 check): the runbook's line, against a stand-in for :8000 (fake8000.py: Michael's clone's files,
+# read only, on a side port - :8000 is his, and it was down on 12 Nov) saying v1.62.0 first (block B must STOP
+# [VERSION] with every byte check "same: yes": the state before the merge) and then v1.63.0 (DONE: after it). The
+# same line is also pasted verbatim against the real :8000 when it answers (information only).
 $h = @($blocks | Where-Object { $_.Groups['cmd'].Value -like "*$RealLocal\check_8000.ps1*" })
-if ($h.Count -eq 1) {
-  $o = Invoke-Paste $h[0].Groups['cmd'].Value.Replace($RealLocal, $Local) '8000-check'
+$VersionFile = Join-Path $Work 'fake8000.version'
+[System.IO.File]::WriteAllText($VersionFile, "v1.62.0`n", (New-Object System.Text.ASCIIEncoding))
+$py = if (Test-Path 'C:\Users\micge\Documents\icb-platform\backend\.venv\Scripts\python.exe') { 'C:\Users\micge\Documents\icb-platform\backend\.venv\Scripts\python.exe' } else { 'python' }
+$Fake = Start-Process -FilePath $py -ArgumentList @('-I', (Join-Path $PSScriptRoot 'fake8000.py'), '8013', $Clone, $VersionFile) -PassThru -WindowStyle Hidden
+Start-Sleep -Seconds 2
+function Check-8000Block($suffix, $label, $wantRc, $wantLast) {
+  $o = Invoke-Paste ($h[0].Groups['cmd'].Value.Replace($RealLocal, $Local) + $suffix) $label
   $yes = @($o | Where-Object { $_ -match 'same: yes$|in the clone.s bundle: yes$' }).Count
   $last = ($o | Where-Object { $_ -like '########*' } | Select-Object -Last 1)
   $wf = Cut $h[0].Groups['first'].Value
   $first = ($o | Where-Object { $_.Trim() -ne '' } | Select-Object -First 1)
-  if ($yes -eq 4 -and "$first".StartsWith($wf) -and (($Script:LastRc -eq 0 -and $last -like '######## DONE - :8000 serves v1.63.0*') -or ($Script:LastRc -eq 1 -and $last -like '######## STOP [[]VERSION[]]: :8000 says*v1.62.0*'))) {
-    Ok ":8000 check line runs in PS 5.1: 4 byte checks 'same: yes' (calculator.js, calculator2.js, SPA bundle, SPA text); it ended '$last'"
-  } else { Bad ":8000 check line: exit $Script:LastRc, $yes 'yes' lines; first '$first'; last '$last'"; $o | ForEach-Object { Write-Host "        | $_" } }
+  if ($yes -eq 4 -and ("$first" -replace ':8013 \. ', ':8000 . ').StartsWith($wf) -and $Script:LastRc -eq $wantRc -and $last -like $wantLast) {
+    Ok "block B ($label): 4 byte checks 'same: yes' (calculator.js, calculator2.js, SPA bundle, SPA text); exit $Script:LastRc; it ended '$last'"
+  } else { Bad "block B ($label): exit $Script:LastRc, $yes 'yes' lines; first '$first'; last '$last'"; $o | ForEach-Object { Write-Host "        | $_" } }
+}
+if ($h.Count -eq 1) {
+  try {
+    (Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 'http://127.0.0.1:8013/health/version').Content | Out-Null
+    Check-8000Block ' -Base http://127.0.0.1:8013' 'stand-in says v1.62.0 (before the merge)' 1 '######## STOP [[]VERSION[]]: :8000 says*v1.62.0*'
+    [System.IO.File]::WriteAllText($VersionFile, "v1.63.0`n", (New-Object System.Text.ASCIIEncoding))
+    Check-8000Block ' -Base http://127.0.0.1:8013' 'stand-in says v1.63.0 (after the merge)' 0 '######## DONE - :8000 serves v1.63.0*'
+  } catch { Bad "the :8000 stand-in on 127.0.0.1:8013 did not come up ($_)" }
+  $real = $null; try { $real = (Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 'http://127.0.0.1:8000/health/version').Content } catch { }
+  if ($real) {
+    $o = Invoke-Paste $h[0].Groups['cmd'].Value.Replace($RealLocal, $Local) '8000-check-real'
+    Write-Host "  info  block B verbatim against Michael's real :8000 ($real): exit $Script:LastRc; '$(($o | Where-Object { $_ -like '########*' } | Select-Object -Last 1))'"
+  } else { Write-Host "  info  Michael's real :8000 does not answer now; block B was proven against the stand-in only" }
 } else { Bad "the runbook has $($h.Count) :8000 check blocks, expected 1" }
+if ($Fake -and -not $Fake.HasExited) { Stop-Process -Id $Fake.Id -Force -ErrorAction SilentlyContinue }
 $s = @($blocks | Where-Object { $_.Groups['cmd'].Value -like '*scripts\start.bat*' })
 if ($s.Count -eq 1 -and $s[0].Groups['cmd'].Value -eq '"C:\Users\micge\Documents\icb-platform\scripts\start.bat"' -and (Test-Path 'C:\Users\micge\Documents\icb-platform\scripts\start.bat')) {
   Ok ":8000 start line names Michael's own start.bat by its full path (it exists; not run here: :8000 is Michael's)"

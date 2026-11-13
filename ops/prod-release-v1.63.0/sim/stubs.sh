@@ -36,6 +36,11 @@ case "$1" in
            git -C /opt/icb-platform rev-parse HEAD > "$S/live_code"
            ( set -a; . /etc/icb/backend.env 2>/dev/null; printf '%s' "${ICB_ENVIRONMENT:-}" ) > "$S/live_env"
            now=$(date +%s); for i in 1 2 3 4; do echo "$now INFO:     Application startup complete." >> "$S/journal"; done
+           # the new code (RT10 #230) logs the letterhead gate at start-up: False while weasyprint is absent from the venv
+           if [ "$(cat "$S/live_code")" = "$(cat "$S/target")" ]; then
+             g=False; [ -f "$S/weasyprint" ] && g=True
+             for i in 1 2 3 4; do echo "$now INFO:     Letterhead quote (Generate Quote) available: $g" >> "$S/journal"; done
+           fi
            [ -f "$S/fail_bootstrap" ] && echo "$now ERROR BOOTSTRAP FAILED permission seeding" >> "$S/journal"
            if [ -f "$S/traceback" ]; then
              echo "$now Traceback (most recent call last):" >> "$S/journal"

@@ -42,8 +42,16 @@ CHANGED_COUNT=$(git diff --name-only "$PREV" "$TARGET" | wc -l | tr -d ' ')
 CHANGED_SHA=$(git diff --name-only "$PREV" "$TARGET" | LC_ALL=C sort | sha256sum | cut -d' ' -f1)
 [ "$(git diff --name-only --diff-filter=A "$PREV" "$TARGET" -- 'backend/alembic/versions/*' | grep -c . || true)" = 0 ] \
   || { echo "STOP: a migration was added in the range — this kit migrates nothing"; exit 1; }
-[ "$(git diff --name-only "$PREV" "$TARGET" -- 'backend/requirements*.txt' 'frontend/package.json' 'frontend/package-lock.json' | grep -c . || true)" = 0 ] \
-  || { echo "STOP: a dependency manifest changed in the range — this kit installs nothing"; exit 1; }
+# RT12_RULING_1: #232 (RT11) adds exactly the weasyprint pin to backend/requirements.txt and nothing else to any manifest;
+# this kit installs nothing (RT11's own install kit does, later) — icb-deploy.sh warns "dependency manifests changed (1)"
+# once, which release.sh asserts, and the venv must read weasyprint ABSENT before and after
+REQ_FILE=backend/requirements.txt
+REQ_CHANGED=$(git diff --name-only "$PREV" "$TARGET" -- 'backend/requirements*.txt' 'frontend/package.json' 'frontend/package-lock.json' | tr '\n' ' ' | sed 's/ $//')
+[ "$REQ_CHANGED" = "$REQ_FILE" ] || { echo "STOP: the dependency manifests changed in the range are '$REQ_CHANGED' — this kit expects exactly $REQ_FILE (the weasyprint pin)"; exit 1; }
+REQ_ADDED=$(git diff "$PREV" "$TARGET" -- "$REQ_FILE" | grep -E '^\+[^+#]' | sed 's/^+//; s/[[:space:]]*#.*//; s/[[:space:]]*$//' | grep . | LC_ALL=C sort | paste -sd' ' -)
+REQ_REMOVED=$(git diff "$PREV" "$TARGET" -- "$REQ_FILE" | grep -E '^-[^-#]' | sed 's/^-//; s/[[:space:]]*#.*//; s/[[:space:]]*$//' | grep . | paste -sd' ' -)
+[ "$REQ_ADDED" = "weasyprint==70.0" ] && [ -z "$REQ_REMOVED" ] || { echo "STOP: $REQ_FILE adds '$REQ_ADDED' and removes '$REQ_REMOVED' — this kit expects exactly +weasyprint==70.0 (RT11_RULING_1's pin)"; exit 1; }
+N_DEPS=1
 # v1.63.0 changes the SPA: the deploy REBUILDS it (icb-deploy.sh: frontend/ changed -> npm run build), and the new
 # bundle must carry RT10's text, which v1.62.0's source does not
 N_FRONTEND=$(git diff --name-only "$PREV" "$TARGET" -- frontend | grep -c . || true)
@@ -71,7 +79,16 @@ static_of() { # $1 template, $2 path under backend/app/static/  -> "template pat
 STATIC_1=$(static_of calculator.html js/calculator.js) || { echo "STOP: calculator.js: $STATIC_1 (one ?v= each side, both moved)"; exit 1; }
 STATIC_2=$(static_of calculator2.html js/calculator2.js) || { echo "STOP: calculator2.js: $STATIC_2 (one ?v= each side, both moved)"; exit 1; }
 OTHER=$(git diff --name-only "$PREV" "$TARGET" -- backend/app/static | grep -v -x -e backend/app/static/js/calculator.js -e backend/app/static/js/calculator2.js || true)
-[ -z "$OTHER" ] || { echo "STOP: other static files changed (they would be served stale under their old ?v=): $OTHER"; exit 1; }
+# #232's WeasyPrint-only files: static/css/report.css and static/fonts/* are read from DISK by report_engine (css_path_fs,
+# base_url = STATIC_DIR) and named by no template, so no browser loads them and no ?v= moves (RT12_RULING_1 3, B2 -G)
+WEASY_STATIC=$(printf '%s\n' $OTHER | grep -E '^backend/app/static/(css/report\.css|fonts/[^/]+)$' | LC_ALL=C sort | paste -sd' ' -)
+STRAY=$(printf '%s\n' $OTHER | grep -v -E '^backend/app/static/(css/report\.css|fonts/[^/]+)$' || true)
+[ -z "$STRAY" ] || { echo "STOP: other static files changed (they would be served stale under their old ?v=): $STRAY"; exit 1; }
+[ -n "$WEASY_STATIC" ] || { echo "STOP: #232's report.css / fonts are not in the range — is $PREV_TAG..$TAG the range you mean?"; exit 1; }
+[ "$(git grep -c -E 'report\.css|static/fonts' "$TARGET" -- backend/app/templates | wc -l)" = 0 ] \
+  || { echo "STOP: a template at the target names report.css or static/fonts — then they are browser-served and need a ?v="; exit 1; }
+git grep -q -E 'css_path_fs *= *os\.path\.join\(STATIC_DIR, *"css", *"report\.css"\)' "$TARGET" -- backend/app/report_engine.py \
+  || { echo "STOP: report_engine at the target does not read report.css from disk as expected"; exit 1; }
 N_PROBES=$(grep -vc -E '^(#|$)' "$S/probe_paths.txt")
 [ "$N_PROBES" -ge 47 ] || { echo "STOP: probe_paths.txt has only $N_PROBES paths"; exit 1; }
 grep -qx '200 /health/version' "$S/probe_paths.txt" && grep -qx '401 /openapi.json' "$S/probe_paths.txt" \
@@ -140,6 +157,12 @@ STATIC_2="$STATIC_2"
 # the SPA: frontend/ changed in N_FRONTEND file(s) -> rebuilt by the deploy; the new bundle carries SPA_MARK
 N_FRONTEND=$N_FRONTEND
 SPA_MARK="$SPA_MARK"
+# #232 (RT11): the one manifest change (icb-deploy.sh warns once; nothing is installed; weasyprint stays absent) and the
+# WeasyPrint-only static files (no ?v=: named by no template)
+N_DEPS=$N_DEPS
+REQ_FILE=$REQ_FILE
+REQ_ADDED="$REQ_ADDED"
+WEASY_STATIC="$WEASY_STATIC"
 # where every run must be (ops/lib/icb_where.sh; the database host as the RT6 discovery read it, 6 Oct)
 EXPECT_MACHINE=icb-mes-prod
 EXPECT_DB=icb_platform
@@ -153,6 +176,7 @@ echo "staged ${PREV:0:7} -> ${TARGET:0:7} ($TAG), alembic $ALEMBIC unchanged, $C
 set -- $STATIC_1; echo "calculator.js ?v=$3 ${4:0:16} -> ?v=$5 ${6:0:16}"
 set -- $STATIC_2; echo "calculator2.js ?v=$3 ${4:0:16} -> ?v=$5 ${6:0:16}"
 echo "spa: $N_FRONTEND frontend file(s) changed -> the deploy rebuilds it; the bundle must carry '$SPA_MARK'"
+echo "deps: $REQ_FILE +$REQ_ADDED (the deploy tool warns once; nothing is installed; weasyprint must stay absent); weasyprint-only statics: $(echo $WEASY_STATIC | wc -w) files"
 echo "audit: $LIST_ENTRIES pinned entries, pair ${PAIR_SHA:0:16}, golden month $GOLDEN_MONTH (none of them move in the range)"
 cat "$S/expected.env"; cat "$S/SHA256SUMS"
 ( cd "$OUTDIR" && tar -cf icb-release-v1.63.0.tar icb-release-v1.63.0 ) && ls -l "$OUTDIR/icb-release-v1.63.0.tar"

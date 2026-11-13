@@ -103,6 +103,9 @@ if [ "${1:-}" = - ]; then
 fi
 case "$*" in
   *"import yaml"*) echo 6.0.2 ;;
+  # RT12_RULING_1: the kit asks whether weasyprint is in the venv without importing it (find_spec); absent on prod
+  # until RT11's install kit; the `weasyprint` flag models a venv that gained it
+  *'find_spec("weasyprint")'*) [ -f "$SIMSTATE/weasyprint" ] && echo present || echo absent ;;
   --version) echo "Python 3.12.3" ;;
   "-m tools.costing_audit run "*)
     p=; out=; stem=; while [ $# -gt 0 ]; do case "$1" in --pack) p=$2;; --out) out=$2;; --stem) stem=$2;; esac; shift; done

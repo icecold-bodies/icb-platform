@@ -37,7 +37,7 @@ sums() { ( cd "$1" && find . -type f ! -name SHA256SUMS | sed 's#^\./##' | LC_AL
 bash ops/prod-release-v1.63.0/mkstage.sh "$OUTDIR" "$SHA" "$PREV" > "$OUTDIR/mkstage_release.log" 2>&1 \
   || { cat "$OUTDIR/mkstage_release.log"; echo "STOP: the release kit did not stage"; exit 1; }
 rm -f "$OUTDIR/icb-release-v1.63.0.tar"      # re-tarred with the others below
-grep -m4 -E '^(staged|calculator|spa)' "$OUTDIR/mkstage_release.log"
+grep -m5 -E '^(staged|calculator|spa|deps)' "$OUTDIR/mkstage_release.log"
 
 A="$OUTDIR/icb-rt2-all"; mkdir -p "$A" && lib "$A" || exit 1
 for f in rt2_all.sh rt2_all_compare.py; do git cat-file blob "$SHA:ops/prod-rt2/$f" > "$A/$f" || exit 1; done

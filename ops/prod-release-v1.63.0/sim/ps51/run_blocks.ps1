@@ -214,6 +214,13 @@ $env:RT12_STUB_REFUSED = '1'
 $o = Invoke-Paste "powershell -NoProfile -ExecutionPolicy Bypass -File `"$Stage\run_window_copy.ps1`"" 'nc-login-refused'
 $env:RT12_STUB_REFUSED = ''
 if ($Script:LastRc -eq 1 -and ($o -match 'STOP \[WHERE\]') -and ($o -match 'It said: Connection closed by 127.0.0.9') -and ($o -match 'paste the same line again once')) { Ok "a refused login: STOP [WHERE] carries ssh's own words ('Connection closed by ...') and the retry hint" } else { Bad "refused login: exit $Script:LastRc $o" }
+# d2. the laptop's C: drive under 5 GB free (RT12_RULING_1 7): the copy line STOPs before anything reaches prod
+$env:RT12_SIM_FREE_GB = '2.3'
+$before = @(Get-ChildItem $Req -Filter '*.req').Count
+$o = Invoke-Paste "powershell -NoProfile -ExecutionPolicy Bypass -File `"$Stage\run_window_copy.ps1`"" 'nc-disk-full'
+$env:RT12_SIM_FREE_GB = ''
+$calls = @(Get-ChildItem $Req -Filter '*.req').Count - $before
+if ($Script:LastRc -eq 1 -and ($o -match 'STOP \[DISK\]: C: has 2.3 GB free; the window needs 5 GB or more') -and $calls -eq 0) { Ok "C: under 5 GB free: STOP [DISK] with the plain message, exit 1, no ssh/scp call" } else { Bad "disk full: exit $Script:LastRc, $calls ssh/scp call(s) $o" }
 # e. a tampered helper
 $T2 = Join-Path $Work 'tampered'; Copy-Item -Recurse $Stage $T2
 Add-Content -Path (Join-Path $T2 'rt12_vm.sh') -Value 'echo tampered'

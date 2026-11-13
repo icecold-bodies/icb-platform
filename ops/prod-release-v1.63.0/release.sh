@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
-# v1.63.0 prod release (RT12): RT10's "revisions visible, accept by record" (#229) and its follow-up, the letterhead
-# quote's capability gate (#230). NO migration (alembic stays 0053), NO dependency. The SPA (frontend/) changes, so
-# the deploy REBUILDS it (npm run build, as v1.61.0's did); Python changes (routers/calculator.py, services/
-# revisions.py, report_engine.py, main.py, ...), so the service restarts; the browser's two calculators move —
-# calculator.js ?v=191 -> ?v=192 and calculator2.js ?v=128 -> ?v=129 (each template and file, both from disk).
+# v1.63.0 prod release (RT12): RT10's "revisions visible, accept by record" (#229), its follow-up, the letterhead
+# quote's capability gate (#230), and RT11's letterhead quote code (#232: WeasyPrint-rendered, inert on prod until RT11's
+# own install kit adds the package — the gate reads False, the route answers a plain 503). NO migration (alembic stays
+# 0053). ONE dependency manifest changes — backend/requirements.txt gains the weasyprint==70.0 pin — and NOTHING IS
+# INSTALLED by this release (RT12_RULING_1: the deploy tool's "dependency manifests changed (1)" warning is expected,
+# exactly once, and prod's venv must NOT hold weasyprint before or after). The SPA (frontend/) changes, so the deploy
+# REBUILDS it (npm run build, as v1.61.0's did); Python changes (routers/calculator.py, services/revisions.py,
+# report_engine.py, routers/exports.py, main.py, ...), so the service restarts; the browser's two calculators move —
+# calculator.js ?v=191 -> ?v=192 and calculator2.js ?v=128 -> ?v=129 (each template and file, both from disk); #232's
+# static/css/report.css and static/fonts/* are WeasyPrint-only (read from disk by report_engine, named by no template).
 # See docs/runbooks/prod-deploy-v1.63.0.md. Staged by mkstage.sh (committed blobs, LF) at /tmp/icb-release-v1.63.0.
 # Michael runs each mode from his laptop through the window line (run_window_step.ps1: ssh to the VM, then this script
 # BY PATH, under sudo):
@@ -82,7 +87,7 @@ OUT_TMP=$OUT; OUT=''
 [ -n "$URL" ] || stop KIT "DATABASE_URL not found in $ENV_FILE"
 for v in PREV PREV_TAG TARGET BRANCH TAG TAG_OBJ ALEMBIC CHANGED_COUNT CHANGED_SHA N_PROBES PYYAML_VERSION \
          DEPLOY_SH_SHA WORKERS FACTOR LIST_ENTRIES PAIR_SHA GOLDEN_MONTH STATIC_1 STATIC_2 SPA_MARK N_FRONTEND \
-         EXPECT_MACHINE EXPECT_DB EXPECT_DBHOST; do
+         N_DEPS REQ_FILE REQ_ADDED WEASY_STATIC EXPECT_MACHINE EXPECT_DB EXPECT_DBHOST; do
   [ -n "${!v:-}" ] || stop KIT "expected.env has no $v"
 done
 [ -n "${NEW_PROBES+x}" ] || stop KIT "expected.env has no NEW_PROBES (empty is right for this release: no route is new)"
@@ -168,6 +173,13 @@ noauth_report() { # $1 door; $2 = "before" while prod still runs the OLD code (R
 }
 NOAUTH_OK="~^all $N_PROBES as expected( [(]new in this release, 404 before the deploy: .*[)])?$"
 yaml_version() { "$PY" -c 'import yaml; print(yaml.__version__)' 2>/dev/null || echo missing; }
+# RT12_RULING_1: prod's venv must NOT hold weasyprint before or after this release (RT11's install kit adds it later).
+# find_spec looks the package up without importing it (an import without Pango would raise OSError and print a banner).
+weasyprint_in_venv() { "$PY" -I -c 'import importlib.util; print("present" if importlib.util.find_spec("weasyprint") else "absent")' 2>/dev/null || echo unknown; }
+gate_since() { # $1 --since: what the service logged at start-up for the letterhead gate (RT10 #230; v1.63.0 must read False)
+  journal_since "$1" | grep -o 'Letterhead quote (Generate Quote) available: [A-Za-z]*' | sed 's/.*: //' | sort -u | paste -sd, -
+}
+deps_warnings() { grep -c 'dependency manifests changed ([0-9]*)' "$1" 2>/dev/null || true; }   # icb-deploy.sh's line 199, in a captured output
 npm_present() { sudo -u icb bash -lc 'command -v npm >/dev/null && echo present || echo missing' 2>/dev/null || echo missing; }
 node_modules_present() { [ -d "$REPO/frontend/node_modules" ] && echo present || echo missing; }
 tag_local() { gitr rev-parse -q --verify "refs/tags/$TAG" 2>/dev/null || echo missing; }
@@ -321,6 +333,9 @@ post_checks() { # $1 this deploy's restart (epoch) or empty, $2 epoch the code m
   tracebacks "$( [ -z "$before" ] && echo "${1:-$(cat "$RESTART_MARK" 2>/dev/null || service_start_epoch)}")"
   check HEALTH "$(code_url "$LOCAL/health")" 200
   check PYYAML "$(yaml_version)" "$PYYAML_VERSION"
+  say "RT11's code is inert: weasyprint is NOT in the venv (this release installs nothing), and the service logged the gate False at its start"
+  check WEASYPRINT_IN_VENV "$(weasyprint_in_venv)" absent
+  check LETTERHEAD_GATE "$(gate_since "$since")" False
   say "the two statics on disk: each page loads its new ?v= ($S1_VA / $S2_VA) and the file is the target's blob (before any door is asked for it)"
   static_disk_checks after
   say "the SPA on disk: rebuilt by this deploy (a new bundle$( [ -n "${3:-}" ] && echo ", not $3")), carrying RT10's text"
@@ -372,6 +387,8 @@ if [ "$MODE" = preflight ]; then
   tracebacks ""
   say "PyYAML (installed by v1.59.0; this release installs nothing)"
   check PYYAML "$(yaml_version)" "$PYYAML_VERSION"
+  say "weasyprint is NOT in prod's venv today (this release adds only the pin to $REQ_FILE; RT11's install kit adds the package later)"
+  check WEASYPRINT_IN_VENV "$(weasyprint_in_venv)" absent
   say "the SPA build tooling (icb-deploy.sh runs npm run build as icb)"
   check NPM "$(npm_present)" present
   check NODE_MODULES "$(node_modules_present)" present
@@ -458,9 +475,11 @@ else
   ok "SPA $B_SPA_NAME ${B_SPA_SHA:0:16} = disk on the three doors (RESUME: it may be the rebuilt one already)"
 fi
 
-say "4. PyYAML $PYYAML_VERSION present (nothing is installed by this release); npm and node_modules for the SPA rebuild"
+say "4. PyYAML $PYYAML_VERSION present (nothing is installed by this release); weasyprint absent; npm and node_modules for the SPA rebuild"
 YV=$(yaml_version); [ "$YV" = "$PYYAML_VERSION" ] || stop PYYAML "import yaml -> $YV. Do not deploy; tell the CA"
 ok "present ($YV)"
+WV=$(weasyprint_in_venv); [ "$WV" = absent ] || stop WEASYPRINT "prod's venv reads weasyprint '$WV': this kit expects it ABSENT (RT11's install is a later, separate window). Do not deploy; tell the CA"
+ok "weasyprint absent from the venv ($REQ_FILE gains the pin '$REQ_ADDED'; pip is never run here)"
 [ "$(npm_present)" = present ] || stop TOOLING "npm is not on icb's PATH: the SPA rebuild would fail. Do not deploy; tell the CA"
 [ "$(node_modules_present)" = present ] || stop TOOLING "$REPO/frontend/node_modules is missing: the SPA rebuild would fail. Do not deploy; tell the CA"
 ok "npm present, node_modules present"
@@ -492,19 +511,24 @@ G_SHA=$(gitr diff --name-only "$PREV" "$TARGET" | LC_ALL=C sort | sha256sum | cu
 [ "$G_COUNT" = "$CHANGED_COUNT" ] && [ "$G_SHA" = "$CHANGED_SHA" ] || stop GUARD "changed-file list differs: $G_COUNT files ${G_SHA:0:16}, staged $CHANGED_COUNT ${CHANGED_SHA:0:16}"
 G_MIG=$(gitr diff --name-only --diff-filter=A "$PREV" "$TARGET" -- 'backend/alembic/versions/*' | wc -l)
 [ "$G_MIG" = 0 ] || stop GUARD "a migration was added in the range: this kit migrates nothing"
-G_REQ=$(gitr diff --name-only "$PREV" "$TARGET" -- 'backend/requirements*.txt' 'frontend/package.json' 'frontend/package-lock.json' | wc -l)
-[ "$G_REQ" = 0 ] || stop GUARD "a dependency manifest changed in the range: this kit installs nothing"
+G_REQ=$(gitr diff --name-only "$PREV" "$TARGET" -- 'backend/requirements*.txt' 'frontend/package.json' 'frontend/package-lock.json' | tr '\n' ' ' | sed 's/ $//')
+[ "$G_REQ" = "$REQ_FILE" ] || stop GUARD "the dependency manifests changed in the range are '$G_REQ', the stage expects exactly '$REQ_FILE' (the weasyprint pin; nothing is installed)"
+G_REQ_ADDED=$(gitr diff "$PREV" "$TARGET" -- "$REQ_FILE" | grep -E '^\+[^+#]' | sed 's/^+//; s/[[:space:]]*#.*//; s/[[:space:]]*$//' | grep . | LC_ALL=C sort | paste -sd' ' -)
+[ "$G_REQ_ADDED" = "$REQ_ADDED" ] || stop GUARD "$REQ_FILE adds '$G_REQ_ADDED', the stage expects exactly '$REQ_ADDED'"
 G_FE=$(gitr diff --name-only "$PREV" "$TARGET" -- frontend | wc -l)
 [ "$G_FE" = "$N_FRONTEND" ] && [ "$G_FE" -gt 0 ] || stop GUARD "frontend/ changed in $G_FE file(s), the stage counted $N_FRONTEND: this kit expects the SPA rebuild of exactly those"
 G_ST=$(gitr diff --name-only "$PREV" "$TARGET" -- backend/app/static | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')
-E_ST=$(printf '%s\n' "backend/app/static/$S1_PATH" "backend/app/static/$S2_PATH" | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')
-[ "$G_ST" = "$E_ST" ] || stop GUARD "backend/app/static changed beyond the two calculators: '$G_ST' (a file would be served stale under its old ?v=)"
+E_ST=$(printf '%s\n' "backend/app/static/$S1_PATH" "backend/app/static/$S2_PATH" $WEASY_STATIC | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')
+[ "$G_ST" = "$E_ST" ] || stop GUARD "backend/app/static changed beyond the two calculators and #232's WeasyPrint-only files: '$G_ST' (a browser-served file would be stale under its old ?v=)"
+# the WeasyPrint-only files are named by no template (report_engine reads them from disk): a browser never loads them
+G_WS=$(gitr grep -c -E 'report\.css|static/fonts' "$TARGET" -- backend/app/templates 2>/dev/null | wc -l)
+[ "$G_WS" = 0 ] || stop GUARD "a template at the target names report.css or static/fonts: those files would need a ?v= (the stage saw none)"
 G_DEP=$(gitr diff --name-only "$PREV" "$TARGET" -- deploy | wc -l)
 [ "$G_DEP" = 0 ] || stop GUARD "deploy/ changed in the range: the icb-deploy.sh that runs is not the simulated one"
 gb() { [ "$(gitr cat-file blob "$TARGET:backend/app/static/$2" | sha256sum | cut -d' ' -f1)" = "$6" ] || stop GUARD "the target's $2 is not the staged blob ${6:0:16}"; }
 each_static gb
 gitr grep -q -F "$SPA_MARK" "$TARGET" -- frontend/src || stop GUARD "the target's frontend/src has no '$SPA_MARK': the SPA mark is wrong"
-ok "$G_COUNT files (C-sorted sha256 ${G_SHA:0:16}): no migration, no dependency, $G_FE frontend file(s) (the SPA rebuild), static = the two calculators only, deploy/ untouched"
+ok "$G_COUNT files (C-sorted sha256 ${G_SHA:0:16}): no migration, one manifest ($REQ_FILE +$REQ_ADDED, nothing installed), $G_FE frontend file(s) (the SPA rebuild), static = the two calculators + #232's WeasyPrint-only files, deploy/ untouched"
 
 say "7. the repo's deploy script — dry run"
 DS="$REPO/deploy/prod/icb-deploy.sh"
@@ -516,9 +540,13 @@ if [ "$RESUME" = 0 ]; then
   grep -q 'DB migration *no ' "$OUT/icb-deploy-dryrun.txt" || stop DRYRUN "plan does not say: DB migration no"
   grep -q 'SPA rebuild *YES' "$OUT/icb-deploy-dryrun.txt" || stop DRYRUN "plan does not say: SPA rebuild YES"
   grep -q 'Service restart *YES' "$OUT/icb-deploy-dryrun.txt" || stop DRYRUN "plan does not say: service restart YES"
-  grep -q 'dependency manifests changed' "$OUT/icb-deploy-dryrun.txt" && stop DRYRUN "the plan warns that dependency manifests changed"
+  # RT12_RULING_1: the warning is EXPECTED, exactly once, for the one manifest ($REQ_FILE: the weasyprint pin). The deploy
+  # tool only warns — it runs no pip — and the post-deploy asserts read the venv unchanged (weasyprint absent)
+  [ "$(deps_warnings "$OUT/icb-deploy-dryrun.txt")" = 1 ] && grep -q "dependency manifests changed ($N_DEPS)" "$OUT/icb-deploy-dryrun.txt" \
+    || stop DRYRUN "the plan does not warn 'dependency manifests changed ($N_DEPS)' exactly once ($(deps_warnings "$OUT/icb-deploy-dryrun.txt") line(s))"
+  grep -qiE 'pip (install|sync)' "$OUT/icb-deploy-dryrun.txt" && stop DRYRUN "the plan mentions a pip install: this kit installs nothing"
 fi
-if [ "$RESUME" = 0 ]; then ok "plan: no migration, SPA rebuild, restart"
+if [ "$RESUME" = 0 ]; then ok "plan: no migration, SPA rebuild, restart; the one expected warning: dependency manifests changed ($N_DEPS) = $REQ_FILE (the weasyprint pin; nothing is installed)"
 else ok "plan: RESUME — icb-deploy.sh re-runs its idempotent steps (alembic at head, the SPA rebuilt from the same sources), restart"; fi
 
 say "8. deploy (fast-forward, its own backup, npm run build, restart, health, completion record)"
@@ -529,6 +557,8 @@ sudo -u icb bash "$DS" "$TARGET" --yes > "$OUT/icb-deploy.txt" 2>&1; rc=$?
 sed 's/\x1b\[[0-9;]*m//g' "$OUT/icb-deploy.txt" | sed 's/^/   | /' || true
 [ $rc = 0 ] || stop DEPLOY "icb-deploy.sh exited $rc. Run the same deploy line again ONLY on the CA's word: it resumes. Rollback: the runbook (anchor ${PREV:0:7} + npm run build, backup $BK)"
 grep -q "DEPLOYED" "$OUT/icb-deploy.txt" || stop DEPLOY "icb-deploy.sh did not print DEPLOYED"
+[ "$RESUME" = 1 ] || [ "$(deps_warnings "$OUT/icb-deploy.txt")" = 1 ] || stop DEPLOY "the deploy did not warn 'dependency manifests changed ($N_DEPS)' exactly once ($(deps_warnings "$OUT/icb-deploy.txt") line(s)): not the plan that was dry-run"
+grep -qiE 'pip (install|sync)' "$OUT/icb-deploy.txt" && stop DEPLOY "the deploy output mentions a pip install: this kit installs nothing"
 PID_AFTER=$(systemctl show "$SERVICE" -p MainPID --value)
 AET_AFTER=$(systemctl show "$SERVICE" -p ActiveEnterTimestamp --value)
 [ "$PID_AFTER" != "$PID_BEFORE" ] || stop RESTART "MainPID unchanged ($PID_AFTER): the service did not restart"
@@ -559,7 +589,9 @@ backup        $BK  $(stat -c %s "$BK") bytes  sha256 $BK_SHA (pg_dump -Fc; check
 restart       $AET_BEFORE -> $AET_AFTER (pid $PID_BEFORE -> $PID_AFTER), after the code moved: $(restart_after_code "$T0")
 workers       $(workers_since "@$(cat "$RESTART_MARK")") started, $(bootfail_since "@$(cat "$RESTART_MARK")") bootstrap failed, $(tb_since "@$(cat "$RESTART_MARK")") tracebacks since this restart
 health        $(code_url "$LOCAL/health")
-statics       $(each_static st_line)(disk = 127.0.0.1 = LAN = Cloudflare)
+dependency    $REQ_FILE +$REQ_ADDED (the manifest only; the deploy tool warned once, pip was not run; weasyprint in the venv: $(weasyprint_in_venv))
+letterhead    gate at start-up: $(gate_since "@$(cat "$RESTART_MARK")") (RT11's code is inert until its own install; the results page says "Official quotes are issued from SAP.")
+statics       $(each_static st_line)(disk = 127.0.0.1 = LAN = Cloudflare); WeasyPrint-only (no ?v=, named by no template): $WEASY_STATIC
 version       local $(health_version "$LOCAL") · lan $(health_version "$LAN") · cloudflare $(health_version "$CF")
 test banner   local $(banner_on "$LOCAL") · lan $(banner_on "$LAN") · cloudflare $(banner_on "$CF") (bars/[TEST] titles; prod 0/0)
 no session    local: $(noauth_report "$LOCAL") · lan: $(noauth_report "$LAN") · cloudflare: $(noauth_report "$CF")

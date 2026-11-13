@@ -2,7 +2,8 @@
 # v1.63.0 release-kit simulation, run as root in WSL:  bash run_sim.sh <scenario> [kit-branch]
 # Scenarios: happy | moved | wrongplace | wrongdb | staleboot | unstamped | nobackup | pgdumpfail | traceback |
 #            routeopen | cfstale | cfcached | resume | saved | deleted | factor | autologin | noenv | notag |
-#            nonpm | nobuild
+#            nonpm | nobuild | weasyprint (the venv gains it after the deploy: verify FAILs) |
+#            weasyprintpre (it is there before: preflight FAILs, the deploy STOPs before anything moves)
 # Builds a throw-away prod (sim/fakeprod.sh: v1.62.0 a29db35 with the v1.62.0 tag but WITHOUT v1.63.0, as the real VM;
 # sticky /tmp, uid 1500 for the ssh user) and runs the STAGED kit — staged by the real mkstage_window.sh (and through
 # it mkstage.sh) from a sim origin whose backport/v1.39-base carries the kit branch and an annotated v1.63.0 tag. The
@@ -51,6 +52,7 @@ case "$SCEN" in
   noenv) sed -i '/^ICB_ENVIRONMENT=/d' "$SIM/etc/icb/backend.env" ;;
   nonpm) rm -rf "$SIM/opt/icb-platform/frontend/node_modules" && echo "   (nonpm) frontend/node_modules removed from the fake prod" ;;
   nobuild) touch "$SIMSTATE/npm_noop" && echo "   (nobuild) npm run build will do nothing" ;;
+  weasyprintpre) touch "$SIMSTATE/weasyprint" && echo "   (weasyprintpre) the fake venv already holds weasyprint" ;;
 esac
 chmod 666 "$SIMSTATE"/* 2>/dev/null
 R="sudo bash /tmp/icb-release-v1.63.0/release.sh"
@@ -69,6 +71,7 @@ if [ "$SCEN" = resume ]; then
 fi
 [ "$SCEN" = saved ] && touch "$SIMSTATE/saved3" && echo "   (saved) three N10022 revisions are saved after the deploy"
 [ "$SCEN" = deleted ] && touch "$SIMSTATE/deleted" && echo "   (deleted) the repair row 1107 is soft-deleted after the deploy"
+[ "$SCEN" = weasyprint ] && touch "$SIMSTATE/weasyprint" && echo "   (weasyprint) the fake venv gains weasyprint after the deploy (RT12_RULING_1: a STOP)"
 echo; echo "################ verify AFTER the deploy (and the acceptance)"; fp_run "$R verify"; echo "   -> exit $?"
 echo; echo "################ deploy again (must say ALREADY DEPLOYED and verify)"; fp_run "$R deploy"; echo "   -> exit $?"
 echo; echo "== sim state: prod HEAD $(git -C "$SIM/opt/icb-platform" rev-parse --short HEAD), describe $(git -C "$SIM/opt/icb-platform" describe --tags --abbrev=0 HEAD 2>/dev/null), alembic $(cat "$SIMSTATE/alembic"), record '$(cat "$SIM/vartmp/icb-deploy-state")', spa $(grep -o 'index-[A-Za-z0-9_-]*' "$SIM/opt/icb-platform/frontend/dist/index.html")"
@@ -78,3 +81,5 @@ echo "== root-owned __pycache__ the kit left in the repo (want 0): $(find "$SIM/
 echo "== 'Permission denied' anywhere in the kit's out folders (sticky /tmp, protected_regular=$(sysctl -n fs.protected_regular 2>/dev/null || echo ?); want 0): $(cat "$KITD"/out-*/run.log 2>/dev/null | grep -c 'Permission denied *$')"   # an error ends the line; #231's commit subject quotes the words mid-line
 echo "== files the kit wrote directly in /tmp (want none): $(cd "$SIM/tmp" && ls -A | grep -v -E '^icb-release-v1\.63\.0$|^icb-rollback-[0-9-]+\.txt$' | tr '\n' ' ')"
 echo "== 'exception line not found' in the kit's out folders (want 0): $(cat "$KITD"/out-*/run.log 2>/dev/null | grep -c 'exception line not found')"
+echo "== pip mentioned anywhere in the kit's out folders (want 0): $(cat "$KITD"/out-*/run.log "$KITD"/out-*/icb-deploy*.txt 2>/dev/null | grep -ciE 'pip (install|sync)')"
+echo "== 'dependency manifests changed (1)' in the deploy's captured outputs (want 2: the dry run and the deploy): $(cat "$KITD"/out-deploy-*/icb-deploy-dryrun.txt "$KITD"/out-deploy-*/icb-deploy.txt 2>/dev/null | grep -c 'dependency manifests changed (1)')"

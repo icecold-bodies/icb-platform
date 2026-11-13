@@ -1,8 +1,9 @@
 # Prod deploy: v1.63.0 (RT12): revisions visible, accept by record (RT10)
 
 Committed BEFORE the run (D3). The OUTCOME is appended after the window. Dispatch `RT12_DISPATCH_release_v1.63.0`
-(24 Oct 2026); rulings `RT12_RULING_<n>`. Built by RT10 (#229 `dcba297`, #230 `51231d5`; base tip `51231d5`);
-released by RT12, a fresh release CA (D1).
+(24 Oct 2026); rulings `RT12_RULING_<n>` (`RULING_0A`: #231 in; `RULING_1`: #232 in, the base moved). Built by RT10
+(#229 `dcba297`, #230 `51231d5`, close #231 `242e57a`) and RT11 (#232 `4e4d251` = the base tip); released by RT12, a
+fresh release CA (D1).
 
 ## What ships (prod `a29db35` = v1.62.0 → the v1.63.0 squash commit)
 
@@ -14,14 +15,25 @@ released by RT12, a fresh release CA (D1).
 - **The MES app (SPA, `frontend/`) changes** (the costings list, the costing view, Accept, the plan and planning
   screens, the pre-job pages): the deploy **rebuilds it** (`npm run build`, as v1.61.0's did). The new bundle has a new
   name and carries RT10's text; the kit checks both.
-- **No migration** (alembic stays **0053**), **no dependency**, **no new route** (the probe list is v1.62.0's, 47
-  lines; `mkstage.sh` refuses a range that declares a route without a line). Python changes, so the service
-  **restarts** (a few seconds without the app).
+- **RT11's letterhead quote code (#232), inert on prod:** `report_engine.py` (WeasyPrint renders the letterhead
+  quote; the gate `letterhead_quote_available` reads **False** where WeasyPrint is missing), `routers/exports.py`
+  (the route answers a plain **503** instead of a raw 500 — a changed response, **no new route**), and two
+  WeasyPrint-only static files: `static/css/report.css` and `static/fonts/*` (the Liberation faces). They are read
+  from disk by `report_engine` and **named by no template**, so no browser loads them and **no `?v=` moves** (B2).
+  **`backend/requirements.txt` gains the one line `weasyprint==70.0`** — a manifest change only: **nothing is
+  installed by this release** (the deploy tool warns *"dependency manifests changed (1)"* exactly once, by design; the
+  kit asserts that line, never runs pip, and checks before and after that prod's venv does **not** hold weasyprint).
+  RT11's own install kit adds the package later (apt + pip + restart, no code move).
+- **No migration** (alembic stays **0053**), **no new route** (the probe list is v1.62.0's, 47 lines; `mkstage.sh`
+  refuses a range that declares a route without a line). Python changes, so the service **restarts** (a few seconds
+  without the app).
 - **Also in the range** (not app code): RT9's close #228 (the read-only quotes check, its sims and evidence), RT10's
-  tests, journeys, prod-check kit and evidence, and this release PR: `backend/VERSION` → `v1.63.0`, the CHANGELOG
+  tests, journeys, prod-check kit and evidence (#229, #231), RT11's tests, prod-check and install kits (#232), a CI
+  step (WeasyPrint's libraries on the Linux runner), and this release PR: `backend/VERSION` → `v1.63.0`, the CHANGELOG
   entry, this runbook, `ops/prod-release-v1.63.0/`.
-- **Target SHA:** the squash commit of this release PR, on `backport/v1.39-base` (`51231d5` plus RT10's close PR
-  #231 if it merges first). Every expected value is derived from that commit by the stager; the OUTCOME names it.
+- **Target SHA:** the squash commit of this release PR, on `backport/v1.39-base` at `4e4d251` (#232 in). **RT13 must
+  not be in the range** (the stager's expected values would not match; the BA has asked Michael not to merge it before
+  v1.63.0 is out). Every expected value is derived from that commit by the stager; the OUTCOME names it.
 
 ## Behaviour a user can notice (for the BA's note to the sales team, after the window)
 
@@ -38,8 +50,9 @@ released by RT12, a fresh release CA (D1).
   ("This is REV 0. REV 2 is the latest. Accept REV 0 anyway?").
 - **The exports and the letterhead `ref_no` carry `REV n` from REV 1** (a first save stays unmarked).
 - **"Generate Quote" is offered only where the letterhead PDF can render.** WeasyPrint is not on prod, so a body
-  costing's results page says **"Official quotes are issued from SAP."** where the button was (it 500'd before). RT11
-  installs WeasyPrint later; the route is unchanged.
+  costing's results page says **"Official quotes are issued from SAP."** where the button was (it 500'd before); a
+  direct call of the route answers a plain 503. RT11's install (a later window) turns it on; nothing changes on screen
+  for staff until then.
 - **Everyone reloads after the update** (Ctrl+F5): the MES app and both calculator scripts changed. A tab opened before
   it still runs the old scripts (the BA tells the sales team).
 - How a NEW costing prices does not change: the costing audit reads the same before and after.
@@ -67,10 +80,17 @@ released by RT12, a fresh release CA (D1).
   lists every class** (RT9's queued finding: the `anyio.WouldBlock` / `anyio.EndOfStream` halves of prod's
   `ClientDisconnect` chains read "(exception line not found)" on 22 Oct; fixed in this kit, with RT9's function as the
   negative control).
-- **verify, if run before the deploy, fails on exactly 20** (the simulation's list; the window does not run it):
-  `HEAD`, `TAG_LOCAL`, `DESCRIBE`; `V_calculator.js`, `DISK_calculator.js`, `V_calculator2.js`, `DISK_calculator2.js`;
-  `SPA_MARK_DISK`; and per door `VERSION_x`, `calculator.js_x`, `calculator2.js_x` ("not probed": the new bytes are not
-  on disk, so no door is asked for `?v=192` or `?v=129`) and `SPA_MARK_x` (the served SPA has no RT10 text yet).
+- **The dependency manifest:** the deploy tool's dry run and deploy each print *"dependency manifests changed (1) -
+  check whether pip/npm install is needed BEFORE continuing"* **once** — expected (the `weasyprint==70.0` pin). The kit
+  STOPs if the line is missing, doubled, or if any pip install is mentioned. **prod's venv must not hold weasyprint**
+  before (preflight, and the deploy's step 4) or after (every post-deploy assert: `WEASYPRINT_IN_VENV = absent`);
+  gaining it in this window is a STOP. **The gate reads False** at the new service's start (`LETTERHEAD_GATE`, from the
+  journal since the restart), and the view-only acceptance sees "Official quotes are issued from SAP." on a results page.
+- **verify, if run before the deploy, fails on exactly 21** (the simulation's list; the window does not run it):
+  `HEAD`, `TAG_LOCAL`, `DESCRIBE`; `LETTERHEAD_GATE` (v1.62.0 logs no gate line); `V_calculator.js`,
+  `DISK_calculator.js`, `V_calculator2.js`, `DISK_calculator2.js`; `SPA_MARK_DISK`; and per door `VERSION_x`,
+  `calculator.js_x`, `calculator2.js_x` ("not probed": the new bytes are not on disk, so no door is asked for `?v=192`
+  or `?v=129`) and `SPA_MARK_x` (the served SPA has no RT10 text yet).
 - **The saved costings do not move during the window:** the deploy records their count + md5 (whole rows) **and every
   row's own md5 by id**; step 8 must read the same after the view-only acceptance. If it does not, the kit **names the
   rows itself** — added, changed, removed since the deploy, each as `id | quote (first word) | created | version |
@@ -140,20 +160,24 @@ IF YOU SEE "STOP": nothing was changed; it says what to do (usually: close the s
 
 ### The window (Michael's time, OUTSIDE quoting hours; the BA asks the sales team to pause first; no quote is saved during it)
 
-**1. Copy the kits to prod** (the VPN must be up).
+**1. Copy the kits to prod** (the VPN must be up). The line first reads your C: drive's free space: **under 5 GB it
+STOPs before anything reaches prod** (free some space — your Downloads folder holds earlier window tars — then paste it
+again). With enough space its second line is the window line, `######## RT12 window copy (step 1) . machine
+LAPTOP-DGJ0U6RQ -> icb-mes-prod . head a29db35 . boot …`, and the kits go over.
 
 📋 PASTE INTO: PowerShell (your laptop)
 ```
 powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\micge\Documents\icb-rt12-stage\window\run_window_copy.ps1"
 ```
-FIRST LINE YOU SHOULD SEE: ######## RT12 window copy (step 1) . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . head a29db35 . boot …
+FIRST LINE YOU SHOULD SEE: == C: free: … GB (the window needs 5 GB or more)
 IT WILL ASK FOR: nothing (no sudo in this step)
 WHEN IT ENDS: ######## DONE - step 1: the kits are in prod /tmp, verified and stamped … → copy the whole window and paste it back to me
-IF YOU SEE "STOP": nothing ran on prod; paste it back to me (if it says the login was refused, paste the same line again once)
+IF YOU SEE "STOP": nothing ran on prod; paste it back to me (if it says the login was refused, paste the same line again once; if it says DISK, free space first)
 
 **2. Preflight** (read only). On prod it ends `######## PREFLIGHT PASSED`: v1.62.0 on the three doors,
 `calculator.js?v=191` and `calculator2.js?v=128` = disk on the three doors, the SPA served = disk (without RT10's text
-yet), 47 probes per door (no 404), the 4G factor, npm and node_modules present, the tag on origin.
+yet), 47 probes per door (no 404), the 4G factor, weasyprint absent from the venv, npm and node_modules present, the
+tag on origin.
 
 📋 PASTE INTO: PowerShell (your laptop)
 ```
@@ -180,10 +204,12 @@ On prod it ends `######## DONE (pre): PAGE = CLI`. Any count that differs from t
 compares the cells before the deploy.
 
 **4. Deploy** (the service restarts once: a few seconds without the app; the SPA build runs first, about a minute).
-On prod: the checked backup (size and sha256 read back), no migration, `npm run build`, the restart, 0 tracebacks
-since it, `calculator.js?v=192` and `calculator2.js?v=129` on disk, the SPA rebuilt under a new name with RT10's text,
-then 127.0.0.1, LAN and Cloudflare each `{"version":"v1.63.0","environment":"prod"}`, no TEST banner, both scripts =
-the release's bytes, the SPA bundle = the one built, 47 probes; it ends `######## DEPLOYED`.
+On prod: the checked backup (size and sha256 read back), no migration, the deploy tool's one expected warning
+(*dependency manifests changed (1)*: the weasyprint pin; nothing installed), `npm run build`, the restart, 0 tracebacks
+since it, weasyprint still absent from the venv, the gate logged False, `calculator.js?v=192` and
+`calculator2.js?v=129` on disk, the SPA rebuilt under a new name with RT10's text, then 127.0.0.1, LAN and Cloudflare
+each `{"version":"v1.63.0","environment":"prod"}`, no TEST banner, both scripts = the release's bytes, the SPA bundle =
+the one built, 47 probes; it ends `######## DEPLOYED`.
 
 📋 PASTE INTO: PowerShell (your laptop)
 ```
@@ -292,7 +318,8 @@ IF YOU SEE "STOP": some names may already be gone; paste it back to me
 - **The code:** back to `a29db35`: `sudo -u icb git -C /opt/icb-platform reset --hard a29db35`, then the SPA (this
   range changed `frontend/`): `sudo -u icb bash -lc 'cd /opt/icb-platform/frontend && npm run build'`, then
   `sudo systemctl restart icb-backend`; then `/health/version` = v1.62.0 on the three doors. No migration, no data
-  moved: nothing else to undo. A browser that loaded `?v=192` / `?v=129` gets `?v=191` / `?v=128` again from the old
+  moved, nothing installed (the requirements pin goes back with the code; the venv was never touched): nothing else to
+  undo. A browser that loaded `?v=192` / `?v=129` gets `?v=191` / `?v=128` again from the old
   templates, and the old SPA bundle name from the rebuilt `dist/index.html`.
 - **The full restore** (only if the above fails): `icb_platform_pre-v1.63.0_<ts>.dump` (pg_dump -Fc, written and
   checked by step 4).
@@ -301,7 +328,7 @@ IF YOU SEE "STOP": some names may already be gone; paste it back to me
 
 | sim | how | result |
 |---|---|---|
-| the release kit, 21 scenarios | WSL: `ops/prod-release-v1.63.0/sim/run_all.sh` (the real `mkstage_window.sh` + `mkstage.sh`, the real `deploy/prod/icb-deploy.sh`, stub doors that answer for the RUNNING code, a Cloudflare edge that keeps the first bytes per URL, a sticky `/tmp` under `fs.protected_regular=2` with the kit owned by the ssh user, a journal with prod's chained tracebacks) | `sim/RESULTS.md` |
+| the release kit, 23 scenarios (two of them: prod's venv gains weasyprint, before or after the deploy → STOP) | WSL: `ops/prod-release-v1.63.0/sim/run_all.sh` (the real `mkstage_window.sh` + `mkstage.sh`, the real `deploy/prod/icb-deploy.sh`, stub doors that answer for the RUNNING code, a Cloudflare edge that keeps the first bytes per URL, a sticky `/tmp` under `fs.protected_regular=2` with the kit owned by the ssh user, a journal with prod's chained tracebacks) | `sim/RESULTS.md` |
 | every paste block above | Windows PowerShell 5.1: `ops/prod-release-v1.63.0/sim/ps51/run_blocks.ps1` — reads THIS runbook's blocks and pastes each into a new PowerShell 5.1 window against a fake prod in WSL (native ssh/scp stand-ins, so the quoting is PowerShell 5.1's own; the `:8000` check runs for real against Michael's dev server) | `sim/RESULTS.md` |
 
 ## OUTCOME

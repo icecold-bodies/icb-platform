@@ -24,13 +24,16 @@ What changes for the people who quote:
 - **"Generate Quote" is offered only where the letterhead PDF can be made.** On prod it cannot yet (WeasyPrint is not
   installed), so the results page says **"Official quotes are issued from SAP."** where the button used to fail. The
   letterhead quote itself is RT11's work.
+- **Behind the scenes: groundwork for printing the MES letterhead quote.** Nothing changes on screen yet; official
+  quotes still come from SAP. (RT11's code, #232: the quote's templates, fonts and the WeasyPrint pin ride along, switched
+  off until RT11's own install.)
 
-Nothing else moves: no database change (alembic stays 0053), no new package, no new route, and how a NEW costing
-prices is unchanged — the costing audit reads the same before and after (0 FLAG / 115 ACCEPTED, smoke 0 / 33). The MES
-app is rebuilt; the calculators' scripts are `calculator.js?v=192` and `calculator2.js?v=129`. Everyone reloads
-(Ctrl+F5) after the update.
+Nothing else moves: no database change (alembic stays 0053), no new route, nothing installed (the `weasyprint` line in
+`requirements.txt` is only written down for RT11's later install), and how a NEW costing prices is unchanged — the
+costing audit reads the same before and after (0 FLAG / 115 ACCEPTED, smoke 0 / 33). The MES app is rebuilt; the
+calculators' scripts are `calculator.js?v=192` and `calculator2.js?v=129`. Everyone reloads (Ctrl+F5) after the update.
 
-Built by RT10 (#229, #230); released by RT12 (prod runbook: `docs/runbooks/prod-deploy-v1.63.0.md`).
+Built by RT10 (#229, #230, #231) and RT11 (#232); released by RT12 (prod runbook: `docs/runbooks/prod-deploy-v1.63.0.md`).
 
 ## v1.62.0 — 2026 October (deploy line `backport/v1.39-base`): a re-opened quote is the saved quote
 

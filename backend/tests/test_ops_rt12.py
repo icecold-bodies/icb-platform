@@ -540,3 +540,67 @@ def test_the_kit_carries_the_reboot_guard_and_the_stager_fills_every_placeholder
     # and release.sh asserts the plan the stager derived: SPA rebuild YES, no migration, restart; the bundle renamed
     assert "grep -q 'SPA rebuild *YES'" in rel and "grep -q 'DB migration *no '" in rel and "stop SPA_REBUILT" in rel
     assert 'SPA_MARK_NOT_YET' in rel and 'check "SPA_MARK_$d"' in rel and 'check "SPA_$d"' in rel
+
+
+# ── RT12_RULING_1: #232 in the range — one manifest pin, nothing installed, WeasyPrint-only statics, the gate ──
+def git(*args: str) -> str:
+    return subprocess.run(["git", "-C", str(ROOT), *args], capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
+
+
+def test_the_range_adds_exactly_the_weasyprint_pin_and_weasyprint_only_statics():
+    """The facts the stager derives, read from the tree itself (skipped on a shallow checkout without v1.62.0)."""
+    if subprocess.run(["git", "-C", str(ROOT), "cat-file", "-e", "a29db35^{commit}"], capture_output=True).returncode != 0:
+        pytest.skip("a29db35 (v1.62.0) is not in this checkout's history")
+    deps = git("diff", "--name-only", "a29db35", "HEAD", "--", "backend/requirements.txt", "backend/requirements-dev.txt",
+               "frontend/package.json", "frontend/package-lock.json").split()
+    assert deps == ["backend/requirements.txt"]
+    added = [ln[1:].split("#")[0].strip() for ln in git("diff", "a29db35", "HEAD", "--", "backend/requirements.txt").splitlines()
+             if ln.startswith("+") and not ln.startswith("++") and ln[1:].split("#")[0].strip()]
+    removed = [ln[1:].split("#")[0].strip() for ln in git("diff", "a29db35", "HEAD", "--", "backend/requirements.txt").splitlines()
+               if ln.startswith("-") and not ln.startswith("--") and ln[1:].split("#")[0].strip()]
+    assert added == ["weasyprint==70.0"] and removed == []
+    statics = set(git("diff", "--name-only", "a29db35", "HEAD", "--", "backend/app/static").split())
+    calcs = {"backend/app/static/js/calculator.js", "backend/app/static/js/calculator2.js"}
+    weasy = statics - calcs
+    assert calcs <= statics and weasy and all(re.fullmatch(r"backend/app/static/(css/report\.css|fonts/[^/]+)", p) for p in weasy), weasy
+    # WeasyPrint-only: read from disk by report_engine, named by no template -> browser-served by nothing, no ?v= moves
+    assert git("grep", "-l", "-E", r"report\.css|static/fonts", "HEAD", "--", "backend/app/templates") == ""
+    assert 'css_path_fs   = os.path.join(STATIC_DIR, "css", "report.css")' in (ROOT / "backend/app/report_engine.py").read_text(encoding="utf-8")
+    # no route is new (#232's 503 is a changed response): no decorator added in the whole range
+    assert re.search(r"^\+\s*@\w+\.(get|post|put|patch|delete|api_route)\(", git("diff", "a29db35", "HEAD", "--", "backend/app"), re.M) is None
+    # NC: the same scan on the range that added RT8's route finds its decorator
+    assert re.search(r"^\+\s*@\w+\.post\(", git("diff", "5511355", "a29db35", "--", "backend/app/routers/calculator.py"), re.M) is not None
+
+
+def test_the_kit_expects_the_one_dependency_warning_and_never_installs():
+    rel = RELEASE.read_text(encoding="utf-8")
+    mk = (KIT / "mkstage.sh").read_text(encoding="utf-8")
+    code = "\n".join(ln for ln in rel.splitlines() if not ln.lstrip().startswith("#"))
+    # the stager pins the fact: exactly backend/requirements.txt, exactly +weasyprint==70.0, and the WeasyPrint-only files
+    assert '[ "$REQ_ADDED" = "weasyprint==70.0" ] && [ -z "$REQ_REMOVED" ] ||' in mk
+    assert '[ "$REQ_CHANGED" = "$REQ_FILE" ] ||' in mk and "REQ_FILE=backend/requirements.txt" in mk
+    assert "WEASY_STATIC=" in mk and "report\\.css|fonts/[^/]+" in mk and "git grep -c -E 'report\\.css|static/fonts'" in mk
+    # release.sh: the warning once in the dry run AND the deploy, no pip, the venv read before and after, the gate False
+    assert '[ "$(deps_warnings "$OUT/icb-deploy-dryrun.txt")" = 1 ]' in code and '[ "$(deps_warnings "$OUT/icb-deploy.txt")" = 1 ]' in code
+    assert code.count("grep -qiE 'pip (install|sync)'") == 2
+    assert not re.search(r"\bpip3? +(install|sync)\b", code)                        # the kit itself never installs
+    assert code.count('check WEASYPRINT_IN_VENV "$(weasyprint_in_venv)" absent') == 2   # preflight + post_checks (deploy and verify)
+    assert 'stop WEASYPRINT "prod' in code and "importlib.util.find_spec(\"weasyprint\")" in code
+    assert 'check LETTERHEAD_GATE "$(gate_since "$since")" False' in code
+    assert "Letterhead quote (Generate Quote) available: " in (ROOT / "backend/app/main.py").read_text(encoding="utf-8")
+    # the deploy tool only warns (line 199) and runs no pip: the kit's expectation is the tool's behaviour
+    tool = (ROOT / "deploy/prod/icb-deploy.sh").read_text(encoding="utf-8")
+    assert 'warn "dependency manifests changed ($n_deps)' in tool and not re.search(r"\bpip\b.*install", tool)
+    # NC: RT9's kit stopped on any warning (its range had none) — the two kits must differ here
+    assert "grep -q 'dependency manifests changed' \"$OUT/icb-deploy-dryrun.txt\" && stop DRYRUN" in (OLD_KIT / "release.sh").read_text(encoding="utf-8")
+
+
+def test_the_copy_line_stops_under_5_gb_free_before_anything_reaches_prod():
+    ps1 = (WINDOW / "run_window_copy.ps1").read_text(encoding="ascii")
+    disk = ps1.index("STOP [DISK]")
+    assert disk < ps1.index("Enter-Window 'copy (step 1)'")          # before the first ssh/scp
+    assert "(Get-PSDrive C).Free / 1GB" in ps1 and "-lt 5" in ps1 and "the window needs 5 GB or more" in ps1
+    assert "RT12_SIM_FREE_GB" in ps1                                   # the sim's negative control hook, named as such
+    assert "RT12_SIM_FREE_GB" in (KIT / "sim/ps51/run_blocks.ps1").read_text(encoding="ascii")
+    md = RUNBOOK.read_text(encoding="utf-8")
+    assert "under 5 GB it\nSTOPs before anything reaches prod" in md.replace("\r\n", "\n") or "under 5 GB it STOPs" in md

@@ -1,6 +1,15 @@
 /* IceCold Bodies — Explosive Quote (and other quote-style reports)
    Print/PDF styling. Targets WeasyPrint. */
 
+/* RT11 (RT11_RULING_1 Q1) — the fonts ship with the app (../fonts: Liberation 2.1.5, SIL OFL 1.1, see fonts/NOTICE).
+   Liberation Sans has Arial's metrics; Linux servers have no Arial (prod fell back to DejaVu Sans) and Arial's files
+   may not be shipped. Named FIRST below, so every server renders the same faces; Arial stays as the fallback name. */
+@font-face { font-family: "Liberation Sans"; src: url("../fonts/LiberationSans-Regular.ttf");    font-weight: 400; font-style: normal; }
+@font-face { font-family: "Liberation Sans"; src: url("../fonts/LiberationSans-Bold.ttf");       font-weight: 700; font-style: normal; }
+@font-face { font-family: "Liberation Sans"; src: url("../fonts/LiberationSans-Italic.ttf");     font-weight: 400; font-style: italic; }
+@font-face { font-family: "Liberation Sans"; src: url("../fonts/LiberationSans-BoldItalic.ttf"); font-weight: 700; font-style: italic; }
+@font-face { font-family: "Liberation Mono"; src: url("../fonts/LiberationMono-Regular.ttf");    font-weight: 400; font-style: normal; }
+
 @page {
   size: A4;
   margin: 14mm 18mm 22mm 18mm;
@@ -25,7 +34,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
   font-size: 10.5pt;
   color: #000;
   line-height: 1.25;
@@ -252,5 +261,5 @@ html, body {
 
 /* ── Signature block ── */
 .sig-block { margin: 8mm 0 2mm 0; }
-.sig-line  { font-family: monospace; font-size: 12pt; letter-spacing: 0; }
+.sig-line  { font-family: "Liberation Mono", monospace; font-size: 12pt; letter-spacing: 0; }
 .sig-cap   { margin-top: 1mm; font-size: 10pt; }

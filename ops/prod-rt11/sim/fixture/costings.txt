@@ -1,0 +1,4 @@
+- | 40 | 12 | 3
+explosive_quote | 9 | 2 | 0
+freezer_quote | 31 | 8 | 4
+meathanger_quote | 5 | 1 | 0

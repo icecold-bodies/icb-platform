@@ -1,0 +1,7 @@
+12 | MEAT HANGER LARGE | MEAT | meathanger_quote
+15 | RHINORANGE TRAILER | OTHER | rhinorange_quote
+16 | ICECREAM BODY SMALL | ICE CREAM | -
+19 | FREEZER 2.3 METER | FREEZER | freezer_quote
+20 | FREEZER MEDIUM | FREEZER | freezer_quote
+24 | EXPLOSIVE 4.9 AND UP | EXPLOSIVE | explosive_quote
+25 | CHILLER 2.3 METER | CHILLER | -

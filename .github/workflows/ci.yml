@@ -53,6 +53,14 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libcairo2-dev pkg-config
 
+      # RT11 — WeasyPrint (the letterhead quote) needs Pango + HarfBuzz: prod's exact set (Ubuntu 24.04, as
+      # ubuntu-latest). The render tests (tests/test_rt11_letterhead.py) must RUN here, never skip. Windows installs no
+      # GTK runtime: there WeasyPrint's import raises OSError, the render tests skip with that reason and the gate
+      # (letterhead_quote_available) is tested False.
+      - name: Install WeasyPrint's system libraries (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
+
       - name: Install backend dependencies
         working-directory: backend
         run: |

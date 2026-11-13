@@ -4,8 +4,6 @@
 # Intentionally excluded vs. the legacy app:
 #   - PyMySQL   -> PostgreSQL-only in the monorepo
 #   - gunicorn  -> uvicorn serves the ASGI app directly (dev + the ICB intranet server)
-#   - weasyprint-> not present in the working local venv; reportlab/pypdf is the
-#                  active PDF path. (Re-add with GTK libs if HTML->PDF is needed.)
 
 # --- Web framework ---
 fastapi==0.115.12
@@ -48,6 +46,15 @@ pillow==12.2.0
 # and svglib 1.6.0 pulls rlPyCairo -> pycairo, which compiles from source and FAILS on HostAfrica's cPanel
 # CageFS (no Cairo system dev libs). If SVG->PDF is ever needed, add it to a wheel-only extras file — NOT this
 # prod requirements file — and confirm wheels exist for the target Linux. See ADR 0017.
+
+# --- Letterhead quote: HTML templates -> PDF (RT11) ---
+# WeasyPrint renders "Generate Quote" (/results/{id}/report, app/templates/reports/*_quote.html); reportlab above stays
+# the PDF path of the costing exports and the repair quotation. WeasyPrint needs the system libraries Pango + HarfBuzz
+# (Ubuntu 24.04: libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0; Windows: the GTK3 runtime). Without them its
+# import raises OSError, report_engine.letterhead_quote_available() is False, and the results page says "Official
+# quotes are issued from SAP." instead of offering the button. Pinned: proven on prod's Python 3.12.3, Pango 1.52.1 and
+# HarfBuzz 8.3.0 (RT11 §3.0, 23 Oct 2026: pip --dry-run in prod's venv = 10 new packages, none changed).
+weasyprint==70.0
 
 # --- AI Help assistant ---
 anthropic==0.104.1

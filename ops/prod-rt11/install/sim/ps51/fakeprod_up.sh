@@ -32,7 +32,8 @@ case "${1:-}" in
   ls)
     SIM=$(cat "$CUR") || exit 1; ( cd "$SIM/tmp" && ls -A ) ;;
   log)
-    SIM=$(cat "$CUR") || exit 1; grep -- '-> remote command:' "$SIM/forward.log" | sed 's/^ *-> remote command: //' ;;
+    # no forward.log before the first ssh: no lines (a grep error here once counted as a command)
+    SIM=$(cat "$CUR") || exit 1; { grep -- '-> remote command:' "$SIM/forward.log" 2>/dev/null || true; } | sed 's/^ *-> remote command: //' ;;
   down)
     DEBIAN_FRONTEND=noninteractive apt-get remove -y -qq "$APT_PKG" >/dev/null 2>&1
     SIM=$(cat "$CUR" 2>/dev/null) || { echo "no PS 5.1 sim is up"; exit 0; }

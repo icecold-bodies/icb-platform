@@ -42,7 +42,9 @@ function Enter-Window($label) {
       if ($probe -and $probe.Count -gt 2) { $vmBoot = "$($probe[2])".Trim() }
     }
   }
-  $sshErr = ((Get-Content $errFile -ErrorAction SilentlyContinue) -join ' ').Trim()
+  # PS 5.1 wraps a native command's stderr in an error record ("scp.exe : <reason>", then "At ..." and "+ ..." lines):
+  # keep the reason only, so the STOP line reads what ssh said
+  $sshErr = ((Get-Content $errFile -ErrorAction SilentlyContinue | Where-Object { $_ -notmatch '^\s*(At |\+ |$)' } | ForEach-Object { ($_ -replace '^\S+\.exe : ', '').Trim() }) -join ' ').Trim()
   Remove-Item $errFile -ErrorAction SilentlyContinue
   $said = if ($sshErr) { $sshErr } else { '(nothing)' }
   $hint = if ($sshErr -match 'timed out|No route|unreachable|Could not resolve') { 'prod is not reachable on the LAN address - connect the VPN, then paste the same line again' } elseif ($sshErr -match 'Permission denied|Connection closed|Connection reset') { 'the ssh login to prod was refused - paste the same line again once; if it repeats, tell the CA' } else { 'tell the CA' }

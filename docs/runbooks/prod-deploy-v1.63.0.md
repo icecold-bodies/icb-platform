@@ -301,7 +301,7 @@ IF YOU SEE "STOP": some names may already be gone; paste it back to me
 
 | sim | how | result |
 |---|---|---|
-| the release kit, 22 scenarios | WSL: `ops/prod-release-v1.63.0/sim/run_all.sh` (the real `mkstage_window.sh` + `mkstage.sh`, the real `deploy/prod/icb-deploy.sh`, stub doors that answer for the RUNNING code, a Cloudflare edge that keeps the first bytes per URL, a sticky `/tmp` under `fs.protected_regular=2` with the kit owned by the ssh user, a journal with prod's chained tracebacks) | `sim/RESULTS.md` |
+| the release kit, 21 scenarios | WSL: `ops/prod-release-v1.63.0/sim/run_all.sh` (the real `mkstage_window.sh` + `mkstage.sh`, the real `deploy/prod/icb-deploy.sh`, stub doors that answer for the RUNNING code, a Cloudflare edge that keeps the first bytes per URL, a sticky `/tmp` under `fs.protected_regular=2` with the kit owned by the ssh user, a journal with prod's chained tracebacks) | `sim/RESULTS.md` |
 | every paste block above | Windows PowerShell 5.1: `ops/prod-release-v1.63.0/sim/ps51/run_blocks.ps1` — reads THIS runbook's blocks and pastes each into a new PowerShell 5.1 window against a fake prod in WSL (native ssh/scp stand-ins, so the quoting is PowerShell 5.1's own; the `:8000` check runs for real against Michael's dev server) | `sim/RESULTS.md` |
 
 ## OUTCOME

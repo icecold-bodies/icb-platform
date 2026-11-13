@@ -75,6 +75,6 @@ echo; echo "== sim state: prod HEAD $(git -C "$SIM/opt/icb-platform" rev-parse -
 echo "== backups: $(ls "$SIM/varbackups/postgres" | tr '\n' ' ')  (the kit's pg_dump ran at alembic $(cat "$SIMSTATE/backup_at_alembic" 2>/dev/null || echo -)); npm builds: $(cat "$SIMSTATE/npm.log" 2>/dev/null | wc -l)"
 echo "== the doors, in the order the kit asked (first request per door for /health/version): $(grep '/health/version' "$SIMSTATE/curl.log" | sed -E 's#^GET https://([^/]*)/.*#\1#' | awk '!s[$0]++' | tr '\n' ' ')"
 echo "== root-owned __pycache__ the kit left in the repo (want 0): $(find "$SIM/opt/icb-platform" -name __pycache__ -newer "$SIMSTATE/target" | wc -l)"
-echo "== 'Permission denied' anywhere in the kit's out folders (sticky /tmp, protected_regular=$(sysctl -n fs.protected_regular 2>/dev/null || echo ?); want 0): $(cat "$KITD"/out-*/run.log 2>/dev/null | grep -c 'Permission denied')"
+echo "== 'Permission denied' anywhere in the kit's out folders (sticky /tmp, protected_regular=$(sysctl -n fs.protected_regular 2>/dev/null || echo ?); want 0): $(cat "$KITD"/out-*/run.log 2>/dev/null | grep -c 'Permission denied *$')"   # an error ends the line; #231's commit subject quotes the words mid-line
 echo "== files the kit wrote directly in /tmp (want none): $(cd "$SIM/tmp" && ls -A | grep -v -E '^icb-release-v1\.63\.0$|^icb-rollback-[0-9-]+\.txt$' | tr '\n' ' ')"
 echo "== 'exception line not found' in the kit's out folders (want 0): $(cat "$KITD"/out-*/run.log 2>/dev/null | grep -c 'exception line not found')"

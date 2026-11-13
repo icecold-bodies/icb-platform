@@ -171,9 +171,10 @@ $logs = @{}
 foreach ($k in $order) { if ($byStep.ContainsKey($k)) { $logs[$k] = Run-Block $byStep[$k] $k } }
 # the deploy's own lines: the SPA rebuilt, the per-row record, no 'Permission denied' (sticky /tmp, uid 1500)
 $dep = @($logs['deploy'])
-if (@($dep | Where-Object { $_ -match 'ok   SPA bundle assets/index-BBI2d9Oo\.js -> assets/index-RT12\d+\.js' }).Count -eq 1 -and @($dep | Where-Object { $_ -match '72 rows recorded by id and md5' }).Count -eq 1 -and @($dep | Where-Object { $_ -match 'Permission denied' }).Count -eq 0) {
+# ('Permission denied' as an error ENDS its line; #231's commit subject quotes the words mid-line and the deploy tool prints it)
+if (@($dep | Where-Object { $_ -match 'ok   SPA bundle assets/index-BBI2d9Oo\.js -> assets/index-RT12\d+\.js' }).Count -eq 1 -and @($dep | Where-Object { $_ -match '72 rows recorded by id and md5' }).Count -eq 1 -and @($dep | Where-Object { $_ -match 'Permission denied\s*$' }).Count -eq 0) {
   Ok "the deploy block: SPA rebuilt to a new bundle, 72 rows recorded by id, no 'Permission denied' (sticky /tmp, kit owned by uid 1500)"
-} else { Bad "the deploy block's own lines: $(@($dep | Where-Object { $_ -match 'SPA bundle|rows recorded|Permission denied' }) -join ' / ')" }
+} else { Bad "the deploy block's own lines: $(@($dep | Where-Object { $_ -match 'ok   SPA bundle|rows recorded by id and md5|Permission denied\s*$' }) -join ' / ')" }
 $tars = @(Get-ChildItem (Join-Path $Home2 'Downloads') -Filter 'rt12-window-back-*.tar' | Sort-Object Name)
 if ($tars.Count -eq 1) {
   $members = @(& tar.exe -tf $tars[0].FullName | Where-Object { $_ -match '^[^/]+/out-[^/]+/$' })

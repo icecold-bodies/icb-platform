@@ -1619,8 +1619,8 @@ async def report_for_record(record_id: int, request: Request, db: Session = Depe
             "contact_telephone": rec.contact_telephone or "",
         }
 
+    from ..report_engine import render_by_slug, LetterheadUnavailable, NotACustomerQuote
     try:
-        from ..report_engine import render_by_slug
         pdf_bytes = render_by_slug(
             slug=tmpl.slug,
             record_id=record_id,
@@ -1632,6 +1632,11 @@ async def report_for_record(record_id: int, request: Request, db: Session = Depe
             quote_number=(revisions.doc_label(rec.quote_number, revisions.version_of(rec.result_json))
                           if rec.quote_number else None),
         )
+    # RT11_RULING_1 — plain words for both refusals (the technical reason is in the server log, never here)
+    except NotACustomerQuote as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except LetterheadUnavailable as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:

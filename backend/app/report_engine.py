@@ -12,15 +12,38 @@ Add a new report type by:
 """
 from __future__ import annotations
 
+import logging
 import os
 from datetime import datetime
 from typing import Any, Dict, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+logger = logging.getLogger(__name__)
+
 APP_DIR     = os.path.dirname(__file__)
 REPORTS_DIR = os.path.join(APP_DIR, "templates", "reports")
 STATIC_DIR  = os.path.join(APP_DIR, "static")
+
+# RT11_RULING_1 — the two refusals a person reads; the technical reason goes to the server log only.
+NOT_AVAILABLE_MESSAGE = "Letterhead quotes are not available on this server yet. Official quotes are issued from SAP."
+NOT_A_QUOTE_MESSAGE = "This template is not a customer quote."
+
+
+class LetterheadUnavailable(RuntimeError):
+    """WeasyPrint cannot load here: not installed (ImportError), or installed without its system libraries — Pango /
+    the GTK runtime — which raises OSError ("cannot load library 'libgobject-2.0-0'") at import."""
+
+    def __init__(self) -> None:
+        super().__init__(NOT_AVAILABLE_MESSAGE)
+
+
+class NotACustomerQuote(ValueError):
+    """A ReportTemplate slug without a quote context builder — e.g. cost_breakdown, the old internal sheet of margin
+    and ratio, which must never reach a customer."""
+
+    def __init__(self) -> None:
+        super().__init__(NOT_A_QUOTE_MESSAGE)
 
 _env = Environment(
     loader=FileSystemLoader(REPORTS_DIR),
@@ -52,6 +75,13 @@ def _fmt_money_zar(value: Optional[float]) -> str:
     return f"R {s}"
 
 
+def _as_float(value) -> float:
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _fmt_date_human(dt: Optional[datetime]) -> str:
     dt = dt or datetime.now()
     import platform
@@ -72,7 +102,11 @@ def build_explosive_quote_context(
     customer = customer or {}
     customer_name = (customer.get("name") or "").strip() or "Client Name"
 
-    price_value = result.get("selling_price") or result.get("grand_total") or 0
+    # RT11_RULING_1 Q3 — the letterhead prints the MES headline: the NET TOTAL when the costing carries a discount,
+    # else the TOTAL COST (the selling price; the grand total when no margin or ratio made one). Chassis: unchanged.
+    total = result.get("selling_price") or result.get("grand_total") or 0
+    discounted = _as_float(result.get("discount_amount")) > 0 and result.get("net_total") is not None
+    price_value = result.get("net_total") if discounted else total
 
     sarda_path_fs = os.path.join(STATIC_DIR, "sarda-logo.png")
     logo_path_fs  = os.path.join(STATIC_DIR, "IceCold-Logo.png")
@@ -135,10 +169,11 @@ def render_report(template_name: str, context: Dict[str, Any]) -> bytes:
     """Render a report template to PDF bytes via WeasyPrint."""
     try:
         from weasyprint import HTML
-    except ImportError as e:
-        raise RuntimeError(
-            "WeasyPrint is not installed. Add 'weasyprint' to requirements and pip install."
-        ) from e
+    except (ImportError, OSError) as e:
+        # RT11_RULING_1 — not installed, or installed without Pango / GTK (an OSError, which the old ImportError-only
+        # branch let through as a raw "cannot load library …" 500): a plain refusal, the reason in the server log
+        logger.warning("Letterhead quote unavailable on this server: %s: %s", type(e).__name__, e)
+        raise LetterheadUnavailable() from e
 
     template = _env.get_template(template_name)
     html_str = template.render(**context)
@@ -158,11 +193,13 @@ def render_by_slug(
     created_at: Optional[datetime] = None,
     quote_number: Optional[str] = None,
 ) -> bytes:
-    """Render a report by its slug. Looks for a slug-specific context builder
-    in CONTEXT_BUILDERS; falls back to the explosive-quote builder, which
-    covers the common quote variables (date, ref_no, contact, dims, price)
-    so simple variants of the same template work without new code."""
-    builder = CONTEXT_BUILDERS.get(slug, build_explosive_quote_context)
+    """Render a customer quote by its slug, with its context builder from CONTEXT_BUILDERS. A slug without one is
+    refused (NotACustomerQuote): RT11_RULING_1 Q4 — it used to fall back to the explosive-quote builder, which handed
+    cost_breakdown (the internal sheet of margin and ratio) a quote's context; a new quote template is added to
+    CONTEXT_BUILDERS deliberately."""
+    builder = CONTEXT_BUILDERS.get(slug)
+    if builder is None:
+        raise NotACustomerQuote()
     ctx = builder(
         record_id=record_id,
         customer=customer,

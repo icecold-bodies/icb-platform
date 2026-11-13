@@ -145,14 +145,17 @@ def test_negative_control_without_the_font_face_a_fallback_face_appears_and_is_c
     (static / "css").mkdir(parents=True)
     shutil.copy(os.path.join(report_engine.STATIC_DIR, "IceCold-Logo.png"), static / "IceCold-Logo.png")
     css = open(os.path.join(report_engine.STATIC_DIR, "css", "report.css"), encoding="utf-8").read()
-    css = re.sub(r"@font-face \{[^}]*\}\n", "", css).replace('"Liberation Sans", ', "").replace('"Liberation Mono", ', "")
+    css = re.sub(r"@font-face \{[^}]*\}\r?\n", "", css).replace('"Liberation Sans", ', "").replace('"Liberation Mono", ', "")
     assert "@font-face" not in css and '"Liberation' not in css     # no shipped face is loaded or named
     (static / "css" / "report.css").write_text(css, encoding="utf-8")
     monkeypatch.setattr(report_engine, "STATIC_DIR", str(static))
     pdf, _ = _render("freezer_quote", 0, PLAIN)
     probs = quote_problems(pdf, slug="freezer_quote", label=QN, price="R 170 371.53", rev=0)
-    assert [p for p in probs if p.startswith("embedded faces")], probs    # DejaVu on Linux, Arial on Windows
-    assert not (_fonts(pdf) & LIBERATION)
+    # caught: a face that is not the shipped set. (Which one varies: DejaVu on prod; Arial on Windows; on the ubuntu CI
+    # runner, whose image installs Liberation system-wide, fontconfig maps Arial to it and only the mono face falls back
+    # to DejaVu Sans Mono — 13 Nov. The exact-set check catches each of them.)
+    assert [p for p in probs if p.startswith("embedded faces")], probs
+    assert _fonts(pdf) != LIBERATION
 
 
 @needs_weasyprint

@@ -262,7 +262,7 @@ def test_the_install_kit_writes_nothing_to_its_report_after_the_hand_over_and_ac
 def test_the_install_line_runs_one_of_five_fixed_remote_lines_by_path_and_is_ascii():
     raw = (INST / "run_install.ps1").read_bytes()
     assert all(b < 0x80 for b in raw)
-    text = raw.decode("ascii")
+    text = raw.decode("ascii").replace("\r\n", "\n")    # the windows runner checks .ps1 files out with CRLF
     assert inline_script_calls(text) == []
     table = dict(re.findall(r"^  '(\w+)'\s*= '(sudo bash /tmp/icb-rt11-install/rt11_install\.sh \w+)'$", text, re.M))
     assert table == {s: f"sudo bash /tmp/icb-rt11-install/rt11_install.sh {s}" for s in STEPS}

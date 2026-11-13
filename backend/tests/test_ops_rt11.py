@@ -214,3 +214,75 @@ def test_the_runbook_block_is_the_agreed_shape_and_names_the_stage_line():
     assert b["first"].startswith("######## RT11 prod check (read only)") and "######## RT11 prod check (read only)" in line
     assert b["ends"].startswith("######## DONE - read only.") and "######## DONE - read only." in line
     assert "VM password" in b["asks"]
+
+
+# ── 4. the install kit (ops/prod-rt11/install): the release window's apt + pip steps ──────────────────────────────
+INST = KIT / "install"
+INSTALL = (INST / "rt11_install.sh").read_text(encoding="utf-8")
+INSTALL_RUNBOOK = ROOT / "docs" / "runbooks" / "prod-install-rt11.md"
+INSTALL_STAGE = r"C:\Users\micge\Documents\icb-rt11-stage\install"
+STEPS = ["preflight", "apt", "pip", "verify", "rollback"]
+
+
+def test_the_lock_is_the_ten_tested_packages_and_carries_the_requirements_pin():
+    lock = (INST / "weasyprint-lock.txt").read_text(encoding="utf-8").split()
+    assert len(lock) == 10 and all(re.fullmatch(r"[a-z0-9-]+==[0-9.]+", l) for l in lock), lock
+    req = (ROOT / "backend" / "requirements.txt").read_text(encoding="utf-8").splitlines()
+    assert "weasyprint==70.0" in lock and "weasyprint==70.0" in req       # the one pin, the same in both
+
+
+def test_apt_adds_only_the_one_package_at_its_version_and_pip_only_the_lock_as_the_venv_owner():
+    mk = (INST / "mkstage_install.sh").read_text(encoding="utf-8")
+    assert "APT_PKG=libharfbuzz-subset0" in mk and "APT_VER=8.3.0-2build2" in mk
+    code = [l.strip() for l in INSTALL.splitlines() if not l.lstrip().startswith("#")]
+    real_apt = [l for l in code if re.match(r"(DEBIAN_FRONTEND=noninteractive )?apt-get ", l)]    # every apt-get it runs
+    assert all("-s " in l for l in code if re.match(r"(\w+=\S+ )*(LC_ALL=C )?apt-get ", l) and l not in real_apt)
+    assert real_apt == [
+        'DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --no-upgrade "$APT_PKG=$APT_VER" 2>&1 | grep -E \'^(Setting up|Unpacking|E:|[0-9]+ upgraded)\' | sed \'s/^/   /\'',
+        'DEBIAN_FRONTEND=noninteractive apt-get remove -y "$APT_PKG" 2>&1 | grep -E \'^(Removing|E:)\' | sed \'s/^/   /\' || true']
+    assert "apt-get update" not in "\n".join(code)
+    installs = [l for l in code if "-m pip install" in l and "--dry-run" not in l]
+    assert installs == ['pip_as "$vown" -m pip install --no-deps -r "$LOCK" 2>&1 | grep -E \'^(Successfully installed|ERROR)\' | sed \'s/^/   /\'']
+    assert 'runuser -u "$u" -- env -i' in INSTALL and "PIP_NO_CACHE_DIR=1" in INSTALL
+    assert '[ "$vown" != root ] || stop KIT' in INSTALL                     # never installs as root
+    # the order is enforced in code: pip refuses before the RT11 code (the faces) and before apt
+    pip = INSTALL[INSTALL.index("  pip)"):INSTALL.index("  verify)")]
+    assert pip.index("stop ORDER \"the deployed code is not RT11's") < pip.index("stop ORDER \"$APT_PKG $APT_VER is not installed") < pip.index("--dry-run")
+
+
+def test_the_install_kit_writes_nothing_to_its_report_after_the_hand_over_and_acts_on_fixed_names():
+    assert writes_after_handover(INSTALL) == []
+    assert 'rm -rf --one-file-system -- "$BASE" "$BASE.tar"' in INSTALL and "BASE=/tmp/icb-rt11-install" in INSTALL
+    assert "set -e\n" not in INSTALL
+    vm = (INST / "rt11_install_vm.sh").read_text(encoding="utf-8")
+    names = re.search(r'NAMES="([^"]*)"', vm).group(1).replace("$REPORT", "/tmp/icb-rt11-install-report.txt").split()
+    assert names == ["/tmp/icb-rt11-install", "/tmp/icb-rt11-install.tar", "/tmp/icb-rt11-install-report.txt"]
+
+
+def test_the_install_line_runs_one_of_five_fixed_remote_lines_by_path_and_is_ascii():
+    raw = (INST / "run_install.ps1").read_bytes()
+    assert all(b < 0x80 for b in raw)
+    text = raw.decode("ascii")
+    assert inline_script_calls(text) == []
+    table = dict(re.findall(r"^  '(\w+)'\s*= '(sudo bash /tmp/icb-rt11-install/rt11_install\.sh \w+)'$", text, re.M))
+    assert table == {s: f"sudo bash /tmp/icb-rt11-install/rt11_install.sh {s}" for s in STEPS}
+    assert "& ssh -t -o BatchMode=yes -o ConnectTimeout=10 $Vm $remote" in text and "$remote = $Steps[$Step]" in text
+    assert re.findall(r"'(bash /tmp/icb-rt11-install-vm\.sh \w+)'", text) == [
+        "bash /tmp/icb-rt11-install-vm.sh where", "bash /tmp/icb-rt11-install-vm.sh unpack",
+        "bash /tmp/icb-rt11-install-vm.sh readback"]
+    assert text.count("192.168.0.251") == 1 and "& scp -q" not in text
+    for p in (INST / "run_install.ps1", INST / "sim" / "ps51" / "run_blocks.ps1"):
+        assert ps_case_collisions(p.read_text(encoding="ascii")) == [], p.name
+
+
+def test_the_install_runbook_has_the_five_blocks_in_order_in_the_agreed_shape():
+    md = INSTALL_RUNBOOK.read_text(encoding="utf-8").replace("\r\n", "\n")
+    blocks = list(BLOCK.finditer(md))
+    assert [b["cmd"] for b in blocks] == [
+        f'powershell -NoProfile -ExecutionPolicy Bypass -File "{INSTALL_STAGE}\\run_install.ps1" {s}' for s in STEPS]
+    line = (INST / "run_install.ps1").read_text(encoding="ascii")
+    assert "######## RT11 install: $Step ." in line and "######## DONE - $Step ($what)." in line
+    for b, s in zip(blocks, STEPS):
+        assert b["win"].startswith("PowerShell (your laptop)") and "VM password" in b["asks"]
+        assert b["first"].startswith(f"######## RT11 install: {s} . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod")
+        assert b["ends"].startswith(f"######## DONE - {s} ({'read only' if s in ('preflight', 'verify') else 'it changes prod'}).")

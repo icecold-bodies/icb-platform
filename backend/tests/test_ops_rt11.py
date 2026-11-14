@@ -286,3 +286,56 @@ def test_the_install_runbook_has_the_five_blocks_in_order_in_the_agreed_shape():
         assert b["win"].startswith("PowerShell (your laptop)") and "VM password" in b["asks"]
         assert b["first"].startswith(f"######## RT11 install: {s} . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod")
         assert b["ends"].startswith(f"######## DONE - {s} ({'read only' if s in ('preflight', 'verify') else 'it changes prod'}).")
+
+
+# ── 5. RT11's close (RULING_2): CI's Linux build runs prod's OS; the prod check's answer kept as evidence ──────────
+CI = ROOT / ".github" / "workflows" / "ci.yml"
+EVIDENCE = ROOT / "docs" / "audit" / "rt11_2026-10" / "prod" / "rt11-check-20261023-121804.txt"
+EVIDENCE_SHA = "6e8ca8781be661a21e308a0ce223e99b52d7ea16295610e43ef57de288e27c03"
+
+
+def runner_problems(yml: str) -> list[str]:
+    """The build matrix must run Linux on prod's Ubuntu (24.04), pinned: no floating `ubuntu-latest`."""
+    code = "\n".join(l for l in yml.replace("\r\n", "\n").split("\n") if not l.lstrip().startswith("#"))
+    m = re.search(r"^\s+os: \[([^\]]*)\]\s*$", code, re.M)
+    if not m:
+        return ["no build matrix"]
+    oses = [o.strip() for o in m.group(1).split(",")]
+    probs = [] if "ubuntu-24.04" in oses else ["the Linux build is not pinned to ubuntu-24.04 (prod's OS)"]
+    probs += [f"a floating or other Ubuntu runner: {o}" for o in oses if o.startswith("ubuntu") and o != "ubuntu-24.04"]
+    probs += [f"a step keyed on a runner label: {l.strip()}" for l in code.split("\n") if "matrix.os ==" in l]
+    return probs
+
+
+def test_the_linux_build_runs_prods_os_pinned():
+    yml = CI.read_text(encoding="utf-8")
+    assert runner_problems(yml) == []
+    assert "runs-on: ${{ matrix.os }}" in yml
+    # the Linux-only steps key on the OS, not on a label, so the pin changes no step
+    assert yml.count("if: runner.os == 'Linux'") == 2
+
+
+def test_negative_control_the_floating_runner_is_caught():
+    old = "    strategy:\n      matrix:\n        os: [ubuntu-latest, windows-latest]\n"
+    assert runner_problems(old) == ["the Linux build is not pinned to ubuntu-24.04 (prod's OS)",
+                                    "a floating or other Ubuntu runner: ubuntu-latest"]
+    assert runner_problems(old.replace("ubuntu-latest", "ubuntu-24.04") + "        if: matrix.os == 'ubuntu-24.04'\n") \
+        == ["a step keyed on a runner label: if: matrix.os == 'ubuntu-24.04'"]
+
+
+def test_the_prod_checks_answer_is_kept_byte_for_byte_and_names_no_one():
+    import hashlib
+    raw = EVIDENCE.read_bytes().replace(b"\r\n", b"\n")
+    assert hashlib.sha256(raw).hexdigest() == EVIDENCE_SHA
+    text = raw.decode("utf-8")
+    lines = text.splitlines()
+    assert len(lines) == 78 and lines[0].startswith("######## RT11 prod check (read only) · machine icb-mes-prod")
+    assert lines[-1] == "######## DONE (read only)"
+    assert "SUMMARY: Ubuntu 24.04.4 LTS · 3.12.3" in text and "apt: 1 new, 0 upgraded · pip: 10 new, 0 changed" in text
+    assert not PERSONAL.search(text) and "@" not in text.replace("@ 127.0.0.1", "")
+    md = RUNBOOK.read_text(encoding="utf-8").replace("\r\n", "\n")
+    assert "## OUTCOME (23 Oct 2026, 12:17 SAST)" in md
+    assert f"`docs/audit/rt11_2026-10/prod/{EVIDENCE.name}` (78 lines), sha256 `{EVIDENCE_SHA[:16]}…`" in md
+    # the pip lines of the answer are exactly the install kit's lock
+    lock = (INST / "weasyprint-lock.txt").read_text(encoding="utf-8").split()
+    assert sorted(re.findall(r"new: (\S+) (\S+)", text)) == sorted(tuple(l.split("==")) for l in lock if "==" in l)

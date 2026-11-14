@@ -162,8 +162,8 @@ IF YOU SEE "STOP": nothing was changed; it says what to do (usually: close the s
 
 **1. Copy the kits to prod** (the VPN must be up). The line first reads your C: drive's free space: **under 5 GB it
 STOPs before anything reaches prod** (free some space — your Downloads folder holds earlier window tars — then paste it
-again). With enough space its second line is the window line, `######## RT12 window copy (step 1) . machine
-LAPTOP-DGJ0U6RQ -> icb-mes-prod . head a29db35 . boot …`, and the kits go over.
+again). With enough space its second line is the window line, and the kits go over:
+`######## RT12 window copy (step 1) . machine LAPTOP-DGJ0U6RQ -> icb-mes-prod . head a29db35 . boot …`
 
 📋 PASTE INTO: PowerShell (your laptop)
 ```

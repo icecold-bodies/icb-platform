@@ -583,14 +583,17 @@ def test_the_kit_expects_the_one_dependency_warning_and_never_installs():
     # release.sh: the warning once in the dry run AND the deploy, no pip, the venv read before and after, the gate False
     assert '[ "$(deps_warnings "$OUT/icb-deploy-dryrun.txt")" = 1 ]' in code and '[ "$(deps_warnings "$OUT/icb-deploy.txt")" = 1 ]' in code
     assert code.count("grep -qiE 'pip (install|sync)'") == 2
-    assert not re.search(r"\bpip3? +(install|sync)\b", code)                        # the kit itself never installs
+    # the kit itself never installs: no pip command at a line start or after a separator (its messages may NAME pip)
+    assert not re.search(r"(^|[;&|(]\s*)(sudo\s+(-u\s+\w+\s+)?)?(\"?\$PY\"?\s+-m\s+)?pip3?\s+(install|sync)\b", code, re.M)
+    # NC: the same scan flags a kit that would install
+    assert re.search(r"(^|[;&|(]\s*)(sudo\s+(-u\s+\w+\s+)?)?(\"?\$PY\"?\s+-m\s+)?pip3?\s+(install|sync)\b", 'ok x\nsudo -u icb "$PY" -m pip install weasyprint==70.0\n', re.M)
     assert code.count('check WEASYPRINT_IN_VENV "$(weasyprint_in_venv)" absent') == 2   # preflight + post_checks (deploy and verify)
     assert 'stop WEASYPRINT "prod' in code and "importlib.util.find_spec(\"weasyprint\")" in code
     assert 'check LETTERHEAD_GATE "$(gate_since "$since")" False' in code
     assert "Letterhead quote (Generate Quote) available: " in (ROOT / "backend/app/main.py").read_text(encoding="utf-8")
     # the deploy tool only warns (line 199) and runs no pip: the kit's expectation is the tool's behaviour
     tool = (ROOT / "deploy/prod/icb-deploy.sh").read_text(encoding="utf-8")
-    assert 'warn "dependency manifests changed ($n_deps)' in tool and not re.search(r"\bpip\b.*install", tool)
+    assert 'warn "dependency manifests changed ($n_deps)' in tool and not re.search(r"\bpip3?\s+install\b", tool)   # it only names "pip/npm install" in the warning
     # NC: RT9's kit stopped on any warning (its range had none) — the two kits must differ here
     assert "grep -q 'dependency manifests changed' \"$OUT/icb-deploy-dryrun.txt\" && stop DRYRUN" in (OLD_KIT / "release.sh").read_text(encoding="utf-8")
 

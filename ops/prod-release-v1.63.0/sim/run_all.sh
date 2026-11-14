@@ -55,6 +55,6 @@ row nonpm       "FAIL NODE_MODULES = 'missing'.*PREFLIGHT: [0-9]+ check\(s\) FAI
 row nobuild     'npm run build will do nothing.*ok   plan: no migration, SPA rebuild, restart.*STOP \[SPA_REBUILT\]: the SPA bundle is still assets/index-BBI2d9Oo.js'
 # RT12_RULING_1 (3): prod's venv must not gain weasyprint in this window — after the deploy verify FAILs on it (the
 # gate still read False at the restart); before it, preflight FAILs and the deploy STOPs at step 4, before the backup
-row weasyprint    "######## DEPLOYED.*the fake venv gains weasyprint after the deploy.*PASS QUOTES_UNCHANGED_SINCE_DEPLOY.*FAIL WEASYPRINT_IN_VENV = 'present' \(want absent\).*PASS LETTERHEAD_GATE = False.*######## VERIFY: 1 check\(s\) failed"
+row weasyprint    "######## DEPLOYED.*the fake venv gains weasyprint after the deploy.*FAIL WEASYPRINT_IN_VENV = 'present' \(want absent\).*PASS LETTERHEAD_GATE = False.*PASS QUOTES_UNCHANGED_SINCE_DEPLOY.*######## VERIFY: 1 check\(s\) failed.*STOP \[WEASYPRINT_IN_VENV\]: got 'present', want absent"
 row weasyprintpre "FAIL WEASYPRINT_IN_VENV = 'present'.*PREFLIGHT: [0-9]+ check\(s\) FAILED.*== 4\. PyYAML.*STOP \[WEASYPRINT\]: prod's venv reads weasyprint 'present': this kit expects it ABSENT.*backups: icb_platform_20261023-0230.dump.gz   \(the kit's pg_dump ran at alembic -\)"
 echo "== $P passed, $F failed"

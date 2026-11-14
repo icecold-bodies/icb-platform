@@ -4,6 +4,37 @@ All notable changes to the ICB Platform monorepo are recorded here.
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## v1.63.0 — 2026 October (deploy line `backport/v1.39-base`): revisions visible, accept by record
+
+What changes for the people who quote:
+
+- **Every costing shows its revision number, everywhere staff see one.** The first save is REV 0 (Michael's rule);
+  the next "Save as Rev." is REV 1, and so on. The costings list reads `N10022/10/2026 · REV 1`, keeps a quote's
+  revisions together, marks the newest live one **Latest** and the older ones **· earlier**. The costing view has a
+  **Revisions** card and shows the re-priced line; the calculator's edit banner says which REV is the latest when an
+  older one is open.
+- **Every row and every action goes by the record, not the quote number.** Before this, the list could show a quote
+  twice ("ghost rows") and **Accept on a newer revision accepted the oldest one and built its job** — the defect that
+  N10021/10/2026, with two live Pending revisions, was exposed to. Accept, Decline, Replace, the pre-job card and the
+  plan now act on the revision that was clicked.
+- **The revision number comes from the server** (the highest in the quote's chain plus one, decided under a lock), so
+  two revisions can no longer share a number. **Replace** is a soft delete and says what it replaces. **Accept on an
+  older revision asks first**: "This is REV 0. REV 2 is the latest. Accept REV 0 anyway?"
+- **The exports and the letterhead quote's reference carry `REV n` from REV 1** (a first save stays unmarked).
+- **"Generate Quote" is offered only where the letterhead PDF can be made.** On prod it cannot yet (WeasyPrint is not
+  installed), so the results page says **"Official quotes are issued from SAP."** where the button used to fail. The
+  letterhead quote itself is RT11's work.
+- **Behind the scenes: groundwork for printing the MES letterhead quote.** Nothing changes on screen yet; official
+  quotes still come from SAP. (RT11's code, #232: the quote's templates, fonts and the WeasyPrint pin ride along, switched
+  off until RT11's own install.)
+
+Nothing else moves: no database change (alembic stays 0053), no new route, nothing installed (the `weasyprint` line in
+`requirements.txt` is only written down for RT11's later install), and how a NEW costing prices is unchanged — the
+costing audit reads the same before and after (0 FLAG / 115 ACCEPTED, smoke 0 / 33). The MES app is rebuilt; the
+calculators' scripts are `calculator.js?v=192` and `calculator2.js?v=129`. Everyone reloads (Ctrl+F5) after the update.
+
+Built by RT10 (#229, #230, #231) and RT11 (#232); released by RT12 (prod runbook: `docs/runbooks/prod-deploy-v1.63.0.md`).
+
 ## v1.62.0 — 2026 October (deploy line `backport/v1.39-base`): a re-opened quote is the saved quote
 
 What changes for the people who quote:

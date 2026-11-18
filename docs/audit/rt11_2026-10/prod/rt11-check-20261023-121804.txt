@@ -1,0 +1,78 @@
+######## RT11 prod check (read only) · machine icb-mes-prod · db icb_platform @ 127.0.0.1:5432 · head a29db35 · boot 2026-10-11 08:02:53 SAST · 2026-10-23 12:17:53 SAST
+== prod: alembic 0053 · every session read-only · kit staged from 3eb8def · 2026-10-23 12:17:53 SAST
+== 1. the machine
+   Ubuntu 24.04.4 LTS · kernel 6.8.0-146-generic · amd64
+== 2. the deployed venv (/opt/icb-platform/.venv/bin/python)
+   Python 3.12.3 · pip 26.1.2 · weasyprint today: absent
+== 3. the system libraries and fonts (dpkg; fontconfig)
+   absent  libharfbuzz-subset0
+   ii  fontconfig 2.15.0-1.1ubuntu2
+   ii  fontconfig-config 2.15.0-1.1ubuntu2
+   ii  libcairo2 1.18.0-3build1
+   ii  libfontconfig1 2.15.0-1.1ubuntu2
+   ii  libharfbuzz0b 8.3.0-2build2
+   ii  libpango-1.0-0 1.52.1+ds-1build1
+   ii  libpangoft2-1.0-0 1.52.1+ds-1build1
+   font packages: fonts-dejavu-core fonts-dejavu-mono fonts-ubuntu-console
+   font families: DejaVu Sans;DejaVu Sans Mono;DejaVu Serif
+   fontconfig picks: Arial -> DejaVuSans.ttf: "DejaVu Sans" "Book" · sans-serif -> DejaVuSans.ttf: "DejaVu Sans" "Book" · monospace -> DejaVuSansMono.ttf: "DejaVu Sans Mono" "Book"
+== 4. apt-get -s install --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 (a simulation: nothing is installed)
+   the package lists are as of 2026-10-23 06:56 SAST (no apt-get update here)
+   0 upgraded, 1 newly installed, 0 to remove and 57 not upgraded.
+   Inst libharfbuzz-subset0 (8.3.0-2build2 Ubuntu:24.04/noble [amd64])
+== 5. pip install --dry-run -r the base requirements + weasyprint==70.0 (as nobody, no cache: nothing is installed)
+   new: brotli 1.2.1
+   new: cssselect2 0.10.1
+   new: fonttools 4.67.0
+   new: pydyf 0.13.0
+   new: pyphen 0.18.1
+   new: tinycss2 1.5.1
+   new: tinyhtml5 2.1.0
+   new: weasyprint 70.0
+   new: webencodings 0.6.1
+   new: zopfli 0.4.3
+   /etc/pip.conf: absent · a proxy in /etc/environment: not set
+== 6. who holds quote.generate (role names and counts; no names: G4)
+   granted by role: admin full user (admin is a wildcard in code: deps.user_can)
+   role admin: 4 user(s) — HOLDS it
+   role full: 3 user(s) — HOLDS it
+   role planner: 3 user(s) — does not hold it
+   role sales: 2 user(s) — does not hold it
+   role user: 1 user(s) — HOLDS it
+   per-user overrides (role | allow/deny | count): none
+== 7. the letterhead templates and the bodies they serve
+   template 1 | explosive_quote | html | t
+   template 2 | rhinorange_quote | html | t
+   template 3 | meathanger_quote | html | t
+   template 4 | freezer_quote | html | t
+   family 1 | EXPLOSIVE | explosive_quote | true
+   family 3 | MEAT | meathanger_quote | true
+   family 4 | FREEZER | freezer_quote | true
+   family 5 | CHILLER | - | -
+   family 6 | ICE CREAM | - | -
+   family 7 | OTHER | - | -
+   body 3 | MANNI RIGIDS CB | OTHER | -
+   body 12 | MEAT HANGER LARGE | MEAT | meathanger_quote
+   body 15 | RHINORANGE TRAILER | OTHER | rhinorange_quote
+   body 16 | ICECREAM BODY SMALL | ICE CREAM | -
+   body 17 | ICECREAM BODY MEDIUM | ICE CREAM | -
+   body 18 | ICECREAM BODY LARGE | ICE CREAM | -
+   body 19 | FREEZER 2.3 METER | FREEZER | freezer_quote
+   body 20 | FREEZER MEDIUM | FREEZER | freezer_quote
+   body 21 | FREEZER LARGE | FREEZER | freezer_quote
+   body 24 | EXPLOSIVE 4.9 AND UP | EXPLOSIVE | explosive_quote
+   body 25 | CHILLER 2.3 METER | CHILLER | -
+   body 26 | CHILLER MEDIUM | CHILLER | -
+   body 27 | CHILLER LARGE | CHILLER | -
+   body 34 | EXPLOSIVE UP TO 2.7 | EXPLOSIVE | explosive_quote
+   body 36 | MEAT HANGER SMALL-MEDIUM | MEAT | meathanger_quote
+   body 37 | EXPLOSIVE 2.7 TO 4.8 | EXPLOSIVE | explosive_quote
+   live body costings per template (all · last 90 days · with a discount):
+      - | 35 | 22 | 0
+      explosive_quote | 5 | 3 | 0
+      freezer_quote | 28 | 22 | 0
+      meathanger_quote | 10 | 7 | 0
+
+SUMMARY: Ubuntu 24.04.4 LTS · 3.12.3 · pango 1.52.1+ds-1build1 harfbuzz 8.3.0-2build2 · harfbuzz-subset absent · apt: 1 new, 0 upgraded · pip: 10 new, 0 changed · weasyprint absent · quote.generate: admin+full+user (8 users by role) · bodies with a template: 9 of 16
+
+######## DONE (read only)

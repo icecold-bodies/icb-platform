@@ -1,0 +1,66 @@
+(the line above, as run: machine icb-mes-prod, db icb_platform @ 127.0.0.1:5432, head 443a7b720cddac317daf8404096fd28033c9da8f, boot 2026-11-17 06:46:19 SAST, mode verify)
+== prod: db=icb_platform alembic=0053 code=443a7b7 mode=verify target=443a7b7 (v1.63.0) 2026-11-18T20:17:13+02:00
+== code + tag; the schema and the data do not move (no migration; the 4G factor is data)
+   PASS HEAD = 443a7b720cddac317daf8404096fd28033c9da8f
+   PASS TAG_LOCAL = d99b165b8e7a5f37cf1eae396c56f1109121c53b
+   PASS DESCRIBE = v1.63.0
+   PASS ALEMBIC = 0053
+   PASS FACTOR = 1.3170731707317074
+== the deployed audit: the prod list loads strictly (every entry pinned) and is paired with the deployed snapshot
+   PASS LIST = 7 336dd05e24138dfa56e94b85e3d719ae6a1cdb466480c0cf52b614ec388ddd5c pair=snapshot
+   PASS GOLDEN_MONTH = 2026-09
+== the environment key and autologin
+   PASS ENV_KEY = ICB_ENVIRONMENT=prod
+   PASS AUTOLOGIN_EMPTY = yes
+== service (the Python is new only if the service started after the code moved)
+   PASS ACTIVE = active
+   PASS RESTART_AFTER_CODE = yes
+   PASS WORKERS = 4
+   PASS BOOTSTRAP_FAILED = 0
+== tracebacks: counted from this deploy's restart only
+   pre-existing tracebacks in the 14 days before this deploy's restart (listed, not counted): 0
+   PASS TRACEBACKS_SINCE_RESTART = 0
+   PASS HEALTH = 200
+   PASS PYYAML = 6.0.2
+== RT11's code is inert: weasyprint is NOT in the venv (this release installs nothing), and the service logged the gate False at its start
+   PASS WEASYPRINT_IN_VENV = absent
+   PASS LETTERHEAD_GATE = False
+== the two statics on disk: each page loads its new ?v= (192 / 129) and the file is the target's blob (before any door is asked for it)
+   PASS V_calculator.js = 192
+   PASS DISK_calculator.js = 9d2eb371677c7764288aa3177e4b1b98f42b6c29d74207baa84f17f475917a0c
+   PASS V_calculator2.js = 129
+   PASS DISK_calculator2.js = bb218b79d7e194803c198d9a176700449cc62d3cc71950a3aabc460612284720
+== the SPA on disk: rebuilt by this deploy (a new bundle), carrying RT10's text
+   PASS SPA_DISK_NAME = assets/index-I5Myzg-I.js
+   PASS SPA_MARK_DISK = 1
+== door LOCAL (https://127.0.0.1): /health/version, no TEST banner, calculator.js?v=192 and calculator2.js?v=129 = the target, the SPA bundle served = the one built, the 47 no-session probes
+   PASS VERSION_LOCAL = v1.63.0
+   PASS ENVIRONMENT_LOCAL = prod
+   PASS NO_TEST_BANNER_LOCAL = 0/0
+   PASS calculator.js_LOCAL = 9d2eb371677c7764288aa3177e4b1b98f42b6c29d74207baa84f17f475917a0c
+   PASS calculator2.js_LOCAL = bb218b79d7e194803c198d9a176700449cc62d3cc71950a3aabc460612284720
+   PASS SPA_LOCAL = b53fac8457e3a943ddc034271826d7d7996be888e0ed0049db64530ab0323d41
+   PASS SPA_MARK_LOCAL = 1
+   PASS NOAUTH_LOCAL = all 47 as expected
+== door LAN (https://192.168.0.251): /health/version, no TEST banner, calculator.js?v=192 and calculator2.js?v=129 = the target, the SPA bundle served = the one built, the 47 no-session probes
+   PASS VERSION_LAN = v1.63.0
+   PASS ENVIRONMENT_LAN = prod
+   PASS NO_TEST_BANNER_LAN = 0/0
+   PASS calculator.js_LAN = 9d2eb371677c7764288aa3177e4b1b98f42b6c29d74207baa84f17f475917a0c
+   PASS calculator2.js_LAN = bb218b79d7e194803c198d9a176700449cc62d3cc71950a3aabc460612284720
+   PASS SPA_LAN = b53fac8457e3a943ddc034271826d7d7996be888e0ed0049db64530ab0323d41
+   PASS SPA_MARK_LAN = 1
+   PASS NOAUTH_LAN = all 47 as expected
+== door CF (https://mes.icecoldgrp.online): /health/version, no TEST banner, calculator.js?v=192 and calculator2.js?v=129 = the target, the SPA bundle served = the one built, the 47 no-session probes
+   PASS VERSION_CF = v1.63.0
+   PASS ENVIRONMENT_CF = prod
+   PASS NO_TEST_BANNER_CF = 0/0
+   PASS calculator.js_CF = 9d2eb371677c7764288aa3177e4b1b98f42b6c29d74207baa84f17f475917a0c
+   PASS calculator2.js_CF = bb218b79d7e194803c198d9a176700449cc62d3cc71950a3aabc460612284720
+   PASS SPA_CF = b53fac8457e3a943ddc034271826d7d7996be888e0ed0049db64530ab0323d41
+   PASS SPA_MARK_CF = 1
+   PASS NOAUTH_CF = all 47 as expected
+== no quote saved since the deploy (the saved costings: count + md5 of the whole rows; a difference is named row by row: id, quote, created, version, status, deleted)
+   PASS QUOTES_UNCHANGED_SINCE_DEPLOY = 102 5fe3353ba8001fc2d885785875c4a7b9
+
+######## VERIFY: 0 check(s) failed — tell the CA: /tmp/icb-release-v1.63.0/out-verify-20261118-201712

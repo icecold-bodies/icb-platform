@@ -20,6 +20,9 @@ negative control (F6): the same check pointed at a known-bad input must fail.
   6. rt12_vm.sh: the cleanup acts on exact /tmp/icb-* names of THIS window only; fetch takes a checked name.
   7. The runbook's paste blocks: ASCII, no placeholder, the full stage path, a step word the line knows, and the first
      and last lines the .ps1 really prints; the view-only acceptance's own line (NC: a placeholder / unknown step).
+  8. The window's evidence (18 Nov 2026, RT12_RULING_3's gate): the four All runs' reports agree cell for cell and read
+     prod's state that day; the OUTCOME records it, the cause and both reboots (NC: a cent's move; the runbook as
+     committed before the window).
 Bash parts run the real kit functions in Git Bash with stubs on PATH (skipped where there is no bash).
 """
 from __future__ import annotations
@@ -607,3 +610,75 @@ def test_the_copy_line_stops_under_5_gb_free_before_anything_reaches_prod():
     assert "RT12_SIM_FREE_GB" in (KIT / "sim/ps51/run_blocks.ps1").read_text(encoding="ascii")
     md = RUNBOOK.read_text(encoding="utf-8")
     assert "under 5 GB it\nSTOPs before anything reaches prod" in md.replace("\r\n", "\n") or "under 5 GB it STOPs" in md
+
+
+# ── 8. the window's evidence (the OUTCOME, 18 Nov 2026; RT12_RULING_3: All after = All before, cell for cell) ──
+EVIDENCE = ROOT / "docs" / "audit" / "rt12_2026-11" / "prod" / "window_20261118"
+ALL_RUNS = ("out-pre-20261118-170918", "out-pre-20261118-195013",      # before: the STOPped step 3, the fresh one
+            "out-post-20261118-195904", "out-post-20261118-200153")    # after: against page #53, then #54
+DAY_COUNTS = {   # prod's audit state on 18 Nov, recorded as ruled (not the ratified table: UAT moved the data)
+    "smoke": {"FLAG": 3, "ACCEPTED": 27, "PASS": 159, "SKIP": 45},
+    "chillers": {"PASS": 590, "SKIP": 126},
+    "freezers": {"FLAG": 16, "ACCEPTED": 64, "PASS": 493, "SKIP": 117},
+    "icecream": {"ACCEPTED": 40, "PASS": 416, "SKIP": 116, "UNVERIFIABLE": 40},
+    "explosive": {"ACCEPTED": 3, "PASS": 528, "SKIP": 117, "UNVERIFIABLE": 36},
+}
+
+
+def csv_cells(text: str) -> dict:
+    """One audit CSV report -> {(scenario, excel section, MES section): (status, excel total, MES total, accepted)}."""
+    import csv
+    import io
+    cells = {}
+    for r in csv.DictReader(io.StringIO(text)):
+        key = (r["scenario_id"], r["section_excel"], r["section_mes"])
+        assert key not in cells, key
+        cells[key] = (r["status"], r["excel_total"], r["mes_total"], r["accepted_reason"])
+    return cells
+
+
+def test_the_window_evidence_reads_before_equals_after_cell_for_cell():
+    from collections import Counter
+    for pack, want in DAY_COUNTS.items():
+        runs = [csv_cells((EVIDENCE / "icb-rt2-all" / o / "reports" / f"prod_{pack}.csv").read_text(encoding="utf-8"))
+                for o in ALL_RUNS]
+        assert all(r == runs[0] for r in runs[1:]), pack
+        assert dict(Counter(s for s, *_ in runs[0].values())) == want, pack
+    assert sum(sum(w.values()) for w in DAY_COUNTS.values()) == 2702 + 234
+    cmp = {o: (EVIDENCE / "icb-rt2-all" / o / "compare.txt").read_text(encoding="utf-8") for o in ALL_RUNS}
+    for o, run_no in (("out-pre-20261118-195013", 53), ("out-post-20261118-200153", 54)):
+        assert f"page run #{run_no}: All" in cmp[o] and "PAGE_EQUALS_CLI: yes (2702 of 2702 cells identical)" in cmp[o]
+    # queued finding 1: the first after-run compared the pre-deploy page run #53, and rt2_all.sh let it pass
+    assert "page run #53: All" in cmp["out-post-20261118-195904"]
+    # NC: one cell moved by a cent in a copy is a difference
+    text = (EVIDENCE / "icb-rt2-all" / ALL_RUNS[0] / "reports" / "prod_freezers.csv").read_text(encoding="utf-8")
+    first = text.splitlines()[1]
+    fields = first.split(",")
+    moved = text.replace(first, ",".join(fields[:-6] + [f"{float(fields[-6]) + 0.01:.2f}"] + fields[-5:]), 1)
+    assert moved != text and csv_cells(moved) != csv_cells(text)
+
+
+def test_the_outcome_records_the_day_the_cause_and_both_reboots():
+    md = RUNBOOK.read_text(encoding="utf-8").replace("\r\n", "\n")
+    out = md[md.index("\n## OUTCOME\n"):]
+    flat = " ".join(out.split())
+    for want in ("prod = v1.63.0 `443a7b7`", "Michael hand-edited the plywood prices on the freezer templates on prod "
+                 "after 22 Oct (UAT)", "7 Nov 07:21", "17 Nov 06:46:19", "PR #235", "2 936 / 2 936",
+                 "`QUOTES_UNCHANGED_SINCE_DEPLOY = 102 5fe3353b…`", "regenerating the CI snapshot (H3)",
+                 "| **All (2 702)** | **16** | **107** | **2 027** | 476 | 76 |", "| smoke (234) | **3** | **27** | **159** | 45 | — |",
+                 "docs/audit/rt12_2026-11/prod/window_20261118/"):
+        assert want in flat, want
+    assert not BLOCK.search(out)                                       # the OUTCOME adds no paste block
+    rel = EVIDENCE / "icb-release-v1.63.0"
+    oc = (rel / "out-deploy-20261118-195457" / "OUTCOME.txt").read_text(encoding="utf-8")
+    assert "deployed      a29db35 -> 443a7b7" in oc and "letterhead    gate at start-up: False" in oc
+    assert "now 102 5fe3353ba8001fc2d885785875c4a7b9" in oc
+    verify = (rel / "out-verify-20261118-201712" / "run.log").read_text(encoding="utf-8")
+    assert "PASS QUOTES_UNCHANGED_SINCE_DEPLOY = 102 5fe3353ba8001fc2d885785875c4a7b9" in verify
+    assert "######## VERIFY: 0 check(s) failed" in verify and "   FAIL " not in verify
+    # NC: the runbook as committed before the window carries none of it
+    before = git("show", "443a7b7:docs/runbooks/prod-deploy-v1.63.0.md")
+    if not before:
+        pytest.skip("443a7b7 is not in this checkout's history")
+    assert "(appended after the window)" in before
+    assert not any(w in before for w in ("plywood", "7 Nov 07:21", "PR #235", "QUOTES_UNCHANGED_SINCE_DEPLOY = 102"))

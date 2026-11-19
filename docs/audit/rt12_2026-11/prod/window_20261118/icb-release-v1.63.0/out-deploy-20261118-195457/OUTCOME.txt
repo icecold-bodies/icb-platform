@@ -1,0 +1,20 @@
+deployed      a29db35 -> 443a7b7 (443a7b720cddac317daf8404096fd28033c9da8f)
+tag           v1.63.0 = d99b165b8e7a5f37cf1eae396c56f1109121c53b (local = origin, peels to the target); git describe = v1.63.0
+alembic       0053 -> 0053 (no migration)
+4G factor     1.3170731707317074 (unchanged; Michael's 19 Oct value, 5400/4100)
+audit list    7 336dd05e24138dfa56e94b85e3d719ae6a1cdb466480c0cf52b614ec388ddd5c pair=snapshot (entries, pair sha256, pair = the deployed snapshot)
+golden month  2026-09
+environment   ICB_ENVIRONMENT=prod in /etc/icb/backend.env; autologin empty: yes
+backup        /var/backups/postgres/icb_platform_pre-v1.63.0_20261118-195457.dump  4200475 bytes  sha256 86be63c1109431cda37dbb4dee76a518680fd98abd7be8b908a677cd6be3b571 (pg_dump -Fc; checked: alembic_version, admin_settings, trailer_types, bill_of_materials, materials, calculations)
+restart       Tue 2026-11-17 06:46:31 SAST -> Wed 2026-11-18 19:55:34 SAST (pid 1084 -> 12445), after the code moved: yes
+workers       4 started, 0 bootstrap failed, 0 tracebacks since this restart
+health        200
+dependency    backend/requirements.txt +weasyprint==70.0 (the manifest only; the deploy tool warned once, pip was not run; weasyprint in the venv: absent)
+letterhead    gate at start-up: False (RT11's code is inert until its own install; the results page says "Official quotes are issued from SAP.")
+statics       calculator.js ?v=191 fb14d2aa92a5 -> ?v=192 9d2eb371677c  calculator2.js ?v=128 a54320915bbe -> ?v=129 bb218b79d7e1  (disk = 127.0.0.1 = LAN = Cloudflare); WeasyPrint-only (no ?v=, named by no template): backend/app/static/css/report.css backend/app/static/fonts/LiberationMono-Regular.ttf backend/app/static/fonts/LiberationSans-Bold.ttf backend/app/static/fonts/LiberationSans-BoldItalic.ttf backend/app/static/fonts/LiberationSans-Italic.ttf backend/app/static/fonts/LiberationSans-Regular.ttf backend/app/static/fonts/NOTICE backend/app/static/fonts/OFL.txt
+version       local {"version":"v1.63.0","environment":"prod"} · lan {"version":"v1.63.0","environment":"prod"} · cloudflare {"version":"v1.63.0","environment":"prod"}
+test banner   local 0/0 · lan 0/0 · cloudflare 0/0 (bars/[TEST] titles; prod 0/0)
+no session    local: all 47 as expected · lan: all 47 as expected · cloudflare: all 47 as expected
+spa           assets/index-BBI2d9Oo.js cd39cb56c575 -> assets/index-I5Myzg-I.js b53fac8457e3 (rebuilt; local = lan = cloudflare = disk; RT10's text 1x)
+quotes        102 5fe3353ba8001fc2d885785875c4a7b9 at the deploy (count md5; 102 rows recorded by id); now 102 5fe3353ba8001fc2d885785875c4a7b9
+finished      2026-11-18T19:56:21+02:00

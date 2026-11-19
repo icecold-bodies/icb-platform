@@ -1,0 +1,26 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  a29db35e  RT9 (v1.62.0): release — VERSION, CHANGELOG, the runbook with 
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  443a7b720cddac317daf8404096fd28033c9da8f already present - no fetch needed
+[32m  ok[0m  443a7b720cddac317daf8404096fd28033c9da8f = 443a7b72
+
+[1m== 2. plan[0m
+  a29db35e -> 443a7b72   (7 commit(s), 229 file(s))
+    443a7b7 RT12 (v1.63.0): release — VERSION, CHANGELOG, the runbook with Michael's paste blocks, the release kit (SPA rebuild, two statics, rows named, chained tracebacks) + its WSL and PowerShell 5.1 sims and tests (#233)
+    83f5e9c RT11 close (RULING_2): CI's Linux build pinned to prod's OS (ubuntu-24.04, not the floating ubuntu-latest = 26.04); the prod check's answer as evidence (23 Oct 12:17, byte-identical, counts and names of packages/roles/templates only) + the runbook's OUTCOME; tests for the pin (NC: the base's own ci.yml) and the evidence (#234)
+    4e4d251 RT11: Generate Quote works — WeasyPrint 70.0, shipped Liberation faces, the net price, plain refusals (+ the prod install kit) (#232)
+    242e57a RT10 close (RULING_3): the prod check's answer as evidence (23 Oct 17:18: 0 accepted-while-newer, 0 jobs-from-older, 0 live duplicates; quote numbers only) + the runbook's OUTCOME; the kit's last report line is written before the chown (prod's fs.protected_regular=2 refused the append: 'tee: Permission denied'); the sim is prod-like (sticky /tmp, sudo user mickeyger uid 1500) and fails on the 23 Oct kit; a test refuses any report write after the chown, with a negative control (#231)
+    51231d5 RT10 follow-up (RULING_2): Generate Quote is capability-gated, not withheld — letterhead_quote_available = WeasyPrint imports + a one-page smoke render returns a PDF, checked once at start-up and cached; the results page shows the button as before RT10 when True, the SAP line when False; the route unchanged (RT11). Tests for both states, the four capability cases, a negative control (#230)
+    dcba297 RT10: revisions visible — REV n, Latest, server numbering, record-id actions (+ read-only prod check) (#229)
+    dce981e RT9 close: the read-only quotes check (RULING_2 Q1), the close's stage folder, sims and tests; OUTCOME to follow (#228)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      YES - 18 file(s) under frontend/
+  Service restart  YES - 19 Python file(s) changed
+[33m  !![0m  dependency manifests changed (1) - check whether pip/npm install is needed BEFORE continuing
+
+[32m  ok[0m  dry run - nothing changed.

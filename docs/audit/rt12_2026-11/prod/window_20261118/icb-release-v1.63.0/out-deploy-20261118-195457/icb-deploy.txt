@@ -1,0 +1,496 @@
+
+[1m== 0. preflight[0m
+  repo      /opt/icb-platform (branch HEAD)
+  deployed  a29db35e  RT9 (v1.62.0): release — VERSION, CHANGELOG, the runbook with 
+[32m  ok[0m  no tracked modifications (359 untracked path(s) present - harmless, ignored)
+
+[1m== 1. fetch[0m
+[32m  ok[0m  443a7b720cddac317daf8404096fd28033c9da8f already present - no fetch needed
+[32m  ok[0m  443a7b720cddac317daf8404096fd28033c9da8f = 443a7b72
+
+[1m== 2. plan[0m
+  a29db35e -> 443a7b72   (7 commit(s), 229 file(s))
+    443a7b7 RT12 (v1.63.0): release — VERSION, CHANGELOG, the runbook with Michael's paste blocks, the release kit (SPA rebuild, two statics, rows named, chained tracebacks) + its WSL and PowerShell 5.1 sims and tests (#233)
+    83f5e9c RT11 close (RULING_2): CI's Linux build pinned to prod's OS (ubuntu-24.04, not the floating ubuntu-latest = 26.04); the prod check's answer as evidence (23 Oct 12:17, byte-identical, counts and names of packages/roles/templates only) + the runbook's OUTCOME; tests for the pin (NC: the base's own ci.yml) and the evidence (#234)
+    4e4d251 RT11: Generate Quote works — WeasyPrint 70.0, shipped Liberation faces, the net price, plain refusals (+ the prod install kit) (#232)
+    242e57a RT10 close (RULING_3): the prod check's answer as evidence (23 Oct 17:18: 0 accepted-while-newer, 0 jobs-from-older, 0 live duplicates; quote numbers only) + the runbook's OUTCOME; the kit's last report line is written before the chown (prod's fs.protected_regular=2 refused the append: 'tee: Permission denied'); the sim is prod-like (sticky /tmp, sudo user mickeyger uid 1500) and fails on the 23 Oct kit; a test refuses any report write after the chown, with a negative control (#231)
+    51231d5 RT10 follow-up (RULING_2): Generate Quote is capability-gated, not withheld — letterhead_quote_available = WeasyPrint imports + a one-page smoke render returns a PDF, checked once at start-up and cached; the results page shows the button as before RT10 when True, the SAP line when False; the route unchanged (RT11). Tests for both states, the four capability cases, a negative control (#230)
+    dcba297 RT10: revisions visible — REV n, Latest, server numbering, record-id actions (+ read-only prod check) (#229)
+    dce981e RT9 close: the read-only quotes check (RULING_2 Q1), the close's stage folder, sims and tests; OUTCOME to follow (#228)
+
+  DB migration     no  (no new files in backend/alembic/versions/)
+  SPA rebuild      YES - 18 file(s) under frontend/
+  Service restart  YES - 19 Python file(s) changed
+[33m  !![0m  dependency manifests changed (1) - check whether pip/npm install is needed BEFORE continuing
+
+  rollback anchor a29db35e saved to /tmp/icb-rollback-20261118-195505.txt
+
+[1m== 3. database backup - skipped (no migration in this range)[0m
+
+[1m== 4. fast-forward the code[0m
+Updating a29db35..443a7b7
+Fast-forward
+ .github/workflows/ci.yml                           |  13 +-
+ CHANGELOG.md                                       |  31 +
+ backend/VERSION                                    |   2 +-
+ backend/app/main.py                                |   6 +
+ backend/app/report_engine.py                       |  85 ++-
+ backend/app/routers/calculator.py                  | 137 ++--
+ backend/app/routers/exports.py                     |  16 +-
+ backend/app/routers/plan.py                        |   4 +
+ backend/app/routers/prejob_cards.py                |   3 +
+ backend/app/routers/validated_references.py        |   3 +
+ backend/app/schemas/prejob.py                      |   2 +
+ backend/app/services/prejob_cards.py               |   7 +-
+ backend/app/services/revisions.py                  | 161 +++++
+ backend/app/static/css/report.css                  |  13 +-
+ .../app/static/fonts/LiberationMono-Regular.ttf    | Bin 0 -> 319624 bytes
+ backend/app/static/fonts/LiberationSans-Bold.ttf   | Bin 0 -> 414568 bytes
+ .../app/static/fonts/LiberationSans-BoldItalic.ttf | Bin 0 -> 409108 bytes
+ backend/app/static/fonts/LiberationSans-Italic.ttf | Bin 0 -> 415920 bytes
+ .../app/static/fonts/LiberationSans-Regular.ttf    | Bin 0 -> 410820 bytes
+ backend/app/static/fonts/NOTICE                    |  26 +
+ backend/app/static/fonts/OFL.txt                   |  99 +++
+ backend/app/static/js/calculator.js                | 112 ++--
+ backend/app/static/js/calculator2.js               |  41 +-
+ backend/app/templates/calculator.html              |  54 +-
+ backend/app/templates/calculator2.html             |   2 +-
+ backend/app/templates/dashboard.html               |   9 +-
+ backend/app/templates/results.html                 |  41 +-
+ backend/requirements.txt                           |  11 +-
+ .../tests/journeys/test_preview_formats_journey.py |  16 +-
+ .../tests/journeys/test_rt10_revisions_journey.py  | 290 +++++++++
+ backend/tests/test_calculator_enter_chain.py       |   2 +-
+ backend/tests/test_ops_rt10.py                     | 257 ++++++++
+ backend/tests/test_ops_rt11.py                     | 341 ++++++++++
+ backend/tests/test_ops_rt12.py                     | 609 +++++++++++++++++
+ backend/tests/test_ops_rt9.py                      | 124 +++-
+ backend/tests/test_rt10_revisions.py               | 441 +++++++++++++
+ backend/tests/test_rt11_letterhead.py              | 347 ++++++++++
+ .../prod/rt10-check-20261023-171814.txt            |  20 +
+ .../prod/rt11-check-20261023-121804.txt            |  78 +++
+ .../out-deploy-20261022-123535/OUTCOME.txt         |  18 +
+ .../icb-deploy-dryrun.txt                          |  25 +
+ .../out-deploy-20261022-123535/icb-deploy.txt      | 265 ++++++++
+ .../out-deploy-20261022-123535/rollback-anchor.txt |   1 +
+ .../out-post-20261022-123809/SHA256SUMS.out        |   6 +
+ .../out-post-20261022-123809/compare.txt           |  14 +
+ .../reports/prod_chillers.csv                      | 717 +++++++++++++++++++++
+ .../reports/prod_chillers.md                       |  15 +
+ .../reports/prod_explosive.csv                     | 685 ++++++++++++++++++++
+ .../reports/prod_explosive.md                      |  38 ++
+ .../reports/prod_freezers.csv                      | 691 ++++++++++++++++++++
+ .../reports/prod_freezers.md                       |  24 +
+ .../reports/prod_icecream.csv                      | 613 ++++++++++++++++++
+ .../reports/prod_icecream.md                       |  51 ++
+ .../reports/prod_smoke.csv                         | 235 +++++++
+ .../out-post-20261022-123809/reports/prod_smoke.md |  27 +
+ .../out-post-20261022-124013/SHA256SUMS.out        |   6 +
+ .../out-post-20261022-124013/compare.txt           |  14 +
+ .../reports/prod_chillers.csv                      | 717 +++++++++++++++++++++
+ .../reports/prod_chillers.md                       |  15 +
+ .../reports/prod_explosive.csv                     | 685 ++++++++++++++++++++
+ .../reports/prod_explosive.md                      |  38 ++
+ .../reports/prod_freezers.csv                      | 691 ++++++++++++++++++++
+ .../reports/prod_freezers.md                       |  24 +
+ .../reports/prod_icecream.csv                      | 613 ++++++++++++++++++
+ .../reports/prod_icecream.md                       |  51 ++
+ .../reports/prod_smoke.csv                         | 235 +++++++
+ .../out-post-20261022-124013/reports/prod_smoke.md |  27 +
+ .../out-pre-20261022-123026/SHA256SUMS.out         |   6 +
+ .../out-pre-20261022-123026/compare.txt            |   4 +
+ .../reports/prod_chillers.csv                      | 717 +++++++++++++++++++++
+ .../reports/prod_chillers.md                       |  15 +
+ .../reports/prod_explosive.csv                     | 685 ++++++++++++++++++++
+ .../reports/prod_explosive.md                      |  38 ++
+ .../reports/prod_freezers.csv                      | 691 ++++++++++++++++++++
+ .../reports/prod_freezers.md                       |  24 +
+ .../reports/prod_icecream.csv                      | 613 ++++++++++++++++++
+ .../reports/prod_icecream.md                       |  51 ++
+ .../out-pre-20261022-123026/reports/prod_smoke.csv | 235 +++++++
+ .../out-pre-20261022-123026/reports/prod_smoke.md  |  27 +
+ .../out-pre-20261022-123153/SHA256SUMS.out         |   6 +
+ .../out-pre-20261022-123153/compare.txt            |  14 +
+ .../reports/prod_chillers.csv                      | 717 +++++++++++++++++++++
+ .../reports/prod_chillers.md                       |  15 +
+ .../reports/prod_explosive.csv                     | 685 ++++++++++++++++++++
+ .../reports/prod_explosive.md                      |  38 ++
+ .../reports/prod_freezers.csv                      | 691 ++++++++++++++++++++
+ .../reports/prod_freezers.md                       |  24 +
+ .../reports/prod_icecream.csv                      | 613 ++++++++++++++++++
+ .../reports/prod_icecream.md                       |  51 ++
+ .../out-pre-20261022-123153/reports/prod_smoke.csv | 235 +++++++
+ .../out-pre-20261022-123153/reports/prod_smoke.md  |  27 +
+ .../out-20261022-124138/door_report.txt            |  21 +
+ .../out-20261022-150338/SHA256SUMS.out             |   1 +
+ .../icb-rt9-quotes/out-20261022-150338/rows.txt    |  16 +
+ .../out-20261022-151213/SHA256SUMS.out             |   1 +
+ .../icb-rt9-quotes/out-20261022-151213/rows.txt    |  16 +
+ .../out-20261022-151747/SHA256SUMS.out             |   1 +
+ .../icb-rt9-quotes/out-20261022-151747/rows.txt    |  16 +
+ .../out-20261022-151841/SHA256SUMS.out             |   1 +
+ .../icb-rt9-quotes/out-20261022-151841/rows.txt    |  16 +
+ .../out-20261022-152004/SHA256SUMS.out             |   1 +
+ .../icb-rt9-quotes/out-20261022-152004/rows.txt    |  16 +
+ docs/rt10/discovery/dev_counts_icb.txt             |  29 +
+ docs/rt10/discovery/flake10.sh                     |  18 +
+ docs/rt10/discovery/flake_fixed_delay.txt          |  11 +
+ docs/rt10/discovery/flake_fixed_plain.txt          |  11 +
+ docs/rt10/discovery/flake_fixed_throttle6.txt      |  11 +
+ docs/rt10/discovery/flake_nc_nowait_delay.txt      |  11 +
+ .../rt10/discovery/mockups/doc_export_pdf_rev0.png | Bin 0 -> 39520 bytes
+ .../rt10/discovery/mockups/doc_export_pdf_rev1.png | Bin 0 -> 39915 bytes
+ .../mockups/doc_letterhead_rev0_acceptance.png     | Bin 0 -> 8196 bytes
+ .../discovery/mockups/doc_letterhead_rev0_top.png  | Bin 0 -> 50440 bytes
+ .../mockups/doc_letterhead_rev1_acceptance.png     | Bin 0 -> 8445 bytes
+ .../discovery/mockups/doc_letterhead_rev1_top.png  | Bin 0 -> 50574 bytes
+ docs/rt10/discovery/mockups/mockup_notes.json      |  32 +
+ .../discovery/mockups/screen_banner_proposed.png   | Bin 0 -> 16887 bytes
+ .../rt10/discovery/mockups/screen_banner_today.png | Bin 0 -> 14723 bytes
+ .../discovery/mockups/screen_list_proposed.png     | Bin 0 -> 58190 bytes
+ docs/rt10/discovery/mockups/screen_list_today.png  | Bin 0 -> 54826 bytes
+ docs/rt10/discovery/mockups/screen_view_latest.png | Bin 0 -> 25852 bytes
+ docs/rt10/discovery/mockups/screen_view_older.png  | Bin 0 -> 27261 bytes
+ docs/rt10/discovery/repro_after_the_fix.json       | 117 ++++
+ docs/rt10/discovery/repro_negative_control.json    | 109 ++++
+ docs/rt10/discovery/repro_today.json               | 123 ++++
+ docs/rt10/discovery/rt10_dev_counts.py             |  75 +++
+ docs/rt10/discovery/rt10_genquote.py               |  31 +
+ docs/rt10/discovery/rt10_mockups.py                | 269 ++++++++
+ docs/rt10/discovery/rt10_repair_rev.py             |  62 ++
+ docs/rt10/discovery/rt10_repro.py                  | 249 +++++++
+ docs/rt10/discovery/serve_rt10.ps1                 |  27 +
+ docs/runbooks/prod-check-rt10.md                   |  65 ++
+ docs/runbooks/prod-check-rt11.md                   |  77 +++
+ docs/runbooks/prod-deploy-v1.62.0.md               | 133 +++-
+ docs/runbooks/prod-deploy-v1.63.0.md               | 336 ++++++++++
+ docs/runbooks/prod-install-rt11.md                 |  81 +++
+ frontend/src/data/costingsData.ts                  |  22 +
+ frontend/src/lib/revisions.ts                      |  59 ++
+ .../Admin/OutstandingPrejobSignoffsPage.tsx        |   3 +-
+ frontend/src/screens/Costings/AcceptModal.tsx      |  17 +-
+ frontend/src/screens/Costings/CostingDetail.tsx    | 128 +++-
+ .../src/screens/Costings/CostingsDashboard.tsx     |  65 +-
+ frontend/src/screens/Costings/DeclineModal.tsx     |   3 +-
+ frontend/src/screens/Costings/LiveCalculator.tsx   |   9 +-
+ frontend/src/screens/Costings/PreJobCardModal.tsx  |   5 +-
+ .../src/screens/Costings/PreJobSignoffModal.tsx    |   9 +-
+ frontend/src/screens/Costings/RepairPhasePanel.tsx |   3 +-
+ frontend/src/screens/Costings/quoteIdentity.tsx    |  35 +
+ frontend/src/screens/Plan/PlanJobDrawer.tsx        |   4 +-
+ frontend/src/screens/Planning/PlanningAckPanel.tsx |   5 +-
+ frontend/src/screens/Planning/PlanningBoard.tsx    |  27 +-
+ .../screens/Planning/cockpit/PlanningCockpit.tsx   |   9 +-
+ frontend/src/screens/Prejob/PrejobSignoffPage.tsx  |   6 +-
+ frontend/src/store/CostingsContext.tsx             | 111 ++--
+ ops/prod-release-v1.62.0/close/rt9_quotes.sh       |  90 +++
+ .../close/rt9_quotes_filter.py                     | 209 ++++++
+ .../close/run_quotes_check.ps1                     |  32 +
+ ops/prod-release-v1.62.0/mkstage_close.sh          |  79 +++
+ ops/prod-release-v1.62.0/sim/RESULTS.md            | 131 ++++
+ ops/prod-release-v1.62.0/sim/fakeprod.sh           |  58 +-
+ ops/prod-release-v1.62.0/sim/ps51/fakeprod_up.sh   |   5 +-
+ ops/prod-release-v1.62.0/sim/ps51/run_blocks.ps1   |  64 +-
+ ops/prod-release-v1.62.0/sim/ps51/stage_close.sh   |  14 +
+ ops/prod-release-v1.62.0/sim/run_all.sh            |   5 +
+ ops/prod-release-v1.62.0/sim/run_sim.sh            |  15 +-
+ ops/prod-release-v1.62.0/sim/stubs.sh              |  48 +-
+ ops/prod-release-v1.62.0/window/rt9_vm.sh          |   5 +-
+ ops/prod-release-v1.62.0/window/window_common.ps1  |   4 +-
+ ops/prod-release-v1.63.0/local/check_8000.ps1      |  63 ++
+ ops/prod-release-v1.63.0/mkstage.sh                | 182 ++++++
+ ops/prod-release-v1.63.0/mkstage_window.sh         |  90 +++
+ ops/prod-release-v1.63.0/probe_paths.txt           |  66 ++
+ ops/prod-release-v1.63.0/release.sh                | 604 +++++++++++++++++
+ ops/prod-release-v1.63.0/sim/RESULTS.md            | 275 ++++++++
+ ops/prod-release-v1.63.0/sim/fakeprod.sh           | 190 ++++++
+ ops/prod-release-v1.63.0/sim/ps51/fake8000.py      |  53 ++
+ ops/prod-release-v1.63.0/sim/ps51/fakeprod_down.sh |  11 +
+ ops/prod-release-v1.63.0/sim/ps51/fakeprod_up.sh   |  29 +
+ ops/prod-release-v1.63.0/sim/ps51/forward.sh       |  70 ++
+ ops/prod-release-v1.63.0/sim/ps51/run_blocks.ps1   | 241 +++++++
+ ops/prod-release-v1.63.0/sim/ps51/stub.cs          |  43 ++
+ ops/prod-release-v1.63.0/sim/run_all.sh            |  60 ++
+ ops/prod-release-v1.63.0/sim/run_sim.sh            |  85 +++
+ ops/prod-release-v1.63.0/sim/stubs.sh              | 209 ++++++
+ ops/prod-release-v1.63.0/window/rt12_vm.sh         |  85 +++
+ .../window/run_window_cleanup.ps1                  |  21 +
+ .../window/run_window_copy.ps1                     |  43 ++
+ .../window/run_window_fetch.ps1                    |  23 +
+ .../window/run_window_step.ps1                     |  46 ++
+ ops/prod-release-v1.63.0/window/window_common.ps1  |  59 ++
+ ops/prod-rt10/mkstage_check.sh                     |  48 ++
+ ops/prod-rt10/rt10_check.sh                        |  88 +++
+ ops/prod-rt10/rt10_revisions.py                    | 213 ++++++
+ ops/prod-rt10/rt10_vm.sh                           |  47 ++
+ ops/prod-rt10/run_check.ps1                        |  95 +++
+ ops/prod-rt10/sim/fakeprod.sh                      |  75 +++
+ ops/prod-rt10/sim/fakepy/psycopg/__init__.py       |  90 +++
+ ops/prod-rt10/sim/fixture.json                     |  22 +
+ ops/prod-rt10/sim/ps51/fakeprod_up.sh              |  31 +
+ ops/prod-rt10/sim/ps51/forward.sh                  |  64 ++
+ ops/prod-rt10/sim/ps51/run_block.ps1               | 141 ++++
+ ops/prod-rt10/sim/run_sim.sh                       |  95 +++
+ ops/prod-rt11/install/mkstage_install.sh           |  60 ++
+ ops/prod-rt11/install/rt11_install.sh              | 180 ++++++
+ ops/prod-rt11/install/rt11_install_vm.sh           |  47 ++
+ ops/prod-rt11/install/rt11_verify.py               |  76 +++
+ ops/prod-rt11/install/run_install.ps1              | 111 ++++
+ ops/prod-rt11/install/sim/ps51/fakeprod_up.sh      |  42 ++
+ ops/prod-rt11/install/sim/ps51/run_blocks.ps1      | 139 ++++
+ ops/prod-rt11/install/sim/run_sim.sh               | 138 ++++
+ ops/prod-rt11/install/weasyprint-lock.txt          |  10 +
+ ops/prod-rt11/laptop/install_venv.ps1              |  53 ++
+ ops/prod-rt11/laptop/sim_install_venv.ps1          |  56 ++
+ ops/prod-rt11/mkstage_check.sh                     |  55 ++
+ ops/prod-rt11/rt11_check.sh                        | 185 ++++++
+ ops/prod-rt11/rt11_vm.sh                           |  47 ++
+ ops/prod-rt11/run_check.ps1                        |  96 +++
+ ops/prod-rt11/sim/fakeprod.sh                      |  88 +++
+ ops/prod-rt11/sim/fixture/bodies.txt               |   7 +
+ ops/prod-rt11/sim/fixture/costings.txt             |   4 +
+ ops/prod-rt11/sim/fixture/groups.txt               |   6 +
+ ops/prod-rt11/sim/fixture/qg_overrides.txt         |   1 +
+ ops/prod-rt11/sim/fixture/qg_roles.txt             |   3 +
+ ops/prod-rt11/sim/fixture/templates.txt            |   4 +
+ ops/prod-rt11/sim/fixture/users_by_role.txt        |   5 +
+ ops/prod-rt11/sim/ps51/fakeprod_up.sh              |  31 +
+ ops/prod-rt11/sim/ps51/forward.sh                  |  64 ++
+ ops/prod-rt11/sim/ps51/run_block.ps1               | 145 +++++
+ ops/prod-rt11/sim/ps51/stub.cs                     |  41 ++
+ ops/prod-rt11/sim/run_sim.sh                       | 118 ++++
+ 229 files changed, 24438 insertions(+), 359 deletions(-)
+ create mode 100644 backend/app/services/revisions.py
+ create mode 100644 backend/app/static/fonts/LiberationMono-Regular.ttf
+ create mode 100644 backend/app/static/fonts/LiberationSans-Bold.ttf
+ create mode 100644 backend/app/static/fonts/LiberationSans-BoldItalic.ttf
+ create mode 100644 backend/app/static/fonts/LiberationSans-Italic.ttf
+ create mode 100644 backend/app/static/fonts/LiberationSans-Regular.ttf
+ create mode 100644 backend/app/static/fonts/NOTICE
+ create mode 100644 backend/app/static/fonts/OFL.txt
+ create mode 100644 backend/tests/journeys/test_rt10_revisions_journey.py
+ create mode 100644 backend/tests/test_ops_rt10.py
+ create mode 100644 backend/tests/test_ops_rt11.py
+ create mode 100644 backend/tests/test_ops_rt12.py
+ create mode 100644 backend/tests/test_rt10_revisions.py
+ create mode 100644 backend/tests/test_rt11_letterhead.py
+ create mode 100644 docs/audit/rt10_2026-10/prod/rt10-check-20261023-171814.txt
+ create mode 100644 docs/audit/rt11_2026-10/prod/rt11-check-20261023-121804.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-release-v1.62.0/out-deploy-20261022-123535/OUTCOME.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-release-v1.62.0/out-deploy-20261022-123535/icb-deploy-dryrun.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-release-v1.62.0/out-deploy-20261022-123535/icb-deploy.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-release-v1.62.0/out-deploy-20261022-123535/rollback-anchor.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/compare.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_chillers.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_explosive.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_freezers.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_icecream.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_smoke.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-123809/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/compare.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_chillers.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_explosive.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_freezers.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_icecream.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_smoke.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-post-20261022-124013/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/compare.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_chillers.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_explosive.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_freezers.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_icecream.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_smoke.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123026/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/compare.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_chillers.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_chillers.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_explosive.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_explosive.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_freezers.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_freezers.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_icecream.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_icecream.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_smoke.csv
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-all/out-pre-20261022-123153/reports/prod_smoke.md
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt2-doors/out-20261022-124138/door_report.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-150338/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-150338/rows.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-151213/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-151213/rows.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-151747/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-151747/rows.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-151841/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-151841/rows.txt
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-152004/SHA256SUMS.out
+ create mode 100644 docs/audit/rt9_2026-10/prod/window_20261022/icb-rt9-quotes/out-20261022-152004/rows.txt
+ create mode 100644 docs/rt10/discovery/dev_counts_icb.txt
+ create mode 100644 docs/rt10/discovery/flake10.sh
+ create mode 100644 docs/rt10/discovery/flake_fixed_delay.txt
+ create mode 100644 docs/rt10/discovery/flake_fixed_plain.txt
+ create mode 100644 docs/rt10/discovery/flake_fixed_throttle6.txt
+ create mode 100644 docs/rt10/discovery/flake_nc_nowait_delay.txt
+ create mode 100644 docs/rt10/discovery/mockups/doc_export_pdf_rev0.png
+ create mode 100644 docs/rt10/discovery/mockups/doc_export_pdf_rev1.png
+ create mode 100644 docs/rt10/discovery/mockups/doc_letterhead_rev0_acceptance.png
+ create mode 100644 docs/rt10/discovery/mockups/doc_letterhead_rev0_top.png
+ create mode 100644 docs/rt10/discovery/mockups/doc_letterhead_rev1_acceptance.png
+ create mode 100644 docs/rt10/discovery/mockups/doc_letterhead_rev1_top.png
+ create mode 100644 docs/rt10/discovery/mockups/mockup_notes.json
+ create mode 100644 docs/rt10/discovery/mockups/screen_banner_proposed.png
+ create mode 100644 docs/rt10/discovery/mockups/screen_banner_today.png
+ create mode 100644 docs/rt10/discovery/mockups/screen_list_proposed.png
+ create mode 100644 docs/rt10/discovery/mockups/screen_list_today.png
+ create mode 100644 docs/rt10/discovery/mockups/screen_view_latest.png
+ create mode 100644 docs/rt10/discovery/mockups/screen_view_older.png
+ create mode 100644 docs/rt10/discovery/repro_after_the_fix.json
+ create mode 100644 docs/rt10/discovery/repro_negative_control.json
+ create mode 100644 docs/rt10/discovery/repro_today.json
+ create mode 100644 docs/rt10/discovery/rt10_dev_counts.py
+ create mode 100644 docs/rt10/discovery/rt10_genquote.py
+ create mode 100644 docs/rt10/discovery/rt10_mockups.py
+ create mode 100644 docs/rt10/discovery/rt10_repair_rev.py
+ create mode 100644 docs/rt10/discovery/rt10_repro.py
+ create mode 100644 docs/rt10/discovery/serve_rt10.ps1
+ create mode 100644 docs/runbooks/prod-check-rt10.md
+ create mode 100644 docs/runbooks/prod-check-rt11.md
+ create mode 100644 docs/runbooks/prod-deploy-v1.63.0.md
+ create mode 100644 docs/runbooks/prod-install-rt11.md
+ create mode 100644 frontend/src/lib/revisions.ts
+ create mode 100644 ops/prod-release-v1.62.0/close/rt9_quotes.sh
+ create mode 100644 ops/prod-release-v1.62.0/close/rt9_quotes_filter.py
+ create mode 100644 ops/prod-release-v1.62.0/close/run_quotes_check.ps1
+ create mode 100644 ops/prod-release-v1.62.0/mkstage_close.sh
+ create mode 100644 ops/prod-release-v1.62.0/sim/ps51/stage_close.sh
+ create mode 100644 ops/prod-release-v1.63.0/local/check_8000.ps1
+ create mode 100644 ops/prod-release-v1.63.0/mkstage.sh
+ create mode 100644 ops/prod-release-v1.63.0/mkstage_window.sh
+ create mode 100644 ops/prod-release-v1.63.0/probe_paths.txt
+ create mode 100644 ops/prod-release-v1.63.0/release.sh
+ create mode 100644 ops/prod-release-v1.63.0/sim/RESULTS.md
+ create mode 100644 ops/prod-release-v1.63.0/sim/fakeprod.sh
+ create mode 100644 ops/prod-release-v1.63.0/sim/ps51/fake8000.py
+ create mode 100644 ops/prod-release-v1.63.0/sim/ps51/fakeprod_down.sh
+ create mode 100644 ops/prod-release-v1.63.0/sim/ps51/fakeprod_up.sh
+ create mode 100644 ops/prod-release-v1.63.0/sim/ps51/forward.sh
+ create mode 100644 ops/prod-release-v1.63.0/sim/ps51/run_blocks.ps1
+ create mode 100644 ops/prod-release-v1.63.0/sim/ps51/stub.cs
+ create mode 100644 ops/prod-release-v1.63.0/sim/run_all.sh
+ create mode 100644 ops/prod-release-v1.63.0/sim/run_sim.sh
+ create mode 100644 ops/prod-release-v1.63.0/sim/stubs.sh
+ create mode 100644 ops/prod-release-v1.63.0/window/rt12_vm.sh
+ create mode 100644 ops/prod-release-v1.63.0/window/run_window_cleanup.ps1
+ create mode 100644 ops/prod-release-v1.63.0/window/run_window_copy.ps1
+ create mode 100644 ops/prod-release-v1.63.0/window/run_window_fetch.ps1
+ create mode 100644 ops/prod-release-v1.63.0/window/run_window_step.ps1
+ create mode 100644 ops/prod-release-v1.63.0/window/window_common.ps1
+ create mode 100644 ops/prod-rt10/mkstage_check.sh
+ create mode 100644 ops/prod-rt10/rt10_check.sh
+ create mode 100644 ops/prod-rt10/rt10_revisions.py
+ create mode 100644 ops/prod-rt10/rt10_vm.sh
+ create mode 100644 ops/prod-rt10/run_check.ps1
+ create mode 100644 ops/prod-rt10/sim/fakeprod.sh
+ create mode 100644 ops/prod-rt10/sim/fakepy/psycopg/__init__.py
+ create mode 100644 ops/prod-rt10/sim/fixture.json
+ create mode 100644 ops/prod-rt10/sim/ps51/fakeprod_up.sh
+ create mode 100644 ops/prod-rt10/sim/ps51/forward.sh
+ create mode 100644 ops/prod-rt10/sim/ps51/run_block.ps1
+ create mode 100644 ops/prod-rt10/sim/run_sim.sh
+ create mode 100644 ops/prod-rt11/install/mkstage_install.sh
+ create mode 100644 ops/prod-rt11/install/rt11_install.sh
+ create mode 100644 ops/prod-rt11/install/rt11_install_vm.sh
+ create mode 100644 ops/prod-rt11/install/rt11_verify.py
+ create mode 100644 ops/prod-rt11/install/run_install.ps1
+ create mode 100644 ops/prod-rt11/install/sim/ps51/fakeprod_up.sh
+ create mode 100644 ops/prod-rt11/install/sim/ps51/run_blocks.ps1
+ create mode 100644 ops/prod-rt11/install/sim/run_sim.sh
+ create mode 100644 ops/prod-rt11/install/weasyprint-lock.txt
+ create mode 100644 ops/prod-rt11/laptop/install_venv.ps1
+ create mode 100644 ops/prod-rt11/laptop/sim_install_venv.ps1
+ create mode 100644 ops/prod-rt11/mkstage_check.sh
+ create mode 100644 ops/prod-rt11/rt11_check.sh
+ create mode 100644 ops/prod-rt11/rt11_vm.sh
+ create mode 100644 ops/prod-rt11/run_check.ps1
+ create mode 100644 ops/prod-rt11/sim/fakeprod.sh
+ create mode 100644 ops/prod-rt11/sim/fixture/bodies.txt
+ create mode 100644 ops/prod-rt11/sim/fixture/costings.txt
+ create mode 100644 ops/prod-rt11/sim/fixture/groups.txt
+ create mode 100644 ops/prod-rt11/sim/fixture/qg_overrides.txt
+ create mode 100644 ops/prod-rt11/sim/fixture/qg_roles.txt
+ create mode 100644 ops/prod-rt11/sim/fixture/templates.txt
+ create mode 100644 ops/prod-rt11/sim/fixture/users_by_role.txt
+ create mode 100644 ops/prod-rt11/sim/ps51/fakeprod_up.sh
+ create mode 100644 ops/prod-rt11/sim/ps51/forward.sh
+ create mode 100644 ops/prod-rt11/sim/ps51/run_block.ps1
+ create mode 100644 ops/prod-rt11/sim/ps51/stub.cs
+ create mode 100644 ops/prod-rt11/sim/run_sim.sh
+[32m  ok[0m  at 443a7b72 (verified by SHA, not by git describe)
+
+[1m== 5. migrations - skipped[0m
+
+[1m== 6. npm run build[0m
+
+> icb-mes-mockup@0.1.0 build
+> tsc -b && vite build
+
+vite v5.4.21 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2480 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              2.17 kB │ gzip:   1.08 kB
+dist/assets/index-D7V6xtqW.css              68.52 kB │ gzip:  13.53 kB
+dist/assets/html2canvas.esm-CBrSDip1.js    201.42 kB │ gzip:  48.03 kB
+dist/assets/index-I5Myzg-I.js            1,201.61 kB │ gzip: 323.39 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 10.91s
+npm notice
+npm notice New major version of npm available! 10.9.8 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice
+[32m  ok[0m  bundle rebuilt: index-I5Myzg-I.js
+
+[1m== 7. restart icb-backend[0m
+  active since (before): Tue 2026-11-17 06:46:31 SAST
+  active since (after):  Wed 2026-11-18 19:55:34 SAST
+[32m  ok[0m  restarted
+
+[1m== 8. verify[0m
+  workers started      4 (expected 4)
+  BOOTSTRAP FAILED     0 (expected 0)
+  https://127.0.0.1/health -> 200
+[32m  ok[0m  healthy
+
+[32m[1mDEPLOYED[0m  a29db35e -> 443a7b72  (443a7b720cddac317daf8404096fd28033c9da8f)
+
+Rollback (code-only - additive migrations are left in place deliberately):
+    /opt/icb-platform/deploy/prod/icb-rollback.sh a29db35e
+
+  or, without the script:
+    sudo -u icb git -C /opt/icb-platform reset --hard a29db35e
+    sudo -u icb bash -lc 'cd /opt/icb-platform/frontend && npm run build'   # this range touched frontend/
+    sudo systemctl restart icb-backend
+

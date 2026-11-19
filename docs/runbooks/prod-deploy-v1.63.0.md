@@ -333,4 +333,107 @@ IF YOU SEE "STOP": some names may already be gone; paste it back to me
 
 ## OUTCOME
 
-(appended after the window)
+**18 Nov 2026, 16:42–20:22 SAST: prod = v1.63.0 `443a7b7`, alembic 0053. Every release check passed on the three
+doors in order. The costing audit is identical before and after the deploy, 2 936 / 2 936 cells, PAGE = CLI
+(RT12_RULING_3's gate: All after = All before, cell for cell). No quote was saved during the window (102 saved
+costings, unchanged). The window stopped once, at step 3, because All before did not read the ratified table: prod's
+data had moved in UAT. It was held 17:09–19:46 for RT12_RULING_3, then resumed at a fresh step 3.** Evidence:
+`docs/audit/rt12_2026-11/prod/window_20261118/` (the kits' out folders, without the HTML and JSON reports, plus the
+preflight's and verify's `run.log`). The window tar is `Downloads\rt12-window-back-20261118-201933.tar`, sha256
+`82bab53a2736fde4…`, 25 118 720 B.
+
+**Before the window:**
+- **The merge, in the reverse order (RT12_RULING_2A):** RULING_2 set #233 first and then #234 rebased onto it. On
+  18 Nov #234 (RT11 close) merged first as `83f5e9c` (12:32:34 UTC), then #233 as **`443a7b7`** (12:33:49 UTC, parent
+  `83f5e9c`). I stopped before the tag. Checks on the result:
+  - `83f5e9c..443a7b7` = #233's 26 files (the same patch-id as `4e4d251..a171831`);
+  - `4e4d251..83f5e9c` = #234's 4 (the CI runner pin `ubuntu-24.04`, its test, RT11's evidence and runbook), with no
+    app code, dependency, static, `frontend/`, `deploy/` or migration;
+  - the range `a29db35..443a7b7` = 229 files (C-sorted sha `ff836298…`); the app tree is identical to `a171831`'s.
+- **C3 on the squash itself:** `ci.yml` runs build & test only on pull requests and on pushes to `main`. So proof
+  **PR #235** ("DO NOT MERGE") put two refs on GitHub and pushed no commit: head `rt12/ci-head-443a7b7` = `443a7b7`,
+  base `rt12/ci-base-83f5e9c` = its parent. Its checks attached to `443a7b7`: **7 / 7 green** (build & test
+  ubuntu-24.04 13:01 UTC and windows 13:06 UTC, the costing audit × 5). #235 was then closed unmerged and both
+  branches deleted (read back absent). The BA accepted the approach.
+- **Tag:** `v1.63.0` = tag object `d99b165`, local = origin, peeling to `443a7b7`.
+- **:8000:** Michael's clone was fast-forwarded `4e4d251 → 443a7b7` (no overlap with his local edits; 186 local
+  entries byte-identical before and after, `389f7a4a`). Blocks A and B at 16:40: `DONE v1.63.0`; both calculator
+  scripts and the SPA bundle (`index-I5Myzg-I.js`, with RT10's text) = his checkout.
+- **Kits:** staged from `443a7b7` by `mkstage_window.sh` (release `f08a4d8f`, all `f7ad9234`, doors `94683cb7`, vm
+  `14365780`).
+
+| # | step (time) | result |
+|---|---|---|
+| 1 | copy (16:45:05) | 3 kits verified and stamped (window mark 16:45:07); C: 19.2 GB free. Prod boot `2026-11-17 06:46:19` (see the reboots below). At 16:42 the LAN door did not answer from the laptop until the VPN was connected |
+| 2 | preflight (17:04:34) | **PASSED**: 0053, `a29db35`, no tracked modifications, autologin empty, `ICB_ENVIRONMENT=prod`, the factor exactly `1.3170731707317074`; `calculator.js?v=191` `fb14d2aa…` and `calculator2.js?v=128` `a5432091…` = disk on the three doors; the SPA `index-BBI2d9Oo.js` `cd39cb56…` = disk × 3, without RT10's text; v1.62.0 × 3; 47 / 47 × 3; weasyprint absent; npm and node_modules present; the tag on origin; 0 tracebacks since the service started (17 Nov 06:46:31); **102 saved costings** (`5fe3353b…`) |
+| 3 | All before (17:09:18) | **STOP**: page **#52** (17:08:46) = CLI 2 702 / 2 702, but the counts did not read the ratified table. Freezers FLAG 16 / ACCEPTED 64 / PASS 493 (table 0 / 72 / 501); smoke 3 / 27 / 159 (table 0 / 33 / 156); the other packs = the table. Step 4 was not sent; `RT12_RETURN_1c` → **`RT12_RULING_3` (a)**: the gate becomes All after = All before, cell for cell, on today's data |
+| 3 | All before, fresh (19:49:59) | Immediately before step 4, as ruled. Page **#53** (19:46:21, "No change since … run #52") = CLI 2 702 / 2 702; every pack, smoke included, = run #52 (table below). Prod boot unchanged; the last data-kit journal still 15 Oct |
+| 4 | deploy (19:54:44; on prod 19:54:57–19:56:21) | **DEPLOYED `a29db35 → 443a7b7`**. Backup `icb_platform_pre-v1.63.0_20261118-195457.dump`, 4 200 475 B, sha256 `86be63c1…`, checked and read back. No migration. The deploy tool's one expected warning *"dependency manifests changed (1)"*, once in the dry run and once in the deploy; no pip run; weasyprint absent before and after. `npm run build`: `index-BBI2d9Oo.js → index-I5Myzg-I.js` (`b53fac84…`, RT10's text × 1). Restart 19:55:34 (pid 1084 → 12445), 4 workers, 0 bootstrap failed, **0 tracebacks since** (0 pre-existing in the 14 days before). **The gate logged False.** Disk: `?v=192` `9d2eb371…`, `?v=129` `bb218b79…`. Then **127.0.0.1 → LAN → Cloudflare**: `{"version":"v1.63.0","environment":"prod"}`, no TEST banner, both scripts = the release's bytes, the SPA = the one built, **47 / 47**. The factor, the audit list (7, pair = snapshot), the golden month 2026-09 and the 102 saved costings were unchanged. The fetch printed `! [rejected] v1.47.1` (prod's own tag, left alone). My own LAN read-back at 19:57:31: v1.63.0, both scripts = `443a7b7`'s blobs |
+| 5 | All after (20:01:47) | page **#54** (started 20:00:35, after the restart) = CLI **2 702 / 2 702**; every pack, smoke included, = step 3. (19:58:58: a first paste compared the pre-deploy page run #53, because the page's All had not been re-clicked. The kit let it pass; see the findings. The page was re-run and the line pasted again) |
+| 6 | doors (20:03:04) | **SUMMARY: 14 OK; no exceptions** |
+| 7 | view-only acceptance (browser, ≈20:05–20:15) | On `https://mes.icecoldgrp.online/mes-app/costings` after Ctrl+F5 (a first pass was on the LAN address, then repeated on Cloudflare). **N10021/10/2026 has three revisions on prod, not two:** REV 2 (record 136, saved 24 Oct 08:55 by admin, "Moved to today's prices on 24 Oct 2026, from REV 1") · **Latest** ("3 revisions") above REV 1 · **earlier** (22 Oct 17:09) and REV 0 · **earlier** (record 129, 19 Oct 08:06), the three together, one row each, no ghost rows, all Pending. REV 0's view: **"REV 2 is the latest →"**. REV 2's results page: **"Official quotes are issued from SAP."** where Generate Quote was (its ✓ Accepted / ✗ Declined pair = the pending buttons). Nothing was clicked or saved. The runbook's "REV 1 · Latest" came from RT10's prod check of 23 Oct; REV 2 is a UAT re-price made the day after. The behaviour is the release's, for three revisions |
+| 8 | verify (20:17:07) | **0 checks failed** (the window line's exit 0; the closing `######## VERIFY: 0 check(s) failed` line is in the fetched `run.log`, not on the screen; see the findings). v1.63.0 / prod, both scripts, the SPA, 47 / 47 on the three doors; **0 tracebacks since the restart** (the list, both costing views and the results page included); weasyprint absent; the gate False; **`QUOTES_UNCHANGED_SINCE_DEPLOY = 102 5fe3353b…`** |
+| 9 | fetch (20:19:33) | the tar above (8 out folders); the prod copy removed |
+| 10 | close (20:21:56) | prod `/tmp`, removed by exact name and read back absent on a second connection: `icb-release-v1.63.0{,.tar}`, `icb-rt2-all{,.tar}`, `icb-rt2-doors{,.tar}`, `icb-rt12-window.started`; the helper `icb-rt12-vm.sh` removed itself. Left as ruled: `/tmp/icb-rollback-20261118-195505.txt` (the deploy tool's own anchor) |
+
+**Prod's audit state on 18 Nov 2026 (RT12_RULING_3), read four times, identical every time** (17:09 and 19:50
+before the deploy, 19:59 and 20:01 after it):
+
+| pack | FLAG | ACCEPTED | PASS | SKIP | UNVERIFIABLE |
+|---|---|---|---|---|---|
+| chillers | 0 | 0 | 590 | 126 | — |
+| freezers | **16** | **64** | **493** | 117 | — |
+| icecream | 0 | 40 | 416 | 116 | 40 |
+| explosive | 0 | 3 | 528 | 117 | 36 |
+| **All (2 702)** | **16** | **107** | **2 027** | 476 | 76 |
+| smoke (234) | **3** | **27** | **159** | 45 | — |
+
+**Before vs after, cell for cell:** each pack's CSV report is byte-identical in all four runs (sha256 smoke
+`e201dfa3…`, chillers `62503edc…`, freezers `98ee10da…`, icecream `3a26c481…`, explosive `91e16ca2…`). The JSON
+reports agree on every cell's status, base status, accepted entry, and Excel and MES totals to the cent: **2 936 /
+2 936**, 0 differ. Negative control: one freezer cell moved by R0.01 in a copy was caught, 1 differ.
+
+**Recorded (RT12_RULING_3):**
+- **Why All before differs from the ratified table.** Michael hand-edited the plywood prices on the freezer templates
+  on prod after 22 Oct (UAT). The 16 freezer cells moved to FLAG (8 from ACCEPTED, 8 from PASS). In smoke, 3 ACCEPTED
+  cells moved to FLAG and 3 to PASS. No kit made the change (the last data-kit journal is 15 Oct), and the release
+  changes no pricing (the stager refuses any move of the accepted list, the snapshot or the golden; the golden is
+  `ed4d57bc…`).
+- **The 16 + 3 cells go to a separate data-check lane with Burt:** which hand edits, then accept, revert or correct.
+  It closes by regenerating the CI snapshot (H3). One observation for that lane, not a conclusion: step 6's door report
+  shows the three freezer templates' drafts last saved 29 Sep, 29 Sep and 2 Oct. So the plywood edits may sit outside
+  the template drafts (in the material prices, for example).
+- **Prod rebooted twice since 11 Oct:**
+  - ≈ **7 Nov 07:21** (on 13 Nov 20:33 SAST its uptime read 6 days 13 h);
+  - **17 Nov 06:46:19** (the service started 12 s later, 06:46:31, with 0 tracebacks since).
+
+  Michael has asked Marnus whether these are Group IT patching; this ties to the queued 06:02 restart item. The kits
+  were staged after the 17 Nov boot and stayed valid.
+- **Banked (RT12_RULING_3):** while UAT lasts, release runbooks state the audit gate as **before = after, cell for
+  cell**, with today's counts recorded, not the ratified table. The ratified table comes back as the gate when UAT
+  ends (the go-live checklist).
+- **The sales pause:** the sales team had the BA's note before the first step 3. RULING_3 had the BA send it again
+  before the fresh step 3, and step 4 ran on that condition. Nothing was saved between the deploy and step 8.
+
+**Queued for the BA (found in this window, not fixed here):**
+1. **`rt2_all.sh post` accepts a page run from before the deploy.** Its "not before" is the last data-kit journal
+   (15 Oct) and its age limit is 45 minutes, so step 5's first paste passed against page run #53 (19:46, before the
+   19:55:34 restart). I caught it while reading the paste, and the page was re-run (#54). Fix for the next kit: the
+   after-run's page must have started after this deploy's restart.
+2. **The last line of a step can be lost on screen.** `release.sh` writes through `exec > >(tee -a "$OUT/run.log")`,
+   and the window line runs `ssh -t`. When bash exits before `tee` has drained, the pty closes and the screen misses
+   the end. That happened with step 8's `######## VERIFY` line. The exit code is the script's own (exit 0 only when
+   no check failed), and `run.log` holds the line. Fix: close the redirect and wait for `tee` before exiting.
+3. **Acceptance text tied to the data goes stale on a UAT prod**, as the audit table did. The runbook named "REV 1 ·
+   Latest" from 23 Oct, and prod had a REV 2 from 24 Oct. Next time, state the acceptance as behaviour: the newest
+   live revision says Latest, the others say "· earlier", and an older one's header names the newest.
+4. **A browser step names the address and how to recognise it.** The first acceptance pass ran on the LAN address,
+   though the runbook named Cloudflare's. A line such as "the address bar starts with `mes.icecoldgrp.online`" would
+   prevent that.
+5. The SPA build printed npm's and Browserslist's upgrade notices. Nothing was run; it is noise for a later tidy-up.
+
+**State at the close:**
+- **Prod:** v1.63.0 `443a7b7` (tag `v1.63.0` `d99b165`), alembic 0053, 102 saved costings (`5fe3353b…`). Weasyprint is
+  not in the venv, so the letterhead gate reads False and Generate Quote stays off until RT11's install. Prod `/tmp`
+  holds no RT12 name.
+- **Michael's clone:** at `443a7b7`.
